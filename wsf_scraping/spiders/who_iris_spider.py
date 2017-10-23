@@ -13,7 +13,6 @@ class QuotesSpider(scrapy.Spider):
     data = {
         'location': '',
         'query': '',
-        'rpp': 20,
         'sort_by': 'score',
         'order': 'desc',
         'filter_field_1': 'dateIssued',
@@ -23,6 +22,9 @@ class QuotesSpider(scrapy.Spider):
     }
 
     def start_requests(self):
+        # Set up per page results
+        data['rpp'] = self.settings['WHO_IRIS_RPP']
+
         # Initial URL (splited for PEP8 compliance)
         base_url = 'http://apps.who.int/iris/simple-search'
         url = base_url + '?location={location}&query={query}&rpp={rpp}'

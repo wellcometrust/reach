@@ -30,3 +30,6 @@ CONCURRENT_REQUESTS = 64
 
 # Disable cookies (enabled by default)
 COOKIES_ENABLED = False
+
+#  who_iris and who_iris_single_page per-page results
+WHO_IRIS_RPP = 250
