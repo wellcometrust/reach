@@ -1,11 +1,12 @@
 import scrapy
 import os
 import re
-from tools.extraction import convert, grab_references, cleanhtml
 from scrapy.http import Request
+from tools.extraction import convert, grab_references,\
+                             grab_keyword, cleanhtml
 
 
-class QuotesSpider(scrapy.Spider):
+class WhoIrisSPSpider(scrapy.Spider):
     name = 'who_iris_single_page'
 
     # All these parameters are optionnal,
@@ -13,7 +14,6 @@ class QuotesSpider(scrapy.Spider):
     data = {
         'location': '',
         'query': '',
-        'rpp': 250,
         'sort_by': 'score',
         'order': 'desc',
         'filter_field_1': 'dateIssued',
@@ -23,6 +23,9 @@ class QuotesSpider(scrapy.Spider):
     }
 
     def start_requests(self):
+        # Set up per page results
+        self.data['rpp'] = self.settings['WHO_IRIS_RPP']
+
         # Initial URL (splited for PEP8 compliance)
         base_url = 'http://apps.who.int/iris/simple-search'
         url = base_url + '?location={location}&query={query}&rpp={rpp}'
@@ -66,23 +69,42 @@ class QuotesSpider(scrapy.Spider):
     def save_pdf(self, response):
         # Retrieve metadata
         data_dict = response.meta.get('data_dict', {})
+        section = ''
 
         # Download PDF file to /tmp
         filename = response.url.split('/')[-1]
         with open('/tmp/' + filename, 'wb') as f:
             f.write(response.body)
 
-        # Convert PDF content to text format
-        text_file = convert('/tmp/' + filename)
+        try:
+            # Convert PDF content to text format
+            text_file = convert('/tmp/' + filename)
+            data_dict['Pdf'] = filename
+            for keyword in self.settings['SEARCH_FOR_LISTS']:
+                # Fetch references or other keyworded list
+                section = grab_references(text_file, keyword)
 
-        # Fetch references
-        refs = grab_references(text_file)
+                # Add references and PDF name to JSON returned file
+                data_dict[keyword.title()] = section if section else None
 
-        # Add references and PDF name to JSON returned file
-        data_dict['Pdf'] = filename
-        data_dict['References'] = refs if refs else None
+            for keyword in self.settings['SEARCH_FOR_KEYWORDS']:
+                # Fetch references or other keyworded list
+                section = grab_keyword(text_file, keyword)
 
-        # Remove the PDF file
-        os.remove('/tmp/' + filename)
+                # Add references and PDF name to JSON returned file
+                data_dict[keyword.title()] = section if section else None
+
+            # Remove the PDF file
+            os.remove('/tmp/' + filename)
+        except UnicodeDecodeError:
+            # Some unicode character still can't be decoded properly
+            data_dict['Pdf'] = filename
+            data_dict['References'] = section if section else 'Encoding error'
+
+        except Exception:
+            #  If something goes wrong, write pdf name and error
+            #  Mostly happens on invalid pdfs
+            data_dict['Pdf'] = filename
+            data_dict['References'] = section if section else 'Parsing Error'
 
         yield data_dict
