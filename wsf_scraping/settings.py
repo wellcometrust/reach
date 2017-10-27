@@ -33,3 +33,15 @@ COOKIES_ENABLED = False
 
 #  who_iris and who_iris_single_page per-page results
 WHO_IRIS_RPP = 250
+
+DUPEFILTER_CLASS = "wsf_scraping.filter.BLOOMDupeFilter"
+
+FEED_URI = './results/scrap_result.json'
+FEED_FORMAT = 'json'
+FEED_EXPORT_ENCODING = 'utf-8'
+
+# Lists to look for (case insensitive)
+SEARCH_FOR_LISTS = ['references', 'bibliography', 'citations']
+
+# Keywords to look for (case insensitive)
+SEARCH_FOR_KEYWORDS = ['wellcome']
