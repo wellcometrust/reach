@@ -10,17 +10,17 @@ def cleanhtml(raw_html):
 
 
 def convert(filename):
-    text = textract.process(filename)
+    text = textract.process(filename, encoding='utf-8')
     if not text:
-        text = textract.process(filename, method='tesseract', layout='utf-8')
+        text = textract.process(filename, encoding='utf-8', method='tesseract')
 
     return text.decode('utf-8')
 
 
-def grab_references(text_pdf):
+def grab_references(text_pdf, keyword):
     references = ''
     # Ensure we only match a reference list
-    ref_index = text_pdf.lower().find('references')
+    ref_index = text_pdf.lower().find(keyword)
     text_pdf = text_pdf[ref_index:]
     # regex = r"[\n]+[ ]{2,}references *\n*(.*?)(?=\n{2,}|($))"
     regex = r'(\n\d+\.{1}\n+)(.*?)(?=\n{2,}|($))'
@@ -29,3 +29,13 @@ def grab_references(text_pdf):
         references += match.group()
 
     return references
+
+
+def grab_keyword(text_pdf, keyword):
+    result = []
+    regex = r'\. *([^\.]*' + keyword + '[^\.]*\.*)'
+    matches = re.finditer(regex, text_pdf, re.IGNORECASE)
+    for num, match in enumerate(matches):
+        result.append(match.group(1))
+
+    return result
