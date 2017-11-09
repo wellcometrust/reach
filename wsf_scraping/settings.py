@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-
+import datetime
 # Scrapy settings for wsf_scraping project
 #
 # For simplicity, this file contains only settings considered important or
@@ -8,6 +8,7 @@
 #     http://doc.scrapy.org/en/latest/topics/settings.html
 #     http://scrapy.readthedocs.org/en/latest/topics/downloader-middleware.html
 #     http://scrapy.readthedocs.org/en/latest/topics/spider-middleware.html
+
 
 BOT_NAME = 'wsf_scraper'
 
@@ -36,9 +37,17 @@ WHO_IRIS_RPP = 250
 
 DUPEFILTER_CLASS = "wsf_scraping.filter.BLOOMDupeFilter"
 
-FEED_URI = './results/scrap_result.json'
 FEED_FORMAT = 'json'
 FEED_EXPORT_ENCODING = 'utf-8'
+
+FEED_CONFIG = 'PROD'
+
+if FEED_CONFIG == 'DEBUG':
+    FEED_URI = './results/who_{date}.json'.format(date=datetime.datetime.now())
+else:
+    AWS_ACCESS_KEY_ID = "your aws id"
+    AWS_SECRET_ACCESS_KEY = "your aws secret"
+    FEED_URI = 's3://scrapypdf/who_{date}.json'.format(date=datetime.datetime.now())
 
 # Lists to look for (case insensitive)
 SEARCH_FOR_LISTS = ['references', 'bibliography', 'citations']
