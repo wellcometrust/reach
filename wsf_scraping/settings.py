@@ -38,6 +38,7 @@ COOKIES_ENABLED = False
 
 #  who_iris and who_iris_single_page per-page results
 WHO_IRIS_RPP = 250
+WHO_IRIS_YEARS = [2012, 2013, 2014, 2015, 2016, 2017]
 
 DUPEFILTER_CLASS = "wsf_scraping.filter.BLOOMDupeFilter"
 
