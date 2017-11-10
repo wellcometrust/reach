@@ -17,14 +17,14 @@ class WhoIrisSpider(scrapy.Spider):
         'order': 'desc',
         'filter_field_1': 'dateIssued',
         'filter_type_1': 'equals',
-        'filter_value_1': 2012,
         'order': 'desc',
     }
 
     def start_requests(self):
         # Set up per page results
         self.data['rpp'] = self.settings['WHO_IRIS_RPP']
-
+        years = self.settings['WHO_IRIS_YEARS']
+        urls = []
         # Initial URL (splited for PEP8 compliance)
         base_url = 'http://apps.who.int/iris/simple-search'
         url = base_url + '?location={location}&query={query}&rpp={rpp}'
@@ -33,10 +33,14 @@ class WhoIrisSpider(scrapy.Spider):
         url += '&filter_value_1={filter_value_1}&filter_field_2=language'
         url += '&filter_type_2=equals&filter_value_2=en'
 
-        # Format it with initial data and launch the process
-        url = url.format(**self.data)
-        print url
-        yield scrapy.Request(url=url, callback=self.parse)
+        for year in years:
+            self.data['filter_value_1'] = year
+            # Format it with initial data and launch the process
+            urls.append(url.format(**self.data))
+
+        for url in urls:
+            print(url)
+            yield scrapy.Request(url=url, callback=self.parse)
 
     def parse(self, response):
         # Grab the link to the detailed article

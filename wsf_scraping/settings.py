@@ -28,6 +28,10 @@ ROBOTSTXT_OBEY = True
 
 # Configure maximum concurrent requests performed by Scrapy (default: 16)
 CONCURRENT_REQUESTS = 64
+CONCURRENT_REQUESTS_PER_DOMAIN = 64
+RETRY_ENABLED = False
+DOWNLOAD_WARNSIZE = 0
+DOWNLOAD_TIMEOUT = 360
 
 # Disable cookies (enabled by default)
 COOKIES_ENABLED = False
@@ -37,7 +41,7 @@ WHO_IRIS_RPP = 250
 
 DUPEFILTER_CLASS = "wsf_scraping.filter.BLOOMDupeFilter"
 
-FEED_FORMAT = 'json'
+FEED_FORMAT = 'jsonlines'
 FEED_EXPORT_ENCODING = 'utf-8'
 
 FEED_CONFIG = 'PROD'
@@ -45,9 +49,11 @@ FEED_CONFIG = 'PROD'
 if FEED_CONFIG == 'DEBUG':
     FEED_URI = './results/who_{date}.json'.format(date=datetime.datetime.now())
 else:
-    AWS_ACCESS_KEY_ID = "your aws id"
-    AWS_SECRET_ACCESS_KEY = "your aws secret"
-    FEED_URI = 's3://scrapypdf/who_{date}.json'.format(date=datetime.datetime.now())
+    AWS_ACCESS_KEY_ID = "your_aws_id"
+    AWS_SECRET_ACCESS_KEY = "your_aws_secret"
+    FEED_URI = 's3://______your_s3_folder_name______/who_{date}.json'.format(
+        date=datetime.datetime.now()
+    )
 
 # Lists to look for (case insensitive)
 SEARCH_FOR_LISTS = ['references', 'bibliography', 'citations']
