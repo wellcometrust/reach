@@ -65,7 +65,7 @@ else:
     )
 
 # Lists to look for (case insensitive)
-SEARCH_FOR_LISTS = ['references', 'bibliography', 'citations']
+SEARCH_FOR_LISTS = ['reference', 'bibliography', 'citation']
 
 # Keywords to look for (case insensitive)
 SEARCH_FOR_KEYWORDS = ['wellcome']
