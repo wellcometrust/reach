@@ -14,8 +14,7 @@ BOT_NAME = 'wsf_scraper'
 
 SPIDER_MODULES = ['wsf_scraping.spiders']
 NEWSPIDER_MODULE = 'wsf_scraping.spiders'
-# LOG_ENABLED = False
-LOG_LEVEL = 'INFO'
+LOG_ENABLED = False
 
 # Force UTF-8 encoding
 FEED_EXPORT_ENCODING = 'utf-8'
@@ -33,25 +32,34 @@ RETRY_ENABLED = False
 DOWNLOAD_WARNSIZE = 0
 DOWNLOAD_TIMEOUT = 360
 
+# Use a physical queue, slower but add fiability
+SCHEDULER_MEMORY_QUEUE = 'scrapy.squeues.FifoMemoryQueue'
+
+# Autothrottle for best performances
+AUTOTHROTTLE_ENABLED = True
+AUTOTHROTTLE_START_DELAY = 5.0
+AUTOTHROTTLE_MAX_DELAY = 60.0
+AUTOTHROTTLE_TARGET_CONCURRENCY = 2.0
+
 # Disable cookies (enabled by default)
 COOKIES_ENABLED = False
 
 #  who_iris and who_iris_single_page per-page results
 WHO_IRIS_RPP = 250
-WHO_IRIS_YEARS = [2012, 2013, 2014, 2015, 2016, 2017]
+WHO_IRIS_YEARS = [2012]
 
-DUPEFILTER_CLASS = "wsf_scraping.filter.BLOOMDupeFilter"
-
+# Jsonlines are cleaner for big feeds
 FEED_FORMAT = 'jsonlines'
 FEED_EXPORT_ENCODING = 'utf-8'
 
+# Prod feed export to amazon s3
 FEED_CONFIG = 'PROD'
 
 if FEED_CONFIG == 'DEBUG':
     FEED_URI = './results/who_{date}.json'.format(date=datetime.datetime.now())
 else:
-    AWS_ACCESS_KEY_ID = "your_aws_id"
-    AWS_SECRET_ACCESS_KEY = "your_aws_secret"
+    AWS_ACCESS_KEY_ID = "______your_aws_id______"
+    AWS_SECRET_ACCESS_KEY = "______your_aws_secret______"
     FEED_URI = 's3://______your_s3_folder_name______/who_{date}.json'.format(
         date=datetime.datetime.now()
     )
