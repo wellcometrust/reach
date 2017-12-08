@@ -1,13 +1,14 @@
 import scrapy
 import os
+import sys
 from scrapy.http import Request
-from tools.extraction import convert, grab_references,\
-                             grab_keyword, cleanhtml
+from tools.cleaners import clean_html
+from pdf_parser.pdf_parse import (get_pdf_document, parse_pdf_document,
+                                  grab_section)
 
 
 class WhoIrisSpider(scrapy.Spider):
     name = 'who_iris'
-
     # All these parameters are optionnal,
     # but it is good to set a result per page ubove 250, to limit query number
     data = {
@@ -36,18 +37,24 @@ class WhoIrisSpider(scrapy.Spider):
         for year in years:
             self.data['filter_value_1'] = year
             # Format it with initial data and launch the process
-            urls.append(url.format(**self.data))
+            urls.append((url.format(**self.data), year))
 
         for url in urls:
-            print(url)
-            yield scrapy.Request(url=url, callback=self.parse)
+            print(url[0])
+            yield scrapy.Request(
+                url=url[0],
+                callback=self.parse,
+                meta={'year': url[1]}
+            )
 
     def parse(self, response):
         # Grab the link to the detailed article
+        year = response.meta.get('year', {})
         for href in response.css('.list-group-item::attr(href)').extract():
             yield Request(
                 url=response.urljoin(href),
-                callback=self.parse_article
+                callback=self.parse_article,
+                meta={'year': year}
             )
 
         # Follow next link
@@ -56,16 +63,21 @@ class WhoIrisSpider(scrapy.Spider):
         ).extract_first()
         yield Request(
             url=response.urljoin(next_page),
+            callback=self.parse,
+            meta={'year': year}
         )
 
     def parse_article(self, response):
 
         # Scrap the article metadata
-        data_dict = {}
+        year = response.meta.get('year', {})
+        data_dict = {
+            'Year': year,
+        }
         for tr in response.css('table.itemDisplayTable tr'):
             label = tr.css('td.metadataFieldLabel::text').extract_first()
             label = label[:label.find(':')]
-            value = cleanhtml(tr.css('td.metadataFieldValue').extract_first())
+            value = clean_html(tr.css('td.metadataFieldValue').extract_first())
 
             data_dict[label] = value
 
@@ -87,35 +99,31 @@ class WhoIrisSpider(scrapy.Spider):
         with open('/tmp/' + filename, 'wb') as f:
             f.write(response.body)
 
-        try:
-            # Convert PDF content to text format
-            text_file = convert('/tmp/' + filename)
-            data_dict['Pdf'] = filename
-            for keyword in self.settings['SEARCH_FOR_LISTS']:
-                # Fetch references or other keyworded list
-                section = grab_references(text_file, keyword)
+        # Convert PDF content to text format
+        f = open('/tmp/' + filename, 'rb')
+        document = get_pdf_document(f)
+        pdf_file = parse_pdf_document(document)
 
-                # Add references and PDF name to JSON returned file
-                data_dict[keyword.title()] = section if section else None
+        data_dict['Pdf'] = filename
+        for keyword in self.settings['SEARCH_FOR_LISTS']:
+            # Fetch references or other keyworded list
+            section = grab_section(pdf_file, keyword)
 
-            for keyword in self.settings['SEARCH_FOR_KEYWORDS']:
-                # Fetch references or other keyworded list
-                section = grab_keyword(text_file, keyword)
+            # Add references and PDF name to JSON returned file
+            # If no section matchs, leave the attribute undefined
+            if section:
+                data_dict['Section'] = {keyword.title(): section}
 
-                # Add references and PDF name to JSON returned file
-                data_dict[keyword.title()] = section if section else None
+        for keyword in self.settings['SEARCH_FOR_KEYWORDS']:
+            # Fetch references or other keyworded list
+            section = pdf_file.get_lines_by_keyword(keyword)
 
-            # Remove the PDF file
-            os.remove('/tmp/' + filename)
-        except UnicodeDecodeError:
-            # Some unicode character still can't be decoded properly
-            data_dict['Pdf'] = filename
-            data_dict['References'] = section if section else 'Encoding error'
+            # Add references and PDF name to JSON returned file
+            # If no section matchs, leave the attribute undefined
+            if section:
+                data_dict['Word'] = {keyword.title(): section}
 
-        except Exception:
-            #  If something goes wrong, write pdf name and error
-            #  Mostly happens on invalid pdfs
-            data_dict['Pdf'] = filename
-            data_dict['References'] = section if section else 'Parsing Error'
-
-        yield data_dict
+        # Remove the PDF file
+        f.close()
+        os.remove('/tmp/' + filename)
+        return data_dict
