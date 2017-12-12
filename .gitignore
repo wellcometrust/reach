@@ -5,3 +5,4 @@ env
 data
 results
 crawl
+scrapy.cfg
