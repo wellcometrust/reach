@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
 import datetime
+import logging
+
 # Scrapy settings for wsf_scraping project
 #
 # For simplicity, this file contains only settings considered important or
@@ -14,7 +16,12 @@ BOT_NAME = 'wsf_scraper'
 
 SPIDER_MODULES = ['wsf_scraping.spiders']
 NEWSPIDER_MODULE = 'wsf_scraping.spiders'
-LOG_ENABLED = False
+
+# LOG_ENABLED = False
+LOG_LEVEL = 'INFO'
+LOF_FILE = 'var/log-{log_level}.txt'.format(log_level=LOG_LEVEL)
+# Set pdfminer log to WARNING
+logging.getLogger("pdfminer").setLevel(logging.WARNING)
 
 # Force UTF-8 encoding
 FEED_EXPORT_ENCODING = 'utf-8'
