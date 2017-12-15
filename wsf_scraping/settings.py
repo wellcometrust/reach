@@ -41,6 +41,7 @@ DOWNLOAD_TIMEOUT = 360
 
 # Use a physical queue, slower but add fiability
 SCHEDULER_MEMORY_QUEUE = 'scrapy.squeues.FifoMemoryQueue'
+DUPEFILTER_CLASS = "wsf_scraping.filter.BLOOMDupeFilter"
 
 # Autothrottle for best performances
 AUTOTHROTTLE_ENABLED = True

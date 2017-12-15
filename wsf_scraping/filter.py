@@ -1,4 +1,4 @@
-from pybloom import BloomFilter
+from pybloom_live import BloomFilter
 from scrapy.utils.job import job_dir
 from scrapy.dupefilters import BaseDupeFilter
 
