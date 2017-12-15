@@ -8,7 +8,10 @@
 import scrapy
 
 
-class WsfScrapingItem(scrapy.Item):
-    # define the fields for your item here like:
-    # name = scrapy.Field()
-    pass
+class WHOArticle(scrapy.Item):
+    title = scrapy.Field()
+    uri = scrapy.Field()
+    year = scrapy.Field()
+    authors = scrapy.Field()
+    sections = scrapy.Field()
+    keywords = scrapy.Field()

@@ -3,6 +3,7 @@ import os
 import sys
 from scrapy.http import Request
 from tools.cleaners import clean_html
+from wsf_scraping.items import WHOArticle
 from pdf_parser.pdf_parse import (get_pdf_document, parse_pdf_document,
                                   grab_section)
 
@@ -94,6 +95,16 @@ class WhoIrisSpider(scrapy.Spider):
         data_dict = response.meta.get('data_dict', {})
         section = ''
 
+        # Populate a WHOArticle Item
+        who_article = WHOArticle({
+                'title': data_dict.get('Title', ''),
+                'uri': data_dict.get('URI', ''),
+                'year': data_dict.get('Year', ''),
+                'authors': data_dict.get('Authors', ''),
+                'sections': {},
+                'keywords': {}
+            }
+        )
         # Download PDF file to /tmp
         filename = response.url.split('/')[-1]
         with open('/tmp/' + filename, 'wb') as f:
@@ -112,7 +123,7 @@ class WhoIrisSpider(scrapy.Spider):
             # Add references and PDF name to JSON returned file
             # If no section matchs, leave the attribute undefined
             if section:
-                data_dict['Section'] = {keyword.title(): section}
+                who_article['sections'][keyword.title()] = section
 
         for keyword in self.settings['SEARCH_FOR_KEYWORDS']:
             # Fetch references or other keyworded list
@@ -121,9 +132,9 @@ class WhoIrisSpider(scrapy.Spider):
             # Add references and PDF name to JSON returned file
             # If no section matchs, leave the attribute undefined
             if section:
-                data_dict['Word'] = {keyword.title(): section}
+                data_dict['keywords'][keyword.title()] = section
 
         # Remove the PDF file
         f.close()
         os.remove('/tmp/' + filename)
-        return data_dict
+        return who_article
