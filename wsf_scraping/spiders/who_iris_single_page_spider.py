@@ -2,8 +2,8 @@ import scrapy
 import os
 import sys
 from scrapy.http import Request
-from wsf_scraping.items import WHOArticle
 from tools.cleaners import clean_html
+from wsf_scraping.items import WHOArticle
 from pdf_parser.pdf_parse import (get_pdf_document, parse_pdf_document,
                                   grab_section)
 
@@ -16,14 +16,18 @@ class WhoIrisSpider(scrapy.Spider):
         'location': '',
         'query': '',
         'sort_by': 'score',
-        'order': 'desc',
         'filter_field_1': 'dateIssued',
         'filter_type_1': 'equals',
         'order': 'desc',
     }
 
+    custom_settings = {
+        'JOBDIR': 'crawls/who_iris_single_page'
+    }
+
     def start_requests(self):
-        # Set up per page results
+        """ This sets up the urls to scrape for each years.
+        """
         self.data['rpp'] = self.settings['WHO_IRIS_RPP']
         years = self.settings['WHO_IRIS_YEARS']
         urls = []
@@ -49,7 +53,13 @@ class WhoIrisSpider(scrapy.Spider):
             )
 
     def parse(self, response):
-        # Grab the link to the detailed article
+        """ Parse the articles listing page.
+
+        @url http://apps.who.int/iris/simple-search?rpp=3
+        @returns items 0 0
+        @returns requests 3 3
+        """
+
         year = response.meta.get('year', {})
         for href in response.css('.list-group-item::attr(href)').extract():
             yield Request(
@@ -59,8 +69,14 @@ class WhoIrisSpider(scrapy.Spider):
             )
 
     def parse_article(self, response):
+        """ Scrape the article metadata from the detailed article page. Then,
+        redirect to the PDF page.
 
-        # Scrap the article metadata
+        @url http://apps.who.int/iris/handle/10665/123400
+        @returns requests 1 1
+        @returns items 0 0
+        """
+
         year = response.meta.get('year', {})
         data_dict = {
             'Year': year,
@@ -81,6 +97,13 @@ class WhoIrisSpider(scrapy.Spider):
         )
 
     def save_pdf(self, response):
+        """ Retrieve the pdf file and scan it to scrape keywords and sections.
+
+        @url http://apps.who.int/iris/bitstream/10665/123575/1/em_rc8_5_en.pdf
+        @returns items 1 1
+        @returns requests 0 0
+        """
+
         # Retrieve metadata
         data_dict = response.meta.get('data_dict', {})
         section = ''

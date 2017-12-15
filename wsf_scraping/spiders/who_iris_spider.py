@@ -49,7 +49,13 @@ class WhoIrisSpider(scrapy.Spider):
             )
 
     def parse(self, response):
-        # Grab the link to the detailed article
+        """ Parse the articles listing page and go to the next one.
+
+        @url http://apps.who.int/iris/simple-search?rpp=3
+        @returns items 0 0
+        @returns requests 4 4
+        """
+
         year = response.meta.get('year', {})
         for href in response.css('.list-group-item::attr(href)').extract():
             yield Request(
@@ -69,8 +75,14 @@ class WhoIrisSpider(scrapy.Spider):
         )
 
     def parse_article(self, response):
+        """ Scrape the article metadata from the detailed article page. Then,
+        redirect to the PDF page.
 
-        # Scrap the article metadata
+        @url http://apps.who.int/iris/handle/10665/123400
+        @returns requests 1 1
+        @returns items 0 0
+        """
+
         year = response.meta.get('year', {})
         data_dict = {
             'Year': year,
@@ -83,14 +95,21 @@ class WhoIrisSpider(scrapy.Spider):
             data_dict[label] = value
 
         # Scrap all the pdf on the page, passing scrapped metadata
-        for href in response.css('a[href$=".pdf"]::attr(href)').extract():
-            yield Request(
-                url=response.urljoin(href),
-                callback=self.save_pdf,
-                meta={'data_dict': data_dict}
-            )
+        href = response.css('a[href$=".pdf"]::attr(href)').extract_first()
+        yield Request(
+            url=response.urljoin(href),
+            callback=self.save_pdf,
+            meta={'data_dict': data_dict}
+        )
 
     def save_pdf(self, response):
+        """ Retrieve the pdf file and scan it to scrape keywords and sections.
+
+        @url http://apps.who.int/iris/bitstream/10665/123575/1/em_rc8_5_en.pdf
+        @returns items 1 1
+        @returns requests 0 0
+        """
+
         # Retrieve metadata
         data_dict = response.meta.get('data_dict', {})
         section = ''
