@@ -17,7 +17,8 @@ BASE_FONT_SIZE = -10
 
 def get_line_infos(txt_obj):
     """Return the font face, the font size and if the line is
-       bold for a pdf text line."""
+    bold for a pdf text line.
+    """
     for char_obj in txt_obj._objs:
         if isinstance(char_obj, LTChar):
             if 'bold' in char_obj.fontname.lower():
@@ -29,7 +30,7 @@ def get_line_infos(txt_obj):
 
 
 def get_pdf_document(pdffile):
-    """ Create a pdf document for pdfminer lib. """
+    """Create a pdf document for pdfminer lib."""
     parser = PDFParser(pdffile)
     # Provide password even if it's empty
     password = ''
@@ -42,8 +43,9 @@ def get_pdf_document(pdffile):
 
 
 def parse_pdf_document(document):
-    """ Given a pdfminer document object, parse the file to return a PdfFile
-        object, easier to analyse. """
+    """Given a pdfminer document object, parse the file to return a PdfFile
+    object, easier to analyse.
+    """
     pdf_pages = []
 
     # Create all PDF resources needed by pdfminer.
@@ -95,7 +97,8 @@ def parse_pdf_document(document):
 
 def grab_section(pdf_file, keyword):
     """Given a pdf parsed file object (PdfFile) and a keyword corresponding to
-       a title, returns the matching section of the pdf text."""
+    a title, returns the matching section of the pdf text.
+    """
     result = ''
     text = ''
     elements = _find_elements(pdf_file, keyword)

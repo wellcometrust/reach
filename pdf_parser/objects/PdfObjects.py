@@ -3,12 +3,13 @@ import math
 
 class PdfLine:
     """Represent a line of text from a pdf file, defined by the following
-       attributes:
+    attributes:
         - (int)size         : The font size of the line.
         - (boolean)bold     : True if the font is bold, else False.
         - (str)text         : The text of the line.
         - (int)page_number  : The page number of the line.
-        - (str)font_face    : The font used for this line in the pdf file."""
+        - (str)font_face    : The font used for this line in the pdf file.
+    """
     size = 0
     bold = False
     text = ''
@@ -17,8 +18,9 @@ class PdfLine:
 
     def __init__(self, size, bold, text, page_number, font_face):
         """Initialize the object width all it's attributes. No default
-            are provided to avoid errors during analysis, as it is better to
-            raise an exection if the line informations are incomplete."""
+        are provided to avoid errors during analysis, as it is better to
+        raise an exection if the line informations are incomplete.
+        """
         self.size = size
         self.bold = bold
         self.text = text
@@ -28,10 +30,11 @@ class PdfLine:
 
 class PdfPage:
     """Represent a page of text from a pdf file, defined by the following
-        attributes:
+    attributes:
         - (PdfLine[])lines    : An ordered list of all the text lines from
                                 the page.
-        - (int)number         : The page number."""
+        - (int)number         : The page number.
+    """
     lines = []
     number = 0
 
@@ -47,8 +50,9 @@ class PdfPage:
 
     def get_page_text(self, ignore_page_numbers=False):
         """Return a string containing the content of the page. If the argument
-            ignore_page_number is True, try to ignore page number when it
-            is possible."""
+        ignore_page_number is True, try to ignore page number when it
+        is possible.
+        """
         if ignore_page_numbers:
             # Try to ignore line containing only an integer number
             result = ''
@@ -64,13 +68,15 @@ class PdfFile:
     """Represent a pdf file, defined by the following attributes:
         - (PdfPage[])pages    : An ordered list of all the pages from the pdf.
         - (boolean)has_bold   : True if the pdf has at least one bold line,
-                                else False. Used to identify titles."""
+                                else False. Used to identify titles.
+    """
     pages = []
     has_bold = False
 
     def __init__(self, pages=[], has_bold=False):
         """Initialize the object. By default, no pages are added and has_bold
-           is False."""
+        is False.
+        """
         self.pages = pages
         self.has_bold = has_bold
 
@@ -141,3 +147,14 @@ class PdfFile:
             ]
             lines_results.extend(lines)
         return lines
+
+    def get_lines_by_keywords(self, keywords):
+        """Return a dictionary of lines containing one of the keyboards array,
+        ordered by keyword.
+        """
+
+        keyword_dict = {}
+        for keyword in keywords:
+            keyword_dict[keyword] = self.get_lines_by_keyword(keyword)
+
+        return keyword_dict
