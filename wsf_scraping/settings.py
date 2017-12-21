@@ -43,8 +43,8 @@ DUPEFILTER_CLASS = "wsf_scraping.filter.BLOOMDupeFilter"
 # Autothrottle for best performances, and to be more respectful of the website
 # we are scraping.
 AUTOTHROTTLE_ENABLED = True
-AUTOTHROTTLE_START_DELAY = 5.0
-AUTOTHROTTLE_MAX_DELAY = 60.0
+AUTOTHROTTLE_START_DELAY = 0.1
+AUTOTHROTTLE_MAX_DELAY = 0.5
 AUTOTHROTTLE_TARGET_CONCURRENCY = 2.0
 
 # Disable cookies
@@ -57,6 +57,7 @@ WHO_IRIS_YEARS = [2012, 2013, 2014, 2015, 2016, 2017]
 # Jsonlines are cleaner for big feeds
 FEED_FORMAT = 'jsonlines'
 FEED_EXPORT_ENCODING = 'utf-8'
+FEED_TEMPDIR = 'var/tmp/'
 
 # Prod feed export to amazon s3
 FEED_CONFIG = 'DEBUG'
