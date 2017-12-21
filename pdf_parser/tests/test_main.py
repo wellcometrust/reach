@@ -1,8 +1,8 @@
 import unittest
 
 testmodules = [
-    'tests.test_tools',
-    'tests.test_pdf_objects',
+    'pdf_parser.tests.test_tools',
+    'pdf_parser.tests.test_pdf_objects',
     ]
 
 suite = unittest.TestSuite()
