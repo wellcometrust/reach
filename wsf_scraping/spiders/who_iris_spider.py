@@ -22,6 +22,10 @@ class WhoIrisSpider(scrapy.Spider):
         'order': 'desc',
     }
 
+    custom_settings = {
+        'JOBDIR': 'crawl/who_iris/'
+    }
+
     def start_requests(self):
         # Set up per page results
         self.data['rpp'] = self.settings['WHO_IRIS_RPP']
@@ -156,4 +160,4 @@ class WhoIrisSpider(scrapy.Spider):
         # Remove the PDF file
         f.close()
         os.remove('/tmp/' + filename)
-        return who_article
+        yield who_article
