@@ -3,6 +3,7 @@ attrs==17.3.0
 Automat==0.6.0
 bitarray==0.8.1
 botocore==1.8.11
+certifi==2017.11.5
 cffi==1.11.2
 chardet==3.0.4
 constantly==15.1.0
@@ -25,9 +26,11 @@ PyDispatcher==2.0.5
 pyOpenSSL==17.5.0
 python-dateutil==2.6.1
 queuelib==1.4.2
+requests==2.18.4
 Scrapy==1.4.0
 service-identity==17.0.0
 six==1.11.0
 Twisted==17.9.0
+urllib3==1.22
 w3lib==1.18.0
 zope.interface==4.4.3
