@@ -1,11 +1,11 @@
+from scrapy.http import Request
+from tools.cleaners import clean_html
+from tools.dbFilter import is_scraped, insert_article
+from wsf_scraping.items import WHOArticle
 import scrapy
 import os
 import sys
-from scrapy.http import Request
-from tools.cleaners import clean_html
-from wsf_scraping.items import WHOArticle
-from pdf_parser.pdf_parse import (get_pdf_document, parse_pdf_document,
-                                  grab_section)
+import logging
 
 
 class WhoIrisSpider(scrapy.Spider):
@@ -16,18 +16,19 @@ class WhoIrisSpider(scrapy.Spider):
         'location': '',
         'query': '',
         'sort_by': 'score',
-        'order': 'desc',
         'filter_field_1': 'dateIssued',
         'filter_type_1': 'equals',
         'order': 'desc',
     }
 
     custom_settings = {
-        'JOBDIR': 'crawl/who_iris/'
+        'JOBDIR': 'crawls/who_iris_single_page'
     }
 
     def start_requests(self):
-        # Set up per page results
+        """ This sets up the urls to scrape for each years.
+        """
+
         self.data['rpp'] = self.settings['WHO_IRIS_RPP']
         years = self.settings['WHO_IRIS_YEARS']
         urls = []
@@ -45,7 +46,7 @@ class WhoIrisSpider(scrapy.Spider):
             urls.append((url.format(**self.data), year))
 
         for url in urls:
-            print(url[0])
+            logging.info(url[0])
             yield scrapy.Request(
                 url=url[0],
                 callback=self.parse,
@@ -100,11 +101,17 @@ class WhoIrisSpider(scrapy.Spider):
 
         # Scrap all the pdf on the page, passing scrapped metadata
         href = response.css('a[href$=".pdf"]::attr(href)').extract_first()
-        yield Request(
-            url=response.urljoin(href),
-            callback=self.save_pdf,
-            meta={'data_dict': data_dict}
-        )
+        if href and not is_scraped(href):
+            yield Request(
+                url=response.urljoin(href),
+                callback=self.save_pdf,
+                meta={'data_dict': data_dict}
+            )
+        else:
+            logging.info(
+                "Item already Dowmloaded or null - Canceling (%s)"
+                % href
+            )
 
     def save_pdf(self, response):
         """ Retrieve the pdf file and scan it to scrape keywords and sections.
@@ -117,47 +124,21 @@ class WhoIrisSpider(scrapy.Spider):
         # Retrieve metadata
         data_dict = response.meta.get('data_dict', {})
         section = ''
-
-        # Populate a WHOArticle Item
-        who_article = WHOArticle({
-                'title': data_dict.get('Title', ''),
-                'uri': data_dict.get('URI', ''),
-                'year': data_dict.get('Year', ''),
-                'authors': data_dict.get('Authors', ''),
-                'sections': {},
-                'keywords': {}
-            }
-        )
         # Download PDF file to /tmp
         filename = response.url.split('/')[-1]
         with open('/tmp/' + filename, 'wb') as f:
             f.write(response.body)
 
-        # Convert PDF content to text format
-        f = open('/tmp/' + filename, 'rb')
-        document = get_pdf_document(f)
-        pdf_file = parse_pdf_document(document)
+        # Populate a WHOArticle Item
+        who_article = WHOArticle({
+                'title': data_dict.get('Title', ''),
+                'uri': response.request.url,
+                'year': data_dict.get('Year', ''),
+                'authors': data_dict.get('Authors', ''),
+                'pdf': filename,
+                'sections': {},
+                'keywords': {}
+            }
+        )
 
-        data_dict['Pdf'] = filename
-        for keyword in self.settings['SEARCH_FOR_LISTS']:
-            # Fetch references or other keyworded list
-            section = grab_section(pdf_file, keyword)
-
-            # Add references and PDF name to JSON returned file
-            # If no section matchs, leave the attribute undefined
-            if section:
-                who_article['sections'][keyword.title()] = section
-
-        for keyword in self.settings['SEARCH_FOR_KEYWORDS']:
-            # Fetch references or other keyworded list
-            section = pdf_file.get_lines_by_keyword(keyword)
-
-            # Add references and PDF name to JSON returned file
-            # If no section matchs, leave the attribute undefined
-            if section:
-                data_dict['keywords'][keyword.title()] = section
-
-        # Remove the PDF file
-        f.close()
-        os.remove('/tmp/' + filename)
         yield who_article
