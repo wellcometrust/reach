@@ -11,10 +11,19 @@ class WsfScrapingPipeline(object):
     def process_item(self, item, spider):
         settings = get_project_settings()
         keep_pdf = settings['KEEP_PDF']
+        download_only = settings['DOWNLOAD_ONLY']
         feed = settings['FEED_CONFIG']
 
         # Convert PDF content to text format
         f = open('/tmp/' + item['pdf'], 'rb')
+
+        if download_only:
+            os.rename(
+                '/tmp/' + item['pdf'],
+                './results/pdf/' + item['pdf']
+            )
+            return item
+
         logging.info('Processing: ' + item['pdf'])
         document = get_pdf_document(f)
         pdf_file = parse_pdf_document(document)

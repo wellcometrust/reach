@@ -70,7 +70,10 @@ COOKIES_ENABLED = False
 WHO_IRIS_RPP = 250
 WHO_IRIS_YEARS = [2012]
 # WHO_IRIS_YEARS = [2012, 2013, 2014, 2015, 2016, 2017]
+
+# Wether or not keep the PDF on a keyword match
 KEEP_PDF = False
+DOWNLOAD_ONLY = False
 
 # Jsonlines are cleaner for big feeds
 FEED_FORMAT = 'jsonlines'
