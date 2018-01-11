@@ -1,6 +1,6 @@
 from scrapy.http import Request
 from tools.cleaners import clean_html
-from tools.dbFilter import is_scraped, insert_article
+from tools.dbTools import is_scraped, insert_article
 from wsf_scraping.items import WHOArticle
 import scrapy
 import os

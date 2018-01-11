@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 import os
 import logging
-from tools.dbFilter import insert_article
+from tools.dbTools import insert_article
 from scrapy.utils.project import get_project_settings
 from pdf_parser.pdf_parse import (get_pdf_document, parse_pdf_document,
                                   grab_section)

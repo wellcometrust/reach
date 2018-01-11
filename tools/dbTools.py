@@ -1,8 +1,7 @@
 import sqlite3
 
 
-def is_scraped(url):
-    #  Init sqlite db to filter PDFs
+def check_db():
     connection = sqlite3.connect('db.sqlite3')
     cursor = connection.cursor()
 
@@ -19,6 +18,15 @@ def is_scraped(url):
         );
         """
     )
+
+    connection.commit()
+    connection.close()
+
+
+def is_scraped(url):
+    #  Init sqlite db to filter PDFs
+    connection = sqlite3.connect('db.sqlite3')
+    cursor = connection.cursor()
 
     cursor.execute(
         "SELECT * FROM article WHERE url LIKE ? AND scrap_again=0",
@@ -40,6 +48,17 @@ def insert_article(title, url):
     cursor.execute(
         "INSERT INTO article (title, url) VALUES (?, ?)",
         (title, url)
+    )
+
+    connection.commit()
+    connection.close()
+
+
+def reset_scraping_state():
+    connection = sqlite3.connect('db.sqlite3')
+    cursor = connection.cursor()
+    cursor.execute(
+        "DELERE FROM article"
     )
 
     connection.commit()
