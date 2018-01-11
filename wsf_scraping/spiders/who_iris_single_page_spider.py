@@ -101,7 +101,10 @@ class WhoIrisSpider(scrapy.Spider):
                 meta={'data_dict': data_dict}
             )
         else:
-            logging.info("Item already Dowmloaded or null - Canceling")
+            logging.info(
+                "Item already Dowmloaded or null - Canceling (%s)"
+                % href
+            )
 
     def save_pdf(self, response):
         """ Retrieve the pdf file and scan it to scrape keywords and sections.
