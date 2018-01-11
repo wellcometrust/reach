@@ -1,6 +1,6 @@
 from scrapy.http import Request
 from tools.cleaners import clean_html
-from tools.dbTools import is_scraped, insert_article
+from tools.dbTools import is_scraped, check_db
 from wsf_scraping.items import WHOArticle
 import scrapy
 import os
@@ -28,6 +28,9 @@ class WhoIrisSpider(scrapy.Spider):
     def start_requests(self):
         """ This sets up the urls to scrape for each years.
         """
+
+        # Check that the database is set up with the correct columns
+        check_db()
 
         self.data['rpp'] = self.settings['WHO_IRIS_RPP']
         years = self.settings['WHO_IRIS_YEARS']
