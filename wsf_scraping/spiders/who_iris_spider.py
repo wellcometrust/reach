@@ -104,7 +104,7 @@ class WhoIrisSpider(scrapy.Spider):
 
         # Scrap all the pdf on the page, passing scrapped metadata
         href = response.css('a[href$=".pdf"]::attr(href)').extract_first()
-        if href and not is_scraped(href):
+        if href and not is_scraped(href.split('/')[-1]):
             yield Request(
                 url=response.urljoin(href),
                 callback=self.save_pdf,

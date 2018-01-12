@@ -1,11 +1,11 @@
-from scrapy.http import Request
-from tools.cleaners import clean_html
-from tools.dbTools import is_scraped, check_db
-from wsf_scraping.items import WHOArticle
-import scrapy
 import os
 import sys
+import scrapy
 import logging
+from scrapy.http import Request
+from tools.cleaners import clean_html
+from wsf_scraping.items import WHOArticle
+from tools.dbTools import is_scraped, check_db
 
 
 class WhoIrisSpider(scrapy.Spider):
@@ -94,7 +94,7 @@ class WhoIrisSpider(scrapy.Spider):
 
         # Scrap all the pdf on the page, passing scrapped metadata
         href = response.css('a[href$=".pdf"]::attr(href)').extract_first()
-        if href and not is_scraped(href):
+        if href and not is_scraped(href.split('/')[-1]):
             yield Request(
                 url=response.urljoin(href),
                 callback=self.save_pdf,
