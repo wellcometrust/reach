@@ -5,7 +5,7 @@ from pdfminer.pdfpage import PDFTextExtractionNotAllowed
 from pdfminer.pdfinterp import PDFResourceManager
 from pdfminer.pdfinterp import PDFPageInterpreter
 from pdfminer.pdfdevice import PDFDevice
-from pdfminer.layout import LAParams, LTTextBox, LTTextLine, LTChar
+from pdfminer.layout import LAParams, LTTextBox, LTTextLine, LTChar, LTAnno
 from pdfminer.converter import PDFPageAggregator
 from .objects.PdfObjects import PdfFile, PdfPage, PdfLine
 from .tools.extraction import _find_elements
@@ -16,17 +16,18 @@ BASE_FONT_SIZE = -10
 
 
 def get_line_infos(txt_obj):
-    """Return the font face, the font size and if the line is
-    bold for a pdf text line.
-    """
-    for char_obj in txt_obj._objs:
-        if isinstance(char_obj, LTChar):
-            if 'bold' in char_obj.fontname.lower():
-                return char_obj.size, True, char_obj.fontname
-            else:
-                return char_obj.size, False, char_obj.fontname
-    # If no LTChar object is found, just return the BASE_FONT_SIZE and False
-    return BASE_FONT_SIZE, False, None
+    if isinstance(txt_obj, LTChar):
+        if 'bold' in txt_obj.fontname.lower():
+            return txt_obj.size, True, txt_obj.fontname
+        else:
+            return txt_obj.size, False, txt_obj.fontname
+    else:
+        # Reject Annotations
+        if not isinstance(txt_obj, LTAnno):
+            for char_obj in txt_obj:
+                return get_line_infos(char_obj)
+        # If no LTChar object is found, just return the BASE_FONT_SIZE and False
+        return BASE_FONT_SIZE, False, None
 
 
 def get_pdf_document(pdffile):
@@ -50,7 +51,7 @@ def parse_pdf_document(document):
 
     # Create all PDF resources needed by pdfminer.
     rsrcmgr = PDFResourceManager()
-    laparams = LAParams()
+    laparams = LAParams(detect_vertical=True)
     device = PDFPageAggregator(rsrcmgr, laparams=laparams)
     interpreter = PDFPageInterpreter(rsrcmgr, device)
 
