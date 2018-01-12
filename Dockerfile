@@ -19,7 +19,7 @@ RUN apt-get install -y python3 \
 # Update pip
 RUN pip3 install --upgrade pip
 # Install any needed packages specified in requirements.txt
-RUN pip3 install scrapy pdfminer.six botocore pybloom_live
+RUN pip3 install scrapy pdfminer.six botocore pybloom_live requests
 
 # Define environment variable
 ENV NAME Scrapy
