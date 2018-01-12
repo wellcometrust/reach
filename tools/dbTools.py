@@ -29,16 +29,12 @@ def is_scraped(url):
     cursor = connection.cursor()
 
     cursor.execute(
-        "SELECT * FROM article WHERE url LIKE ? AND scrap_again=0",
+        "SELECT id FROM article WHERE url LIKE ? AND scrap_again=0",
         ('%' + url,)
     )
     result = cursor.fetchone()
-    if result:
-        connection.close()
-        return True
-    else:
-        connection.close()
-        return False
+    connection.close()
+    return result if result else False
 
 
 def insert_article(title, url):
