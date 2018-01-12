@@ -1,6 +1,6 @@
+import unittest
 from pdf_parser.pdf_parse import get_pdf_document, parse_pdf_document
 from ..objects import PdfObjects
-import unittest
 
 
 TEST_PDF = 'pdf_parser/tests/pdfs/test_pdf.pdf'

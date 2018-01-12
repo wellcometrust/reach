@@ -1,3 +1,4 @@
+import math
 from pdfminer.pdfparser import PDFParser
 from pdfminer.pdfdocument import PDFDocument
 from pdfminer.pdfpage import PDFPage
@@ -9,7 +10,6 @@ from pdfminer.layout import LAParams, LTTextBox, LTTextLine, LTChar, LTAnno
 from pdfminer.converter import PDFPageAggregator
 from .objects.PdfObjects import PdfFile, PdfPage, PdfLine
 from .tools.extraction import _find_elements
-import math
 
 
 BASE_FONT_SIZE = -10
@@ -26,7 +26,7 @@ def get_line_infos(txt_obj):
         if not isinstance(txt_obj, LTAnno):
             for char_obj in txt_obj:
                 return get_line_infos(char_obj)
-        # If no LTChar object is found, just return the BASE_FONT_SIZE and False
+        # If no LTChar object is found, return the BASE_FONT_SIZE and False
         return BASE_FONT_SIZE, False, None
 
 

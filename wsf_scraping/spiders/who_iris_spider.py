@@ -1,11 +1,11 @@
+import os
+import sys
+import scrapy
+import logging
 from scrapy.http import Request
 from tools.cleaners import clean_html
 from tools.dbTools import is_scraped, check_db
 from wsf_scraping.items import WHOArticle
-import scrapy
-import os
-import sys
-import logging
 
 
 class WhoIrisSpider(scrapy.Spider):

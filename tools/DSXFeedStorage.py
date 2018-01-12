@@ -1,10 +1,10 @@
-from scrapy.utils.boto import is_botocore
-from six.moves.urllib.parse import urlparse
-from scrapy.extensions.feedexport import BlockingFeedStorage
 import json
 import logging
 import requests
 import posixpath
+from scrapy.utils.boto import is_botocore
+from six.moves.urllib.parse import urlparse
+from scrapy.extensions.feedexport import BlockingFeedStorage
 
 
 class DSXFeedStorage(BlockingFeedStorage):
