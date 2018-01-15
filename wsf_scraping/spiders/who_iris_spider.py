@@ -98,6 +98,7 @@ class WhoIrisSpider(scrapy.Spider):
         for tr in response.css('table.itemDisplayTable tr'):
             label = tr.css('td.metadataFieldLabel::text').extract_first()
             label = label[:label.find(':')]
+            # Remove HTML markdown for some metadata are in a <a>
             value = clean_html(tr.css('td.metadataFieldValue').extract_first())
 
             data_dict[label] = value
