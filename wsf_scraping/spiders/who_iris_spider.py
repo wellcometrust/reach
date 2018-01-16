@@ -22,7 +22,7 @@ class WhoIrisSpider(scrapy.Spider):
     }
 
     custom_settings = {
-        'JOBDIR': 'crawls/who_iris_single_page'
+        'JOBDIR': 'crawls/who_iris'
     }
 
     def start_requests(self):

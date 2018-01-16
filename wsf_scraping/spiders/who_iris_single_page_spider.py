@@ -8,7 +8,7 @@ from wsf_scraping.items import WHOArticle
 from tools.dbTools import is_scraped, check_db
 
 
-class WhoIrisSpider(scrapy.Spider):
+class WhoIrisSPSpider(scrapy.Spider):
     name = 'who_iris_single_page'
     # All these parameters are optionnal,
     # but it is good to set a result per page ubove 250, to limit query number
