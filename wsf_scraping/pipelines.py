@@ -37,14 +37,16 @@ class WsfScrapingPipeline(object):
             if section:
                 item['sections'][keyword.title()] = section
 
-        for keyword in settings['SEARCH_FOR_KEYWORDS']:
-            # Fetch references or other keyworded list
-            section = pdf_file.get_lines_by_keyword(keyword)
+        # Fetch references or other keyworded list
+        keyword_dict = pdf_file.get_lines_by_keywords(
+            settings['SEARCH_FOR_KEYWORDS'],
+            settings['KEYWORDS_CONTEXT']
+        )
 
-            # Add references and PDF name to JSON returned file
-            # If no section matchs, leave the attribute undefined
-            if section:
-                item['keywords'][keyword.title()] = section
+        # Add references and PDF name to JSON returned file
+        # If no section matchs, leave the attribute undefined
+        if keyword_dict:
+            item['keywords'] = keyword_dict
 
         # Remove the PDF file
         f.close()

@@ -74,6 +74,7 @@ WHO_IRIS_YEARS = [2012]
 # Wether or not keep the PDF on a keyword match
 KEEP_PDF = False
 DOWNLOAD_ONLY = False
+KEYWORDS_CONTEXT = 0
 
 # Jsonlines are cleaner for big feeds
 FEED_FORMAT = 'jsonlines'

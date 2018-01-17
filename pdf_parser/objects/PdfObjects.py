@@ -137,24 +137,36 @@ class PdfFile:
 
         return lines_results
 
-    def get_lines_by_keyword(self, keyword):
+    def get_lines_by_keyword(self, keyword, context=0):
         """Return a list of lines containing (string)keyword."""
         low_key = keyword.lower()
         lines_results = []
-        for page in self.pages:
-            lines = [
-                line for line in page.lines if low_key in line.text.lower()
-            ]
-            lines_results.extend(lines)
-        return lines
 
-    def get_lines_by_keywords(self, keywords):
+        if context > 0:
+            for page in self.pages:
+                lines = []
+                for num, line in enumerate(page.lines):
+                    if low_key in line.text.lower():
+                        first_line = max(0, num - context)
+                        last_line = min(len(page.lines), num + context + 1)
+                        lines.append([line.text for line in page.lines[first_line:last_line]])
+                lines_results.extend(lines)
+        else:
+            for page in self.pages:
+                lines = [
+                    line for line in page.lines if low_key in line.text.lower()
+                ]
+                lines_results.extend([line.text for line in lines])
+
+        return lines_results
+
+    def get_lines_by_keywords(self, keywords, context=0):
         """Return a dictionary of lines containing one of the keyboards array,
         ordered by keyword.
         """
 
         keyword_dict = {}
         for keyword in keywords:
-            keyword_dict[keyword] = self.get_lines_by_keyword(keyword)
+            keyword_dict[keyword] = self.get_lines_by_keyword(keyword, context)
 
         return keyword_dict
