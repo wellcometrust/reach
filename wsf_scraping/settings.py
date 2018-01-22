@@ -105,7 +105,7 @@ else:
     FEED_URI = './results/%(name)s.json'
 
 # Lists to look for (case insensitive)
-SEARCH_FOR_LISTS = ['reference', 'bibliography', 'citation']
+SECTIONS_KEYWORDS_FILE = ''
 
 # Keywords to look for (case insensitive)
-SEARCH_FOR_KEYWORDS = ['wellcome']
+KEYWORDS_FILE = './keywords.txt'

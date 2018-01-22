@@ -1,9 +1,9 @@
 import unittest
-from ..tools.extraction import _find_elements
+from pdf_parser.tools.extraction import _find_elements
 from pdf_parser.pdf_parse import get_pdf_document, parse_pdf_document,\
                                  grab_section
 
-TEST_PDF = 'pdf_parser/tests/pdfs/test_pdf.pdf'
+TEST_PDF = 'tests/pdfs/test_pdf.pdf'
 
 
 class TestTools(unittest.TestCase):

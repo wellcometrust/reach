@@ -1,4 +1,5 @@
 import math
+import re
 
 
 class PdfLine:
@@ -54,14 +55,10 @@ class PdfPage:
         is possible.
         """
         if ignore_page_numbers:
-            # Try to ignore line containing only an integer number
-            result = ''
-            for line in self.lines:
-                if not line.text.isdigit():
-                    result += line.text
-            return result
+            result = list(filter(lambda x: not x.text.isdigit(), self.lines))
+            return '\n'.join(list(map(lambda x: x.text, result)))
         else:
-            return '\n'.join([line.text for line in self.lines])
+            return '\n'.join(list(map(lambda x: x.text, self.lines)))
 
 
 class PdfFile:
@@ -115,6 +112,7 @@ class PdfFile:
         lines_results = []
         for page in self.pages:
             lines = [line for line in page.lines if line.size == font_size]
+            lines = list(filter(lambda x: x.size == font_size, page.lines))
             lines_results.extend(lines)
 
         return lines_results
@@ -132,10 +130,15 @@ class PdfFile:
         """Return all the bold lines in the document."""
         lines_results = []
         for page in self.pages:
-            lines = [line for line in page.lines if line.bold]
+            # lines = [line for line in page.lines if line.bold]
+            lines = list(filter(lambda x: x.bold, page.lines))
             lines_results.extend(lines)
 
         return lines_results
+
+    def _keyword_is_in_line(self, keyword, line):
+        search = ''.join(['(^|[\W]+)', keyword, '(?=[\W]+|$)'])
+        return re.search(search, line)
 
     def get_lines_by_keyword(self, keyword, context=0):
         """Return a list of lines containing (string)keyword."""
@@ -146,16 +149,20 @@ class PdfFile:
             for page in self.pages:
                 lines = []
                 for num, line in enumerate(page.lines):
-                    if low_key in line.text.lower():
+                    if self._keyword_is_in_line(low_key, line.text.lower()):
                         first_line = max(0, num - context)
                         last_line = min(len(page.lines), num + context + 1)
-                        lines.append([line.text for line in page.lines[first_line:last_line]])
-                lines_results.extend(lines)
+                        lines = page.lines[first_line:last_line]
+                lines_results.extend(list(map(lambda x: x.text, lines)))
         else:
             for page in self.pages:
-                lines = [
-                    line for line in page.lines if low_key in line.text.lower()
-                ]
+                lines = list(filter(
+                    lambda x: self._keyword_is_in_line(
+                        low_key,
+                        x.text.lower()
+                    ),
+                    page.lines
+                ))
                 lines_results.extend([line.text for line in lines])
 
         return lines_results
@@ -167,6 +174,8 @@ class PdfFile:
 
         keyword_dict = {}
         for keyword in keywords:
-            keyword_dict[keyword] = self.get_lines_by_keyword(keyword, context)
+            lines = self.get_lines_by_keyword(keyword, context)
+            if len(lines) > 0:
+                keyword_dict[keyword] = lines
 
         return keyword_dict

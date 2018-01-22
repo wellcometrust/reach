@@ -3,12 +3,16 @@ import re
 
 def _find_elements(pdf_file, keyword):
     """Return an array of elements defining section matching the given keyword.
-       Built to be used only inside the grab_section() function."""
+       Built to be used only inside the grab_section() function.
+    """
 
     titles = []
     titles_font_size = 0
     list_fonts = pdf_file.get_font_size_list()
     max_fonts_name = ''
+
+    if not list_fonts:
+        return titles
 
     # Get the name of the biggest font
     for line in pdf_file.get_lines_by_font_size(max(list_fonts)):
