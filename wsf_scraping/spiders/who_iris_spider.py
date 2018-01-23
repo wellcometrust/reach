@@ -6,6 +6,7 @@ from scrapy.http import Request
 from tools.cleaners import clean_html
 from tools.dbTools import is_scraped, check_db
 from wsf_scraping.items import WHOArticle
+from scrapy.utils.project import get_project_settings
 
 
 class WhoIrisSpider(scrapy.Spider):
@@ -25,6 +26,13 @@ class WhoIrisSpider(scrapy.Spider):
         'JOBDIR': 'crawls/who_iris'
     }
 
+    def __init__(self, years_list='', feed_config=''):
+        settings = get_project_settings()
+        if years_list:
+            self.years = years_list.split(',')
+        else:
+            self.years = settings['WHO_IRIS_YEARS']
+
     def start_requests(self):
         """ This sets up the urls to scrape for each years.
         """
@@ -33,7 +41,6 @@ class WhoIrisSpider(scrapy.Spider):
         check_db()
 
         self.data['rpp'] = self.settings['WHO_IRIS_RPP']
-        years = self.settings['WHO_IRIS_YEARS']
         urls = []
         # Initial URL (splited for PEP8 compliance)
         base_url = 'http://apps.who.int/iris/simple-search'
@@ -43,7 +50,7 @@ class WhoIrisSpider(scrapy.Spider):
         url += '&filter_value_1={filter_value_1}&filter_field_2=language'
         url += '&filter_type_2=equals&filter_value_2=en'
 
-        for year in years:
+        for year in self.years:
             self.data['filter_value_1'] = year
             # Format it with initial data and launch the process
             urls.append((url.format(**self.data), year))
@@ -72,15 +79,16 @@ class WhoIrisSpider(scrapy.Spider):
                 meta={'year': year}
             )
 
-        # Follow next link
-        next_page = response.xpath(
-            './/a[contains(., "next")]/@href'
-        ).extract_first()
-        yield Request(
-            url=response.urljoin(next_page),
-            callback=self.parse,
-            meta={'year': year}
-        )
+        if not self.settings['WHO_IRIS_LIMIT']:
+            # Follow next link
+            next_page = response.xpath(
+                './/a[contains(., "next")]/@href'
+            ).extract_first()
+            yield Request(
+                url=response.urljoin(next_page),
+                callback=self.parse,
+                meta={'year': year}
+            )
 
     def parse_article(self, response):
         """ Scrape the article metadata from the detailed article page. Then,
