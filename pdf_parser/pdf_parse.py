@@ -6,13 +6,32 @@ from pdfminer.pdfpage import PDFTextExtractionNotAllowed
 from pdfminer.pdfinterp import PDFResourceManager
 from pdfminer.pdfinterp import PDFPageInterpreter
 from pdfminer.pdfdevice import PDFDevice
-from pdfminer.layout import LAParams, LTTextBox, LTTextLine, LTChar, LTAnno
+from pdfminer.layout import (LAParams, LTTextBox, LTTextLine, LTChar, LTAnno,
+                             LTTextBoxHorizontal, LTTextLineHorizontal)
 from pdfminer.converter import PDFPageAggregator
 from .objects.PdfObjects import PdfFile, PdfPage, PdfLine
 from .tools.extraction import _find_elements
 
 
 BASE_FONT_SIZE = -10
+
+
+TEXT_ELEMENTS = [
+    LTTextBox,
+    LTTextBoxHorizontal,
+    LTTextLine,
+    LTTextLineHorizontal
+]
+
+
+class PDFTextPageAggregator(PDFPageAggregator):
+    """As we don't need schemas and pictures, just don't render them."""
+
+    def render_image(self, name, stream):
+        return
+
+    def paint_path(self, gstate, stroke, fill, evenodd, path):
+        return
 
 
 def get_line_infos(txt_obj):
@@ -52,7 +71,7 @@ def parse_pdf_document(document):
     # Create all PDF resources needed by pdfminer.
     rsrcmgr = PDFResourceManager()
     laparams = LAParams(detect_vertical=True)
-    device = PDFPageAggregator(rsrcmgr, laparams=laparams)
+    device = PDFTextPageAggregator(rsrcmgr, laparams=laparams)
     interpreter = PDFPageInterpreter(rsrcmgr, device)
 
     for page_num, page in enumerate(PDFPage.create_pages(document)):
@@ -65,7 +84,7 @@ def parse_pdf_document(document):
 
         # Retrieve layouts objects
         for lt_obj in layout._objs:
-            if isinstance(lt_obj, LTTextBox) or isinstance(lt_obj, LTTextLine):
+            if type(lt_obj) in TEXT_ELEMENTS:
                 # If the layout object contains text, iterate through its lines
                 for txt_obj in lt_obj._objs:
                     # Retrieve informations (size, font face and bold)
