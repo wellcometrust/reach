@@ -20,6 +20,9 @@ SPIDER_MODULES = ['wsf_scraping.spiders']
 NEWSPIDER_MODULE = 'wsf_scraping.spiders'
 
 # Custom contrats for spider testing
+SPIDER_CONTRACTS = {
+    'wsf_scraping.contracts.AjaxContract': 10,
+}
 ITEM_PIPELINES = {
     'wsf_scraping.pipelines.WsfScrapingPipeline': 10,
 }
@@ -73,6 +76,11 @@ WHO_IRIS_RPP = 250
 WHO_IRIS_YEARS = [2012]
 WHO_IRIS_LIMIT = False
 # WHO_IRIS_YEARS = [2012, 2013, 2014, 2015, 2016, 2017]
+
+# nice dedicated settings
+NICE_GET_HISTORY = True
+NICE_GET_EVIDENCES = True
+NICE_ARTICLES_COUNT = -1
 
 # Wether or not keep the PDF on a keyword match
 KEEP_PDF = False
