@@ -11,7 +11,8 @@ import logging
 #     http://scrapy.readthedocs.org/en/latest/topics/downloader-middleware.html
 #     http://scrapy.readthedocs.org/en/latest/topics/spider-middleware.html
 
-
+# Get feed configuration from environment variable. Default to debug
+FEED_CONFIG = os.environ.get('SCRAPY_FEED_CONFIG', 'DEBUG')
 BOT_NAME = 'wsf_scraper'
 
 SPIDER_MODULES = ['wsf_scraping.spiders']
@@ -82,13 +83,11 @@ FEED_FORMAT = 'jsonlines'
 FEED_EXPORT_ENCODING = 'utf-8'
 FEED_TEMPDIR = 'var/tmp/'
 
-# Prod feed export to amazon s3 or DSX
-FEED_CONFIG = 'DSX'
-
 if FEED_CONFIG == 'S3':
-    AWS_ACCESS_KEY_ID = "______your_aws_id______"
-    AWS_SECRET_ACCESS_KEY = "______your_aws_secret______"
-    FEED_URI = 's3://__your_s3_bucket__/scraping/feeds/%(name)s/%(time)s.json'
+    AWS_ACCESS_KEY_ID = ''
+    AWS_SECRET_ACCESS_KEY = ''
+    AWS_FEED_CONTAINER = ''
+    FEED_URI = 's3://' + AWS_FEED_CONTAINER + '/%(name)s - %(time)s.json'
 
 if FEED_CONFIG == 'DSX':
     DSX_FEED_CONTAINER = 'OSProject'
@@ -106,7 +105,7 @@ else:
     FEED_URI = './results/%(name)s.json'
 
 # Lists to look for (case insensitive)
-SECTIONS_KEYWORDS_FILE = ''
+SECTIONS_KEYWORDS_FILE = './section_keywords.txt'
 
 # Keywords to look for (case insensitive)
 KEYWORDS_FILE = './keywords.txt'
