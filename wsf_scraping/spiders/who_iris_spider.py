@@ -26,8 +26,9 @@ class WhoIrisSpider(scrapy.Spider):
         'JOBDIR': 'crawls/who_iris'
     }
 
-    def __init__(self, years_list='', feed_config=''):
+    def __init__(self, *args, **kwargs):
         settings = get_project_settings()
+        years_list = kwargs.get('years_list', False)
         if years_list:
             self.years = years_list.split(',')
         else:
