@@ -133,6 +133,7 @@ class NiceSpider(scrapy.Spider):
             yield Request(
                 url=response.urljoin(href),
                 callback=self.save_pdf,
+                meta={'data_dict': data_dict}
             )
 
     def parse_article(self, response):
@@ -158,7 +159,8 @@ class NiceSpider(scrapy.Spider):
         if href:
             return Request(
                 url=response.urljoin(href),
-                callback=self.save_pdf
+                callback=self.save_pdf,
+                meta={'data_dict': data_dict}
             )
 
         # Second case: PDF is a single footer download link
@@ -167,6 +169,7 @@ class NiceSpider(scrapy.Spider):
             return Request(
                 url=response.urljoin(href),
                 callback=self.save_pdf,
+                meta={'data_dict': data_dict}
             )
         # Third case: Direct download link, without menu
         href = response.css('#nice-download::attr(href)').extract_first()
@@ -174,6 +177,7 @@ class NiceSpider(scrapy.Spider):
             return Request(
                 url=response.urljoin(href),
                 callback=self.save_pdf,
+                meta={'data_dict': data_dict}
             )
 
         else:
