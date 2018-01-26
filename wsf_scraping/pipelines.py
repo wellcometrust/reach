@@ -22,24 +22,33 @@ class WsfScrapingPipeline(object):
             self.settings['SECTIONS_KEYWORDS_FILE']
         )
 
+        if not os.path.isdir('./results/pdfs'):
+            os.makedirs('./results/pdfs')
+            os.makedirs('./results/pdfs/nice')
+            os.makedirs('./results/pdfs/who_iris')
+
+        self.logger = logging.getLogger(__name__)
+        self.logger.setLevel(logging.INFO)
+
     def process_item(self, item, spider):
         """Process items sent by the spider."""
 
         keep_pdf = self.settings['KEEP_PDF']
         download_only = self.settings['DOWNLOAD_ONLY']
         feed = self.settings['FEED_CONFIG']
+        pdf_path = ''.join(['./results/pdfs/', spider.name, '/'])
 
         # Convert PDF content to text format
         f = open('/tmp/' + item['pdf'], 'rb')
 
         if download_only:
             os.rename(
-                '/tmp/' + item['pdf'],
-                './results/pdf/' + item['pdf']
+                ''.join(['/tmp/', item['pdf']]),
+                ''.join([pdf_path, item['pdf']])
             )
             return item
 
-        logging.info('Processing: ' + item['pdf'])
+        self.logger.info('Processing: ' + item['pdf'])
         document = get_pdf_document(f)
         pdf_file = parse_pdf_document(document)
 
@@ -68,13 +77,13 @@ class WsfScrapingPipeline(object):
         has_keywords = len(item['keywords'])
 
         # If we need to keep the pdf, move it, else delete it
-        if keep_pdf and has_keywords:
+        if keep_pdf or has_keywords:
             if feed == 'S3':
                 pass
             else:
                 os.rename(
-                    '/tmp/' + item['pdf'],
-                    './results/pdf/' + item['pdf']
+                    ''.join(['/tmp/', item['pdf']]),
+                    ''.join([pdf_path, item['pdf']])
                 )
         else:
             os.remove('/tmp/' + item['pdf'])
