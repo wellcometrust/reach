@@ -1,12 +1,14 @@
 import os
 import sys
 import scrapy
-import logging
 from scrapy.http import Request
 from tools.cleaners import clean_html
 from tools.dbTools import is_scraped, check_db
 from wsf_scraping.items import WHOArticle
 from scrapy.utils.project import get_project_settings
+from scrapy.spidermiddlewares.httperror import HttpError
+from twisted.internet.error import DNSLookupError
+from twisted.internet.error import TimeoutError
 
 
 class WhoIrisSpider(scrapy.Spider):
@@ -34,6 +36,21 @@ class WhoIrisSpider(scrapy.Spider):
         else:
             self.years = settings['WHO_IRIS_YEARS']
 
+    def on_error(self, failure):
+        self.logger.error(repr(failure))
+
+        if failure.check(HttpError):
+            response = failure.value.response
+            self.logger.error('HttpError on %s', response.url)
+
+        elif failure.check(DNSLookupError):
+            request = failure.request
+            self.logger.error('DNSLookupError on %s', request.url)
+
+        elif failure.check(TimeoutError):
+            request = failure.request
+            self.logger.error('TimeoutError on %s', request.url)
+
     def start_requests(self):
         """ This sets up the urls to scrape for each years.
         """
@@ -57,10 +74,11 @@ class WhoIrisSpider(scrapy.Spider):
             urls.append((url.format(**self.data), year))
 
         for url in urls:
-            logging.info(url[0])
+            self.logger.info(url[0])
             yield scrapy.Request(
                 url=url[0],
                 callback=self.parse,
+                errback=self.on_error,
                 meta={'year': url[1]}
             )
 
@@ -77,6 +95,7 @@ class WhoIrisSpider(scrapy.Spider):
             yield Request(
                 url=response.urljoin(href),
                 callback=self.parse_article,
+                errback=self.on_error,
                 meta={'year': year}
             )
 
@@ -88,6 +107,7 @@ class WhoIrisSpider(scrapy.Spider):
             yield Request(
                 url=response.urljoin(next_page),
                 callback=self.parse,
+                errback=self.on_error,
                 meta={'year': year}
             )
 
@@ -118,12 +138,14 @@ class WhoIrisSpider(scrapy.Spider):
             yield Request(
                 url=response.urljoin(href),
                 callback=self.save_pdf,
+                errback=self.on_error,
                 meta={'data_dict': data_dict}
             )
         else:
-            logging.info(
-                "Item already Dowmloaded or null - Canceling (%s)"
-                % href
+            err_link = href if href else ''.join([response.url, ' (referer)'])
+            self.logger.debug(
+                "Item already Downloaded or null - Canceling (%s)"
+                % err_link
             )
 
     def save_pdf(self, response):
@@ -133,6 +155,12 @@ class WhoIrisSpider(scrapy.Spider):
         @returns items 1 1
         @returns requests 0 0
         """
+
+        is_pdf = response.headers.get('content-type', '') == b'application/pdf'
+
+        if not is_pdf:
+            self.logger.info('Not a PDF, aborting (%s)' % response.url)
+            return
 
         # Retrieve metadata
         data_dict = response.meta.get('data_dict', {})

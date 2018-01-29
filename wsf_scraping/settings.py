@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 import datetime
 import logging
+import os
 
 # Scrapy settings for wsf_scraping project
 #
