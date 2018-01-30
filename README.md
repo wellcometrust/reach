@@ -1,7 +1,7 @@
-# wsf-web-scrapper
+# wsf-web-scraper
 
-A web scrapper tool to get data for evaluating Wellcome impact.
+A web scraper tool to get data for evaluating Wellcome impact.
 
 ## Usage
 
-See the wiki: https://github.com/wellcometrust/wsf-web-scrapper/wiki
+See the wiki: https://github.com/wellcometrust/wsf-web-scraper/wiki
