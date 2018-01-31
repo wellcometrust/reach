@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-import datetime
 import logging
 import os
 
@@ -78,8 +77,8 @@ WHO_IRIS_LIMIT = False
 # WHO_IRIS_YEARS = [2012, 2013, 2014, 2015, 2016, 2017]
 
 # nice dedicated settings
-NICE_GET_HISTORY = True
-NICE_GET_EVIDENCES = True
+NICE_GET_HISTORY = False
+NICE_GET_EVIDENCES = False
 NICE_ARTICLES_COUNT = -1
 
 # Wether or not keep the PDF on a keyword match
@@ -114,7 +113,7 @@ else:
     FEED_URI = './results/%(name)s.json'
 
 # Lists to look for (case insensitive)
-SECTIONS_KEYWORDS_FILE = './section_keywords.txt'
+SECTIONS_KEYWORDS_FILE = './resources/section_keywords.txt'
 
 # Keywords to look for (case insensitive)
-KEYWORDS_FILE = './keywords.txt'
+KEYWORDS_FILE = './resources/keywords.txt'
