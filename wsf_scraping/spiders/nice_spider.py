@@ -1,7 +1,5 @@
-import os
 import json
 import scrapy
-import logging
 from lxml import html
 from scrapy.http import Request
 from wsf_scraping.items import NICEArticle
@@ -14,7 +12,9 @@ class NiceSpider(scrapy.Spider):
     def start_requests(self):
         """Set up the initial request to the website to scrape."""
 
-        urls = []
+        # Check that the database is set up with the correct columns
+        check_db()
+
         articles_count = self.settings['NICE_ARTICLES_COUNT']
 
         # Initial URL (splited for PEP8 compliance). -1 length displays
@@ -29,15 +29,13 @@ class NiceSpider(scrapy.Spider):
             'X-Requested-With': 'XMLHttpRequest',
             'referer': 'https://www.nice.org.uk/guidance/published'
         }
-        urls.append(url)
 
-        for url in urls:
-            print(url)
-            yield scrapy.Request(
-                url=url,
-                headers=headers,
-                callback=self.parse,
-            )
+        self.logger.info('Initial url: %s' % url)
+        yield scrapy.Request(
+            url=url,
+            headers=headers,
+            callback=self.parse,
+        )
 
     def parse(self, response):
         """ Parse the guidance listing page. Request must be done in AJAX,
@@ -60,12 +58,11 @@ class NiceSpider(scrapy.Spider):
                 doc_link = html.fromstring(doc['ProductTitle']).get('href')
 
                 doc_links.append('https://www.nice.org.uk%s' % doc_link)
-
-                if self.settings['NICE_GET_EVIDENCES']:
+                if self.settings.getbool('NICE_GET_EVIDENCES'):
                     evidence_links.append(
                         'https://www.nice.org.uk%s/evidence' % doc_link
                     )
-                if self.settings['NICE_GET_HISTORY']:
+                if self.settings.getbool('NICE_GET_HISTORY'):
                     history_links.append(
                         'https://www.nice.org.uk%s/history' % doc_link
                     )
@@ -79,19 +76,20 @@ class NiceSpider(scrapy.Spider):
             for url in evidence_links:
                 yield scrapy.Request(
                     url=url,
-                    callback=self.parse_evidences
+                    callback=self.parse_related_documents
                 )
 
             for url in history_links:
                 yield scrapy.Request(
                     url=url,
-                    callback=self.parse_histories
+                    callback=self.parse_related_documents
                 )
 
         except json.decoder.JSONDecodeError:
-            logging.info('Response was not json serialisable')
+            self.logger.info('Response was not json serialisable')
+            return
 
-    def parse_evidences(self, response):
+    def parse_related_documents(self, response):
         """ Scrape the guidance evidencies. Then, redirect to the PDF pages.
 
         @url https://www.nice.org.uk/guidance/ta494/evidence
@@ -105,29 +103,6 @@ class NiceSpider(scrapy.Spider):
                 '.published-date time::attr(datetime)'
             ).extract_first()[:4]
         }
-        # Scrap all the pdf on the page, passing scrapped metadata
-        for href in response.css('.track-link::attr(href)').extract():
-            yield Request(
-                url=response.urljoin(href),
-                callback=self.save_pdf,
-                meta={'data_dict': data_dict}
-            )
-
-    def parse_histories(self, response):
-        """ Scrape the guidance history. Then redirect to the PDF pages.
-
-        @url https://www.nice.org.uk/guidance/ta494/history
-        @returns requests 24 24
-        @returns items 0 0
-        """
-
-        data_dict = {
-            'title': response.css('h1::text').extract_first(),
-            'year': response.css(
-                '.published-date time::attr(datetime)'
-            ).extract_first()[:4]
-        }
-
         # Scrap all the pdf on the page, passing scrapped metadata
         for href in response.css('.track-link::attr(href)').extract():
             yield Request(
@@ -156,23 +131,15 @@ class NiceSpider(scrapy.Spider):
         href = response.xpath(
             './/a[contains(., "Save as PDF")]/@href'
         ).extract_first()
-        if href:
-            return Request(
-                url=response.urljoin(href),
-                callback=self.save_pdf,
-                meta={'data_dict': data_dict}
-            )
 
-        # Second case: PDF is a single footer download link
-        href = response.css('.track-link::attr(href)').extract_first()
-        if href:
-            return Request(
-                url=response.urljoin(href),
-                callback=self.save_pdf,
-                meta={'data_dict': data_dict}
-            )
-        # Third case: Direct download link, without menu
-        href = response.css('#nice-download::attr(href)').extract_first()
+        if not href:
+            # Second case: PDF is a single footer download link
+            href = response.css('.track-link::attr(href)').extract_first()
+
+        if not href:
+            # Third case: Direct download link, without menu
+            href = response.css('#nice-download::attr(href)').extract_first()
+
         if href:
             return Request(
                 url=response.urljoin(href),
@@ -181,7 +148,7 @@ class NiceSpider(scrapy.Spider):
             )
 
         else:
-            logging.info(
+            self.logger.info(
                 'No link found to download the pdf version (%s)'
                 % response.request.url
             )
@@ -200,14 +167,14 @@ class NiceSpider(scrapy.Spider):
         is_pdf = response.headers.get('content-type', '') == b'application/pdf'
 
         if is_scraped(response.request.url):
-            logging.info(
+            self.logger.info(
                 "Item already Dowmloaded or null - Canceling (%s)"
                 % response.request.url
             )
             return
 
         if not is_pdf:
-            logging.info('Not a PDF, aborting (%s)' % response.url)
+            self.logger.info('Not a PDF, aborting (%s)' % response.url)
             return
 
         filename = ''.join([response.url.split('/')[-1], '.pdf'])
