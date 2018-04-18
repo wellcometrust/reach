@@ -1,7 +1,7 @@
 import unittest
-from pdf_parser.pdf_parse import get_pdf_document, parse_pdf_document
-from pdf_parser.objects import PdfObjects
-
+import json
+from pdf_parser.pdf_parse import parse_pdf_document, parse_pdf_document_pdftxt
+from pdf_parser.objects.PdfObjects import PdfFile
 
 TEST_PDF = 'tests/pdfs/test_pdf.pdf'
 
@@ -16,16 +16,59 @@ Test
     <li>Test</li>
 </ol>"""
 
+JSON_PDF = json.dumps({
+    'pages': [
+        {
+            'lines': [
+                {
+                    'size': 17,
+                    'bold': True,
+                    'text': 'Page 1 - Title 1',
+                    'page_number': 1,
+                    'font_face': 'Times',
+                }
+            ],
+            'number': 1
+        },
+        {
+            'lines': [
+                {
+                    'size': 17,
+                    'bold': True,
+                    'text': 'Page 2 - Title 2',
+                    'page_number': 2,
+                    'font_face': 'Times',
+                },
+                {
+                    'size': 12,
+                    'bold': False,
+                    'text': 'Page 2 - Text 1',
+                    'page_number': 2,
+                    'font_face': 'Times',
+                },
+            ],
+            'number': 2
+        },
+    ],
+    'has_bold': True
+})
+
 
 class TestPdfObjects(unittest.TestCase):
 
     def setUp(self):
         self.test_file = open(TEST_PDF, 'rb')
-        document = get_pdf_document(self.test_file)
-        self.pdf_file_object = parse_pdf_document(document)
+        self.pdf_file_object = parse_pdf_document(self.test_file)
+        self.pdf_file_object_2 = parse_pdf_document_pdftxt(self.test_file)
 
     def tearDown(self):
         self.test_file.close()
+
+    def test_pdftotext_equal(self):
+        self.assertEqual(
+            len(self.pdf_file_object.pages),
+            len(self.pdf_file_object_2.pages)
+        )
 
     def test_mean(self):
         font_mean = self.pdf_file_object.get_mean_font_size()
@@ -48,9 +91,10 @@ class TestPdfObjects(unittest.TestCase):
         page_text = self.pdf_file_object.get_page(0).get_page_text(
             ignore_page_numbers=True
         )
+        self.assertTrue(len(page_text) > 0)
 
     def test_lines_by_keyword(self):
-        keyword = 'references'
+        keyword = 'References'
         keyword_lines = self.pdf_file_object.get_lines_by_keyword(keyword)
         self.assertEqual(len(keyword_lines), 1)
         self.assertEqual('References' in keyword_lines[0], True)
@@ -58,12 +102,27 @@ class TestPdfObjects(unittest.TestCase):
     def test_lines_by_keywords(self):
         keywords = ['bold', 'test', 'machine']
         keyword_lines = self.pdf_file_object.get_lines_by_keywords(keywords)
+        self.assertTrue('bold' in keyword_lines.keys())
         self.assertEqual(len(keyword_lines['bold']), 1)
+        self.assertTrue('test' in keyword_lines.keys())
         self.assertEqual(len(keyword_lines['test']), 6)
         self.assertEqual('bold' in keyword_lines['bold'][0], True)
 
     def test_lines_by_keywords_and_context(self):
         keywords = ['bold', 'test', 'machine']
         keyword_lines = self.pdf_file_object.get_lines_by_keywords(keywords, 2)
+        self.assertTrue('bold' in keyword_lines.keys())
         self.assertEqual(len(keyword_lines['bold']), 5)
-        self.assertEqual(len(keyword_lines['test']), 3)
+        self.assertTrue('test' in keyword_lines.keys())
+        self.assertEqual(len(keyword_lines['test']), 24)
+
+    def test_from_json(self):
+        pdf_file = PdfFile()
+        pdf_file.from_json(JSON_PDF)
+        self.assertTrue(len(pdf_file.pages) == 2)
+
+    def test_to_json(self):
+        pdf_file = PdfFile()
+        pdf_file.from_json(JSON_PDF)
+        pdf_export = pdf_file.to_json()
+        self.assertEqual(pdf_export, JSON_PDF)

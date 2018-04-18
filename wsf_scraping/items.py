@@ -11,6 +11,8 @@ class WHOArticle(scrapy.Item):
     authors = scrapy.Field()
     sections = scrapy.Field()
     keywords = scrapy.Field()
+    types = scrapy.Field()
+    subjects = scrapy.Field()
 
 
 class NICEArticle(scrapy.Item):

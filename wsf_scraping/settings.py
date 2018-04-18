@@ -26,39 +26,36 @@ ITEM_PIPELINES = {
     'wsf_scraping.pipelines.WsfScrapingPipeline': 10,
 }
 FEED_STORAGES = {
-    'dsx': 'tools.DSXFeedStorage.DSXFeedStorage',
+    'dsx': 'tools.DSXFeedStorage',
 }
 
 # LOG_ENABLED = False
 LOG_LEVEL = 'INFO'
+LOG_FORMATTER = 'wsf_scraping.middlewares.PoliteLogFormatter'
 LOG_FILE = 'var/log-{log_level}.txt'.format(log_level=LOG_LEVEL)
-LOG_STDOUT = True
 # Set pdfminer log to WARNING
 logging.getLogger("pdfminer").setLevel(logging.WARNING)
-
-# Use a physical queue, slower but add fiability
+DUPEFILTER_CLASS = 'scrapy.dupefilters.BaseDupeFilter'
+# Use a physicqal queue, slower but add fiability
 DEPTH_PRIORITY = 1
 SCHEDULER_DISK_QUEUE = 'scrapy.squeues.PickleFifoDiskQueue'
-SCHEDULER_MEMORY_QUEUE = 'scrapy.squeues.FifoMemoryQueue'
-DUPEFILTER_CLASS = "wsf_scraping.filter.BLOOMDupeFilter"
 
 # Crawl responsibly by identifying yourself (and your website)
-# USER_AGENT = 'wsf_scraping (+wateystrdjytkfu)'
+USER_AGENT = 'wsf_scraping'
 
 # Obey robots.txt rules
 ROBOTSTXT_OBEY = True
 
 # Configure maximum concurrent requests performed by Scrapy (default: 16)
-CONCURRENT_REQUESTS = 8
-CONCURRENT_REQUESTS_PER_DOMAIN = 8
+CONCURRENT_REQUESTS = 5
+CONCURRENT_REQUESTS_PER_DOMAIN = 5
 RETRY_ENABLED = True
 RETRY_TIMES = 3
 DOWNLOAD_WARNSIZE = 0
 DOWNLOAD_MAXSIZE = 0
 DOWNLOAD_TIMEOUT = 20
 DOWNLOAD_FAIL_ON_DATALOSS = True
-
-SCHEDULER_MEMORY_QUEUE = 'scrapy.squeues.FifoMemoryQueue'
+DOWNLOAD_DELAY = 0.25
 
 HTTPCACHE_ENABLED = False
 
@@ -72,9 +69,8 @@ COOKIES_ENABLED = False
 
 #  who_iris and who_iris_single_page dedicated settings
 WHO_IRIS_RPP = 250
-WHO_IRIS_YEARS = [2012]
 WHO_IRIS_LIMIT = False
-# WHO_IRIS_YEARS = [2012, 2013, 2014, 2015, 2016, 2017]
+WHO_IRIS_YEARS = [2012, 2013, 2014, 2015, 2016, 2017]
 
 # nice dedicated settings
 NICE_GET_HISTORY = False
@@ -82,6 +78,7 @@ NICE_GET_EVIDENCES = False
 NICE_ARTICLES_COUNT = -1
 
 # Wether or not keep the PDF on a keyword match
+PARSING_METHOD = 'pdftotext'  # pdftotext|pdfminer
 KEEP_PDF = False
 DOWNLOAD_ONLY = False
 KEYWORDS_CONTEXT = 0

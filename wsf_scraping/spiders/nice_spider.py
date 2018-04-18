@@ -3,17 +3,39 @@ import scrapy
 from lxml import html
 from scrapy.http import Request
 from wsf_scraping.items import NICEArticle
-from tools.dbTools import check_db, is_scraped
+from scrapy.spidermiddlewares.httperror import HttpError
+from twisted.internet.error import DNSLookupError
+from twisted.internet.error import TimeoutError
 
 
 class NiceSpider(scrapy.Spider):
     name = 'nice'
 
+    custom_settings = {
+        'JOBDIR': 'crawls/nice'
+    }
+
+    def __init__(self, *args, **kwargs):
+        id = kwargs.get('uuid', '')
+        self.uuid = id
+
+    def on_error(self, failure):
+        self.logger.error(repr(failure))
+
+        if failure.check(HttpError):
+            response = failure.value.response
+            self.logger.error('HttpError on %s', response.url)
+
+        elif failure.check(DNSLookupError):
+            request = failure.request
+            self.logger.error('DNSLookupError on %s', request.url)
+
+        elif failure.check(TimeoutError):
+            request = failure.request
+            self.logger.error('TimeoutError on %s', request.url)
+
     def start_requests(self):
         """Set up the initial request to the website to scrape."""
-
-        # Check that the database is set up with the correct columns
-        check_db()
 
         articles_count = self.settings['NICE_ARTICLES_COUNT']
 
@@ -30,10 +52,12 @@ class NiceSpider(scrapy.Spider):
             'referer': 'https://www.nice.org.uk/guidance/published'
         }
 
-        self.logger.info('Initial url: %s' % url)
+        self.logger.info('Initial url: %s', url)
         yield scrapy.Request(
             url=url,
             headers=headers,
+            errback=self.on_error,
+            dont_filter=True,
             callback=self.parse,
         )
 
@@ -49,7 +73,7 @@ class NiceSpider(scrapy.Spider):
 
         # Grab the link to the detailed article, its evidences and history
         try:
-            articles = json.loads(response._body)
+            articles = json.loads(response.text)
             doc_links = []
             evidence_links = []
             history_links = []
@@ -70,18 +94,21 @@ class NiceSpider(scrapy.Spider):
             for url in doc_links:
                 yield scrapy.Request(
                     url=url,
+                    errback=self.on_error,
                     callback=self.parse_article
                 )
 
             for url in evidence_links:
                 yield scrapy.Request(
                     url=url,
+                    errback=self.on_error,
                     callback=self.parse_related_documents
                 )
 
             for url in history_links:
                 yield scrapy.Request(
                     url=url,
+                    errback=self.on_error,
                     callback=self.parse_related_documents
                 )
 
@@ -107,6 +134,7 @@ class NiceSpider(scrapy.Spider):
         for href in response.css('.track-link::attr(href)').extract():
             yield Request(
                 url=response.urljoin(href),
+                errback=self.on_error,
                 callback=self.save_pdf,
                 meta={'data_dict': data_dict}
             )
@@ -143,14 +171,15 @@ class NiceSpider(scrapy.Spider):
         if href:
             return Request(
                 url=response.urljoin(href),
+                errback=self.on_error,
                 callback=self.save_pdf,
                 meta={'data_dict': data_dict}
             )
 
         else:
             self.logger.info(
-                'No link found to download the pdf version (%s)'
-                % response.request.url
+                'No link found to download the pdf version (%s)',
+                response.request.url
             )
 
     def save_pdf(self, response):
@@ -166,15 +195,8 @@ class NiceSpider(scrapy.Spider):
         # Download PDF file to /tmp
         is_pdf = response.headers.get('content-type', '') == b'application/pdf'
 
-        if is_scraped(response.request.url):
-            self.logger.info(
-                "Item already Dowmloaded or null - Canceling (%s)"
-                % response.request.url
-            )
-            return
-
         if not is_pdf:
-            self.logger.info('Not a PDF, aborting (%s)' % response.url)
+            self.logger.info('Not a PDF, aborting (%s)', response.url)
             return
 
         filename = ''.join([response.url.split('/')[-1], '.pdf'])

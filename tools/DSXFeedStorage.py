@@ -1,8 +1,6 @@
 import json
 import logging
 import requests
-import posixpath
-from scrapy.utils.boto import is_botocore
 from six.moves.urllib.parse import urlparse
 from scrapy.extensions.feedexport import BlockingFeedStorage
 
@@ -43,7 +41,6 @@ class DSXFeedStorage(BlockingFeedStorage):
             }
         })
 
-        headers1 = {'Content-Type': 'application/json'}
         resp1 = requests.post(
             url=url,
             data=data,
@@ -71,5 +68,5 @@ class DSXFeedStorage(BlockingFeedStorage):
             'accept': 'application/json'
         }
         file_content = file.read()
-        resp2 = requests.put(url=url2, headers=headers2, data=file_content)
+        requests.put(url=url2, headers=headers2, data=file_content)
         logging.debug("Stored the file in: %s" % url2)
