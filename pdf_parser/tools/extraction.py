@@ -3,13 +3,14 @@ import re
 
 def _find_elements(pdf_file, keyword):
     """Return an array of elements defining section matching the given keyword.
-       Built to be used only inside the grab_section() function.
+    Built to be used only inside the grab_section() function.
     """
 
     titles = []
     titles_font_size = 0
     list_fonts = pdf_file.get_font_size_list()
     max_fonts_name = ''
+    regex = r''.join(['(^|[\W]+)', keyword, 's?(?=[\W]+|$)'])
 
     if not list_fonts:
         return titles
@@ -25,18 +26,33 @@ def _find_elements(pdf_file, keyword):
         for line in pdf_file.get_lines_by_font_size(fsize):
 
             # If a font is bold, in title font and bigger than other,
-            # it is probably a title.
-            font_is_bigger = fsize >= upper_mean + (upper_mean - mean_fonts)
-            font_is_big_and_bold = font_is_bigger and line.bold
-            font_is_title_like = (fsize > upper_mean + 2
-                                  and line.font_face == max_fonts_name)
+            # it is probably a title
+            text = line.text
 
-            if font_is_big_and_bold or font_is_title_like:
-                text = line.text
-                regex = r'(^|^.* +)' + keyword + 's?[ \n:]*$'
-                match = re.match(regex, text, re.IGNORECASE)
-                if match:
-                    titles_font_size = line.size
+            # PdfFile has some bold font
+            if pdf_file.has_bold:
+                font_is_bigger = fsize >= (upper_mean
+                                           + (upper_mean - mean_fonts))
+                font_is_big_and_bold = font_is_bigger and line.bold
+                font_is_title_like = (fsize > upper_mean + 2
+                                      and line.font_face == max_fonts_name)
+
+                if font_is_big_and_bold or font_is_title_like:
+                    match = re.search(regex, text, re.IGNORECASE)
+                    if match:
+                        titles_font_size = line.size
+                        break
+
+            # PdfFile has been parsed using pdftotext or has no bold
+            else:
+                font_is_bigger = fsize > mean_fonts + 1
+                font_is_title_like = (fsize > upper_mean + 2
+                                      and line.font_face == max_fonts_name)
+                if font_is_bigger or font_is_title_like:
+                    match = re.search(regex, text, re.IGNORECASE)
+                    if match:
+                        titles_font_size = line.size
+                        break
 
     # Get all the line of found title font size
     titles_section = pdf_file.get_lines_by_font_size(titles_font_size)

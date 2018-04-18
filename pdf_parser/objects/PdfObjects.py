@@ -1,8 +1,12 @@
-import math
 import re
+import attr
+import json
+import math
+import ahocorasick
 
 
-class PdfLine:
+@attr.s
+class PdfLine(object):
     """Represent a line of text from a pdf file, defined by the following
     attributes:
         - (int)size         : The font size of the line.
@@ -11,38 +15,23 @@ class PdfLine:
         - (int)page_number  : The page number of the line.
         - (str)font_face    : The font used for this line in the pdf file.
     """
-    size = 0
-    bold = False
-    text = ''
-    page_number = 0
-    font_face = ''
-
-    def __init__(self, size, bold, text, page_number, font_face):
-        """Initialize the object width all it's attributes. No default
-        are provided to avoid errors during analysis, as it is better to
-        raise an exection if the line informations are incomplete.
-        """
-        self.size = size
-        self.bold = bold
-        self.text = text
-        self.page_number = page_number
-        self.font_face = font_face
+    size = attr.ib(default=0, type=int)
+    bold = attr.ib(default=False, type=bool)
+    text = attr.ib(default='', type=str)
+    page_number = attr.ib(default=0, type=int)
+    font_face = attr.ib(default='', type=str)
 
 
-class PdfPage:
+@attr.s
+class PdfPage(object):
     """Represent a page of text from a pdf file, defined by the following
     attributes:
         - (PdfLine[])lines    : An ordered list of all the text lines from
                                 the page.
         - (int)number         : The page number.
     """
-    lines = []
-    number = 0
-
-    def __init__(self, lines, number):
-        """Initialize the object. No default are provided."""
-        self.lines = lines
-        self.number = number
+    lines = attr.ib(default=[], type=list)
+    number = attr.ib(default=0, type=int)
 
     def display_page(self):
         """Print the content of the whole page."""
@@ -61,21 +50,37 @@ class PdfPage:
             return '\n'.join(list(map(lambda x: x.text, self.lines)))
 
 
-class PdfFile:
+@attr.s
+class PdfFile(object):
     """Represent a pdf file, defined by the following attributes:
         - (PdfPage[])pages    : An ordered list of all the pages from the pdf.
         - (boolean)has_bold   : True if the pdf has at least one bold line,
                                 else False. Used to identify titles.
     """
-    pages = []
-    has_bold = False
+    pages = attr.ib(default=[], type=list)
+    has_bold = attr.ib(default=False, type=bool)
 
-    def __init__(self, pages=[], has_bold=False):
-        """Initialize the object. By default, no pages are added and has_bold
-        is False.
-        """
-        self.pages = pages
-        self.has_bold = has_bold
+    def from_json(self, json_pdf):
+        """Initialize a PdfFile object from a json representation."""
+        dict_pdf = json.loads(json_pdf)
+        pdf_pages = []
+        for page in dict_pdf.get('pages', []):
+            page_lines = []
+            for line in page.get('lines', []):
+                pdf_line = PdfLine(**line)
+                page_lines.append(pdf_line)
+            pdf_page = PdfPage(
+                page_lines,
+                page.get('number', 0)
+            )
+            pdf_pages.append(pdf_page)
+        self.pages = pdf_pages
+        self.has_bold = dict_pdf.get('has_bold', False)
+
+    def to_json(self):
+        """Return a dictionary representation of the PdfFile."""
+        json_pdf_file = json.dumps(attr.asdict(self))
+        return json_pdf_file
 
     def add_page(self, pdf_page):
         """Add a PdfPage to the pages list."""
@@ -136,20 +141,22 @@ class PdfFile:
 
         return lines_results
 
-    def _keyword_is_in_line(self, keyword, line):
-        search = ''.join(['(^|[\W]+)', keyword, '(?=[\W]+|$)'])
-        return re.search(search, line)
+    def _keyword_is_in_line(self, line, pattern):
+        return pattern.search(line)
 
     def get_lines_by_keyword(self, keyword, context=0):
         """Return a list of lines containing (string)keyword."""
-        low_key = keyword.lower()
         lines_results = []
-
+        pattern = re.compile(''.join([
+            '(^|\W)',
+            keyword,
+            '(\W|$)'
+        ]))
         if context > 0:
             for page in self.pages:
                 lines = []
                 for num, line in enumerate(page.lines):
-                    if self._keyword_is_in_line(low_key, line.text.lower()):
+                    if self._keyword_is_in_line(line.text, pattern):
                         first_line = max(0, num - context)
                         last_line = min(len(page.lines), num + context + 1)
                         lines = page.lines[first_line:last_line]
@@ -158,8 +165,8 @@ class PdfFile:
             for page in self.pages:
                 lines = list(filter(
                     lambda x: self._keyword_is_in_line(
-                        low_key,
-                        x.text.lower()
+                        x.text,
+                        pattern
                     ),
                     page.lines
                 ))
@@ -172,10 +179,32 @@ class PdfFile:
         ordered by keyword.
         """
 
+        ac_automaton = ahocorasick.Automaton()
         keyword_dict = {}
-        for keyword in keywords:
-            lines = self.get_lines_by_keyword(keyword, context)
-            if len(lines) > 0:
-                keyword_dict[keyword] = lines
+        for index, keyword in enumerate(set(keywords)):
+            ac_automaton.add_word(keyword, (index, keyword))
 
+        lines = []
+        for page in self.pages:
+            lines.extend(page.lines)
+        ac_automaton.make_automaton()
+        for num, line in enumerate(lines):
+            for index, value in ac_automaton.iter(line.text.lower()):
+                pattern = re.compile(''.join([
+                    '(^|\W)',
+                    value[1],
+                    '(\W|$)'
+                ]), re.IGNORECASE)
+                if self._keyword_is_in_line(line.text, pattern):
+                    first_line = max(0, num - context)
+                    last_line = min(len(lines), num + context + 1)
+                    result = lines[first_line:last_line]
+                    if value[1] in keyword_dict.keys():
+                        keyword_dict[value[1]].extend(
+                            list(map(lambda x: x.text, result))
+                        )
+                    else:
+                        keyword_dict[value[1]] = list(
+                            map(lambda x: x.text, result)
+                        )
         return keyword_dict

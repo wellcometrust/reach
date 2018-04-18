@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 
 from scrapy.contracts import Contract
-from scrapy.exceptions import ContractFail
 
 
 class AjaxContract(Contract):

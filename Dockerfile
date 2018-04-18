@@ -1,26 +1,40 @@
-# Use an official Python runtime as a parent image
-FROM ubuntu:16.04
+# Use a basic Python image
+FROM python:3.6.4
 
-# Set the working directory to /app
-WORKDIR /app
-
-# Copy the current directory contents into the container at /app
-ADD . /app
-
-RUN apt-get update -qq
-RUN apt-get upgrade -qqy
-
-# Install Scrapy and Textract dependencies
-RUN apt-get install -qqqy \
-    python3 \
-    python3-dev \
+# Poppler is needed to run pdftotext convertion
+RUN apt-get update -yqq \
+  && apt-get install -yqq --no-install-recommends \
     gcc \
-    python3-pip
+    libpoppler-cpp-dev \
+    poppler-utils \
+    pkg-config \
+    locales \
+  && apt-get -q clean
 
-# Update pip
-RUN pip3 install -qqq --upgrade pip
-# Install any needed packages specified in requirements.txt
-RUN pip3 install -qqq -r requirements.txt
+# Build locales to avoid encoding issues with Scrapy encoding
+RUN locale-gen en_GB.UTF-8
 
-# Run app.py when the container launches
-CMD ["scrapy", "crawl", "who_iris"]
+ENV LC_ALL=en_GB.UTF-8
+ENV LANG=en_GB.UTF-8
+ENV LANGUAGE=en_GB.UTF-8
+
+WORKDIR /wsf_scraper
+
+COPY ./wsf_scraping /wsf_scraper/wsf_scraping
+COPY ./resources /wsf_scraper/resources
+COPY ./pdf_parser /wsf_scraper/pdf_parser
+COPY ./tools /wsf_scraper/tools
+
+COPY ./api.py /wsf_scraper/api.py
+
+COPY ./scrapy.cfg /wsf_scraper/scrapy.cfg
+COPY ./requirements.txt /wsf_scraper/requirements.txt
+
+# Scrapy needs a var directory to store logs
+RUN mkdir var
+
+RUN pip install -r requirements.txt
+
+EXPOSE 5005
+
+CMD ["python", "api.py"]

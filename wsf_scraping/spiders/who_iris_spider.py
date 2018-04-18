@@ -1,9 +1,7 @@
-import os
-import sys
 import scrapy
+from urllib.parse import urlparse, urlencode
 from scrapy.http import Request
-from tools.cleaners import clean_html
-from tools.dbTools import is_scraped, check_db
+from collections import defaultdict
 from wsf_scraping.items import WHOArticle
 from scrapy.utils.project import get_project_settings
 from scrapy.spidermiddlewares.httperror import HttpError
@@ -15,14 +13,7 @@ class WhoIrisSpider(scrapy.Spider):
     name = 'who_iris'
     # All these parameters are optionnal,
     # but it is good to set a result per page ubove 250, to limit query number
-    data = {
-        'location': '',
-        'query': '',
-        'sort_by': 'score',
-        'filter_field_1': 'dateIssued',
-        'filter_type_1': 'equals',
-        'order': 'desc',
-    }
+    data = {}
 
     custom_settings = {
         'JOBDIR': 'crawls/who_iris'
@@ -31,6 +22,9 @@ class WhoIrisSpider(scrapy.Spider):
     def __init__(self, *args, **kwargs):
         settings = get_project_settings()
         years_list = kwargs.get('years_list', False)
+        id = kwargs.get('uuid', '')
+
+        self.uuid = id
         if years_list:
             self.years = years_list.split(',')
         else:
@@ -41,7 +35,11 @@ class WhoIrisSpider(scrapy.Spider):
 
         if failure.check(HttpError):
             response = failure.value.response
-            self.logger.error('HttpError on %s', response.url)
+            self.logger.error(
+                'HttpError on %s (%s)',
+                response.url,
+                response.status,
+            )
 
         elif failure.check(DNSLookupError):
             request = failure.request
@@ -55,45 +53,50 @@ class WhoIrisSpider(scrapy.Spider):
         """ This sets up the urls to scrape for each years.
         """
 
-        # Check that the database is set up with the correct columns
-        check_db()
-
-        self.data['rpp'] = self.settings['WHO_IRIS_RPP']
         urls = []
         # Initial URL (splited for PEP8 compliance)
-        base_url = 'http://apps.who.int/iris/simple-search'
-        url = base_url + '?location={location}&query={query}&rpp={rpp}'
-        url += '&sort_by={sort_by}&order={order}'
-        url += '&filter_field_1={filter_field_1}&filter_type_1={filter_type_1}'
-        url += '&filter_value_1={filter_value_1}&filter_field_2=language'
-        url += '&filter_type_2=equals&filter_value_2=en'
+        query_dict = {
+            'rpp': self.settings['WHO_IRIS_RPP'],
+            'etal': 0,
+            'group_by': 'none',
+            'filtertype_0': 'dateIssued',
+            'filtertype_1': 'iso',
+            'filter_relational_operator_0': 'contains',
+            'filter_relational_operator_1': 'contains',
+            'filter_1': 'en',
+        }
+        base_url = 'http://apps.who.int/iris/discover'
+        query_params = urlencode(query_dict) + '&filter_0={filter_0}'
+        url = base_url + '?' + query_params
 
         for year in self.years:
-            self.data['filter_value_1'] = year
+            self.data['filter_0'] = year
             # Format it with initial data and launch the process
             urls.append((url.format(**self.data), year))
 
         for url in urls:
-            self.logger.info(url[0])
+            self.logger.info('Initial url: %s', url[0])
             yield scrapy.Request(
                 url=url[0],
                 callback=self.parse,
                 errback=self.on_error,
+                dont_filter=True,
                 meta={'year': url[1]}
             )
 
     def parse(self, response):
         """ Parse the articles listing page and go to the next one.
 
-        @url http://apps.who.int/iris/simple-search?rpp=3
+        @url http://apps.who.int/iris/discover?rpp=3
         @returns items 0 0
-        @returns requests 4 4
+        @returns requests 3 4
         """
 
         year = response.meta.get('year', {})
-        for href in response.css('.list-group-item::attr(href)').extract():
+        for href in response.css('.artifact-title a::attr(href)').extract():
+            full_records_link = ''.join([href, '?show=full'])
             yield Request(
-                url=response.urljoin(href),
+                url=response.urljoin(full_records_link),
                 callback=self.parse_article,
                 errback=self.on_error,
                 meta={'year': year}
@@ -101,13 +104,15 @@ class WhoIrisSpider(scrapy.Spider):
 
         if not self.settings['WHO_IRIS_LIMIT']:
             # Follow next link
-            next_page = response.xpath(
-                './/a[contains(., "next")]/@href'
+            next_page = response.css(
+                 'next-page-link::attr("href")'
             ).extract_first()
+
             yield Request(
                 url=response.urljoin(next_page),
                 callback=self.parse,
                 errback=self.on_error,
+                dont_filter=True,
                 meta={'year': year}
             )
 
@@ -115,26 +120,43 @@ class WhoIrisSpider(scrapy.Spider):
         """ Scrape the article metadata from the detailed article page. Then,
         redirect to the PDF page.
 
-        @url http://apps.who.int/iris/handle/10665/123400
+        @url http://apps.who.int/iris/handle/10665/272346?show=full
         @returns requests 1 1
         @returns items 0 0
         """
 
-        year = response.meta.get('year', {})
         data_dict = {
-            'Year': year,
+            'year': response.meta.get('year', {}),
         }
-        for tr in response.css('table.itemDisplayTable tr'):
-            label = tr.css('td.metadataFieldLabel::text').extract_first()
-            label = label[:label.find(':')]
-            # Remove HTML markdown for some metadata are in a <a>
-            value = clean_html(tr.css('td.metadataFieldValue').extract_first())
+        data_dict['title'] = response.css(
+            'h2.page-header::text'
+        ).extract_first()
 
-            data_dict[label] = value
+        details_dict = defaultdict(list)
+        for line in response.css('.detailtable tr'):
+
+            # Each tr should have 2 to 3 td: attribute, value and language.
+            # We're only interested in the first and the second one.
+            tds = line.css('td::text').extract()
+            if len(tds) < 2:
+                continue
+
+            # Make attribute human readable
+            # (first part is always 'dc', so skip it)
+            attr_name = ' '.join(tds[0].split('.')[1:]).lower()
+            details_dict[attr_name].append(f'{tds[1]}')
 
         # Scrap all the pdf on the page, passing scrapped metadata
-        href = response.css('a[href$=".pdf"]::attr(href)').extract_first()
-        if href and not is_scraped(href.split('/')[-1]):
+        href = response.css(
+            '.file-link a::attr("href")'
+        ).extract_first()
+
+        data_dict['subjects'] = details_dict.get('subject mesh', [])
+        data_dict['types'] = details_dict.get('type', [])
+        data_dict['authors'] = ', '.join(
+            details_dict.get('contributor author', [])
+        )
+        if href:
             yield Request(
                 url=response.urljoin(href),
                 callback=self.save_pdf,
@@ -144,8 +166,8 @@ class WhoIrisSpider(scrapy.Spider):
         else:
             err_link = href if href else ''.join([response.url, ' (referer)'])
             self.logger.debug(
-                "Item already Downloaded or null - Canceling (%s)"
-                % err_link
+                "Item is null - Canceling (%s)",
+                err_link
             )
 
     def save_pdf(self, response):
@@ -156,26 +178,28 @@ class WhoIrisSpider(scrapy.Spider):
         @returns requests 0 0
         """
 
-        is_pdf = response.headers.get('content-type', '') == b'application/pdf'
+        content_type = response.headers.get('content-type', '').split(b';')[0]
+        is_pdf = b'application/pdf' == content_type
 
         if not is_pdf:
-            self.logger.info('Not a PDF, aborting (%s)' % response.url)
+            self.logger.info('Not a PDF, aborting (%s)', response.url)
             return
 
         # Retrieve metadata
         data_dict = response.meta.get('data_dict', {})
-        section = ''
         # Download PDF file to /tmp
-        filename = response.url.split('/')[-1]
+        filename = urlparse(response.url).path.split('/')[-1]
         with open('/tmp/' + filename, 'wb') as f:
             f.write(response.body)
 
         # Populate a WHOArticle Item
         who_article = WHOArticle({
-                'title': data_dict.get('Title', ''),
+                'title': data_dict.get('title', ''),
                 'uri': response.request.url,
-                'year': data_dict.get('Year', ''),
-                'authors': data_dict.get('Authors', ''),
+                'year': data_dict.get('year', ''),
+                'authors': data_dict.get('authors', ''),
+                'types': data_dict.get('types'),
+                'subjects': data_dict.get('subjects'),
                 'pdf': filename,
                 'sections': {},
                 'keywords': {}
