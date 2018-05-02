@@ -3,7 +3,7 @@
 import os
 import logging
 from scrapy import spiderloader
-from tools import DatabaseConnector
+from tools import DatabaseConnector, DynamoDBConnector
 from tools.utils import parse_keywords_files, get_file_hash
 from scrapy.utils.project import get_project_settings
 from scrapy.exceptions import DropItem
@@ -36,7 +36,15 @@ class WsfScrapingPipeline(object):
             folder_path = os.path.join('./', 'results', 'pdfs', spider_name)
             os.makedirs(folder_path, exist_ok=True)
 
-        self.database = DatabaseConnector()
+        if self.settings['DATABASE_ADAPTOR'] == 'dynamodb':
+            self.database = DynamoDBConnector()
+        else:
+            self.database = DatabaseConnector()
+        self.logger.info(
+            'Using %s database backend. [%s]',
+            self.settings.get('DATABASE_ADAPTOR'),
+            self.settings.get('FEED_CONFIG'),
+        )
 
     def check_keywords(self, item, spider_name, base_pdf_path):
         """Convert the pdf file to a python object and analyse it to find
