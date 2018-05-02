@@ -2,15 +2,6 @@
 import logging
 import os
 
-# Scrapy settings for wsf_scraping project
-#
-# For simplicity, this file contains only settings considered important or
-# commonly used. You can find more settings consulting the documentation:
-#
-#     http://doc.scrapy.org/en/latest/topics/settings.html
-#     http://scrapy.readthedocs.org/en/latest/topics/downloader-middleware.html
-#     http://scrapy.readthedocs.org/en/latest/topics/spider-middleware.html
-
 # Get feed configuration from environment variable. Default to debug
 FEED_CONFIG = os.environ.get('SCRAPY_FEED_CONFIG', 'DEBUG')
 BOT_NAME = 'wsf_scraper'
@@ -26,7 +17,7 @@ ITEM_PIPELINES = {
     'wsf_scraping.pipelines.WsfScrapingPipeline': 10,
 }
 FEED_STORAGES = {
-    'dsx': 'tools.DSXFeedStorage',
+    'aws': 'tools.AWSFeedStorage',
 }
 
 # LOG_ENABLED = False
@@ -88,25 +79,15 @@ FEED_FORMAT = 'jsonlines'
 FEED_EXPORT_ENCODING = 'utf-8'
 FEED_TEMPDIR = 'var/tmp/'
 
-if FEED_CONFIG == 'S3':
-    AWS_ACCESS_KEY_ID = ''
-    AWS_SECRET_ACCESS_KEY = ''
-    AWS_FEED_CONTAINER = ''
-    FEED_URI = 's3://' + AWS_FEED_CONTAINER + '/%(name)s - %(time)s.json'
-
-if FEED_CONFIG == 'DSX':
-    DSX_FEED_CONTAINER = 'OSProject'
-    DSX_AUTH_URL = "https://identity.open.softlayer.com/v3/auth/tokens"
-    DSX_CREDENTIALS = {
-        "region": "",
-        "username": "",
-        "password": "",
-        "domainId": ""
-    }
-    FEED_URI = 'dsx://' + DSX_FEED_CONTAINER + '/%(name)s - %(time)s.json'
+if FEED_CONFIG == 'AWS':
+    AWS_S3_BUCKET = 'data-labs'
+    AWS_S3_FILE_NAME = 'scraper-results/%(name)s - %(time)s.json'
+    DATABASE_ADAPTOR = 'dynamodb'
+    FEED_URI = f'aws://{AWS_S3_BUCKET}/{AWS_S3_FILE_NAME}'
 
 else:
     # By default, log the results in a local folder
+    DATABASE_ADAPTOR = 'postgresql'
     FEED_URI = './results/%(name)s.json'
 
 # Lists to look for (case insensitive)

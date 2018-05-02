@@ -1,5 +1,6 @@
 from .dbTools import DatabaseConnector
 from . import utils
-from .DSXFeedStorage import DSXFeedStorage
+from .AWSFeedStorage import AWSFeedStorage
+from .dynamodbConnector import DynamoDBConnector
 
-__all__ = [DatabaseConnector, utils, DSXFeedStorage]
+__all__ = [DatabaseConnector, utils, AWSFeedStorage, DynamoDBConnector]
