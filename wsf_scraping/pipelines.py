@@ -116,7 +116,12 @@ class WsfScrapingPipeline(object):
                     os.path.join(pdf_result_path, item['pdf'])
                 )
         else:
-            os.remove(base_pdf_path)
+            try:
+                os.remove(base_pdf_path)
+            except FileNotFoundError:
+                self.logger.warning(
+                    "The file couldn't be found, and wasn't deleted."
+                )
         return item
 
     def process_item(self, item, spider):

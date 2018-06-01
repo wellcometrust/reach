@@ -20,12 +20,12 @@ FEED_STORAGES = {
     'aws': 'tools.AWSFeedStorage',
 }
 
-# LOG_ENABLED = False
 LOG_LEVEL = 'INFO'
 LOG_FORMATTER = 'wsf_scraping.middlewares.PoliteLogFormatter'
-LOG_FILE = 'var/log-{log_level}.txt'.format(log_level=LOG_LEVEL)
+
 # Set pdfminer log to WARNING
 logging.getLogger("pdfminer").setLevel(logging.WARNING)
+
 DUPEFILTER_CLASS = 'scrapy.dupefilters.BaseDupeFilter'
 # Use a physicqal queue, slower but add fiability
 DEPTH_PRIORITY = 1
@@ -80,10 +80,13 @@ FEED_EXPORT_ENCODING = 'utf-8'
 FEED_TEMPDIR = 'var/tmp/'
 
 if FEED_CONFIG == 'AWS':
-    AWS_S3_BUCKET = 'data-labs'
-    AWS_S3_FILE_NAME = 'scraper-results/%(name)s - %(time)s.json'
+    AWS_S3_BUCKET = 'datalabs-data'
+    AWS_S3_FILE_NAME = 'scraper-results/%(name)s'
     DATABASE_ADAPTOR = 'dynamodb'
-    FEED_URI = f'aws://{AWS_S3_BUCKET}/{AWS_S3_FILE_NAME}'
+    FEED_URI = 'aws://{bucket}/{filename}'.format(
+        bucket=AWS_S3_BUCKET,
+        filename=AWS_S3_FILE_NAME
+    )
 
 else:
     # By default, log the results in a local folder
