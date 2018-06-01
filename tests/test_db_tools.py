@@ -10,7 +10,6 @@ class TestDBTools(unittest.TestCase):
 
     def test_queries(self):
         self.database.insert_article(
-            'Test',
             '0' * 32,
             'http://example.com/pdf.pdf'
         )

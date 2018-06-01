@@ -103,18 +103,18 @@ class WhoIrisSpider(scrapy.Spider):
             )
 
         if not self.settings['WHO_IRIS_LIMIT']:
-            # Follow next link
+            # Follow next link if it exists and if we enabled it
             next_page = response.css(
-                 'next-page-link::attr("href")'
+                 '.next-page-link::attr("href")'
             ).extract_first()
-
-            yield Request(
-                url=response.urljoin(next_page),
-                callback=self.parse,
-                errback=self.on_error,
-                dont_filter=True,
-                meta={'year': year}
-            )
+            if next_page:
+                yield Request(
+                    url=response.urljoin(next_page),
+                    callback=self.parse,
+                    errback=self.on_error,
+                    dont_filter=True,
+                    meta={'year': year}
+                )
 
     def parse_article(self, response):
         """ Scrape the article metadata from the detailed article page. Then,
