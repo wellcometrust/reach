@@ -3,13 +3,11 @@ from urllib.parse import urlparse, urlencode
 from scrapy.http import Request
 from collections import defaultdict
 from wsf_scraping.items import WHOArticle
+from .base_spider import BaseSpider
 from scrapy.utils.project import get_project_settings
-from scrapy.spidermiddlewares.httperror import HttpError
-from twisted.internet.error import DNSLookupError
-from twisted.internet.error import TimeoutError
 
 
-class WhoIrisSpider(scrapy.Spider):
+class WhoIrisSpider(BaseSpider):
     name = 'who_iris'
     # All these parameters are optionnal,
     # but it is good to set a result per page ubove 250, to limit query number
@@ -29,25 +27,6 @@ class WhoIrisSpider(scrapy.Spider):
             self.years = years_list.split(',')
         else:
             self.years = settings['WHO_IRIS_YEARS']
-
-    def on_error(self, failure):
-        self.logger.error(repr(failure))
-
-        if failure.check(HttpError):
-            response = failure.value.response
-            self.logger.error(
-                'HttpError on %s (%s)',
-                response.url,
-                response.status,
-            )
-
-        elif failure.check(DNSLookupError):
-            request = failure.request
-            self.logger.error('DNSLookupError on %s', request.url)
-
-        elif failure.check(TimeoutError):
-            request = failure.request
-            self.logger.error('TimeoutError on %s', request.url)
 
     def start_requests(self):
         """ This sets up the urls to scrape for each years.
@@ -178,8 +157,7 @@ class WhoIrisSpider(scrapy.Spider):
         @returns requests 0 0
         """
 
-        content_type = response.headers.get('content-type', '').split(b';')[0]
-        is_pdf = b'application/pdf' == content_type
+        is_pdf = self._check_headers(response.headers)
 
         if not is_pdf:
             self.logger.info('Not a PDF, aborting (%s)', response.url)

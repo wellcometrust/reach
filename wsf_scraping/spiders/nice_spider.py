@@ -2,37 +2,16 @@ import json
 import scrapy
 from lxml import html
 from scrapy.http import Request
+from .base_spider import BaseSpider
 from wsf_scraping.items import NICEArticle
-from scrapy.spidermiddlewares.httperror import HttpError
-from twisted.internet.error import DNSLookupError
-from twisted.internet.error import TimeoutError
 
 
-class NiceSpider(scrapy.Spider):
+class NiceSpider(BaseSpider):
     name = 'nice'
 
     custom_settings = {
         'JOBDIR': 'crawls/nice'
     }
-
-    def __init__(self, *args, **kwargs):
-        id = kwargs.get('uuid', '')
-        self.uuid = id
-
-    def on_error(self, failure):
-        self.logger.error(repr(failure))
-
-        if failure.check(HttpError):
-            response = failure.value.response
-            self.logger.error('HttpError on %s', response.url)
-
-        elif failure.check(DNSLookupError):
-            request = failure.request
-            self.logger.error('DNSLookupError on %s', request.url)
-
-        elif failure.check(TimeoutError):
-            request = failure.request
-            self.logger.error('TimeoutError on %s', request.url)
 
     def start_requests(self):
         """Set up the initial request to the website to scrape."""
@@ -192,8 +171,7 @@ class NiceSpider(scrapy.Spider):
 
         data_dict = response.meta.get('data_dict', {})
 
-        # Download PDF file to /tmp
-        is_pdf = response.headers.get('content-type', '') == b'application/pdf'
+        is_pdf = self._check_headers(response.headers)
 
         if not is_pdf:
             self.logger.info('Not a PDF, aborting (%s)', response.url)

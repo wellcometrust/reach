@@ -22,3 +22,11 @@ class NICEArticle(scrapy.Item):
     pdf = scrapy.Field()
     sections = scrapy.Field()
     keywords = scrapy.Field()
+
+
+class UNICEFArticle(scrapy.Item):
+    title = scrapy.Field()
+    uri = scrapy.Field()
+    pdf = scrapy.Field()
+    sections = scrapy.Field()
+    keywords = scrapy.Field()
