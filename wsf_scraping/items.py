@@ -1,32 +1,26 @@
 # -*- coding: utf-8 -*-
-
 import scrapy
 
 
-class WHOArticle(scrapy.Item):
+class BaseArticle(scrapy.Item):
     title = scrapy.Field()
     uri = scrapy.Field()
-    year = scrapy.Field()
     pdf = scrapy.Field()
-    authors = scrapy.Field()
     sections = scrapy.Field()
     keywords = scrapy.Field()
+    hash = scrapy.Field()
+    provider = scrapy.Field()
+
+
+class WHOArticle(BaseArticle):
+    year = scrapy.Field()
     types = scrapy.Field()
     subjects = scrapy.Field()
 
 
-class NICEArticle(scrapy.Item):
-    title = scrapy.Field()
-    uri = scrapy.Field()
+class NICEArticle(BaseArticle):
     year = scrapy.Field()
-    pdf = scrapy.Field()
-    sections = scrapy.Field()
-    keywords = scrapy.Field()
 
 
-class UNICEFArticle(scrapy.Item):
-    title = scrapy.Field()
-    uri = scrapy.Field()
-    pdf = scrapy.Field()
-    sections = scrapy.Field()
-    keywords = scrapy.Field()
+class UNICEFArticle(BaseArticle):
+    pass
