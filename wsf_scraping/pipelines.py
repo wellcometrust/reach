@@ -135,6 +135,8 @@ class WsfScrapingPipeline(object):
                 'Item footprint is already in the database'
             )
         full_item = self.check_keywords(item, spider.name, base_pdf_path)
+        full_item['hash'] = file_hash
+        full_item['provider'] = spider.name
         self.database.insert_article(file_hash, item['uri'])
 
         return full_item
