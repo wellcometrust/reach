@@ -9,8 +9,6 @@ from scrapy.utils.project import get_project_settings
 
 class WhoIrisSpider(BaseSpider):
     name = 'who_iris'
-    # All these parameters are optionnal,
-    # but it is good to set a result per page ubove 250, to limit query number
     data = {}
 
     custom_settings = {

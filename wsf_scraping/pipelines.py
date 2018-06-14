@@ -7,8 +7,7 @@ from tools import DatabaseConnector, DynamoDBConnector
 from tools.utils import parse_keywords_files, get_file_hash
 from scrapy.utils.project import get_project_settings
 from scrapy.exceptions import DropItem
-from pdf_parser.pdf_parse import (parse_pdf_document, grab_section,
-                                  parse_pdf_document_pdftxt)
+from pdf_parser.pdf_parse import parse_pdf_document, grab_section
 
 
 class WsfScrapingPipeline(object):
@@ -71,15 +70,11 @@ class WsfScrapingPipeline(object):
                 return item
 
             self.logger.info(
-                'Processing: %s (%s)',
-                item['pdf'],
-                self.settings['PARSING_METHOD'],
+                'Processing: %s',
+                item['pdf']
             )
 
-            if self.settings['PARSING_METHOD'] == 'pdftotext':
-                pdf_file = parse_pdf_document_pdftxt(f)
-            else:
-                pdf_file = parse_pdf_document(f)
+            pdf_file = parse_pdf_document(f)
 
             if not pdf_file:
                 return item

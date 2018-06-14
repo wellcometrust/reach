@@ -29,3 +29,7 @@ class UNICEFArticle(BaseArticle):
 
 class MSFArticle(BaseArticle):
     pass
+
+
+class GovArticle(BaseArticle):
+    pass
