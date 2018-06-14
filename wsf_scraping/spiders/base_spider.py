@@ -25,6 +25,7 @@ class BaseSpider(scrapy.Spider):
             request = failure.request
             self.logger.error('TimeoutError on %s', request.url)
 
-    def _check_headers(self, response_headers):
+    def _check_headers(self, response_headers,
+                       desired_extension=b'application/pdf'):
         content_type = response_headers.get('content-type', '').split(b';')[0]
-        return b'application/pdf' == content_type
+        return desired_extension == content_type

@@ -141,11 +141,11 @@ class NiceSpider(BaseSpider):
 
         if not href:
             # Second case: PDF is a single footer download link
-            href = response.css('.track-link::attr(href)').extract_first()
+            href = response.css('.track-link::attr("href")').extract_first()
 
         if not href:
             # Third case: Direct download link, without menu
-            href = response.css('#nice-download::attr(href)').extract_first()
+            href = response.css('#nice-download::attr("href")').extract_first()
 
         if href:
             return Request(
