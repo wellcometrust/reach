@@ -16,6 +16,7 @@ class WHOArticle(BaseArticle):
     year = scrapy.Field()
     types = scrapy.Field()
     subjects = scrapy.Field()
+    authors = scrapy.Field()
 
 
 class NICEArticle(BaseArticle):
