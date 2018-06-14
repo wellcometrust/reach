@@ -24,3 +24,7 @@ class NICEArticle(BaseArticle):
 
 class UNICEFArticle(BaseArticle):
     pass
+
+
+class MSFArticle(BaseArticle):
+    pass
