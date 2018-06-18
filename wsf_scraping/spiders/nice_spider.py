@@ -177,11 +177,8 @@ class NiceSpider(BaseSpider):
             self.logger.info('Not a PDF, aborting (%s)', response.url)
             return
 
-        filename = ''.join([response.url.split('/')[-1], '.pdf'])
-
-        with open('/tmp/' + filename, 'wb') as f:
-            f.write(response.body)
-
+        # Download PDF file to /tmp
+        filename = self._save_file(response.url, response.body)
         nice_article = NICEArticle({
                 'title': data_dict.get('title', ''),
                 'uri': response.request.url,

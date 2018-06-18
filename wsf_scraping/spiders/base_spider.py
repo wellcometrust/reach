@@ -1,7 +1,10 @@
 import scrapy
+import os
+import tempfile
 from scrapy.spidermiddlewares.httperror import HttpError
 from twisted.internet.error import DNSLookupError
 from twisted.internet.error import TimeoutError
+from urllib.parse import urlparse
 
 
 class BaseSpider(scrapy.Spider):
@@ -29,3 +32,20 @@ class BaseSpider(scrapy.Spider):
                        desired_extension=b'application/pdf'):
         content_type = response_headers.get('content-type', '').split(b';')[0]
         return desired_extension == content_type
+
+    def _save_file(self, url, response_body):
+        filename = os.path.basename(urlparse(url).path)
+        tempdir = tempfile.mkdtemp()
+        if filename:
+            if not filename.lower().endswith('.pdf'):
+                filename = filename + '.pdf'
+            filepath = os.path.join(tempdir, filename)
+            with open(filepath, 'wb') as f:
+                f.write(response_body)
+            return filepath
+        else:
+            self.logger.warning(
+                 'Empty filename, could not save the file. [Url: %s]',
+                 url
+            )
+            return ''

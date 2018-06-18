@@ -32,7 +32,7 @@ class WsfScrapingPipeline(object):
         spiders = spider_loader.list()
 
         for spider_name in spiders:
-            folder_path = os.path.join('./', 'results', 'pdfs', spider_name)
+            folder_path = os.path.join('results', 'pdfs', spider_name)
             os.makedirs(folder_path, exist_ok=True)
 
         if self.settings['DATABASE_ADAPTOR'] == 'dynamodb':
@@ -54,18 +54,18 @@ class WsfScrapingPipeline(object):
         download_only = self.settings['DOWNLOAD_ONLY']
         feed = self.settings['FEED_CONFIG']
         pdf_result_path = os.path.join(
-            os.path.curdir,
             'results',
             'pdfs',
             spider_name,
+            os.path.basename(item['pdf']),
         )
 
         # Convert PDF content to text format
-        with open(base_pdf_path, 'rb') as f:
+        with open(item['pdf'], 'rb') as f:
             if download_only:
                 os.rename(
-                    ''.join(['/tmp/', item['pdf']]),
-                    ''.join([pdf_result_path, item['pdf']])
+                    item['pdf'],
+                    pdf_result_path,
                 )
                 return item
 
@@ -107,12 +107,12 @@ class WsfScrapingPipeline(object):
                 pass
             else:
                 os.rename(
-                    os.path.join('/tmp', item['pdf']),
-                    os.path.join(pdf_result_path, item['pdf'])
+                    item['pdf'],
+                    pdf_result_path,
                 )
         else:
             try:
-                os.remove(base_pdf_path)
+                os.remove(item['pdf'])
             except FileNotFoundError:
                 self.logger.warning(
                     "The file couldn't be found, and wasn't deleted."
@@ -122,14 +122,20 @@ class WsfScrapingPipeline(object):
     def process_item(self, item, spider):
         """Process items sent by the spider."""
 
-        base_pdf_path = os.path.join('/tmp', item['pdf'])
-        file_hash = get_file_hash(base_pdf_path)
+        if not item['pdf']:
+            raise DropItem(
+                'Empty filename, could not parse the pdf.'
+            )
+        file_hash = get_file_hash(item['pdf'])
         if self.database.is_scraped(file_hash):
             # File is already scraped in the database
             raise DropItem(
                 'Item footprint is already in the database'
             )
-        full_item = self.check_keywords(item, spider.name, base_pdf_path)
+        full_item = self.check_keywords(item, spider.name, item['pdf'])
+
+        # Remove the path from the value we are storing
+        full_item['pdf'] = os.path.basename(item['pdf'])
         full_item['hash'] = file_hash
         full_item['provider'] = spider.name
         self.database.insert_article(file_hash, item['uri'])

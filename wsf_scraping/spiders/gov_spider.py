@@ -1,5 +1,4 @@
 import scrapy
-from urllib.parse import urlparse
 from scrapy.http import Request
 from .base_spider import BaseSpider
 from wsf_scraping.items import GovArticle
@@ -12,7 +11,7 @@ class GovSpider(BaseSpider):
     }
 
     def start_requests(self):
-        """ This sets up the urls to scrape for each years."""
+        """Sets up the base urls and start the initial requests."""
         urls = [
             'https://www.gov.uk/government/publications',
         ]
@@ -27,12 +26,7 @@ class GovSpider(BaseSpider):
             )
 
     def parse(self, response):
-        """ Parse the articles listing page and go to the next one.
-
-        @url https://www.gov.uk/government/publications
-        @returns items 0 0
-        @returns requests 1
-        """
+        """ Parse the articles listing page and go to the next one."""
 
         file_links = response.css(
             '.attachment-details .title a::attr("href")'
@@ -84,18 +78,14 @@ class GovSpider(BaseSpider):
                 return
 
         # Download PDF file to /tmp
-        filename = urlparse(response.url).path.split('/')[-1]
-        if filename:
-            with open('/tmp/' + filename, 'wb') as f:
-                f.write(response.body)
-            # Populate a WHOArticle Item
-            gov_article = GovArticle({
-                    'title': response.meta.get('title', ''),
-                    'uri': response.request.url,
-                    'pdf': filename,
-                    'sections': {},
-                    'keywords': {}
-                }
-            )
+        filename = self._save_file(response.url, response.body)
+        gov_article = GovArticle({
+                'title': response.meta.get('title', ''),
+                'uri': response.request.url,
+                'pdf': filename,
+                'sections': {},
+                'keywords': {}
+            }
+        )
 
-            yield gov_article
+        yield gov_article

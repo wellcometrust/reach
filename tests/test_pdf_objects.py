@@ -1,6 +1,6 @@
 import unittest
 import json
-from pdf_parser.pdf_parse import parse_pdf_document, parse_pdf_document_pdftxt
+from pdf_parser.pdf_parse import parse_pdf_document
 from pdf_parser.objects.PdfObjects import PdfFile
 
 TEST_PDF = 'tests/pdfs/test_pdf.pdf'
@@ -59,28 +59,21 @@ class TestPdfObjects(unittest.TestCase):
     def setUp(self):
         self.test_file = open(TEST_PDF, 'rb')
         self.pdf_file_object = parse_pdf_document(self.test_file)
-        self.pdf_file_object_2 = parse_pdf_document_pdftxt(self.test_file)
 
     def tearDown(self):
         self.test_file.close()
 
-    def test_pdftotext_equal(self):
-        self.assertEqual(
-            len(self.pdf_file_object.pages),
-            len(self.pdf_file_object_2.pages)
-        )
-
     def test_mean(self):
         font_mean = self.pdf_file_object.get_mean_font_size()
-        self.assertEqual(font_mean, 13)
+        self.assertEqual(font_mean, 24)
 
     def test_upper_mean(self):
         upper_mean = self.pdf_file_object.get_upper_mean_font_size()
-        self.assertEqual(upper_mean, 15)
+        self.assertEqual(upper_mean, 29)
 
     def test_list_by_size(self):
         list_fonts = self.pdf_file_object.get_font_size_list()
-        self.assertEqual(list_fonts, [11, 13, 15])
+        self.assertEqual(list_fonts, [29, 22])
 
     def test_bold(self):
         list_bold_lines = self.pdf_file_object.get_bold_lines()

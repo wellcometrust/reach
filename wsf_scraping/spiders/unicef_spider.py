@@ -1,5 +1,4 @@
 import scrapy
-from urllib.parse import urlparse
 from scrapy.http import Request
 from wsf_scraping.items import UNICEFArticle
 from .base_spider import BaseSpider
@@ -35,7 +34,7 @@ class UnicefSpider(BaseSpider):
 
         @url https://data.unicef.org/resources/resource-type/publication/
         @returns items 0 0
-        @returns requests 115
+        @returns requests 1
         """
 
         for href in response.css('h2 a::attr(href)').extract():
@@ -80,11 +79,7 @@ class UnicefSpider(BaseSpider):
             return
 
         # Download PDF file to /tmp
-        filename = urlparse(response.url).path.split('/')[-1]
-        with open('/tmp/' + filename, 'wb') as f:
-            f.write(response.body)
-
-        # Populate a UNICEFArticle Item
+        filename = self._save_file(response.url, response.body)
         unicef_article = UNICEFArticle({
                 'title': response.meta.get('title', ''),
                 'uri': response.request.url,
