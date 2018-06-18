@@ -1,5 +1,5 @@
 import scrapy
-from urllib.parse import urlparse, urlencode
+from urllib.parse import urlencode
 from scrapy.http import Request
 from collections import defaultdict
 from wsf_scraping.items import WHOArticle
@@ -163,12 +163,9 @@ class WhoIrisSpider(BaseSpider):
 
         # Retrieve metadata
         data_dict = response.meta.get('data_dict', {})
-        # Download PDF file to /tmp
-        filename = urlparse(response.url).path.split('/')[-1]
-        with open('/tmp/' + filename, 'wb') as f:
-            f.write(response.body)
 
-        # Populate a WHOArticle Item
+        # Download PDF file to /tmp
+        filename = self._save_file(response.url, response.body)
         who_article = WHOArticle({
                 'title': data_dict.get('title', ''),
                 'uri': response.request.url,
