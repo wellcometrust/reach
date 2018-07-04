@@ -2,6 +2,7 @@
 
 import os
 import logging
+from datetime import datetime
 from scrapy import spiderloader
 from tools import DatabaseConnector, DynamoDBConnector
 from tools.utils import parse_keywords_files, get_file_hash
@@ -138,6 +139,7 @@ class WsfScrapingPipeline(object):
         full_item['pdf'] = os.path.basename(item['pdf'])
         full_item['hash'] = file_hash
         full_item['provider'] = spider.name
+        full_item['date_scraped'] = datetime.now().strftime('%Y%m%d')
         self.database.insert_article(file_hash, item['uri'])
 
         return full_item
