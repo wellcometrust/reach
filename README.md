@@ -25,6 +25,7 @@ It will always have the following attributes, though:
 |      |keywords | a json object of keywords, containing the text extracted from matching text|
 |*     |hash     | a md5 digest of the file|
 |      |provider | the provider from where the file has been downloaded|
+|      |date_scraped | the date (YYYYMMDD) when the article has been scraped|
 
 Some providers will have additional parameters:
 

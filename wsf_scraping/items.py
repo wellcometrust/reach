@@ -10,6 +10,7 @@ class BaseArticle(scrapy.Item):
     keywords = scrapy.Field()
     hash = scrapy.Field()
     provider = scrapy.Field()
+    date_scraped = scrapy.Field()
 
 
 class WHOArticle(BaseArticle):
