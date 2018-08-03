@@ -6,21 +6,68 @@ from tools import DatabaseConnector
 class TestDBTools(unittest.TestCase):
 
     def setUp(self):
-        self.database = DatabaseConnector(os.getenv('DATABASE_URL_TEST'))
+        """Assuming the database is already set up."""
+        url = os.getenv('DATABASE_URL_TEST')
+        self.assertTrue(url)
+        if not url:
+            return
+        self.database = DatabaseConnector(url)
+        mock_article = {
+            'title': 'foo',
+            'uri': 'http://foo.bar',
+            'pdf': 'foobar',
+            'hash': '0' * 32,
+            'authors': 'John Doe, Jane Doe',
+            'year': '1999',
+            'text': 'Very long sentence' * 300,
+        }
+        sections = {'foo': 'bar' * 32}
+        keywords = {'bar': 'foo' * 32}
+        types = [
+            'foo',
+            'bar',
+            'kix'
+        ]
+        subjects = [
+            'lorem',
+            'ipsum'
+        ]
+        id_provider = self.database.get_or_create_name('foo.org', 'provider')
+        id_pub = self.database.insert_full_article(mock_article, id_provider)
+        self.database.insert_joints('type', types, id_pub)
+        self.database.insert_joints('subject', subjects, id_pub)
+        self.database.insert_joints_and_text('section', sections, id_pub)
+        self.database.insert_joints_and_text('keyword', keywords, id_pub)
 
-    def test_queries(self):
-        self.database.insert_article(
-            '0' * 32,
-            'http://example.com/pdf.pdf'
-        )
+    def tearDown(self):
+        self.database._execute('DELETE FROM publications_types')
+        self.database._execute('DELETE FROM publications_subjects')
+        self.database._execute('DELETE FROM publications_sections')
+        self.database._execute('DELETE FROM publications_keywords')
+        self.database._execute('DELETE FROM type')
+        self.database._execute('DELETE FROM subject')
+        self.database._execute('DELETE FROM section')
+        self.database._execute('DELETE FROM keyword')
+        self.database._execute('DELETE FROM publication')
+        self.database._execute('DELETE FROM provider')
+
+    def test_full_article(self):
         self.assertTrue(self.database.is_scraped('0' * 32))
-        self.database._execute(
-            'UPDATE article SET scrap_again = TRUE WHERE file_hash = %s',
-            ('0' * 32,)
-        )
-        self.assertFalse(self.database.is_scraped('0' * 32))
-        self.database._execute(
-            'DELETE FROM article WHERE file_hash = %s',
-            ('0' * 32,)
-        )
-        self.assertFalse(self.database.is_scraped('0' * 32))
+
+    def test_joints(self):
+        self.database._execute('SELECT * FROM section')
+        self.assertTrue(self.database.cursor.fetchone())
+        self.database._execute('SELECT * FROM keyword')
+        self.assertTrue(self.database.cursor.fetchone())
+        self.database._execute('SELECT * FROM publications_sections')
+        self.assertTrue(self.database.cursor.fetchone())
+        self.database._execute('SELECT * FROM publications_keywords')
+        self.assertTrue(self.database.cursor.fetchone())
+        self.database._execute('SELECT * FROM type')
+        self.assertTrue(self.database.cursor.fetchone())
+        self.database._execute('SELECT * FROM publications_types')
+        self.assertTrue(self.database.cursor.fetchone())
+        self.database._execute('SELECT * FROM subject')
+        self.assertTrue(self.database.cursor.fetchone())
+        self.database._execute('SELECT * FROM publications_subjects')
+        self.assertTrue(self.database.cursor.fetchone())

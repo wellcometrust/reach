@@ -9,7 +9,7 @@ class TestTools(unittest.TestCase):
 
     def setUp(self):
         self.test_file = open(TEST_PDF, 'rb')
-        self.pdf_file_object = parse_pdf_document(self.test_file)
+        self.pdf_file_object, self.text = parse_pdf_document(self.test_file)
 
     def tearDown(self):
         self.test_file.close()
