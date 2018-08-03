@@ -9,6 +9,7 @@ class BaseArticle(scrapy.Item):
     sections = scrapy.Field()
     keywords = scrapy.Field()
     hash = scrapy.Field()
+    text = scrapy.Field()
     provider = scrapy.Field()
     date_scraped = scrapy.Field()
 

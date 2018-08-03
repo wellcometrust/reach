@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-
 import os
 import logging
 from datetime import datetime
@@ -75,10 +74,12 @@ class WsfScrapingPipeline(object):
                 item['pdf']
             )
 
-            pdf_file = parse_pdf_document(f)
+            pdf_file, pdf_text = parse_pdf_document(f)
 
             if not pdf_file:
                 return item
+
+            item['text'] = pdf_text
 
             for keyword in self.section_keywords:
                 # Fetch references or other keyworded list
@@ -128,7 +129,8 @@ class WsfScrapingPipeline(object):
                 'Empty filename, could not parse the pdf.'
             )
         file_hash = get_file_hash(item['pdf'])
-        if self.database.is_scraped(file_hash):
+        id_publication, scrape_again = self.database.is_scraped(file_hash)
+        if id_publication and not scrape_again:
             # File is already scraped in the database
             raise DropItem(
                 'Item footprint is already in the database'
@@ -140,6 +142,38 @@ class WsfScrapingPipeline(object):
         full_item['hash'] = file_hash
         full_item['provider'] = spider.name
         full_item['date_scraped'] = datetime.now().strftime('%Y%m%d')
+        if scrape_again:
+            full_item['id'] = id_publication
+            self.database.update_full_article(full_item)
+        else:
+            id_provider = self.database.get_or_create_name(
+                spider.name, 'provider'
+            )
+            id_publication = self.database.insert_full_article(
+                full_item,
+                id_provider
+            )
+            self.database.insert_joints_and_text(
+                'section',
+                full_item.get('sections'),
+                id_publication
+            )
+            self.database.insert_joints_and_text(
+                'keyword',
+                full_item.get('keywords'),
+                id_publication
+            )
+            self.database.insert_joints(
+                'type',
+                full_item.get('types'),
+                id_publication
+            )
+            self.database.insert_joints(
+                'subjects',
+                full_item.get('types'),
+                id_publication
+            )
+
         self.database.insert_article(file_hash, item['uri'])
 
         return full_item
