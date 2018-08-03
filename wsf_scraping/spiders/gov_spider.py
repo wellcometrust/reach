@@ -1,7 +1,10 @@
 import scrapy
-from scrapy.http import Request
+
 from .base_spider import BaseSpider
+
+from scrapy.http import Request
 from wsf_scraping.items import GovArticle
+from urllib.parse import urlencode
 
 
 class GovSpider(BaseSpider):
@@ -10,20 +13,44 @@ class GovSpider(BaseSpider):
         'JOBDIR': 'crawls/gov_uk'
     }
 
+    def __init__(self, **kwargs):
+        """Initialise the class attribute year_before and year_after. The
+        attribute year_before excludes everything from said year.
+        e.g. 2013 and 2015 -> 01/01/2013 to 31/12/2014
+        """
+        year_before = kwargs.get('year_before', False)
+        year_after = kwargs.get('year_after', False)
+        id = kwargs.get('uuid', '')
+
+        self.uuid = id
+        self.year_before = year_before if year_before else ''
+        self.year_after = year_after if year_after else ''
+
     def start_requests(self):
         """Sets up the base urls and start the initial requests."""
-        urls = [
-            'https://www.gov.uk/government/publications',
-        ]
+        url = 'https://www.gov.uk/government/publications'
 
-        for url in urls:
-            self.logger.info('Initial url: %s', url)
-            yield scrapy.Request(
-                url=url,
-                callback=self.parse,
-                errback=self.on_error,
-                dont_filter=True,
-            )
+        if self.year_before or self.year_after:
+            query_dict = {
+                'keywords': '',
+                'publication_filter_option': 'all',
+                'topics[]': 'all',
+                'departments[]': 'all',
+                'official_document_status': 'all',
+                'world_locations[]': 'all',
+                'from_date': '01/01/{}'.format(self.year_after),
+                'to_date': '31/12/{}'.format(int(self.year_before) - 1)
+            }
+            query_params = urlencode(query_dict)
+            url = url + '?' + query_params
+
+        self.logger.info('Initial url: %s', url)
+        yield scrapy.Request(
+            url=url,
+            callback=self.parse,
+            errback=self.on_error,
+            dont_filter=True,
+        )
 
     def parse(self, response):
         """ Parse the articles listing page and go to the next one."""
