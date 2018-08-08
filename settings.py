@@ -1,29 +1,39 @@
 import os
+import logging
+
+logging.basicConfig(format='[%(asctime)s]:%(levelname)s - %(message)s')
 
 
 class BaseSettings:
-    prediction_probability_threshold = 0.75
-    blocksize = 1000
-    fuzzymatch_threshold = 0.8
+    logger = logging.getLogger(__name__)
 
-    organisation = os.environ.get('ORGANISATION', 'nice')
+    DEBUG = True
+
+    PREDICTION_PROBABILITY_THRESHOLD = 0.75
+    BLOCKSIZE = 1000
+    FUZZYMATCH_THRESHOLD = 0.8
+
+    ORGANISATION = os.environ.get('ORGANISATION', 'nice')
 
     BUCKET = "datalabs-data"
-    raw_text_prefix = "scraper-results/{}".format(organisation)
-    raw_text_file_name = None
-    wt_references_prefix = "wellcome_publications"
-    wt_references_file_name = None
-    model_prefix = "reference_parser_models"
-    classifier_file_name = "RefSorter_classifier.pkl"
-    vectorizer_file_name = file_name = "RefSorter_vectorizer.pkl"
 
-    regex_dict = {
+    SCRAPER_RESULTS_DIR = "scraper-results/{}".format(ORGANISATION)
+    SCRAPER_RESULTS_FILENAME = None
+
+    REFERENCES_DIR = "wellcome_publications"
+    REFERENCES_FILENAME = None
+
+    MODEL_DIR = "reference_parser_models"
+    CLASSIFIER_FILENAME = "RefSorter_classifier.pkl"
+    VECTORIZER_FILENAME = "RefSorter_vectorizer.pkl"
+
+    _regex_dict = {
         'who_iris': "(|\.)\\n[0-9]{1,3}\.(\s|\\n)",
         'nice': "\n",
         'unicef': "\\n[0-9]{1,3}(\.|)\s{0,2}(\\n|)",
         'msf': "\\n[0-9]{0,3}(\.\s{0,2}|\\n)"
     }
-    organisation_regex = regex_dict.get(organisation, "\n")
+    ORGANISATION_REGEX = _regex_dict.get(ORGANISATION, "\n")
 
 
 class ProdSettings(BaseSettings):
@@ -44,8 +54,27 @@ class ProdSettings(BaseSettings):
     )
 
 
+class LocalSettings(BaseSettings):
+    DEBUG = False
+
+    RDS_USERNAME = 'postgres'
+    RDS_PASSWORD = ''
+    RDS_HOST = '127.0.0.1'
+    RDS_PORT = os.environ.get('RDS_PORT', 5437)
+    RDS_REFERENCES_DATABASE = "parser_references"
+
+    RDS_URL = "postgresql+psycopg2://{user}:{passw}@{host}:{port}/{db}".format(
+          user=RDS_USERNAME,
+          passw=RDS_PASSWORD,
+          host=RDS_HOST,
+          port=RDS_PORT,
+          db=RDS_REFERENCES_DATABASE
+    )
+
+
 settings_mode = {
     'DEV': BaseSettings,
+    'LOCAL': LocalSettings,
     'PROD': ProdSettings
 }
-settings = settings_mode[os.environ.get('REF_PARSER_SETTINGS', 'DEV')]
+settings = settings_mode[os.environ.get('REF_PARSER_SETTINGS', 'LOCAL')]
