@@ -1,55 +1,14 @@
 import pandas as pd
-import numpy as np
+# import numpy as np
 import time
-import pickle
+import utils
 from models import Document, Organisation, Reference, DatabaseEngine
-from separate import process_reference_section
-from predict import predict_references, predict_structure
-from fuzzymatch import FuzzyMatcher
-from s3 import S3
 from io import StringIO
 from settings import settings
 
 
-def get_file_key(file_path, file_name):
-    return "/".join([file_path, file_name])
-
-
-def get_file_content(file_path, file_name=None, file_format='json'):
-    if file_name:
-        file_key = get_file_key(file_path, file_name)
-
-    if settings.BUCKET:
-        s3 = S3(settings.BUCKET)
-        if not file_name:
-            file_key = s3._get_last_modified_file_key(file_path)
-        file_content = s3.get(file_key)
-        if file_format == 'csv':
-            file_content = file_content.decode('utf-8')
-    else:
-        file_mode = 'rb' if 'pkl' in file_name else 'r'
-        file_content = open(file_key, file_mode).read()
-
-    return file_content
-
-
-def load_data_file(file_path, file_name=None, file_format='json'):
-    file_content = get_file_content(file_path, file_name, file_format)
-    if file_format == 'csv':
-        file = StringIO(file_content)
-        raw_text_data = pd.read_csv(file)
-    else:
-        raw_text_data = pd.read_json(file_content, lines=True)
-    return raw_text_data
-
-
-def load_pickle_file(file_path, file_name):
-    file_content = get_file_content(file_path, file_name)
-    unpickled_file = pickle.loads(file_content)
-    return unpickled_file
-
-
 def serialise_matched_reference(data, current_timestamp):
+    """Serialise the data matched by the model."""
     serialised_data = {
         'publication_id': data['WT_Ref_Id'],
         'cosine_similarity': data['Cosine_Similarity'],
@@ -60,35 +19,19 @@ def serialise_matched_reference(data, current_timestamp):
 
 
 def serialise_reference(data, current_timestamp):
+    """Serialise the data parsed by the model."""
     serialised_data = {
         'author': data.get('Authors'),
-        'issue': data.get('Issue', ''),
+        'issue': data.get('Issue'),
         'journal': data.get('Journal'),
-        'pub_year': data.get('PubYear', ''),
-        'pagination': data.get('Pagination', ''),
-        'title': str(data.get('Title'))[:1024],
+        'pub_year': data.get('PubYear'),
+        'pagination': data.get('Pagination'),
+        'title': data.get('Title'),
         'file_hash': data['Document id'],
         'datetime_creation': current_timestamp,
         'volume': data.get('Volume', None),
     }
     return serialised_data
-
-
-def get_number(item):
-    if isinstance(item, int):
-        return item
-    if isinstance(item, str):
-        ints = [int(s) for s in str.split(' ') if s.isdigit()]
-        if ints:
-            return ints[0]
-    return None
-
-
-def get_clean_str(item):
-    if item is np.nan:
-        return ''
-    else:
-        return item
 
 
 def save_data(data, name):
@@ -107,16 +50,22 @@ def save_data(data, name):
 
 
 def save_to_database(documents, references, session):
-    doc_list = documents.to_dict(orient='records')
-    ref_list = references.to_dict(orient='records')
+    doc_list = documents.where(
+        (pd.notnull(documents)),
+        None
+    ).to_dict(orient='records')
+    ref_list = references.where(
+        (pd.notnull(references)),
+        None
+    ).to_dict(orient='records')
     now = time.strftime('%Y-%m-%d %H:%M:%S')
 
     org = session.query(Organisation).filter(
-        Organisation.name == settings.organisation
+        Organisation.name == settings.ORGANISATION
     ).first()
 
     if not org:
-        org = Organisation(name=settings.organisation)
+        org = Organisation(name=settings.ORGANISATION)
         session.add(org)
     for doc in doc_list:
         serial_doc = serialise_reference(doc, now)
@@ -127,13 +76,13 @@ def save_to_database(documents, references, session):
         ).first()
         if not new_doc:
             new_doc = Document(
-                author=get_clean_str(serial_doc['author']),
-                issue=get_clean_str(serial_doc['issue']),
-                journal=get_clean_str(serial_doc['journal']),
-                volume=get_clean_str(serial_doc['volume']),
-                pub_year=get_number(serial_doc['pub_year']),
-                pagination=get_clean_str(serial_doc['pagination']),
-                title=get_clean_str(serial_doc['title']),
+                author=serial_doc['author'],
+                issue=serial_doc['issue'],
+                journal=serial_doc['journal'],
+                volume=serial_doc['volume'],
+                pub_year=serial_doc['pub_year'],
+                pagination=serial_doc['pagination'],
+                title=serial_doc['title'],
                 file_hash=serial_doc['file_hash'],
                 datetime_creation=serial_doc['datetime_creation'],
                 organisation=org,
@@ -161,84 +110,60 @@ def save_to_database(documents, references, session):
 
 
 if __name__ == '__main__':
-    # ============================
-    # All external files:
-    # ============================
-    print("Reading input files for {}... ".format(settings.organisation))
+    logger = settings.logger
+    logger.info("Reading input files for %s", settings.ORGANISATION)
 
-    # Unstructured references from latest policy scrape:
-    raw_text_data = load_data_file(
-        settings.raw_text_prefix,
-        settings.raw_text_file_name
+    file_content = utils.get_file(
+        settings.SCRAPER_RESULTS_DIR,
+        settings.SCRAPER_RESULTS_FILENAME
+    )
+    raw_text_data = pd.read_json(file_content, lines=True)
+
+    file_content = utils.get_file(
+        settings.REFERENCES_DIR,
+        settings.REFERENCES_FILENAME
+    )
+    csv_file = StringIO(file_content.decode('utf-8'))
+    WT_references = pd.read_csv(csv_file)
+
+    mnb = utils.load_pickle_file(
+        settings.MODEL_DIR,
+        settings.CLASSIFIER_FILENAME
+    )
+    vectorizer = utils.load_pickle_file(
+        settings.MODEL_DIR,
+        settings.VECTORIZER_FILENAME
     )
 
-    # Import all the funder = 'WT' publications from all time:
-    WT_references = load_data_file(
-        settings.wt_references_prefix,
-        settings.wt_references_file_name,
-        'csv'
-    )
-
-    # ============================
-    # Load trained model  ========
-    mnb = load_pickle_file(
-        settings.model_prefix,
-        settings.classifier_file_name
-    )
-    vectorizer = load_pickle_file(
-        settings.model_prefix,
-        settings.vectorizer_file_name
-    )
-
-    # ============================
-    # Separate ===================
-
-    # Separate out the references and reference components from the raw text
-
-    reference_components = process_reference_section(
+    reference_components = utils.process_reference_section(
         raw_text_data,
-        settings.organisation_regex
+        settings.ORGANISATION_REGEX
     )
-
-    # ============================
-    # Predict ====================
-
-    # Use the model to predict the category for each reference component,
-    # then structure
-
-    # Just a sample for now!
 
     t0 = time.time()
 
-    reference_components_predictions = predict_references(
+    reference_components_predictions = utils.predict_references(
         mnb,
         vectorizer,
         reference_components
     )
 
-    # Structure:
-    predicted_reference_structures = predict_structure(
+    predicted_reference_structures = utils.predict_structure(
         reference_components_predictions,
-        settings.prediction_probability_threshold
+        settings.PREDICTION_PROBABILITY_THRESHOLD
     )
-    predicted_reference_structures['Organisation'] = settings.organisation
+    predicted_reference_structures['Organisation'] = settings.ORGANISATION
 
     save_data(predicted_reference_structures, 'document')
 
-    # ============================
-    # Match ======================
-
-    # Fuzzy match the newly structured references with the list of WT funded
-    # publications found in Dimensions
-
-    fuzzy_matcher = FuzzyMatcher(
+    fuzzy_matcher = utils.FuzzyMatcher(
         WT_references,
-        settings.fuzzymatch_threshold
+        settings.FUZZYMATCH_THRESHOLD
     )
     all_match_data = fuzzy_matcher.fuzzy_match_blocks(
-        settings.blocksize,
+        settings.BLOCKSIZE,
         predicted_reference_structures,
-        settings.fuzzymatch_threshold
+        settings.FUZZYMATCH_THRESHOLD
     )
 
     save_data(all_match_data, 'reference')
@@ -254,7 +179,7 @@ if __name__ == '__main__':
     t1 = time.time()
     total = t1-t0
 
-    print(
+    logger.info(
         "Time taken to predict and match for ",
         str(len(reference_components)),
         " is ", str(total)

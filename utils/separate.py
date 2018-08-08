@@ -1,7 +1,4 @@
 import re
-import json
-import random
-import pickle
 
 import numpy as np
 import pandas as pd
@@ -131,7 +128,7 @@ def summarise_predicted_references(reference_components, raw_text_data):
 
     predicted_number_refs_temp = []
 
-    for document_number in set(document_numbers):
+    for document_number in set(all_document_info):
         document_references = reference_components.loc[
             reference_components[
                 'Document number'
