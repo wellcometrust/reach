@@ -13,6 +13,7 @@ xlrd = "*"
 botocore = "*"
 "psycopg2-binary" = "*"
 SQLAlchemy = "*"
+pytest = "*"
 
 [dev-packages]
 
