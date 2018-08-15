@@ -5,13 +5,102 @@ import time
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
 
-from predict import predict_references, predict_structure
+from utils import (predict_references, predict_structure, load_csv_file,
+                   load_pickle_file, load_json_file, FuzzyMatcher,
+                   split_sections, split_reference)
 
-from main import load_data_file, load_pickle_file
-from train import process_training_publications
-from separate import split_sections, split_reference
-from fuzzymatch import FuzzyMatcher
 from settings import settings
+
+
+def split_string(publications, column_name, replace_strings_list=[(',', '.')]):
+
+    publications_column = publications[publications[column_name].notnull()]
+
+    all_column_sentences = []
+    for row in publications_column[column_name].astype(str):
+        for (char_a, char_b) in replace_strings_list:
+            row = row.replace(char_a, char_b)
+        for elem in row.split("."):
+            all_column_sentences.append(elem)
+
+    target_column = [column_name for i in range(len(all_column_sentences))]
+
+    return all_column_sentences, target_column
+
+
+def process_training_publications(publications):
+    """
+    process_training_publications
+
+     to get the structured publications data into a format usable as a
+     training set:
+     - Input is training set data from a list of classified publications
+       (from uber Dimensions, e.g.), make sure it's ok
+     - Make list of reference components and which category they fall under
+     - Randomly shuffle
+    """
+
+    print("Processing publications to be used as training set ...")
+
+    assert 'Authors' in publications, "publications.Authors not defined"
+    assert 'Title' in publications, "publications.Title not defined"
+    assert 'Journal' in publications, "publications.Journal not defined"
+    assert 'PubYear' in publications, "publications.PubYear not defined"
+    assert 'Volume' in publications, "publications.Volume not defined"
+    assert 'Issue' in publications, "publications.Issue not defined"
+    assert 'Pagination' in publications, "publications.Pagination not defined"
+
+    author_sentences, author_target = split_string(publications, 'Authors')
+    journal_sentences, journal_target = split_string(publications, 'Journal')
+    volume_sentences, volume_target = split_string(publications, 'Volume')
+    issue_sentences, issue_target = split_string(publications, 'Issue')
+    pagination_sentences, pagination_target = split_string(
+        publications,
+        'Pagination'
+    )
+    title_sentences, title_target = split_string(
+        publications,
+        'Title',
+        [(',', '.'), ('?', '?.'), ('!', '!.')]
+    )
+
+    # Year is always a float, so no need to separate by full stop
+    # Need to convert to string.
+    pubyear_publications = publications[publications['PubYear'].notnull()]
+    pubyear_sentences = [
+        str(int(elem)) for elem in pubyear_publications['PubYear']
+    ]
+    pubyear_target = ["PubYear" for i in range(len(pubyear_sentences))]
+
+    all_sentences = np.concatenate((
+        author_sentences,
+        title_sentences,
+        journal_sentences,
+        pubyear_sentences,
+        volume_sentences,
+        issue_sentences,
+        pagination_sentences), axis=0)
+
+    all_target = np.concatenate((
+        author_target,
+        title_target,
+        journal_target,
+        pubyear_target,
+        volume_target,
+        issue_target,
+        pagination_target), axis=0)
+
+    proccessed_publications_dict = {
+        'Sentence': all_sentences,
+        'Target Classification': all_target
+    }
+
+    proccessed_publications = pd.DataFrame(proccessed_publications_dict)
+    proccessed_publications = proccessed_publications.sample(
+        frac=1
+    ).reset_index(drop=True)
+
+    return proccessed_publications
 
 
 def test_model(mnb, vectorizer, publications_to_test_model):
@@ -335,33 +424,33 @@ if __name__ == '__main__':
     )
 
     # Load publication data for testing model predictions
-    publications = load_data_file(
-        file_path=folder_prefix,
-        file_name=pub_data_file_name,
-        file_format='csv')
+    publications = load_csv_file(
+        folder_prefix,
+        pub_data_file_name
+    )
 
     # Load manually found number of references for a sample of documents
-    actual_number_refs = load_data_file(
-        file_path=folder_prefix,
-        file_name=num_refs_file_name,
-        file_format='csv')
+    actual_number_refs = load_csv_file(
+        folder_prefix,
+        num_refs_file_name
+    )
 
     # Load manually found structure of references for a sample of documents
-    actual_reference_structures = load_data_file(
-        file_path=folder_prefix,
-        file_name=struct_refs_file_name,
-        file_format='csv')
+    actual_reference_structures = load_csv_file(
+        folder_prefix,
+        struct_refs_file_name
+    )
 
     # Load WT publications to match references against
-    match_publications = load_data_file(
-        file_path=folder_prefix,
-        file_name=match_pub_data_file_name,
-        file_format='csv')
+    match_publications = load_csv_file(
+        folder_prefix,
+        match_pub_data_file_name
+    )
 
-    test_publications = load_data_file(
-        file_path=folder_prefix,
-        file_name=test_pub_data_file_name,
-        file_format='csv')
+    test_publications = load_csv_file(
+        folder_prefix,
+        test_pub_data_file_name
+    )
 
     test1_score = 0
     test2_score = 0
@@ -418,7 +507,7 @@ if __name__ == '__main__':
         )
 
         # Get the raw data for this organisation:
-        raw_text_data = load_data_file(
+        raw_text_data = load_json_file(
             settings.SCRAPER_RESULTS_DIR,
             "{}.json".format(organisation)
         )
