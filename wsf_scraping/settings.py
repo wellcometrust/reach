@@ -82,16 +82,19 @@ FEED_TEMPDIR = 'var/tmp/'
 if FEED_CONFIG == 'AWS':
     AWS_S3_BUCKET = 'datalabs-data'
     AWS_S3_FILE_NAME = 'scraper-results/%(name)s'
-    DATABASE_ADAPTOR = 'dynamodb'
     FEED_URI = 'aws://{bucket}/{filename}'.format(
         bucket=AWS_S3_BUCKET,
         filename=AWS_S3_FILE_NAME
     )
+    RDS_USERNAME = os.environ.get('DATABASE_USER', 'postgres')
+    RDS_PASSWORD = os.environ.get('DATABASE_PASSWORD', '')
+    RDS_HOST = os.environ.get('DATABASE_URL')
+    RDS_DATABASE = os.environ.get('DATABASE_NAME', 'scraper')
 
 else:
     # By default, log the results in a local folder
-    DATABASE_ADAPTOR = 'postgresql'
     FEED_URI = './results/%(name)s.json'
+    RDS_DATABASE = 'scraper'
 
 # Lists to look for (case insensitive)
 SECTIONS_KEYWORDS_FILE = './resources/section_keywords.txt'

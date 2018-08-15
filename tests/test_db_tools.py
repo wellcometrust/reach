@@ -1,5 +1,4 @@
 import unittest
-import os
 from tools import DatabaseConnector
 
 
@@ -7,12 +6,10 @@ class TestDBTools(unittest.TestCase):
 
     def setUp(self):
         """Assuming the database is already set up."""
-        url = os.getenv('DATABASE_URL_TEST')
-        self.assertTrue(url)
-        if not url:
-            return
-        self.database = DatabaseConnector(url)
-        mock_article = {
+        self.database = DatabaseConnector(
+            'localhost', 'test_user', '', 'scraper_test'
+        )
+        mock_publication = {
             'title': 'foo',
             'uri': 'http://foo.bar',
             'pdf': 'foobar',
@@ -33,7 +30,8 @@ class TestDBTools(unittest.TestCase):
             'ipsum'
         ]
         id_provider = self.database.get_or_create_name('foo.org', 'provider')
-        id_pub = self.database.insert_full_article(mock_article, id_provider)
+        id_pub = self.database.insert_full_publication(mock_publication,
+                                                       id_provider)
         self.database.insert_joints('type', types, id_pub)
         self.database.insert_joints('subject', subjects, id_pub)
         self.database.insert_joints_and_text('section', sections, id_pub)
@@ -51,8 +49,8 @@ class TestDBTools(unittest.TestCase):
         self.database._execute('DELETE FROM publication')
         self.database._execute('DELETE FROM provider')
 
-    def test_full_article(self):
-        self.assertTrue(self.database.is_scraped('0' * 32))
+    def test_full_publication(self):
+        self.assertTrue(self.database.get_scraping_info('0' * 32))
 
     def test_joints(self):
         self.database._execute('SELECT * FROM section')

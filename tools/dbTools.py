@@ -1,12 +1,11 @@
 import psycopg2
 import psycopg2.extras
 import logging
-import os
 from datetime import datetime
 
 
 class DatabaseConnector:
-    def __init__(self, database_url=None):
+    def __init__(self, host, user, password, dbname, port=5432):
         """Initialise an instance of the DatabaseConnector class and create:
          - self.logger: a logger to log errors
          - self.connection: the connection to the sqlite3 database
@@ -16,31 +15,24 @@ class DatabaseConnector:
         """
 
         self.logger = logging.getLogger(__name__)
-        if not database_url:
-            database_url = os.getenv('DATABASE_URL')
-        self.connection = psycopg2.connect(database_url)
+        self.connection = psycopg2.connect(
+            host=host,
+            user=user,
+            password=password,
+            port=port,
+            dbname=dbname
+        )
         self.cursor = self.connection.cursor(
             cursor_factory=psycopg2.extras.NamedTupleCursor
         )
-        self._check_db()
 
     def __del__(self):
         """Commit all changes and close the database connection on the deletion
         of this instance from memory.
         """
-        self._close_all_spiders()
         self.connection.commit()
         self.cursor.close()
         self.connection.close()
-
-    def _close_all_spiders(self):
-        self._execute(
-            """
-            UPDATE spiders
-            SET status = %s, end_time = CURRENT_TIMESTAMP;
-            """,
-            ('finished',)
-        )
 
     def _execute(self, query, params=()):
         """Try to execute the SQL query passed by the query parameter, with the
@@ -56,54 +48,25 @@ class DatabaseConnector:
             )
             raise
 
-    def _check_db(self):
-        """Create the tables needed by the web scraper if they don't exists."""
-        self._execute(
-            """
-            CREATE TABLE IF NOT EXISTS article
-            (
-                id SERIAL PRIMARY KEY,
-                url VARCHAR(255),
-                file_hash VARCHAR(32),
-                scrap_again BOOLEAN DEFAULT FALSE,
-                timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-            );
-            """
-        )
-        self._execute(
-            """
-            CREATE TABLE IF NOT EXISTS spiders
-            (
-                id SERIAL PRIMARY KEY,
-                name VARCHAR(64),
-                uuid VARCHAR(64),
-                status VARCHAR(255),
-                end_time TIMESTAMP,
-                start_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-            );
-            """
-        )
-        self.connection.commit()
-
     def reset_scraped(self):
-        """Set all the articles `scrap_again` attribute to 1, forcing the web
-        scraper to download and analyse them again.
+        """Set all the publications `scrape_again` attribute to 1, forcing the
+        web scraper to download and analyse them again.
         """
         self._execute(
-            "UPDATE article SET scrap_again = %s",
+            "UPDATE publication SET scrape_again = %s",
             ('True',)
         )
 
     def clear_db(self):
-        """Remove all the articles from the database."""
+        """Remove all the publications from the database."""
         self._execute(
-            "DELETE FROM article"
+            "DELETE FROM publication"
         )
 
-    def is_scraped(self, file_hash):
-        """Check if an article had already been scraped by looking for its file
-        hash into the database. If the article exists, returns its id and its
-        `scrape_again` value
+    def get_scraping_info(self, file_hash):
+        """Check if an publication had already been scraped by looking for its file
+        hash into the database. If the publication exists, returns its id and
+        its `scrape_again` value
         """
         self._execute(
             """
@@ -114,13 +77,10 @@ class DatabaseConnector:
             (file_hash,)
         )
         result = self.cursor.fetchone()
-        if result:
-            return result.id, result.scrape_again
-        else:
-            return (None, None)
+        return result
 
-    def get_articles(self, offset=0, limit=-1):
-        """Return a list of articles. By default, returns every articles. This
+    def get_publications(self, offset=0, limit=-1):
+        """Return a list of publications. By default, returns every publications. This
         method accepts start and end arguments to paginate results.
         """
         if limit > 0:
@@ -134,12 +94,12 @@ class DatabaseConnector:
         else:
             self._execute("SELECT title, file_hash, url FROM publication")
         result = []
-        for article in self.cursor.fetchall():
-            result.append(article)
+        for publication in self.cursor.fetchall():
+            result.append(publication)
         return result
 
-    def insert_full_article(self, article, id_provider):
-        """Insert an entire article in the database and return its id."""
+    def insert_full_publication(self, publication, id_provider):
+        """Insert an entire publication in the database and return its id."""
         self._execute(
             """
             INSERT INTO publication(title, url, pdf_name, file_hash,
@@ -148,13 +108,14 @@ class DatabaseConnector:
             VALUES(%s, %s, %s, %s, %s, %s, %s, %s, %s)
             RETURNING id;
             """,
-            (article['title'], article['uri'], article['pdf'],
-             article['hash'], article.get('authors', ''), article['year'],
-             article['text'], id_provider, datetime.now(),)
+            (publication['title'], publication['uri'], publication['pdf'],
+             publication['hash'], publication.get('authors'),
+             publication.get('year'), publication['text'], id_provider,
+             datetime.now(),)
         )
         return self.cursor.fetchone().id
 
-    def update_full_article(self, article):
+    def update_full_publication(self, publication):
         self._execute(
             """
             UPDATE publication
@@ -168,12 +129,12 @@ class DatabaseConnector:
                 pdf_text=%s,
             WHERE id=%s;
             """,
-            (article['title'], article['uri'], article['pdf'],
-             article['hash'], article.get('authors', ''), article['year'],
-             article['text'], article['id'],)
+            (publication['title'], publication['uri'], publication['pdf'],
+             publication['hash'], publication.get('authors'),
+             publication.get('year'), publication['text'], publication['id'],)
         )
 
-    def insert_joints_and_text(self, table, items, id_article):
+    def insert_joints_and_text(self, table, items, id_publication):
         """Create both a name table and a joint table between a publication and
         another item with a 0-n or 1-n cardinality, containing a text element.
         """
@@ -191,10 +152,10 @@ class DatabaseConnector:
                     )
                     VALUES(%s, %s, %s);
                 """.format(table=table),
-                (id_article, db_name_id, text_value,)
+                (id_publication, db_name_id, text_value,)
             )
 
-    def insert_joints(self, table, items, id_article):
+    def insert_joints(self, table, items, id_publication):
         """Create both a name table and a joint table between a publication and
         another item with a 0-n or 1-n cardinality.
         """
@@ -211,7 +172,7 @@ class DatabaseConnector:
                     )
                     VALUES(%s, %s);
                 """.format(table=table),
-                (id_article, db_name_id,)
+                (id_publication, db_name_id,)
             )
 
     def get_or_create_name(self, name, table):
@@ -236,8 +197,8 @@ class DatabaseConnector:
             )
             return self.cursor.fetchone().id
 
-    def insert_article(self, file_hash, url):
-        """Try to insert an article, composed by its file hash and url,
+    def insert_publication(self, file_hash, url):
+        """Try to insert an publication, composed by its file hash and url,
         into the database.
         """
 
@@ -247,15 +208,15 @@ class DatabaseConnector:
             )
             url = url[:255]
         self._execute(
-            "INSERT INTO article (file_hash, url) VALUES (%s, %s)",
+            "INSERT INTO publication (file_hash, url) VALUES (%s, %s)",
             (file_hash, url)
         )
 
     def get_finished_crawls(self):
         self._execute("SELECT * FROM spiders WHERE status = %s", ('finished',))
         result = []
-        for article in self.cursor:
-            result.append(article)
+        for publication in self.cursor:
+            result.append(publication)
         return result
 
     def insert_spider(self, name, uuid):
