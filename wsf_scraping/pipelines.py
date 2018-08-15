@@ -3,7 +3,7 @@ import os
 import logging
 from datetime import datetime
 from scrapy import spiderloader
-from tools import DatabaseConnector, DynamoDBConnector
+from tools import DatabaseConnector
 from tools.utils import parse_keywords_files, get_file_hash
 from scrapy.utils.project import get_project_settings
 from scrapy.exceptions import DropItem
@@ -35,10 +35,12 @@ class WsfScrapingPipeline(object):
             folder_path = os.path.join('results', 'pdfs', spider_name)
             os.makedirs(folder_path, exist_ok=True)
 
-        if self.settings['DATABASE_ADAPTOR'] == 'dynamodb':
-            self.database = DynamoDBConnector()
-        else:
-            self.database = DatabaseConnector()
+        self.database = DatabaseConnector(
+            self.settings['RDS_HOST'],
+            self.settings['RDS_USERNAME'],
+            self.settings['RDS_PASSWORD'],
+            self.settings['RDS_DATABASE']
+        )
         self.logger.info(
             'Using %s database backend. [%s]',
             self.settings.get('DATABASE_ADAPTOR'),
@@ -119,6 +121,11 @@ class WsfScrapingPipeline(object):
                 self.logger.warning(
                     "The file couldn't be found, and wasn't deleted."
                 )
+
+        # Remove the path from the value we are storing
+        item['pdf'] = os.path.basename(item['pdf'])
+        item['provider'] = spider_name
+        item['date_scraped'] = datetime.now().strftime('%Y%m%d')
         return item
 
     def process_item(self, item, spider):
@@ -128,28 +135,15 @@ class WsfScrapingPipeline(object):
             raise DropItem(
                 'Empty filename, could not parse the pdf.'
             )
-        file_hash = get_file_hash(item['pdf'])
-        id_publication, scrape_again = self.database.is_scraped(file_hash)
-        if id_publication and not scrape_again:
-            # File is already scraped in the database
-            raise DropItem(
-                'Item footprint is already in the database'
-            )
-        full_item = self.check_keywords(item, spider.name, item['pdf'])
+        item['hash'] = get_file_hash(item['pdf'])
+        db_item = self.database.get_scraping_info(item['hash'])
 
-        # Remove the path from the value we are storing
-        full_item['pdf'] = os.path.basename(item['pdf'])
-        full_item['hash'] = file_hash
-        full_item['provider'] = spider.name
-        full_item['date_scraped'] = datetime.now().strftime('%Y%m%d')
-        if scrape_again:
-            full_item['id'] = id_publication
-            self.database.update_full_article(full_item)
-        else:
+        if not db_item:
+            full_item = self.check_keywords(item, spider.name, item['pdf'])
             id_provider = self.database.get_or_create_name(
                 spider.name, 'provider'
             )
-            id_publication = self.database.insert_full_article(
+            id_publication = self.database.insert_full_publication(
                 full_item,
                 id_provider
             )
@@ -174,6 +168,15 @@ class WsfScrapingPipeline(object):
                 id_publication
             )
 
-        self.database.insert_article(file_hash, item['uri'])
+            self.database.insert_publication(item['hash'], item['uri'])
+        elif db_item.scrape_again:
+            full_item = self.check_keywords(item, spider.name, item['pdf'])
+            full_item['id'] = db_item.id
+            self.database.update_full_publication(full_item)
+        else:
+            # File is already scraped in the database
+            raise DropItem(
+                'Item footprint is already in the database'
+            )
 
         return full_item

@@ -4,6 +4,7 @@ import scrapy
 
 class BaseArticle(scrapy.Item):
     title = scrapy.Field()
+    year = scrapy.Field()
     uri = scrapy.Field()
     pdf = scrapy.Field()
     sections = scrapy.Field()
@@ -15,14 +16,13 @@ class BaseArticle(scrapy.Item):
 
 
 class WHOArticle(BaseArticle):
-    year = scrapy.Field()
     types = scrapy.Field()
     subjects = scrapy.Field()
     authors = scrapy.Field()
 
 
 class NICEArticle(BaseArticle):
-    year = scrapy.Field()
+    pass
 
 
 class UNICEFArticle(BaseArticle):

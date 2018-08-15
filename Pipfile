@@ -1,0 +1,19 @@
+[[source]]
+url = "https://pypi.org/simple"
+verify_ssl = true
+name = "pypi"
+
+[packages]
+scrapy = "==1.5.1"
+"psycopg2-binary" = "==2.7.5"
+pyahocorasick = "==1.1.8"
+requests = "==2.19.1"
+"boto3" = "==1.7.73"
+"bs4" = "*"
+
+[dev-packages]
+pytest = "*"
+moto = "*"
+
+[requires]
+python_version = "3.6"
