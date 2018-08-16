@@ -20,12 +20,19 @@ Please note we have a code of conduct, please follow it in all your interactions
 
 ## Code of Conduct
 
-### Values we defend
+### Our Pledge
 
-As part of the Wellcome trust, we expect you to use this code with respect for both people
-and licenses involved in the analysis of the references you want to parse.
+In the interest of fostering an open and welcoming environment, we as
+contributors and maintainers pledge to making participation in our project and
+our community a harassment-free experience for everyone, regardless of age, body
+size, disability, ethnicity, sex characteristics, gender identity and expression,
+level of experience, education, socio-economic status, nationality, personal
+appearance, race, religion, or sexual identity and orientation.
 
-### Expected behaviour
+As part of the Wellcome trust, we expect you to use this code with respect for people
+involved in the analysis of the references you want to parse.
+
+### Our Standards
 
 Examples of behavior that contributes to creating a positive environment
 include:
