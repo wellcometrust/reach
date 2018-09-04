@@ -1,19 +1,17 @@
 # Description
 
-Please include a summary of the changes this PR introduces for the codebase. Make sure to specify is some sections needs special attention,
-as well as why you want to introduce this change.
+Please include a summary of the changes this PR introduces for the codebase. Make sure to specify if some sections need special attention
+, and why you want to introduce this change.
 
-Make sure to split changes across multiple pull request, as we won review meta-pull requests.
+Make sure to split changes across multiple pull request, as we won review  bundled pull requests.
 
 Finally, make sure your PR follows our code of conduct before posting (Check our [contributing guidelines](CONTRIBUTING.md) if you're not sure).
-
-Fixes # (issue)
 
 ## Type of change
 
 Please delete options that are not relevant.
 
-- [ ] :bug: Bug fix
+- [ ] :bug: Bug fix (Add `Fix #(issue)` to your PR)
 - [ ] :sparkles: New feature
 - [ ] :fire: Breaking change
 - [ ] :memo: Documentation update
@@ -23,10 +21,9 @@ Please delete options that are not relevant.
 Please describe the tests that you ran to verify your changes. Provide instructions so we can reproduce. Please also list any relevant details for your test configuration:
 
 **Test Configuration**:
-* Firmware version:
-* Hardware:
-* Toolchain:
-* SDK:
+* Operating system:
+* References layout:
+* Python version:
 
 # Checklist:
 
