@@ -60,7 +60,7 @@ class LocalSettings(BaseSettings):
     RDS_USERNAME = 'postgres'
     RDS_PASSWORD = ''
     RDS_HOST = '127.0.0.1'
-    RDS_PORT = os.environ.get('RDS_PORT', 5437)
+    RDS_PORT = os.environ.get('RDS_PORT', 5432)
     RDS_REFERENCES_DATABASE = "parser_references"
 
     RDS_URL = "postgresql+psycopg2://{user}:{passw}@{host}:{port}/{db}".format(
