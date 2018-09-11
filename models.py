@@ -1,3 +1,7 @@
+import pandas as pd
+
+from utils import serialise_matched_reference, serialise_reference
+from settings import settings
 from datetime import datetime
 from sqlalchemy import Column, ForeignKey, Integer, String, DateTime
 from sqlalchemy.ext.declarative import declarative_base
@@ -49,8 +53,71 @@ class Reference(Base):
 
 
 class DatabaseEngine():
-    def get_session(url):
+    def _get_session(self, url):
         engine = create_engine(url)
         Base.metadata.bind = engine
         DBSession = sessionmaker(bind=engine)
         return DBSession()
+
+    def __init__(self):
+        self.meta = Base.metadata
+        self.session = self._get_session(settings.RDS_URL)
+
+    def save_to_database(self, documents, references):
+        doc_list = documents.where(
+            (pd.notnull(documents)),
+            None
+        ).to_dict(orient='records')
+        ref_list = references.where(
+            (pd.notnull(references)),
+            None
+        ).to_dict(orient='records')
+        now = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+
+        org = self.session.query(Organisation).filter(
+            Organisation.name == settings.ORGANISATION
+        ).first()
+
+        if not org:
+            org = Organisation(name=settings.ORGANISATION)
+            self.session.add(org)
+        for doc in doc_list:
+            serial_doc = serialise_reference(doc, now)
+            new_doc = self.session.query(Document).filter(
+                Document.file_hash == serial_doc['file_hash']
+                and Document.authors == serial_doc['author']
+                and Document.title == serial_doc['title']
+            ).first()
+            if not new_doc:
+                new_doc = Document(
+                    author=serial_doc['author'],
+                    issue=serial_doc['issue'],
+                    journal=serial_doc['journal'],
+                    volume=serial_doc['volume'],
+                    pub_year=serial_doc['pub_year'],
+                    pagination=serial_doc['pagination'],
+                    title=serial_doc['title'],
+                    file_hash=serial_doc['file_hash'],
+                    datetime_creation=serial_doc['datetime_creation'],
+                    organisation=org,
+                )
+                self.session.add(new_doc)
+        self.session.commit()
+        for ref in ref_list:
+            serial_ref = serialise_matched_reference(ref, now)
+            document = self.session.query(Document).filter(
+                Document.file_hash == serial_ref['document_hash']
+            ).first()
+            new_ref = self.session.query(Reference).filter(
+                Reference.publication_id == serial_ref['publication_id']
+                and Reference.id_document == document.id
+            ).first()
+            if not new_ref:
+                new_ref = Reference(
+                    document=document,
+                    publication_id=serial_ref['publication_id'],
+                    cosine_similarity=serial_ref['cosine_similarity'],
+                    datetime_creation=serial_ref['datetime_creation']
+                )
+                self.session.add(new_ref)
+        self.session.commit()
