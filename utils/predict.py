@@ -40,11 +40,11 @@ def predict_references(mnb, vectorizer, reference_components):
         # 2 digits are 18, 19 or 20 sentences as years.
         valid_years_range = range(1800, 2020)
         if (
-           (component.isdigit()
+           (component.isdecimal()
             and int(component) in valid_years_range)
            or (
                len(component) == 6
-               and component[1:5].isdigit()
+               and component[1:5].isdecimal()
                and int(component[1:5]) in valid_years_range)
            ):
             predict_all.append({
