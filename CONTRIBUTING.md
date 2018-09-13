@@ -1,16 +1,15 @@
 # Contributing
 
-:tada: First of all, welcome to this repository, and thanks for your interest, wether you want to contribute
+:tada: First of all, welcome to this repository, and thanks for your interest, whether you want to contribute
 or simply are interested in opening an issue.
 
-When contributing to this repository, please first discuss the change you wish to make via issue,
-email, or any other method with the owners of this repository before making a change.
+When contributing to this repository, please first discuss the change you wish to make by creating an issue before making a change.
 
 Please note we have a code of conduct, please follow it in all your interactions with the project.
 
 ## Pull Request Process
 
-1. Before pushing your code, please make sure to have it tested and covered by some unit tests.
+1. Before pushing your code, please make sure to have it covered by some unit tests. Also make sure that the code passes both your tests and the other tests.
 
 2. Use our pull request template to submit any changes to the code, even minor.
 
