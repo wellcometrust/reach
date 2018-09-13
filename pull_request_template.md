@@ -1,9 +1,9 @@
 # Description
 
-Please include a summary of the changes this PR introduces for the codebase. Make sure to specify if some sections need special attention
-, and why you want to introduce this change.
+Please include a summary of the changes this PR introduces for the codebase.
+Also specify if some sections need special attention, and why you want to introduce this change.
 
-Make sure to split changes across multiple pull request, as we won review  bundled pull requests.
+Make sure to split changes across multiple pull request, as we won't review  bundled pull requests.
 
 Finally, make sure your PR follows our code of conduct before posting (Check our [contributing guidelines](CONTRIBUTING.md) if you're not sure).
 
@@ -20,11 +20,6 @@ Please delete options that are not relevant.
 
 Please describe the tests that you ran to verify your changes. Provide instructions so we can reproduce. Please also list any relevant details for your test configuration:
 
-**Test Configuration**:
-* Operating system:
-* References layout:
-* Python version:
-
 # Checklist:
 
 - [ ] My code follows the style guidelines of this project (pep8 AND pyflakes)
@@ -33,3 +28,4 @@ Please describe the tests that you ran to verify your changes. Provide instructi
 - [ ] I included tests in my PR
 - [ ] New and existing unit tests pass locally with my changes
 - [ ] Any dependent changes have been merged and published in downstream modules
+- [ ] If my PR aims to fix an issue, I referenced it using `#(issue)`
