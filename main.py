@@ -75,12 +75,15 @@ def save_to_database(documents, references, session):
             and Document.title == serial_doc['title']
         ).first()
         if not new_doc:
+            pub_year = (serial_doc['pub_year']
+                        if serial_doc['pub_year'].isdecimal()
+                        else None)
             new_doc = Document(
                 author=serial_doc['author'],
                 issue=serial_doc['issue'],
                 journal=serial_doc['journal'],
                 volume=serial_doc['volume'],
-                pub_year=serial_doc['pub_year'],
+                pub_year=pub_year,
                 pagination=serial_doc['pagination'],
                 title=serial_doc['title'],
                 file_hash=serial_doc['file_hash'],

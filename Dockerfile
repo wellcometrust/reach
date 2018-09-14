@@ -4,16 +4,17 @@ FROM python:3.6.4
 WORKDIR /reference_parser
 
 
-COPY ./dynamodb.py /reference_parser/dynamodb.py
-COPY ./s3.py /reference_parser/s3.py
+COPY ./utils/* /reference_parser/utils/
 COPY ./main.py /reference_parser/main.py
 COPY ./models.py /reference_parser/models.py
-COPY ./separate.py /reference_parser/separate.py
-COPY ./predict.py /reference_parser/predict.py
-COPY ./fuzzymatch.py /reference_parser/fuzzymatch.py
-COPY ./requirements.txt /reference_parser/requirements.txt
 COPY ./settings.py /reference_parser/settings.py
 
-RUN pip install -r requirements.txt
+COPY ./Pipfile /reference_parser/Pipfile
+COPY ./Pipfile.lock /reference_parser/Pipfile.lock
+
+# Install dependencies using pipenv
+RUN pip install -U -q pip
+RUN pip install pipenv
+RUN pipenv install --system --deploy
 
 CMD ["python", "main.py"]
