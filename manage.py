@@ -1,4 +1,5 @@
 import click
+from main import run_predict
 from models import DatabaseEngine
 
 
@@ -27,14 +28,12 @@ def recreate_db():
               help='The full path to a pkl vectorizer file. Optional')
 @click.argument('scraper_file', type=click.Path(exists=True))
 @click.argument('references_file', type=click.Path(exists=True))
-def run_predict(scraper_file, references_file,
-                model_file, vectorizer_file):
-    # TODO: Write some cod-ish stuff here
-    pass
+def predict(scraper_file, references_file, model_file, vectorizer_file):
+    run_predict(scraper_file, references_file, model_file, vectorizer_file)
 
 
 cli.add_command(recreate_db)
-cli.add_command(run_predict)
+cli.add_command(predict)
 
 if __name__ == '__main__':
     cli()
