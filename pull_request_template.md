@@ -3,7 +3,7 @@
 Please include a summary of the changes this PR introduces for the codebase.
 Also specify if some sections need special attention, and why you want to introduce this change.
 
-Make sure to split changes across multiple pull request, as we won't review bundled pull requests.
+Make sure to split changes across multiple pull requests, as we won't review bundled pull requests.
 
 Finally, make sure your PR follows our code of conduct before posting (Check our [contributing guidelines](CONTRIBUTING.md) if you're not sure).
 
