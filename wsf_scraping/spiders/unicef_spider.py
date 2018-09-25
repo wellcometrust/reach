@@ -32,7 +32,7 @@ class UnicefSpider(BaseSpider):
     def parse(self, response):
         """ Parse the articles listing page and go to the next one.
 
-        @url https://data.unicef.org/resources/resource-type/publication/
+        @url https://data.unicef.org/resources/resource-type/publications/
         @returns items 0 0
         @returns requests 1
         """

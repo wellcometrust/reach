@@ -98,8 +98,8 @@ class NiceSpider(BaseSpider):
     def parse_related_documents(self, response):
         """ Scrape the guidance evidencies. Then, redirect to the PDF pages.
 
-        @url https://www.nice.org.uk/guidance/ta494/evidence
-        @returns requests 1 1
+        @url https://www.nice.org.uk/guidance/ng2/evidence
+        @returns requests 3
         @returns items 0 0
         """
 

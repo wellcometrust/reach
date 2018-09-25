@@ -30,9 +30,12 @@ class DatabaseConnector:
         """Commit all changes and close the database connection on the deletion
         of this instance from memory.
         """
-        self.connection.commit()
-        self.cursor.close()
-        self.connection.close()
+        try:
+            self.connection.commit()
+            self.cursor.close()
+            self.connection.close()
+        except AttributeError:
+            self.logger.warning('Tried to close a non-existant connection.')
 
     def _execute(self, query, params=()):
         """Try to execute the SQL query passed by the query parameter, with the
