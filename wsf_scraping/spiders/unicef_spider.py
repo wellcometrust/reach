@@ -16,7 +16,7 @@ class UnicefSpider(BaseSpider):
         """
 
         urls = [
-            'https://data.unicef.org/resources/resource-type/publication/',
+            'https://data.unicef.org/resources/resource-type/publications/',
             'https://data.unicef.org/resources/resource-type/guidance/'
         ]
 
@@ -37,7 +37,7 @@ class UnicefSpider(BaseSpider):
         @returns requests 1
         """
 
-        for href in response.css('h2 a::attr(href)').extract():
+        for href in response.css('h3 a::attr(href)').extract():
             yield Request(
                 url=response.urljoin(href),
                 callback=self.parse_article,
