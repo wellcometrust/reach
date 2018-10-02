@@ -11,13 +11,6 @@ RUN apt-get update -yqq \
     locales \
   && apt-get -q clean
 
-# Build locales to avoid encoding issues with Scrapy encoding
-RUN locale-gen en_GB.UTF-8
-
-ENV LC_ALL=en_GB.UTF-8
-ENV LANG=en_GB.UTF-8
-ENV LANGUAGE=en_GB.UTF-8
-
 WORKDIR /wsf_scraper
 
 COPY ./wsf_scraping /wsf_scraper/wsf_scraping
@@ -25,16 +18,20 @@ COPY ./resources /wsf_scraper/resources
 COPY ./pdf_parser /wsf_scraper/pdf_parser
 COPY ./tools /wsf_scraper/tools
 
-COPY ./api.py /wsf_scraper/api.py
+COPY ./entrypoint.sh /wsf_scraper/entrypoint.sh
 
 COPY ./scrapy.cfg /wsf_scraper/scrapy.cfg
-COPY ./requirements.txt /wsf_scraper/requirements.txt
+
+# Pipenv require these two files to install requirements in the pinned version
+COPY ./Pipfile /wsf_scraper/Pipfile
+COPY ./Pipfile.lock /wsf_scraper/Pipfile.lock
 
 # Scrapy needs a var directory to store logs
-RUN mkdir var
+RUN mkdir -p var/tmp
 
-RUN pip install -r requirements.txt
+# Install dependencies using pipenv
+RUN pip install -U pip
+RUN pip install pipenv
+RUN pipenv install --system --deploy
 
-EXPOSE 5005
-
-CMD ["python", "api.py"]
+CMD ["./entrypoint.sh"]
