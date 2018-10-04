@@ -7,9 +7,7 @@ from botocore.exceptions import ClientError
 
 
 class AWSFeedStorage(BlockingFeedStorage):
-    """This feed storage will store the results in a json file, in a S3 bucket
-    and will update the Dynamodb catalog table with the location, the timestamp
-    and the name of the file.
+    """Stores Scrapy feed results as json files in S3.
     """
 
     def __init__(self, uri):
@@ -50,8 +48,7 @@ class AWSFeedStorage(BlockingFeedStorage):
         return last_content.decode('utf-8', 'replace')
 
     def _store_in_thread(self, data_file):
-        """This method will try to upload the file to S3, then to insert the
-        file's related information into DynamoDB.
+        """This method will try to upload the file to S3.
         """
         data_file.seek(0)
         date_tag = datetime.now().strftime('%Y%m%d')
