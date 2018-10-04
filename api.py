@@ -1,4 +1,5 @@
 import json
+import os
 import tempfile
 import uuid
 from datetime import datetime
@@ -11,6 +12,7 @@ from twisted.internet import reactor, endpoints
 from scrapy.utils.log import configure_logging
 from twisted.web import server, wsgi
 
+DATABASE_URL = os.environ['DATABASE_URL']
 
 class ScrAPI(Flask):
 
@@ -20,7 +22,7 @@ class ScrAPI(Flask):
             self._init_url_rules()
             self.process = CrawlerRunner(get_project_settings())
             self.tp = reactor.getThreadPool()
-            self.database = DatabaseConnector()
+            self.database = DatabaseConnector(DATABASE_URL)
             self.response_meta = {"meta": {
                 "project": "WSF Web Scraper"
             }}
@@ -274,4 +276,4 @@ def run_scrAPI():
 
 
 if __name__ == '__main__':
-        run_scrAPI()
+    run_scrAPI()
