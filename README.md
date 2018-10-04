@@ -4,55 +4,47 @@
 
 A web scraper tool to get data for evaluating Wellcome impact.
 
-## Installation
+## Development
 
-### Common steps
-Install Postgresql (https://www.postgresql.org/) and create a `wsf_scraping` database
-Clone this repository
+Development generally runs from within docker.  To run a scraper using
+the code in your local repo:
 
-Run the content of `scraper.sql` as a SQL query on your postresql database
+1. Start a clean postgres DB:
+   ```
+   docker-compose up -d articles-db
+   ```
+2. Build the base image
+   ```
+   make base_image
+   ```
+3. Run a scraper:
+   ```
+   ./docker_run.sh ./entrypoint.sh SPIDER_TO_RUN
+   ```
+   where `SPIDER_TO_RUN` is one of:
+     * `who_iris`
+     * `gov_uk`
+     * `nice`
+     * `unicef`
+     * `msf`
 
-## Unsing Docker
-Install Docker (https://www.docker.com/get-started)
-Run `docker build -t wsf-scraper .`
-Create a `local.env` file containing the following environment variables:
-```
-DATABASE_URL=postgres://postgres:postgres@localhost:5432/wsf_scraping
-DATABASE_URL_TEST=postgres://postgres:postgres@localhost:5432/wsf_scraping_test
+If you need to run outside docker, Dockerfile.base and entrypoint.sh
+should point you in the right direction.
 
-S3_ACCESS_KEY=[Your AWS key]
-S3_SECRET_KEY=[Your AWS secret]
-S3_BUCKET=wsf_scraping_results
-
-SPIDER_TO_RUN=[who_iris|gov_uk|nice|unicef|msf]
-
-```
-Run `docker run wsf-scraper --env-file=local.env`
-
-### Without Docker
-This project uses Pipenv. Instructions to install it can be found here: https://pipenv.readthedocs.io/en/latest/
-Once you installed pipenv, just run `pipenv install` to setup you local repository.
-To parse PDF, this repository needs Poppler: https://poppler.freedesktop.org/
-If you're on any unix system, you can use your packet manager to install `poppler-utils` and `libpoppler-cpp-dev`.
-
-Configure your options in `settings.py`
-Export the following variables in your terminal:
-```
-DATABASE_URL=postgres://postgres:postgres@localhost:5432/wsf_scraping
-DATABASE_URL_TEST=postgres://postgres:postgres@localhost:5432/wsf_scraping_test
-```
-You can run the scraper using `pipenv run scrapy crawl [spider_name]` or activating a pipenv shell using `pipenv shell` and then run `scrapy crawl [spider_name]`
-
+You can also run both the DB and the API with `docker-compose up -d`,
+but it's not clear how much anyone uses the API.
 
 ## Usage
 
-To deploy this scraper yourself, see the wiki: https://github.com/wellcometrust/wsf-web-scraper/wiki
+To deploy this scraper yourself, see the wiki:
+https://github.com/wellcometrust/wsf-web-scraper/wiki
 
 This scraper can also be deployed more easily using Docker.
 
 ## Output Formatting
 
-The outputed file is meant to contain a number a different fields, which can vary depending on the scraper provider.
+The outputed file is meant to contain a number a different fields, which
+can vary depending on the scraper provider.
 
 It will always have the following attributes, though:
 

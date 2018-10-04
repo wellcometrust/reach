@@ -36,14 +36,10 @@ class WsfScrapingPipeline(object):
             os.makedirs(folder_path, exist_ok=True)
 
         self.database = DatabaseConnector(
-            self.settings['RDS_HOST'],
-            self.settings['RDS_USERNAME'],
-            self.settings['RDS_PASSWORD'],
-            self.settings['RDS_DATABASE']
+            self.settings['DATABASE_URL']
         )
         self.logger.info(
-            'Using %s database backend. [%s]',
-            self.settings.get('DATABASE_ADAPTOR'),
+            'Pipeline initialized FEED_CONFIG=%s',
             self.settings.get('FEED_CONFIG'),
         )
 
