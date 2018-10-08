@@ -32,7 +32,9 @@ class DatabaseConnector:
             self.cursor.close()
             self.connection.close()
         except AttributeError:
-            self.logger.warning('Tried to close a non-existant connection.')
+            if hasattr(self, 'logger'):
+                # __del__ can be called before self.logger is created.
+                self.logger.warning('Tried to close a non-existent connection.')
 
     def _execute(self, query, params=()):
         """Try to execute the SQL query passed by the query parameter, with the

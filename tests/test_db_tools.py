@@ -7,7 +7,7 @@ class TestDBTools(unittest.TestCase):
     def setUp(self):
         """Assuming the database is already set up."""
         self.database = DatabaseConnector(
-            'localhost', 'test_user', '', 'scraper_test'
+            'postgres://postgres:postgres@articles-db:5432/wsf_scraping_test'
         )
         mock_publication = {
             'title': 'foo',
