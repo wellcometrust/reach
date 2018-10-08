@@ -1,27 +1,5 @@
 version: '3.4'
 services:
-  web:
-    container_name: scrAPI
-    image: web-scraper.base
-    volumes:
-      - ".:/wsf_scraper"
-    ports:
-      - 5005:5005
-
-    command:
-      - python
-      - api.py
-    environment:
-      DATABASE_URL: "postgres://postgres:postgres@articles-db:5432/wsf_scraping"
-
-    expose:
-      - "5000"
-
-    depends_on:
-      - articles-db
-    links:
-      - articles-db
-
   articles-db:
     container_name: articles-db
     build:

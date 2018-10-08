@@ -1,3 +1,10 @@
+"""
+REST API for controlling a scraper. No longer used, but has some
+interesting code on Flask & Twisted reactor interop.
+
+Archived 2018-10-08.
+"""
+
 import json
 import os
 import tempfile

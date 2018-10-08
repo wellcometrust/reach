@@ -10,7 +10,7 @@ To bring up the development environment using docker:
 
 1. Start a clean postgres DB:
    ```
-   docker-compose up -d articles-db
+   docker-compose up -d
    ```
 2. Build the base image
    ```
@@ -32,10 +32,6 @@ where `SPIDER_TO_RUN` is one of:
 
 If you need to run outside docker, Dockerfile.base and entrypoint.sh
 should point you in the right direction.
-
-You can also run both the DB and the API with `docker-compose up -d`,
-but it's not clear how much anyone uses the API.
-
 
 ## Testing
 
