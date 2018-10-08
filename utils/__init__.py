@@ -1,5 +1,4 @@
-from .separate import (split_sections, split_reference,
-                       process_reference_section,
+from .separate import (process_reference_section,
                        summarise_predicted_references,
                        test_get_reference_components)
 from .predict import predict_references, predict_structure, test_structure
@@ -17,7 +16,5 @@ __all__ = [
     load_csv_file,
     load_json_file,
     load_pickle_file,
-    get_file,
-    split_sections,
-    split_reference,
+    get_file
 ]
