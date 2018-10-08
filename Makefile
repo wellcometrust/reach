@@ -9,7 +9,7 @@ base_image:
 
 .PHONY: image
 image:
-	docker build -t $(IMAGE):$(VERSION) .
+	docker build -t $(IMAGE):$(VERSION) -t $(IMAGE):latest .
 
 .PHONY: all
 all: base_image image
