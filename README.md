@@ -6,8 +6,7 @@ A web scraper tool to get data for evaluating Wellcome impact.
 
 ## Development
 
-Development generally runs from within docker.  To run a scraper using
-the code in your local repo:
+To bring up the development environment using docker:
 
 1. Start a clean postgres DB:
    ```
@@ -17,22 +16,36 @@ the code in your local repo:
    ```
    make base_image
    ```
-3. Run a scraper:
-   ```
-   ./docker_run.sh ./entrypoint.sh SPIDER_TO_RUN
-   ```
-   where `SPIDER_TO_RUN` is one of:
-     * `who_iris`
-     * `gov_uk`
-     * `nice`
-     * `unicef`
-     * `msf`
+
+Then, to run a scraper from your local repo, run:
+
+```
+./docker_run.sh ./entrypoint.sh SPIDER_TO_RUN
+```
+
+where `SPIDER_TO_RUN` is one of:
+  * `who_iris`
+  * `gov_uk`
+  * `nice`
+  * `unicef`
+  * `msf`
 
 If you need to run outside docker, Dockerfile.base and entrypoint.sh
 should point you in the right direction.
 
 You can also run both the DB and the API with `docker-compose up -d`,
 but it's not clear how much anyone uses the API.
+
+
+## Testing
+
+To run tests, first bring up the development environment as above.
+
+Then, run:
+
+```
+./docker_run.sh python -m unittest discover -s /pwd/tests
+```
 
 ## Usage
 
