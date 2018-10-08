@@ -81,7 +81,9 @@ class WsfScrapingPipeline(object):
             if not pdf_file:
                 return item
 
-            item['text'] = pdf_text
+            # In some case, the text contains NUL bit that are not allowed in
+            # PSQL. We just remove them.
+            item['text'] = pdf_text.replace('\0', '')
 
             for keyword in self.section_keywords:
                 # Fetch references or other keyworded list
@@ -163,8 +165,8 @@ class WsfScrapingPipeline(object):
                 id_publication
             )
             self.database.insert_joints(
-                'subjects',
-                full_item.get('types'),
+                'subject',
+                full_item.get('subjects'),
                 id_publication
             )
 

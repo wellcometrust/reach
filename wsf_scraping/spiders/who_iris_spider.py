@@ -128,8 +128,8 @@ class WhoIrisSpider(BaseSpider):
             '.file-link a::attr("href")'
         ).extract_first()
 
-        data_dict['subjects'] = details_dict.get('subject mesh', [])
-        data_dict['types'] = details_dict.get('type', [])
+        data_dict['subjects'] = set(details_dict.get('subject mesh', []))
+        data_dict['types'] = set(details_dict.get('type', []))
         data_dict['authors'] = ', '.join(
             details_dict.get('contributor author', [])
         )
