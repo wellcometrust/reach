@@ -3,6 +3,13 @@ import scrapy
 
 
 class BaseArticle(scrapy.Item):
+    def __repr__(self):
+        return repr({
+            'title': self.get('title'),
+            'uri': self.get('uri'),
+            'provider': self.get('provider'),
+        })
+
     title = scrapy.Field()
     year = scrapy.Field()
     uri = scrapy.Field()
