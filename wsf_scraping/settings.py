@@ -86,15 +86,11 @@ if FEED_CONFIG == 'AWS':
         bucket=AWS_S3_BUCKET,
         filename=AWS_S3_FILE_NAME
     )
-    RDS_USERNAME = os.environ.get('DATABASE_USER', 'postgres')
-    RDS_PASSWORD = os.environ.get('DATABASE_PASSWORD', '')
-    RDS_HOST = os.environ.get('DATABASE_URL')
-    RDS_DATABASE = os.environ.get('DATABASE_NAME', 'scraper')
-
 else:
     # By default, log the results in a local folder
     FEED_URI = './results/%(name)s.json'
-    RDS_DATABASE = 'scraper'
+
+DATABASE_URL = os.environ['DATABASE_URL']
 
 # Lists to look for (case insensitive)
 SECTIONS_KEYWORDS_FILE = './resources/section_keywords.txt'
