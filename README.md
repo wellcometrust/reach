@@ -29,6 +29,7 @@ where `SPIDER_TO_RUN` is one of:
   * `nice`
   * `unicef`
   * `msf`
+  * `parliament`
 
 If you need to run outside docker, Dockerfile.base and entrypoint.sh
 should point you in the right direction.
@@ -84,3 +85,10 @@ Some providers will have additional parameters:
 |Attribute|Description|
 |---------|-----------|
 |year     | the publication year of the document|
+
+### Parliament
+
+|Attribute|Description|
+|---------|-----------|
+|year     | the publication year of the document|
+|types    | the type of the document |
