@@ -42,3 +42,7 @@ class MSFArticle(BaseArticle):
 
 class GovArticle(BaseArticle):
     pass
+
+
+class ParliamentArticle(BaseArticle):
+    types = scrapy.Field()
