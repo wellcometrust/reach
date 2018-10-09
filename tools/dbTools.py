@@ -34,7 +34,9 @@ class DatabaseConnector:
         except AttributeError:
             if hasattr(self, 'logger'):
                 # __del__ can be called before self.logger is created.
-                self.logger.warning('Tried to close a non-existent connection.')
+                self.logger.warning(
+                    'Tried to close a non-existent connection.'
+                )
 
     def _execute(self, query, params=()):
         """Try to execute the SQL query passed by the query parameter, with the
@@ -66,9 +68,9 @@ class DatabaseConnector:
         )
 
     def get_scraping_info(self, file_hash):
-        """Check if an publication had already been scraped by looking for its file
-        hash into the database. If the publication exists, returns its id and
-        its `scrape_again` value
+        """Check if an publication had already been scraped by looking for its
+        file hash into the database. If the publication exists, returns its id
+        and its `scrape_again` value
         """
         self._execute(
             """
@@ -82,8 +84,9 @@ class DatabaseConnector:
         return result
 
     def get_publications(self, offset=0, limit=-1):
-        """Return a list of publications. By default, returns every publications. This
-        method accepts start and end arguments to paginate results.
+        """Return a list of publications. By default, returns every
+        publications. This method accepts start and end arguments to
+        paginate results.
         """
         if limit > 0:
             self._execute(
