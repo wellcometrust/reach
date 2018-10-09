@@ -166,7 +166,6 @@ class WsfScrapingPipeline(object):
                 id_publication
             )
 
-            self.database.insert_publication(item['hash'], item['uri'])
         elif db_item.scrape_again:
             full_item = self.check_keywords(item, spider.name, item['pdf'])
             full_item['id'] = db_item.id
