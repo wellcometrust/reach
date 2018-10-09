@@ -31,7 +31,7 @@ def load_csv_file(file_prefix, file_name):
     in dev mode.
     """
     file_content = get_file(file_prefix, file_name)
-    csv_file = StringIO(file_content.decode('utf-8'))
+    csv_file = StringIO(file_content)
     raw_text_data = pd.read_csv(csv_file)
     return raw_text_data
 
