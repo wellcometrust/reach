@@ -1,19 +1,5 @@
 version: '3.4'
 services:
-  web:
-    container_name: scrAPI
-    build: .
-    volumes:
-      - '.:/wsf_scraper'
-    ports:
-      - 5005:5005
-    env_file:
-      - web_variables.env
-    depends_on:
-      - articles-db
-    links:
-      - articles-db
-
   articles-db:
     container_name: articles-db
     build:
@@ -21,5 +7,6 @@ services:
       dockerfile: Dockerfile
     ports:
       - 5436:5432
-    env_file:
-      - db_variables.env
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres

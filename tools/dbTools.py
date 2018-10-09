@@ -5,23 +5,20 @@ from datetime import datetime
 
 
 class DatabaseConnector:
-    def __init__(self, host, user, password, dbname, port=5432):
+    def __init__(self, dsn):
         """Initialise an instance of the DatabaseConnector class and create:
          - self.logger: a logger to log errors
          - self.connection: the connection to the sqlite3 database
          - self.cursor: the cursor to execute requests on the database
         It also run the check_db method, creating the database if it doesn't
         exists yet.
+
+        Args:
+            dsn: data source name / libpq connection string
         """
 
         self.logger = logging.getLogger(__name__)
-        self.connection = psycopg2.connect(
-            host=host,
-            user=user,
-            password=password,
-            port=port,
-            dbname=dbname
-        )
+        self.connection = psycopg2.connect(dsn)
         self.cursor = self.connection.cursor(
             cursor_factory=psycopg2.extras.NamedTupleCursor
         )
@@ -35,7 +32,9 @@ class DatabaseConnector:
             self.cursor.close()
             self.connection.close()
         except AttributeError:
-            self.logger.warning('Tried to close a non-existant connection.')
+            if hasattr(self, 'logger'):
+                # __del__ can be called before self.logger is created.
+                self.logger.warning('Tried to close a non-existent connection.')
 
     def _execute(self, query, params=()):
         """Try to execute the SQL query passed by the query parameter, with the

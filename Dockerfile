@@ -1,17 +1,5 @@
 # Use a basic Python image
-FROM python:3.6.4
-
-# Poppler is needed to run pdftotext convertion
-RUN apt-get update -yqq \
-  && apt-get install -yqq --no-install-recommends \
-    gcc \
-    libpoppler-cpp-dev \
-    poppler-utils \
-    pkg-config \
-    locales \
-  && apt-get -q clean
-
-WORKDIR /wsf_scraper
+FROM web-scraper.base
 
 COPY ./wsf_scraping /wsf_scraper/wsf_scraping
 COPY ./resources /wsf_scraper/resources
@@ -28,10 +16,5 @@ COPY ./Pipfile.lock /wsf_scraper/Pipfile.lock
 
 # Scrapy needs a var directory to store logs
 RUN mkdir -p var/tmp
-
-# Install dependencies using pipenv
-RUN pip install -U pip
-RUN pip install pipenv
-RUN pipenv install --system --deploy
 
 CMD ["./entrypoint.sh"]
