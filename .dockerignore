@@ -4,3 +4,4 @@ Dockerfile
 .gitignore
 var/*
 results/*
+data/*
