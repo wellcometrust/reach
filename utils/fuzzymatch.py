@@ -5,7 +5,7 @@ from sklearn.metrics.pairwise import cosine_similarity
 
 
 class FuzzyMatcher:
-    def __init__(self, real_publications):
+    def __init__(self, real_publications, titles):
         self.vectorizer = TfidfVectorizer(lowercase=True, ngram_range=(1, 1))
         self.tfidf_matrix = self.vectorizer.fit_transform(
             real_publications['title']
