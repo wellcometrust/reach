@@ -48,9 +48,9 @@ class WsfScrapingPipeline(object):
         keywords and section based on the section/keywords files provided.
         """
 
-        keep_pdf = self.settings['KEEP_PDF']
+        # keep_pdf = self.settings['KEEP_PDF']
         download_only = self.settings['DOWNLOAD_ONLY']
-        feed = self.settings['FEED_CONFIG']
+        # feed = self.settings['FEED_CONFIG']
         pdf_result_path = os.path.join(
             'results',
             'pdfs',
@@ -75,6 +75,7 @@ class WsfScrapingPipeline(object):
             pdf_file, pdf_text = parse_pdf_document(f)
 
             if not pdf_file:
+                os.remove(item['pdf'])
                 return item
 
             # In some case, the text contains NUL bit that are not allowed in
@@ -101,24 +102,15 @@ class WsfScrapingPipeline(object):
             if keyword_dict:
                 item['keywords'] = keyword_dict
 
-        has_keywords = len(item['keywords'])
+        # has_keywords = len(item['keywords'])
 
         # If we need to keep the pdf, move it, else delete it
-        if keep_pdf or has_keywords:
-            if feed == 'S3':
-                pass
-            else:
-                os.rename(
-                    item['pdf'],
-                    pdf_result_path,
-                )
-        else:
-            try:
-                os.remove(item['pdf'])
-            except FileNotFoundError:
-                self.logger.warning(
-                    "The file couldn't be found, and wasn't deleted."
-                )
+        try:
+            os.remove(item['pdf'])
+        except FileNotFoundError:
+            self.logger.warning(
+                "The file couldn't be found, and wasn't deleted."
+            )
 
         # Remove the path from the value we are storing
         item['pdf'] = os.path.basename(item['pdf'])
@@ -172,6 +164,7 @@ class WsfScrapingPipeline(object):
             self.database.update_full_publication(full_item)
         else:
             # File is already scraped in the database
+            os.remove(item['pdf'])
             raise DropItem(
                 'Item footprint is already in the database'
             )
