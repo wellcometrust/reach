@@ -19,7 +19,7 @@ class FileManager():
             'pickle': self.load_pickle_file,
         }
 
-    def get_file(self, file_prefix, file_name, file_type):
+    def get_file(self, file_name, file_prefix, file_type):
         if self.mode == 'S3':
             return self.get_from_s3(file_prefix, file_name, file_type)
 
@@ -38,7 +38,7 @@ class FileManager():
     def get_from_local(self, file_prefix, file_name, file_type):
         file_path = os.path.join(file_prefix, file_name)
         file_mode = 'rb' if type == 'pickle' else 'r'
-        file_content = open(file_path, file_mode).read()
+        file_content = open(file_path, file_mode, encoding='utf-8').read()
 
         return self.loaders[file_type](file_content)
 
