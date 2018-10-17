@@ -138,6 +138,10 @@ class WsfScrapingPipeline(object):
 
         if not db_item:
             full_item = self.check_keywords(item, spider.name, item['pdf'])
+            if not item.get('text'):
+                raise DropItem(
+                    'Empty file text, could not find section or keywords.'
+                )
             id_provider = self.database.get_or_create_name(
                 spider.name, 'provider'
             )
