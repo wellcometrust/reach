@@ -59,28 +59,17 @@ class ParliamentSpider(BaseSpider):
             title = li.css('h4 a::text').extract_first().strip()
             year = meta[0][-4:]
             type = meta[1]
-            if link.endswith('pdf'):
-                yield Request(
-                    url=response.urljoin(link),
-                    meta={
-                        'title': title,
-                        'year': year,
-                        'type': type
-                    },
-                    callback=self.save_pdf,
-                    errback=self.on_error,
-                )
-            else:
-                yield Request(
-                    url=response.urljoin(link),
-                    meta={
-                        'title': title,
-                        'year': year,
-                        'type': type
-                    },
-                    callback=self.parse_others,
-                    errback=self.on_error,
-                )
+
+            yield Request(
+                url=response.urljoin(link),
+                meta={
+                    'title': title,
+                    'year': year,
+                    'type': type
+                },
+                callback=self.parse_others,
+                errback=self.on_error,
+            )
 
         next = response.css('.next a::attr(href)').extract_first()
         if next:
@@ -95,24 +84,50 @@ class ParliamentSpider(BaseSpider):
         at this point, we stop looking this way.
         """
 
-        for href in response.css('a::attr(href)').extract():
-            if href.endswith('pdf'):
-                yield Request(
-                    url=response.urljoin(href),
-                    meta={
-                        'title': response.meta.get('title'),
-                        'year': response.meta.get('year'),
-                        'type': response.meta.get('type'),
-                    },
-                    callback=self.save_pdf,
-                    errback=self.on_error,
-                )
+        # Some of the parliament's pdf are categorised as octetstream
+        is_pdf = self._check_headers(
+            response.headers
+        ) or self._check_headers(
+            response.headers,
+            b'application/octet-stream'
+        )
+
+        if is_pdf:
+            yield Request(
+                url=response.urljoin(response.request.url),
+                meta={
+                    'title': response.meta.get('title'),
+                    'year': response.meta.get('year'),
+                    'type': response.meta.get('type'),
+                },
+                callback=self.save_pdf,
+                errback=self.on_error,
+            )
+        else:
+            for href in response.css('a::attr(href)').extract():
+                if href.endswith('pdf'):
+                    yield Request(
+                        url=response.urljoin(href),
+                        meta={
+                            'title': response.meta.get('title'),
+                            'year': response.meta.get('year'),
+                            'type': response.meta.get('type'),
+                        },
+                        callback=self.save_pdf,
+                        errback=self.on_error,
+                    )
 
     def save_pdf(self, response):
         """Retrieve the pdf file and scan it to scrape keywords and sections.
         """
 
-        is_pdf = self._check_headers(response.headers)
+        # Some of the parliament's pdf are categorised as octetstream
+        is_pdf = self._check_headers(
+            response.headers
+        ) or self._check_headers(
+            response.headers,
+            b'application/octet-stream'
+        )
 
         if not is_pdf:
             self.logger.info('Not a PDF, aborting (%s)', response.url)
