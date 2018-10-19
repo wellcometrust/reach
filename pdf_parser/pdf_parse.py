@@ -20,7 +20,6 @@ def parse_pdf_document(document):
     cmd = [
             'pdftohtml',
             '-i',
-            '-q',
             '-xml',
             document.name,
             parsed_path
@@ -28,17 +27,22 @@ def parse_pdf_document(document):
 
     try:
         with open(os.devnull, 'w') as FNULL:
-            subprocess.check_call(cmd, stdout=FNULL)
+            subprocess.check_call(cmd, stdout=FNULL, stderr=FNULL)
+
+        with open(parsed_path, 'rb') as html_file:
+            soup = bs(html_file.read(), 'html.parser')
+
     except subprocess.CalledProcessError as e:
         logger.warning(
             "The pdf [%s] could not be converted: %r",
             document.name,
             e.stderr,
         )
-        return None
+        return None, None
 
-    html_file = open(parsed_path, 'rb')
-    soup = bs(html_file.read(), 'html.parser')
+    except FileNotFoundError:
+        return None, None
+
     text = soup.text
     file_pages = []
     pages = soup.find_all('page')
