@@ -1,0 +1,10 @@
+*.pyc
+*__pycache__
+*.DS_Store
+data/*
+!data/.gitkeep
+.idea
+*env*
+model_tests/results/*
+model_tests/data_test/*
+!model_tests/results/.gitkeep
