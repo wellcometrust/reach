@@ -29,7 +29,7 @@ def test_reference_structuring(actual_reference_structures):
     test3_score = {}
     test3_infos = {}
     for organisation in settings.ORGANISATIONS:
-        print(organisation + "\n-----\n")
+        print("\n-----\n" + organisation + "\n-----\n")
 
         # Just use the data for the relevant source:
         this_actual_reference_structures = actual_reference_structures.loc[
@@ -55,7 +55,6 @@ def test_reference_structuring(actual_reference_structures):
 
         test3_infos[organisation] = test3_info
         test3_score[organisation] = mean_similarity_score['Title']
-        logger.info(similarity_score)
 
         similarity_scores.append(similarity_score)
 

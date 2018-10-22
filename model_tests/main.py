@@ -98,12 +98,6 @@ def run_tests():
     logger.info("Summary")
     logger.info("===========")
 
-    logger.info(test1_score)
-    logger.info(test2_score)
-    logger.info(test2_score['who_iris'])
-    logger.info(test3_score['who_iris'])
-    logger.info(test4_score)
-
     overall_scores = []
     for org in organisations:
         if not test2_score.get(org) or not test3_score.get(org):

@@ -22,7 +22,7 @@ def test_reference_number(actual_number_refs):
     test2_score = {}
     test2_infos = {}
     for organisation in settings.ORGANISATIONS:
-        logger.info(organisation + "\n-----\n")
+        logger.info("\n-----\n" + organisation + "\n-----\n")
 
         # Just use the data for the relevant source:
         this_actual_number_refs = actual_number_refs.loc[
