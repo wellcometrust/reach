@@ -36,27 +36,31 @@ def test_reference_structuring(actual_reference_structures):
             actual_reference_structures['Source'] == organisation
         ]
 
-        # How well did it predict for each category of a reference?
-        similarity_score, mean_similarity_score = test_structure(
-            this_actual_reference_structures,
-            settings.COMPONENTS_ID_NAME,
-            settings.ACTUAL_PUBLICATION_ID_NAME,
-            mnb, vectorizer)
+        if not this_actual_reference_structures.empty:
 
-        test3_info = "".join([
-            "Average similarity scores between predicted and actual ",
-            "references for each component, using a sample of ",
-            "{} references: \n".format(len(this_actual_reference_structures)),
-            "{}\n".format(mean_similarity_score),
-            "Number of samples with predictions: ",
-            str(mean_similarity_score['Number with a prediction']),
-        ])
-        logger.info(test3_info)
+            # How well did it predict for each category of a reference?
+            similarity_score, mean_similarity_score = test_structure(
+                this_actual_reference_structures,
+                settings.COMPONENTS_ID_NAME,
+                settings.ACTUAL_PUBLICATION_ID_NAME,
+                mnb, vectorizer)
 
-        test3_infos[organisation] = test3_info
-        test3_score[organisation] = mean_similarity_score['Title']
+            test3_info = "".join([
+                "Average similarity scores between predicted and actual ",
+                "references for each component, using a sample of ",
+                "{} references: \n".format(len(this_actual_reference_structures)),
+                "{}\n".format(mean_similarity_score),
+                "Number of samples with predictions: ",
+                str(mean_similarity_score['Number with a prediction']),
+            ])
+            logger.info(test3_info)
 
-        similarity_scores.append(similarity_score)
+            test3_infos[organisation] = test3_info
+            test3_score[organisation] = mean_similarity_score['Title']
+
+            similarity_scores.append(similarity_score)
+        else:
+            print("No testing data for this organisation")
 
     similarity_scores = pd.concat(similarity_scores)
     similarity_scores.to_csv(
