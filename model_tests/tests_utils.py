@@ -1,15 +1,78 @@
 import pandas as pd
 import numpy as np
-import time
 
+from .test_settings import settings
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
 
-from utils import (predict_references, predict_structure, load_csv_file,
-                   load_pickle_file, load_json_file, FuzzyMatcher,
+from utils import (predict_references, predict_structure, FuzzyMatcher,
                    split_sections, split_reference)
 
-from settings import settings
+
+def test_get_reference_components(predicted_number_refs, actual_number_refs):
+    """
+    Input:
+    - How many references found in each document
+    - How many references there actually were in a sample of documents
+    Output:
+    - How much these values match for the sample manually counted
+    - This is measured as the average difference as a proportion of the actual
+      number
+    - The comparison numbers
+    """
+
+    print("How well the number of references are predicted being computed...")
+    comparison = []
+    for index, row in actual_number_refs.iterrows():
+
+        # This will happen when there was a references section pulled only
+        # There are a few in the sample who had no references section pulled
+
+        this_document_predicted = predicted_number_refs.loc[
+            predicted_number_refs['uri'] == row['uri']
+        ].reset_index()
+
+        if (len(this_document_predicted) == 0):
+            this_document_predicted = None
+            difference_per = None
+        else:
+            this_document_predicted = this_document_predicted[
+                'Predicted number of references'
+            ][0]
+
+            if (row['Number of References in WHO pdf'] == 0):
+                difference_per = None
+            else:
+                difference_per = abs(
+                    row['Number of References in WHO pdf']
+                    - this_document_predicted
+                ) / row['Number of References in WHO pdf']
+
+        comparison.append(
+            [row['Number of References in WHO pdf'],
+             this_document_predicted, difference_per]
+        )
+
+    comparison = pd.DataFrame(
+        comparison,
+        columns=[
+            "Number of References in WHO pdf",
+            "Predicted number of references",
+            "Difference as proportion of actual number"
+        ]
+    )
+
+    mean_difference_per = np.mean(
+        comparison["Difference as proportion of actual number"]
+    )
+
+    print(
+        "Average difference between actual and predicted number of references",
+        "as proportion of actual number is ",
+        str(round(mean_difference_per, 4))
+    )
+
+    return mean_difference_per, comparison
 
 
 def split_string(publications, column_name, replace_strings_list=[(',', '.')]):
@@ -31,7 +94,6 @@ def split_string(publications, column_name, replace_strings_list=[(',', '.')]):
 def process_training_publications(publications):
     """
     process_training_publications
-
      to get the structured publications data into a format usable as a
      training set:
      - Input is training set data from a list of classified publications
@@ -151,14 +213,14 @@ def test_number_refs(raw_text_data, actual_number_refs, organisation_regex,
     for document_id in set(document_ids):
         # Get the raw data for this doc id, Should only be one row
         this_document_references = raw_text_data.loc[
-            raw_text_data[raw_publication_id_name] == document_id
+            raw_text_data[settings.RAW_PUBLICATION_ID_NAME] == document_id
         ]
 
         this_document_actual_number = actual_number_refs.loc[
             actual_number_refs[
                 actual_publication_id_name
             ] == document_id
-        ][num_refs_title_name]
+        ][settings.NUM_REFS_TITLE_NAME]
 
         if (len(this_document_actual_number) == 1):
             this_document_actual_number = list(this_document_actual_number)[0]
@@ -205,7 +267,7 @@ def test_number_refs(raw_text_data, actual_number_refs, organisation_regex,
 
     comparison = pd.DataFrame(
         predicted_number_refs_temp, columns=[
-            actual_publication_id_name, num_refs_title_name,
+            actual_publication_id_name, settings.NUM_REFS_TITLE_NAME,
             'Predicted number of references',
             "Difference as proportion of actual number"
         ])
@@ -244,7 +306,7 @@ def test_structure(actual_reference_structures, components_id_name,
 
     predicted_reference_structures = predict_structure(
         reference_components_ref_structures_predictions,
-        prediction_probability_threshold)
+        settings.PREDICTION_PROBABILITY_THRESHOLD)
 
     for _, actual_reference in actual_reference_structures.iterrows():
         # Find the predicted reference for this (based on similar title)
@@ -368,336 +430,3 @@ def test_match(match_publications, test_publications,
     ]
 
     return true_positives, true_negatives, false_negatives, false_positives
-
-
-if __name__ == '__main__':
-
-    now = time.strftime('%d-%m-%Y %H-%M-%S')
-
-    folder_prefix = "/Users/gallaghe/Code/data-labs/MLReferenceSorter/data"
-
-    pub_data_file_name = ''.join([
-        "Publication Year is 2017 ",
-        "Funder is WT ",
-        "Dimensions-Publication-2018-02-13_11-23-53",
-        ".csv",
-    ])
-
-    test_pub_data_file_name = "positive_and_negative_publication_samples.csv"
-
-    match_pub_data_file_name = "uber_api_publications.csv"
-
-    num_refs_file_name = "actual_number_refs_sample.csv"
-    num_refs_title_name = "Number of References in pdf"
-
-    struct_refs_file_name = "actual_reference_structures_sample.csv"
-
-    test_set_size = 100  # Number of publications to use to test model
-    prediction_probability_threshold = 0.75
-    test2_thresh = 0.4
-    fuzzymatch_sample = 200
-
-    organisations = ['who_iris', 'nice', 'unicef', 'msf']
-
-    # Unstructured references from latest policy scrape:
-
-    raw_publication_id_name = "hash"
-    actual_publication_id_name = "hash"
-    components_id_name = "Document id"
-    actual_uber_id_name = "uber_uber_id"
-
-    log_file = open(
-        'Test results - ' + str(now), 'w')
-    log_file.write(
-        'Organisations = ' + str(organisations) + '\n' +
-        'Regexes used = ' + repr(settings._regex_dict) + '\n' +
-        'Date of test = ' + str(now) + '\n' +
-        'Number of publications in test set = ' + str(test_set_size) + '\n' +
-        'WT publication data file name = ' + str(pub_data_file_name) + '\n\n'
-        )
-
-    # Load trained model
-    mnb = load_pickle_file(settings.MODEL_DIR, settings.CLASSIFIER_FILENAME)
-    vectorizer = load_pickle_file(
-        settings.MODEL_DIR,
-        settings.VECTORIZER_FILENAME
-    )
-
-    # Load publication data for testing model predictions
-    publications = load_csv_file(
-        folder_prefix,
-        pub_data_file_name
-    )
-
-    # Load manually found number of references for a sample of documents
-    actual_number_refs = load_csv_file(
-        folder_prefix,
-        num_refs_file_name
-    )
-
-    # Load manually found structure of references for a sample of documents
-    actual_reference_structures = load_csv_file(
-        folder_prefix,
-        struct_refs_file_name
-    )
-
-    # Load WT publications to match references against
-    match_publications = load_csv_file(
-        folder_prefix,
-        match_pub_data_file_name
-    )
-
-    test_publications = load_csv_file(
-        folder_prefix,
-        test_pub_data_file_name
-    )
-
-    test1_score = 0
-    test2_score = 0
-    test3_score = 0
-    test4_score = 0
-
-    # TEST 1 : Model predictions =============
-    # ========================================
-    # How well does the model predict components?
-    print("============")
-    print("Test 1 - How well does the model predict components?")
-    print("============")
-    publications_to_test_model = publications.ix[:(test_set_size-1), :]
-
-    num_mislabeled, len_test_set, prop_cats_correct_label = test_model(
-        mnb, vectorizer, publications_to_test_model)
-
-    test1_info = str(
-        "Number of correctly labelled test points " +
-        str(len_test_set-num_mislabeled) + " out of " +
-        str(len_test_set) + " = " +
-        str(round(100*(len_test_set-num_mislabeled)/len_test_set)) + "%\n" +
-        "By category:\n" +
-        str(prop_cats_correct_label))
-
-    print(test1_info)
-
-    log_file.write('=====\nTest 1:\n=====\n' + test1_info + "\n\n")
-
-    test1_score = (len_test_set-num_mislabeled)/len_test_set
-
-    # TEST 2 : Number of references ==========
-    # ========================================
-    # Test how well the number of refs were predicted
-    print("============")
-    print("Test 2 - How well the number of refs were predicted")
-    print("============")
-
-    log_file.write('=====\nTest 2:\n=====\n')
-
-    comparisons = []
-    test2_score = {}
-    for organisation in organisations:
-        print(organisation + "\n-----\n")
-
-        # Just use the data for the relevant source:
-        this_actual_number_refs = actual_number_refs.loc[
-            actual_number_refs['Source'] == organisation
-        ]
-
-        # Select the policy documents which were manually tested
-        sample_uri_number_refs = set(
-            this_actual_number_refs[actual_publication_id_name]
-        )
-
-        # Get the raw data for this organisation:
-        raw_text_data = load_json_file(
-            settings.SCRAPER_RESULTS_DIR,
-            "{}.json".format(organisation)
-        )
-
-        # Predict how many references these policy documents have
-        raw_text_data_sample_number_refs = raw_text_data[raw_text_data[
-            raw_publication_id_name
-        ].isin(sample_uri_number_refs)]
-
-        mean_difference_per, comparison = test_number_refs(
-            raw_text_data_sample_number_refs,
-            this_actual_number_refs,
-            settings._regex_dict[organisation],
-            actual_publication_id_name,
-            components_id_name
-        )
-
-        comparison['Source'] = organisation
-
-        number_correct = len(
-            comparison.loc[
-                comparison[
-                    'Difference as proportion of actual number'
-                ] <= test2_thresh
-            ]
-        )
-
-        test2_info = str(
-            "Average difference between actual and predicted number of " +
-            "references as proportion of actual number is " +
-            str(round(mean_difference_per, 4)) + "\n" +
-            "Proportion of test references with close to the same " +
-            "actual and predicted number of references (difference <= " +
-            str(test2_thresh) + ") = " +
-            str(round(number_correct/len(comparison), 4)))
-        print(test2_info)
-
-        log_file.write(organisation + "\n-----\n" + test2_info + "\n\n")
-
-        test2_score[organisation] = number_correct/len(comparison)
-        comparisons.append(comparison)
-
-    comparisons = pd.concat(comparisons)
-    comparisons.to_csv(
-        "Test results - number of references comparison - " + now + ".csv"
-    )
-
-    # TEST 3 : Structuring of references ==========
-    # ========================================
-    # Test how well a title was predicted in a reference
-    print("============")
-    print(
-        "Test 3 - How well reference components were predicted in a reference"
-    )
-    print("============")
-
-    log_file.write('=====\nTest 3:\n=====\n')
-
-    similarity_scores = []
-    test3_score = {}
-
-    for organisation in organisations:
-        print(organisation + "\n-----\n")
-
-        # Just use the data for the relevant source:
-        this_actual_reference_structures = actual_reference_structures.loc[
-            actual_reference_structures['Source'] == organisation
-        ]
-
-        # How well did it predict for each category of a reference?
-        similarity_score, mean_similarity_score = test_structure(
-            this_actual_reference_structures,
-            components_id_name,
-            actual_publication_id_name,
-            mnb, vectorizer)
-
-        test3_info = "".join([
-            "Average similarity scores between predicted and actual ",
-            "references for each component, using a sample of ",
-            "{} references: \n".format(len(this_actual_reference_structures)),
-            "{}\n".format(mean_similarity_score),
-            "Number of samples with predictions: ",
-            str(mean_similarity_score['Number with a prediction']),
-        ])
-        print(test3_info)
-
-        log_file.write(organisation + "\n-----\n" + test3_info + "\n\n")
-
-        test3_score[organisation] = mean_similarity_score['Title']
-        print(similarity_score)
-
-        similarity_scores.append(similarity_score)
-
-    similarity_scores = pd.concat(similarity_scores)
-    similarity_scores.to_csv(
-        "Test results - cosine similarity of references comparison - "
-        + now
-        + ".csv"
-    )
-
-    # TEST 4 : Fuzzy matching of references ==========
-    # ========================================
-    print("============")
-    print(
-        "Test 4 - How well the algo matches list references with WT references"
-    )
-    print("===========")
-
-    # Take the negative examples out of the match publications:
-    neg_test_pub_ids = test_publications.loc[
-        test_publications['Type'] == 'Negative'
-    ]['Match pub id']
-
-    match_publications = match_publications.loc[
-        ~match_publications['uber_id'].isin(neg_test_pub_ids)
-    ].reset_index()
-
-    (true_positives, true_negatives,
-     false_negatives, false_positives) = test_match(
-        match_publications,
-        test_publications,
-        settings.FUZZYMATCH_THRESHOLD,
-        settings.BLOCKSIZE
-    )
-
-    num_pos = sum(test_publications['Type'] == 'Positive')
-    num_neg = sum(test_publications['Type'] == 'Negative')
-
-    proportion_correct_match = (
-        len(true_positives) + (num_neg - len(false_negatives))
-    )/(num_pos + num_neg)
-
-    test4_info = """Proportion correctly matched from a random sample of
-    {pos} positive and {neg} negative samples: {correct}
-
-    Number from positive set with a match with the same ID: {true_pos}
-    Number from positive set with a match with a different ID: {true_neg}
-    Number from negative set with a match with a different ID: {false_pos}
-    Number from negative set with a match with the same ID: {false_neg}
-    Number from negative set with no matches: {no_match}
-    """.format(
-        pos=num_pos,
-        neg=num_neg,
-        correct=proportion_correct_match,
-        true_pos=len(true_positives),
-        true_neg=len(false_negatives),
-        false_pos=len(false_positives),
-        false_neg=len(false_positives),
-        no_match=num_neg - len(false_negatives) - len(false_positives),
-    )
-
-    true_negatives['Type'] = "Positive set with match with a different ID"
-    false_negatives['Type'] = "Negative set with a match"
-
-    print(test4_info)
-
-    pd.concat([true_negatives, false_negatives]).to_csv(
-        "Test results - False matches - " + now + ".csv")
-
-    log_file.write('=====\nTest 4:\n=====\n' + test4_info)
-
-    test4_score = proportion_correct_match
-
-    # Summary
-    # ========================================
-    print("============")
-    print("Summary")
-    print("===========")
-
-    tests_weightings = [1, 1, 1, 1]
-
-    print(test1_score)
-    print(test2_score)
-    print(test2_score['who_iris'])
-    print(test3_score['who_iris'])
-    print(test4_score)
-
-    overall_scores = []
-    for org in organisations:
-        overall_scores.append(
-            {org: test1_score*test2_score[org]*test3_score[org]*test4_score})
-
-    summary_info = str(
-        "Test 1 = " + str(test1_score) + '\n' +
-        "Test 2 = " + str(test2_score) + '\n' +
-        "Test 3 = " + str(test3_score) + '\n' +
-        "Test 4 = " + str(test4_score) + '\n' +
-        "Overall score = " + str(overall_scores))
-    print(summary_info)
-
-    log_file.write("=====\nSummary:\n=====\n" + summary_info)
-
-    log_file.close()
