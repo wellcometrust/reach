@@ -163,7 +163,12 @@ class WsfScrapingPipeline(object):
             )
 
         elif db_item.scrape_again:
-            full_item = self.check_keywords(item, spider.name, item['pdf'])
+
+            # Convert the item to dict so we can give it an ID
+            full_item = dict(self.check_keywords(
+                item, spider.name, item['pdf']
+            ))
+
             full_item['id'] = db_item.id
             self.database.update_full_publication(full_item)
         else:
