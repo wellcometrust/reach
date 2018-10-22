@@ -55,7 +55,7 @@ class ProdSettings(BaseSettings):
 
 
 class LocalSettings(BaseSettings):
-    DEBUG = False
+    DEBUG = True
 
     RDS_USERNAME = 'postgres'
     RDS_PASSWORD = ''
