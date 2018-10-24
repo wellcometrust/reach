@@ -1,0 +1,12 @@
+*__pycache__
+*.pyc
+.idea
+data
+env
+model_test
+CONTRIBUTING.md
+manage.py
+Pipfile
+Pipfile.lock
+README.md
+pull_request_template.md
