@@ -1,4 +1,4 @@
-from utils import load_csv_file
+from utils import FileManager
 from datetime import datetime
 from .test_settings import settings
 from . import (test_model_predictions, test_reference_number,
@@ -27,39 +27,45 @@ def run_tests():
     )
 
     logger.info('Reading files...')
+    fm = FileManager()
 
     logger.info(f'[+] Reading {settings.PUB_DATA_FILE_NAME}')
     # Load publication data for testing model predictions
-    publications = load_csv_file(
+    publications = fm.get_file(
+        settings.PUB_DATA_FILE_NAME,
         settings.FOLDER_PREFIX,
-        settings.PUB_DATA_FILE_NAME
+        'csv'
     )
 
     logger.info(f'[+] Reading {settings.NUM_REFS_FILE_NAME}')
     # Load manually found number of references for a sample of documents
-    actual_number_refs = load_csv_file(
+    actual_number_refs = fm.get_file(
+        settings.NUM_REFS_FILE_NAME,
         settings.FOLDER_PREFIX,
-        settings.NUM_REFS_FILE_NAME
+        'csv'
     )
 
     logger.info(f'[+] Reading {settings.STRUCT_REFS_FILE_NAME}')
     # Load manually found structure of references for a sample of documents
-    actual_reference_structures = load_csv_file(
+    actual_reference_structures = fm.get_file(
+        settings.STRUCT_REFS_FILE_NAME,
         settings.FOLDER_PREFIX,
-        settings.STRUCT_REFS_FILE_NAME
+        'csv'
     )
 
     logger.info(f'[+] Reading {settings.MATCH_PUB_DATA_FILE_NAME}')
     # Load WT publications to match references against
-    match_publications = load_csv_file(
+    match_publications = fm.get_file(
+        settings.MATCH_PUB_DATA_FILE_NAME,
         settings.FOLDER_PREFIX,
-        settings.MATCH_PUB_DATA_FILE_NAME
+        'csv'
     )
 
     logger.info(f'[+] Reading {settings.TEST_PUB_DATA_FILE_NAME}')
-    test_publications = load_csv_file(
+    test_publications = fm.get_file(
+        settings.TEST_PUB_DATA_FILE_NAME,
         settings.FOLDER_PREFIX,
-        settings.TEST_PUB_DATA_FILE_NAME
+        'csv'
     )
 
     logger.info('Starting the tests...')
@@ -97,6 +103,12 @@ def run_tests():
     logger.info("============")
     logger.info("Summary")
     logger.info("===========")
+
+    logger.info(test1_score)
+    logger.info(test2_score)
+    logger.info(test2_score['who_iris'])
+    logger.info(test3_score['who_iris'])
+    logger.info(test4_score)
 
     overall_scores = []
     for org in organisations:
