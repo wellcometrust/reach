@@ -1,81 +1,11 @@
 import pandas as pd
+from settings import settings
 
 
 class Predicter:
-    def predict_reference_comp(self, mnb, vectorizer, word_list):
-        # To test what individual things predict,
-        # it can deal with a list input or not
-        # The maximum probability found is the probability
-        # of the predicted classification
 
-        vec_list = vectorizer.transform(word_list).toarray()
-        predict_component = mnb.predict(vec_list)
-        predict_component_probas = mnb.predict_proba(vec_list)
-        predict_component_proba = [
-            single_predict.max() for single_predict in predict_component_probas
-        ]
-
-        return predict_component, predict_component_proba
-
-    def predict_references(self, mnb, vectorizer, reference_components):
-
-        print(
-            "Predicting the categories of ",
-            str(len(reference_components)),
-            " reference components ... "
-        )
-
-        predict_all = []
-
-        # The model cant deal with predicting so many all at once,
-        # so predict in a loop
-        for component in reference_components['Reference component']:
-
-            # The training data was all from 2017, so the categorisation for
-            # year will never work (unless it's 2017)
-            # So set to pubyear uf any 4 digit numbers where first
-            # 2 digits are 18, 19 or 20 sentences as years.
-            valid_years_range = range(1800, 2020)
-            if (
-               (component.isdigit()
-                and int(component) in valid_years_range)
-               or (
-                   len(component) == 6
-                   and component[1:5].isdigit()
-                   and int(component[1:5]) in valid_years_range)
-               ):
-                predict_all.append({
-                    'Predicted Category': 'PubYear',
-                    'Prediction Probability': 1
-                    })
-
-            else:
-                # If it's not a year, then classify with the model
-                (predict_comp,
-                 predict_component_proba) = self.predict_reference_comp(
-                    mnb,
-                    vectorizer,
-                    [component]
-                )
-                predict_all.append({
-                    'Predicted Category': predict_comp[0],
-                    'Prediction Probability': predict_component_proba[0]
-                    })
-
-        predict_all = pd.DataFrame.from_dict(predict_all)
-
-        reference_components_predictions = reference_components.reset_index()
-
-        reference_components_predictions[
-            "Predicted Category"
-        ] = predict_all['Predicted Category']
-
-        reference_components_predictions[
-            "Prediction Probability"
-        ] = predict_all['Prediction Probability']
-
-        print("Predictions complete")
-        return reference_components_predictions
+    def __init__(self):
+        self.logger = settings.logger
 
     def decide_components(self, single_reference):
         """With the predicted components of one reference, decide which of
@@ -186,6 +116,8 @@ class Predicter:
         all_structured_references = {}
         document_ids = set(reference_components_predictions['Document id'])
 
+        self.logger.info(document_ids)
+
         print(
             "Predicting structure of references from ",
             str(len(document_ids)),
@@ -240,3 +172,78 @@ class Predicter:
 
         print("Reference structure predicted")
         return all_structured_references
+
+    def predict_reference_comp(self, mnb, vectorizer, word_list):
+        # To test what individual things predict,
+        # it can deal with a list input or not
+        # The maximum probability found is the probability
+        # of the predicted classification
+
+        vec_list = vectorizer.transform(word_list).toarray()
+        predict_component = mnb.predict(vec_list)
+        predict_component_probas = mnb.predict_proba(vec_list)
+        predict_component_proba = [
+            single_predict.max() for single_predict in predict_component_probas
+        ]
+
+        return predict_component, predict_component_proba
+
+    def predict_references(self, mnb, vectorizer, reference_components):
+
+        print(
+            "Predicting the categories of ",
+            str(len(reference_components)),
+            " reference components ... "
+        )
+
+        predict_all = []
+
+        # The model cant deal with predicting so many all at once,
+        # so predict in a loop
+        for component in reference_components['Reference component']:
+
+            # The training data was all from 2017, so the categorisation for
+            # year will never work (unless it's 2017)
+            # So set to pubyear uf any 4 digit numbers where first
+            # 2 digits are 18, 19 or 20 sentences as years.
+            valid_years_range = range(1800, 2020)
+            if (
+               (component.isdecimal()
+                and int(component) in valid_years_range)
+               or (
+                   len(component) == 6
+                   and component[1:5].isdecimal()
+                   and int(component[1:5]) in valid_years_range)
+               ):
+                predict_all.append({
+                    'Predicted Category': 'PubYear',
+                    'Prediction Probability': 1
+                })
+
+            else:
+                # If it's not a year, then classify with the model
+                (predict_comp,
+                 predict_component_proba) = self.predict_reference_comp(
+                    mnb,
+                    vectorizer,
+                    [component]
+                )
+                predict_all.append({
+                    'Predicted Category': predict_comp[0],
+                    'Prediction Probability': predict_component_proba[0]
+                    })
+
+        predict_all = pd.DataFrame.from_dict(predict_all)
+
+        reference_components_predictions = reference_components.reset_index()
+
+        reference_components_predictions[
+            "Predicted Category"
+        ] = predict_all['Predicted Category']
+
+        reference_components_predictions[
+            "Prediction Probability"
+        ] = predict_all['Prediction Probability']
+
+        print("Predictions complete")
+        return reference_components_predictions
