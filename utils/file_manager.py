@@ -9,7 +9,8 @@ from settings import settings
 class FileManager():
     def __init__(self, mode='LOCAL'):
         self.mode = mode
-
+        self.logger = settings.logger
+        self.logger.setLevel('INFO')
         if self.mode == 'S3':
             self.s3 = S3(settings.BUCKET)
 
@@ -32,14 +33,14 @@ class FileManager():
         else:
             file_path = os.path.join(file_prefix, file_name)
         file_content = self.s3.get(file_path)
-
+        self.logger.info('Using %s file from S3', file_path)
         return self.loaders[file_type](file_content)
 
     def get_from_local(self, file_prefix, file_name, file_type):
         file_path = os.path.join(file_prefix, file_name)
-        file_mode = 'rb' if type == 'pickle' else 'r'
-        file_content = open(file_path, file_mode, encoding='utf-8').read()
+        file_content = open(file_path, 'rb').read()
 
+        self.logger.info('Using %s file from local storage', file_path)
         return self.loaders[file_type](file_content)
 
     def load_csv_file(self, file_content):
