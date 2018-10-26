@@ -5,7 +5,7 @@ from .test_settings import settings
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
 
-from utils import (predict_references, predict_structure, FuzzyMatcher,
+from utils import (Predicter, FuzzyMatcher,
                    split_sections, split_reference)
 
 
@@ -301,11 +301,13 @@ def test_structure(actual_reference_structures, components_id_name,
     reference_components_ref_structures = pd.DataFrame(
         raw_reference_components)
 
-    reference_components_ref_structures_predictions = predict_references(
+    predicter = Predicter()
+
+    ref_components_ref_structures_predictions = predicter.predict_references(
         mnb, vectorizer, reference_components_ref_structures)
 
-    predicted_reference_structures = predict_structure(
-        reference_components_ref_structures_predictions,
+    predicted_reference_structures = predicter.predict_structure(
+        ref_components_ref_structures_predictions,
         settings.PREDICTION_PROBABILITY_THRESHOLD)
 
     for _, actual_reference in actual_reference_structures.iterrows():
