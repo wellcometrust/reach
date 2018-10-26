@@ -13,15 +13,15 @@ class BaseSettings:
     BLOCKSIZE = 1000
     FUZZYMATCH_THRESHOLD = 0.8
 
-    ORGANISATION = os.environ.get('ORGANISATION', 'nice')
+    ORGANISATION = os.environ.get('ORGANISATION', 'msf')
 
     BUCKET = "datalabs-data"
 
     SCRAPER_RESULTS_DIR = "scraper-results/{}".format(ORGANISATION)
-    SCRAPER_RESULTS_FILENAME = None
+    SCRAPER_RESULTS_FILENAME = ''
 
     REFERENCES_DIR = "wellcome_publications"
-    REFERENCES_FILENAME = None
+    REFERENCES_FILENAME = 'uber_api_publications.csv'
 
     MODEL_DIR = "reference_parser_models"
     CLASSIFIER_FILENAME = "RefSorter_classifier.pkl"
@@ -45,6 +45,8 @@ class ProdSettings(BaseSettings):
     RDS_PORT = os.environ.get('RDS_PORT', 5432)
     RDS_REFERENCES_DATABASE = "parser_references"
 
+    S3 = True
+
     RDS_URL = "postgresql+psycopg2://{user}:{passw}@{host}:{port}/{db}".format(
           user=RDS_USERNAME,
           passw=RDS_PASSWORD,
@@ -57,10 +59,12 @@ class ProdSettings(BaseSettings):
 class LocalSettings(BaseSettings):
     DEBUG = True
 
+    S3 = True
+
     RDS_USERNAME = 'postgres'
     RDS_PASSWORD = ''
     RDS_HOST = '127.0.0.1'
-    RDS_PORT = os.environ.get('RDS_PORT', 5437)
+    RDS_PORT = os.environ.get('RDS_PORT', 5432)
     RDS_REFERENCES_DATABASE = "parser_references"
 
     RDS_URL = "postgresql+psycopg2://{user}:{passw}@{host}:{port}/{db}".format(
