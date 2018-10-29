@@ -6,14 +6,16 @@ scraped reference sections and to find those directly related to Wellcome.
 This project use Pipenv to manage its dependencies.
 It also requires a PostgreSQL server to store the results on production.
 
-### Checklist
-_Before running this project, I..._
-- [ ] Installed Python 3
-- [ ] Installed PostgreSQL
-- [ ] Got a clean json file containing my reference sections
-- [ ] Got a clean csv file containingall my references
-- [ ] Ran `pipenv install`
-- [ ] Ran `pipenv shell`
+### Development
+To develop for this project, you will need:
+1. Python 3.5 or higher and `pipenv`
+2. PostgreSQL 9 or higher
+3. A clean json file containing reference sections
+4. A clean csv file containing all your references
+
+Once you have everything installed, run:
+  * `pipenv install`
+  * `pipenv shell`
 
 ## How to use it
 ### Method 1.
@@ -26,8 +28,8 @@ Options:
   --help  Show this message and exit.
 
 Commands:
-  recreate_db #Will create a parser_references database on yout PostgreSQL server
-  run_predict #Will run the actual prediction
+  recreate_db  # Creates a parser_references database on your PostgreSQL server
+  run_predict  # Runs the actual prediction
 ```
 Running `run_predict` needs two arguments:
 ```
@@ -42,4 +44,4 @@ This repository includes a `settings.py` file, where you can manually configure 
 Once you're happy with your configuration, just run `python main.py`
 
 ## Contributing
-See the [Contributing guidelines](https://github.com/wellcometrust/reference-parser/blob/contributing/CONTRIBUTING.md)
+See the [Contributing guidelines](./CONTRIBUTING.md)
