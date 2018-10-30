@@ -1,5 +1,5 @@
 from .tests_utils import test_model
-from utils import load_pickle_file
+from utils import FileManager
 from .test_settings import settings
 
 
@@ -9,11 +9,17 @@ def test_model_predictions(publications):
     """
 
     logger = settings.logger
+    fm = FileManager()
 
-    mnb = load_pickle_file(settings.MODEL_DIR, settings.CLASSIFIER_FILENAME)
-    vectorizer = load_pickle_file(
+    mnb = fm.get_file(
+        settings.CLASSIFIER_FILENAME,
         settings.MODEL_DIR,
-        settings.VECTORIZER_FILENAME
+        'pickle'
+    )
+    vectorizer = fm.get_file(
+        settings.VECTORIZER_FILENAME,
+        settings.MODEL_DIR,
+        'pickle'
     )
 
     logger.info("============")
