@@ -1,6 +1,8 @@
 import time
 import os
-from utils import (FileManager, FuzzyMatcher, process_reference_section,
+from utils import (FileManager,
+                   FuzzyMatcher,
+                   process_reference_section,
                    Predictor)
 from models import DatabaseEngine
 from settings import settings
