@@ -22,11 +22,11 @@ class FileManager():
 
     def get_file(self, file_name, file_prefix, file_type):
         if self.mode == 'S3':
-            return self.get_from_s3(file_prefix, file_name, file_type)
+            return self._get_from_s3(file_prefix, file_name, file_type)
 
-        return self.get_from_local(file_prefix, file_name, file_type)
+        return self._get_from_local(file_prefix, file_name, file_type)
 
-    def get_from_s3(self, file_prefix, file_name, file_type):
+    def _get_from_s3(self, file_prefix, file_name, file_type):
         # If we don't have the filename, take the last file
         if not file_name:
             file_path = self.s3._get_last_modified_file_key(file_prefix)
@@ -36,7 +36,7 @@ class FileManager():
         self.logger.info('Using %s file from S3', file_path)
         return self.loaders[file_type](file_content)
 
-    def get_from_local(self, file_prefix, file_name, file_type):
+    def _get_from_local(self, file_prefix, file_name, file_type):
         file_path = os.path.join(file_prefix, file_name)
         file_content = open(file_path, 'rb').read()
 
