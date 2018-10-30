@@ -1,7 +1,7 @@
 import time
 import os
 from utils import (FileManager, FuzzyMatcher, process_reference_section,
-                   Predicter)
+                   Predictor)
 from models import DatabaseEngine
 from settings import settings
 
@@ -12,7 +12,7 @@ def run_predict(scraper_file, references_file,
     logger.setLevel('INFO')
     mode = 'S3' if settings.S3 else 'LOCAL'
     fm = FileManager(mode)
-    predicter = Predicter()
+    predictor = Predictor()
     logger.info("[+] Reading input files for %s", settings.ORGANISATION)
 
     # Loading the scraper results
@@ -45,14 +45,14 @@ def run_predict(scraper_file, references_file,
 
     # Predict the references types (eg title/author...)
     logger.info('[+] Predicting the reference components')
-    reference_components_predictions = predicter.predict_references(
+    reference_components_predictions = predictor.predict_references(
         mnb,
         vectorizer,
         splited_references
     )
 
     # Predict the reference structure????
-    predicted_reference_structures = predicter.predict_structure(
+    predicted_reference_structures = predictor.predict_structure(
         reference_components_predictions,
         settings.PREDICTION_PROBABILITY_THRESHOLD
     )
