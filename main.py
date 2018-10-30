@@ -1,5 +1,10 @@
+"""This module let you parse and compare references from both a scraper output
+and a list of publication.
+"""
+
 import time
 import os
+from argparse import ArgumentParser
 from utils import (FileManager,
                    FuzzyMatcher,
                    process_reference_section,
@@ -88,6 +93,9 @@ def run_predict(scraper_file, references_file,
 
 
 if __name__ == '__main__':
+
+    parser = ArgumentParser(description=__doc__.strip())
+    parser.parse_args()
 
     scraper_file = os.path.join(
         settings.SCRAPER_RESULTS_DIR,
