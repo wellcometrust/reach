@@ -7,7 +7,7 @@ name = "pypi"
 scrapy = "==1.5.1"
 "psycopg2-binary" = "==2.7.5"
 pyahocorasick = "==1.1.8"
-requests = "==2.19.1"
+requests = "==2.20.0"
 "bs4" = "*"
 "boto3" = "==1.9.1"
 
