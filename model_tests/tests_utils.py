@@ -301,12 +301,12 @@ def test_structure(actual_reference_structures, components_id_name,
     reference_components_ref_structures = pd.DataFrame(
         raw_reference_components)
 
-    predicter = Predictor()
+    predictor = Predictor()
 
-    ref_components_ref_structures_predictions = predicter.predict_references(
+    ref_components_ref_structures_predictions = predictor.predict_references(
         mnb, vectorizer, reference_components_ref_structures)
 
-    predicted_reference_structures = predicter.predict_structure(
+    predicted_reference_structures = predictor.predict_structure(
         ref_components_ref_structures_predictions,
         settings.PREDICTION_PROBABILITY_THRESHOLD)
 
