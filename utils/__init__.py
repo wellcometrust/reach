@@ -2,7 +2,7 @@ from .separate import (process_reference_section,
                        summarise_predicted_references,
                        split_sections,
                        split_reference)
-from .predict import Predicter
+from .predict import Predictor
 from .fuzzymatch import FuzzyMatcher
 from .file_manager import FileManager
 from .serialiser import serialise_matched_reference, serialise_reference
@@ -10,7 +10,7 @@ from .serialiser import serialise_matched_reference, serialise_reference
 __all__ = [
     process_reference_section,
     summarise_predicted_references,
-    Predicter,
+    Predictor,
     FuzzyMatcher,
     FileManager,
     serialise_matched_reference,

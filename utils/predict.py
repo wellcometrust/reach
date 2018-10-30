@@ -2,7 +2,7 @@ import pandas as pd
 from settings import settings
 
 
-class Predicter:
+class Predictor:
 
     def __init__(self):
         self.logger = settings.logger
