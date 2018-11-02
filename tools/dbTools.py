@@ -125,14 +125,14 @@ class DatabaseConnector:
             """
             UPDATE publication
             SET
-                title=%s,
-                url=%s,
-                pdf_name=%s,
-                file_hash=%s,
-                authors=%s,
-                pub_year=%s,
-                pdf_text=%s,
-            WHERE id=%s;
+                title = %s,
+                url = %s,
+                pdf_name = %s,
+                file_hash = %s,
+                authors = %s,
+                pub_year = %s,
+                pdf_text = %s
+            WHERE id = %s;
             """,
             (publication['title'], publication['uri'], publication['pdf'],
              publication['hash'], publication.get('authors'),
