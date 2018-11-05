@@ -37,7 +37,8 @@ class AWSFeedStorage(BlockingFeedStorage):
 
         last_added = [obj['Key'] for obj in sorted(
             objs,
-            key=lambda obj: obj['LastModified']
+            key=lambda obj: obj['LastModified'],
+            reverse=True
         )][0]
         last_file = self.s3.get_object(
             Bucket=self.s3_bucket,
