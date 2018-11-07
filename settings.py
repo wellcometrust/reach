@@ -13,12 +13,12 @@ class BaseSettings:
     BLOCKSIZE = 1000
     FUZZYMATCH_THRESHOLD = 0.8
 
-    ORGANISATION = os.environ.get('ORGANISATION', 'msf')
+    ORGANISATION = os.environ.get('ORGANISATION', 'who_iris')
 
     BUCKET = "datalabs-data"
 
     SCRAPER_RESULTS_DIR = "scraper-results/{}".format(ORGANISATION)
-    SCRAPER_RESULTS_FILENAME = ''
+    SCRAPER_RESULTS_FILENAME = 'who_iris.json'
 
     REFERENCES_DIR = "wellcome_publications"
     REFERENCES_FILENAME = 'uber_api_publications.csv'
