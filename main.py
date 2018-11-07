@@ -81,6 +81,19 @@ def run_predict(scraper_file, references_file,
             predicted_reference_structures,
             all_match_data,
         )
+    else:
+        predicted_reference_structures.to_csv(
+            os.path.join(
+                settings.LOCAL_OUTPUT_DIR,
+                settings.PREF_REFS_FILENAME
+                )
+            )
+        all_match_data.to_csv(
+            os.path.join(
+                settings.LOCAL_OUTPUT_DIR,
+                settings.MATCHES_FILENAME
+                )
+            )
 
     t1 = time.time()
     total = t1-t0
