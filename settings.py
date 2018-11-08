@@ -13,15 +13,19 @@ class BaseSettings:
     BLOCKSIZE = 1000
     FUZZYMATCH_THRESHOLD = 0.8
 
-    ORGANISATION = os.environ.get('ORGANISATION', 'msf')
+    ORGANISATION = os.environ.get('ORGANISATION', 'nice')
 
     BUCKET = "datalabs-data"
 
     SCRAPER_RESULTS_DIR = "scraper-results/{}".format(ORGANISATION)
-    SCRAPER_RESULTS_FILENAME = ''
+    SCRAPER_RESULTS_FILENAME = 'nice.json'
 
     REFERENCES_DIR = "wellcome_publications"
     REFERENCES_FILENAME = 'uber_api_publications.csv'
+
+    LOCAL_OUTPUT_DIR  = 'local_output'
+    PREF_REFS_FILENAME = 'predicted_reference_structures.csv'
+    MATCHES_FILENAME = 'all_match_data.csv'
 
     MODEL_DIR = "reference_parser_models"
     CLASSIFIER_FILENAME = "RefSorter_classifier.pkl"
@@ -59,7 +63,7 @@ class ProdSettings(BaseSettings):
 class LocalSettings(BaseSettings):
     DEBUG = True
 
-    S3 = True
+    S3 = False
 
     RDS_USERNAME = 'postgres'
     RDS_PASSWORD = ''
