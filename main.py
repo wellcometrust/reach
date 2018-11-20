@@ -8,7 +8,8 @@ from argparse import ArgumentParser
 from utils import (FileManager,
                    FuzzyMatcher,
                    process_reference_section,
-                   Predictor)
+                   predict_references,
+                   predict_structure)
 from models import DatabaseEngine
 from settings import settings
 
@@ -19,7 +20,6 @@ def run_predict(scraper_file, references_file,
     logger.setLevel('INFO')
     mode = 'S3' if settings.S3 else 'LOCAL'
     fm = FileManager(mode)
-    predictor = Predictor()
     logger.info("[+] Reading input files for %s", settings.ORGANISATION)
 
     # Loading the scraper results
@@ -52,14 +52,25 @@ def run_predict(scraper_file, references_file,
 
     # Predict the references types (eg title/author...)
     logger.info('[+] Predicting the reference components')
-    reference_components_predictions = predictor.predict_references(
+    # reference_components_predictions = predictor.predict_references(
+    #     mnb,
+    #     vectorizer,
+    #     splited_references
+    # )
+    #
+    # # Predict the reference structure????
+    # predicted_reference_structures = predictor.predict_structure(
+    #     reference_components_predictions,
+    #     settings.PREDICTION_PROBABILITY_THRESHOLD
+    # )
+    reference_components_predictions = predict_references(
         mnb,
         vectorizer,
         splited_references
     )
 
     # Predict the reference structure????
-    predicted_reference_structures = predictor.predict_structure(
+    predicted_reference_structures = predict_structure(
         reference_components_predictions,
         settings.PREDICTION_PROBABILITY_THRESHOLD
     )
@@ -129,5 +140,14 @@ if __name__ == '__main__':
         settings.MODEL_DIR,
         settings.VECTORIZER_FILENAME
     )
-
-    run_predict(scraper_file, references_file, model_file, vectorizer_file)
+    if settings.DEBUG:
+        import cProfile
+        cProfile.run(
+            ''.join([
+                'run_predict(scraper_file, references_file,',
+                'model_file, vectorizer_file)'
+            ]),
+            'stats_dumps'
+        )
+    else:
+        run_predict(scraper_file, references_file, model_file, vectorizer_file)
