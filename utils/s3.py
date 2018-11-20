@@ -1,9 +1,11 @@
 import boto3
+from settings import settings
 from botocore.exceptions import ClientError
 
 
 class S3():
     def __init__(self, bucket_name):
+        self.logger = settings.logger
         self.s3 = boto3.resource('s3')
         self.client = boto3.client('s3')
         self.bucket_name = bucket_name
@@ -33,9 +35,10 @@ class S3():
             return last_added
 
     def get(self, key):
+        self.logger.info('[+] Trying to fetch %s from s3', key)
         last_file = self.client.get_object(
             Bucket=self.bucket_name,
-            Key=key
+            Key=key,
         )
         last_content = last_file.get('Body').read()
 
