@@ -1,10 +1,7 @@
 # Use a basic Python image
-FROM python:3.6.4
+FROM python:3.6.4-slim-stretch
 
 WORKDIR /reference_parser
-
-
-COPY ./models/ /reference_parser/models
 
 COPY ./utils/__init__.py /reference_parser/utils/__init__.py
 COPY ./utils/file_manager.py /reference_parser/utils/file_manager.py
