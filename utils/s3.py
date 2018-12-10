@@ -17,11 +17,11 @@ class S3():
                 Prefix=prefix
             ).get('Contents', [])
         except ClientError:
-            print('Could not connect to s3 bucket.')
+            self.logger.info('Could not connect to s3 bucket.')
             return ''
 
         if not objs:
-            print('Could not get last result file.')
+            self.logger.info('Could not get last result file.')
             last_added = []
             return last_added
         else:
@@ -34,12 +34,7 @@ class S3():
             ][0]
             return last_added
 
-    def get(self, key):
-        self.logger.info('[+] Trying to fetch %s from s3', key)
-        last_file = self.client.get_object(
-            Bucket=self.bucket_name,
-            Key=key,
-        )
-        last_content = last_file.get('Body').read()
-
-        return last_content
+    def get(self, key, temp_file):
+        self.logger.info('[+] Fetching s3://%s/%s', self.bucket_name, key)
+        object = self.s3.Object(self.bucket_name, key)
+        object.download_fileobj(temp_file)
