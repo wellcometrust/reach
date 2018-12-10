@@ -5,6 +5,7 @@ and a list of publication.
 import time
 import os
 from argparse import ArgumentParser
+from sentry import report_exception
 from utils import (FileManager,
                    FuzzyMatcher,
                    process_reference_section,
@@ -14,9 +15,11 @@ from models import DatabaseEngine
 from settings import settings
 
 
+@report_exception
 def run_predict(scraper_file, references_file,
                 model_file, vectorizer_file):
     logger = settings.logger
+
     logger.setLevel('INFO')
     mode = 'S3' if settings.S3 else 'LOCAL'
     fm = FileManager(mode)
