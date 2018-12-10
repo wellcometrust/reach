@@ -25,7 +25,11 @@ def run_predict(scraper_file, references_file,
     # Loading the scraper results
     scraper_file_name = os.path.basename(scraper_file)
     scraper_file_dir = os.path.dirname(scraper_file)
-    scraper_file = fm.get_file(scraper_file_name, scraper_file_dir, 'json')
+
+    scraper_file = fm.get_scraping_results(
+        scraper_file_name,
+        scraper_file_dir,
+    )
 
     # Loading the references file
     ref_file_name = os.path.basename(references_file)
@@ -52,17 +56,6 @@ def run_predict(scraper_file, references_file,
 
     # Predict the references types (eg title/author...)
     logger.info('[+] Predicting the reference components')
-    # reference_components_predictions = predictor.predict_references(
-    #     mnb,
-    #     vectorizer,
-    #     splited_references
-    # )
-    #
-    # # Predict the reference structure????
-    # predicted_reference_structures = predictor.predict_structure(
-    #     reference_components_predictions,
-    #     settings.PREDICTION_PROBABILITY_THRESHOLD
-    # )
     reference_components_predictions = predict_references(
         mnb,
         vectorizer,
@@ -74,7 +67,6 @@ def run_predict(scraper_file, references_file,
         reference_components_predictions,
         settings.PREDICTION_PROBABILITY_THRESHOLD
     )
-    predicted_reference_structures['Organisation'] = settings.ORGANISATION
 
     fuzzy_matcher = FuzzyMatcher(
         ref_file,
