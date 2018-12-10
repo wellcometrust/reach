@@ -1,11 +1,13 @@
 import numpy as np
 import pandas as pd
+from settings import settings
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
 
 
 class FuzzyMatcher:
     def __init__(self, real_publications, titles):
+        self.logger = settings.logger
         self.vectorizer = TfidfVectorizer(lowercase=True, ngram_range=(1, 1))
         self.tfidf_matrix = self.vectorizer.fit_transform(
             real_publications['title']
@@ -50,10 +52,9 @@ class FuzzyMatcher:
         return match_data
 
     def fuzzy_match_blocks(self, blocksize, predicted_publications, threshold):
-        print(
-            "Fuzzy matching for " + str(
-                len(predicted_publications)
-            ) + " predicted publications ..."
+        self.logger.info(
+            "Fuzzy matching for %s predicted publications ...",
+            len(predicted_publications)
         )
 
         counter = 0
@@ -84,5 +85,5 @@ class FuzzyMatcher:
                      'WT_Ref_Title', 'WT_Ref_Id', 'Cosine_Similarity']
         )
 
-        print(all_match_data.head())
+        self.logger.info(all_match_data.head())
         return all_match_data
