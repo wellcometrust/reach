@@ -92,6 +92,8 @@ class DatabaseEngine():
 
         # Go through the list of references by documents, add them to the
         # session and commit it to the DB
+
+        self.logger.info('Inserting %s in the db', len(doc_list))
         for idx, doc in enumerate(doc_list):
             serial_doc = serialise_reference(doc, now)
             new_doc_stm = insert(Document).values(
@@ -107,7 +109,11 @@ class DatabaseEngine():
                 id_organisation=org.id,
             )
             new_doc_stm = new_doc_stm.on_conflict_do_nothing(
-                index_elements=['file_hash', 'title']
+                index_elements=[
+                    'file_hash',
+                    'title',
+                    'author',
+                ]
             )
             self.session.execute(new_doc_stm)
             if idx % (100) == 0:
