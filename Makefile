@@ -2,7 +2,7 @@
 
 IMAGE := uk.ac.wellcome/reference-parser
 ECR_IMAGE := 160358319781.dkr.ecr.eu-west-1.amazonaws.com/$(IMAGE)
-VERSION := 2018.10.0
+VERSION := 2018.12.0
 
 .PHONY: image
 image:
