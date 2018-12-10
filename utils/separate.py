@@ -4,6 +4,9 @@ import re
 
 import numpy as np
 import pandas as pd
+from settings import settings
+
+logger = settings.logger
 
 
 def split_reference(reference):
@@ -68,7 +71,10 @@ def process_reference_section(raw_text_data, regex):
     Nomenclature:
     Document > Reference > Reference components
     """
-    print("Processing unstructured references into reference components ... ")
+
+    logger.info(
+        "Processing unstructured references into reference components ... "
+    )
 
     assert 'sections' in raw_text_data, "raw_text_data.sections not defined"
 
@@ -102,7 +108,7 @@ def process_reference_section(raw_text_data, regex):
 
     reference_components = pd.DataFrame(raw_reference_components)
 
-    print("Reference components found")
+    logger.info("Reference components found")
 
     return reference_components
 
@@ -110,7 +116,7 @@ def process_reference_section(raw_text_data, regex):
 def summarise_predicted_references(reference_components, raw_text_data):
     """Get the number of references and information for each document."""
 
-    print("Number of references for each document being found ... ")
+    logger.info("Number of references for each document being found ... ")
     assert 'sections' in raw_text_data, "raw_text_data.sections not defined"
 
     #####
@@ -149,10 +155,10 @@ def summarise_predicted_references(reference_components, raw_text_data):
 
     count_ref = len([i for i in raw_text_data["sections"] if i])
 
-    print("Number of JSON with reference section is ", str(count_ref))
-    print("Number of JSON is ", str(len(raw_text_data)))
-    print(
-        "Average number of references predicted ",
+    logger.info("Number of JSON with reference section is %s", str(count_ref))
+    logger.info("Number of JSON is %s", str(len(raw_text_data)))
+    logger.info(
+        "Average number of references predicted %s",
         str(round(np.mean(
             predicted_number_refs['Predicted number of references']
         )))
@@ -162,10 +168,10 @@ def summarise_predicted_references(reference_components, raw_text_data):
 
 
 def save_reference_components(reference_components):
-    print("Saving reference components ... ")
+    logger.info("Saving reference components ... ")
     reference_components.to_csv('reference_components.csv', index=False)
 
 
 def save_predicted_number_refs(predicted_number_refs):
-    print("Saving predicted number of references ... ")
+    logger.info("Saving predicted number of references ... ")
     predicted_number_refs.to_csv('predicted_number_refs.csv', index=False)
