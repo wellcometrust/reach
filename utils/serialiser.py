@@ -11,10 +11,10 @@ def serialise_matched_reference(data, current_timestamp):
 
 def serialise_reference(data, current_timestamp):
     """Serialise the data parsed by the model."""
-    if data.get('Title'):
+    if data.get('Title', '') and len(data.get('Title', '')) > 1024:
         title = data['Title'][:1024]
     else:
-        title = None
+        title = data.get('Title', None)
 
     for key, value in data.items():
         if value and key != 'Title' and type(value) == str:
