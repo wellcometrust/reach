@@ -8,7 +8,8 @@ from argparse import ArgumentParser
 from utils import (FileManager,
                    FuzzyMatcher,
                    process_reference_section,
-                   Predictor)
+                   predict_references,
+                   predict_structure)
 from models import DatabaseEngine
 from settings import settings
 
@@ -19,13 +20,16 @@ def run_predict(scraper_file, references_file,
     logger.setLevel('INFO')
     mode = 'S3' if settings.S3 else 'LOCAL'
     fm = FileManager(mode)
-    predictor = Predictor()
     logger.info("[+] Reading input files for %s", settings.ORGANISATION)
 
     # Loading the scraper results
     scraper_file_name = os.path.basename(scraper_file)
     scraper_file_dir = os.path.dirname(scraper_file)
-    scraper_file = fm.get_file(scraper_file_name, scraper_file_dir, 'json')
+
+    scraper_file = fm.get_scraping_results(
+        scraper_file_name,
+        scraper_file_dir,
+    )
 
     # Loading the references file
     ref_file_name = os.path.basename(references_file)
@@ -52,18 +56,17 @@ def run_predict(scraper_file, references_file,
 
     # Predict the references types (eg title/author...)
     logger.info('[+] Predicting the reference components')
-    reference_components_predictions = predictor.predict_references(
+    reference_components_predictions = predict_references(
         mnb,
         vectorizer,
         splited_references
     )
 
     # Predict the reference structure????
-    predicted_reference_structures = predictor.predict_structure(
+    predicted_reference_structures = predict_structure(
         reference_components_predictions,
         settings.PREDICTION_PROBABILITY_THRESHOLD
     )
-    predicted_reference_structures['Organisation'] = settings.ORGANISATION
 
     fuzzy_matcher = FuzzyMatcher(
         ref_file,
@@ -129,5 +132,14 @@ if __name__ == '__main__':
         settings.MODEL_DIR,
         settings.VECTORIZER_FILENAME
     )
-
-    run_predict(scraper_file, references_file, model_file, vectorizer_file)
+    if settings.DEBUG:
+        import cProfile
+        cProfile.run(
+            ''.join([
+                'run_predict(scraper_file, references_file,',
+                'model_file, vectorizer_file)'
+            ]),
+            'stats_dumps'
+        )
+    else:
+        run_predict(scraper_file, references_file, model_file, vectorizer_file)
