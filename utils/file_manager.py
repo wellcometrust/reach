@@ -83,10 +83,11 @@ class FileManager():
 
     def _get_from_local(self, file_prefix, file_name, file_type):
         file_path = os.path.join(file_prefix, file_name)
-        file_content = open(file_path, 'rb')
+        with open(file_path, 'rb') as file_content:
+            self.logger.info('Using %s file from local storage', file_path)
+            dataframe = self.loaders[file_type](file_content)
 
-        self.logger.info('Using %s file from local storage', file_path)
-        return self.loaders[file_type](file_content)
+        return dataframe
 
     def load_csv_file(self, file_content):
         """Takes the path and name of a csv file and returns its content."""
