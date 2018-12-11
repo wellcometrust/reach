@@ -1,12 +1,12 @@
 import pandas as pd
-
 from utils import serialise_matched_reference, serialise_reference
 from settings import settings
 from datetime import datetime
 from sqlalchemy import Column, ForeignKey, Integer, String, DateTime
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship, sessionmaker
-from sqlalchemy import create_engine
+from sqlalchemy import create_engine, and_
+from sqlalchemy.dialects.postgresql import insert
 
 Base = declarative_base()
 
@@ -62,18 +62,26 @@ class DatabaseEngine():
     def __init__(self):
         self.meta = Base.metadata
         self.session = self._get_session(settings.RDS_URL)
+        self.logger = settings.logger
 
     def save_to_database(self, documents, references):
+        self.logger.info('[+] Starting insertion to the DB')
+
+        # This is the list of references by document
         doc_list = documents.where(
             (pd.notnull(documents)),
             None
         ).to_dict(orient='records')
+
+        # This is the list of matched references
         ref_list = references.where(
             (pd.notnull(references)),
             None
         ).to_dict(orient='records')
+
         now = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
 
+        # Get the organisation. If it doesn't exists, create it
         org = self.session.query(Organisation).filter(
             Organisation.name == settings.ORGANISATION
         ).first()
@@ -81,37 +89,48 @@ class DatabaseEngine():
         if not org:
             org = Organisation(name=settings.ORGANISATION)
             self.session.add(org)
-        for doc in doc_list:
+
+        # Go through the list of references by documents, add them to the
+        # session and commit it to the DB
+
+        self.logger.info('Inserting %s in the db', len(doc_list))
+        for idx, doc in enumerate(doc_list):
             serial_doc = serialise_reference(doc, now)
-            new_doc = self.session.query(Document).filter(
-                Document.file_hash == serial_doc['file_hash']
-                and Document.authors == serial_doc['author']
-                and Document.title == serial_doc['title']
-            ).first()
-            if not new_doc:
-                new_doc = Document(
-                    author=serial_doc['author'],
-                    issue=serial_doc['issue'],
-                    journal=serial_doc['journal'],
-                    volume=serial_doc['volume'],
-                    pub_year=serial_doc['pub_year'],
-                    pagination=serial_doc['pagination'],
-                    title=serial_doc['title'],
-                    file_hash=serial_doc['file_hash'],
-                    datetime_creation=serial_doc['datetime_creation'],
-                    organisation=org,
-                )
-                self.session.add(new_doc)
+            new_doc_stm = insert(Document).values(
+                author=serial_doc['author'],
+                issue=serial_doc['issue'],
+                journal=serial_doc['journal'],
+                volume=serial_doc['volume'],
+                pub_year=serial_doc['pub_year'],
+                pagination=serial_doc['pagination'],
+                title=serial_doc['title'],
+                file_hash=serial_doc['file_hash'],
+                datetime_creation=serial_doc['datetime_creation'],
+                id_organisation=org.id,
+            )
+            new_doc_stm = new_doc_stm.on_conflict_do_nothing(
+                index_elements=[
+                    'file_hash',
+                    'title',
+                    'author',
+                ]
+            )
+            self.session.execute(new_doc_stm)
+            if idx % (100) == 0:
+                self.session.flush()
         self.session.commit()
-        for ref in ref_list:
+
+        # Go through the list of matched references, add them to the
+        # session and commit it to the DB
+        for idx, ref in enumerate(ref_list):
             serial_ref = serialise_matched_reference(ref, now)
             document = self.session.query(Document).filter(
                 Document.file_hash == serial_ref['document_hash']
             ).first()
-            new_ref = self.session.query(Reference).filter(
-                Reference.publication_id == serial_ref['publication_id']
-                and Reference.id_document == document.id
-            ).first()
+            new_ref = self.session.query(Reference).filter(and_(
+                Reference.publication_id == serial_ref['publication_id'],
+                Reference.publication_id == serial_ref['document_hash']
+            )).first()
             if not new_ref:
                 new_ref = Reference(
                     document=document,

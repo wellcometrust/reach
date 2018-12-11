@@ -18,12 +18,12 @@ class BaseSettings:
     BUCKET = "datalabs-data"
 
     SCRAPER_RESULTS_DIR = "scraper-results/{}".format(ORGANISATION)
-    SCRAPER_RESULTS_FILENAME = 'nice.json'
+    SCRAPER_RESULTS_FILENAME = ''
 
     REFERENCES_DIR = "wellcome_publications"
     REFERENCES_FILENAME = 'uber_api_publications.csv'
 
-    LOCAL_OUTPUT_DIR  = 'local_output'
+    LOCAL_OUTPUT_DIR = 'local_output'
     PREF_REFS_FILENAME = 'predicted_reference_structures.csv'
     MATCHES_FILENAME = 'all_match_data.csv'
 
