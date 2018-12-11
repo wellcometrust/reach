@@ -5,7 +5,7 @@ and a list of publication.
 import time
 import os
 from argparse import ArgumentParser
-from sentry import report_exception
+import sentry_sdk
 from utils import (FileManager,
                    FuzzyMatcher,
                    process_reference_section,
@@ -15,7 +15,6 @@ from models import DatabaseEngine
 from settings import settings
 
 
-@report_exception
 def run_predict(scraper_file, references_file,
                 model_file, vectorizer_file):
     logger = settings.logger
@@ -112,37 +111,45 @@ def run_predict(scraper_file, references_file,
 
 
 if __name__ == '__main__':
+    # SENTRY_DSN must be present at import time. If we don't have it then,
+    # we won't have it later either.
+    sentry_sdk.init(os.environ['SENTRY_DSN'])
 
-    parser = ArgumentParser(description=__doc__.strip())
-    parser.parse_args()
+    try:
+        parser = ArgumentParser(description=__doc__.strip())
+        parser.parse_args()
 
-    scraper_file = os.path.join(
-        settings.SCRAPER_RESULTS_DIR,
-        settings.SCRAPER_RESULTS_FILENAME
-    )
-
-    references_file = os.path.join(
-        settings.REFERENCES_DIR,
-        settings.REFERENCES_FILENAME
-    )
-
-    model_file = os.path.join(
-        settings.MODEL_DIR,
-        settings.CLASSIFIER_FILENAME
-    )
-
-    vectorizer_file = os.path.join(
-        settings.MODEL_DIR,
-        settings.VECTORIZER_FILENAME
-    )
-    if settings.DEBUG:
-        import cProfile
-        cProfile.run(
-            ''.join([
-                'run_predict(scraper_file, references_file,',
-                'model_file, vectorizer_file)'
-            ]),
-            'stats_dumps'
+        scraper_file = os.path.join(
+            settings.SCRAPER_RESULTS_DIR,
+            settings.SCRAPER_RESULTS_FILENAME
         )
-    else:
-        run_predict(scraper_file, references_file, model_file, vectorizer_file)
+
+        references_file = os.path.join(
+            settings.REFERENCES_DIR,
+            settings.REFERENCES_FILENAME
+        )
+
+        model_file = os.path.join(
+            settings.MODEL_DIR,
+            settings.CLASSIFIER_FILENAME
+        )
+
+        vectorizer_file = os.path.join(
+            settings.MODEL_DIR,
+            settings.VECTORIZER_FILENAME
+        )
+        if settings.DEBUG:
+            import cProfile
+            cProfile.run(
+                ''.join([
+                    'run_predict(scraper_file, references_file,',
+                    'model_file, vectorizer_file)'
+                ]),
+                'stats_dumps'
+            )
+        else:
+            run_predict(scraper_file, references_file,
+                        model_file, vectorizer_file)
+    except Exception as e:
+        sentry_sdk.capture_exception(e)
+        raise
