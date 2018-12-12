@@ -1,7 +1,24 @@
 # -*- coding: utf-8 -*-
+import os
 import logging
+import sentry_sdk
+from twisted.python import log
 from scrapy import signals
 from scrapy import logformatter
+
+
+sentry_sdk.init(os.getenv('SENTRY_DSN'))
+
+
+def log_to_sentry(event):
+    if not event.get('isError') or 'failure' not in event:
+        return
+
+    f = event['failure']
+    sentry_sdk.capture_exception((f.type, f.value, f.getTracebackObject()))
+
+
+log.addObserver(log_to_sentry)
 
 
 class PoliteLogFormatter(logformatter.LogFormatter):
