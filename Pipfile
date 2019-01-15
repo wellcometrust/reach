@@ -10,6 +10,7 @@ pyahocorasick = "==1.1.8"
 requests = "==2.20.0"
 "bs4" = "*"
 "boto3" = "==1.9.1"
+sentry-sdk = "==0.6.2"
 
 [dev-packages]
 pytest = "*"
