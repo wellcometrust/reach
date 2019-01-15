@@ -4,6 +4,7 @@ from scrapy.http import Request
 from collections import defaultdict
 from wsf_scraping.items import WHOArticle
 from .base_spider import BaseSpider
+from scrapy.utils.project import get_project_settings
 
 
 class WhoIrisSpider(BaseSpider):
@@ -13,6 +14,17 @@ class WhoIrisSpider(BaseSpider):
     custom_settings = {
         'JOBDIR': 'crawls/who_iris'
     }
+
+    def __init__(self, *args, **kwargs):
+        settings = get_project_settings()
+        years_list = kwargs.get('years_list', False)
+        id = kwargs.get('uuid', '')
+
+        self.uuid = id
+        if years_list:
+            self.years = years_list.split(',')
+        else:
+            self.years = settings['WHO_IRIS_YEARS']
 
     def start_requests(self):
         """ This sets up the urls to scrape for each years.
