@@ -6,8 +6,6 @@ import numpy as np
 import pandas as pd
 from settings import settings
 
-from .predict import split_reference
-
 logger = settings.logger
 
 
@@ -35,7 +33,6 @@ def split_sections(references_section, regex="\n"):
 
     return references
 
-
 def process_reference_section(raw_text_data, regex):
     """Converts the unstructured text into reference components
     Input:
@@ -60,8 +57,7 @@ def process_reference_section(raw_text_data, regex):
     # Document 2:
     # Eric, 1987
 
-    raw_reference_components = []
-
+    references_data = []
     for _, document in raw_text_data.iterrows():
         if document["sections"]:
 
@@ -69,25 +65,15 @@ def process_reference_section(raw_text_data, regex):
             # up into individual references
             references_section = document['sections']['Reference']
             references = split_sections(references_section, regex)
-
             for reference in references:
-                # Get the components for this reference and store
-                components = split_reference(reference)
+                references_data.append({
+                    'Reference': reference,
+                    'Reference id': hash(reference),
+                    'Document uri': document['uri'],
+                    'Document id': document['hash']
+                })
 
-                for component in components:
-                    raw_reference_components.append({
-                        'Reference component': component,
-                        'Reference id': hash(reference),
-                        'Document uri': document['uri'],
-                        'Document id': document['hash']
-                    })
-
-    reference_components = pd.DataFrame(raw_reference_components)
-
-    logger.info("Reference components found")
-
-    return reference_components
-
+    return references_data
 
 def summarise_predicted_references(reference_components, raw_text_data):
     """Get the number of references and information for each document."""

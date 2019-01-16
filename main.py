@@ -11,6 +11,7 @@ import sentry_sdk
 from utils import (FileManager,
                    FuzzyMatcher,
                    process_reference_section,
+                   process_references,
                    predict_references,
                    predict_structure)
 from models import DatabaseEngine
@@ -73,7 +74,7 @@ def run_predict(scraper_file, references_file,
         scraper_file,
         settings.ORGANISATION_REGEX
     )
-
+    splited_components = process_references(splited_references)
     t0 = time.time()
 
     # Predict the references types (eg title/author...)
@@ -81,7 +82,7 @@ def run_predict(scraper_file, references_file,
     reference_components_predictions = predict_references(
         mnb,
         vectorizer,
-        splited_references
+        splited_components
     )
 
     # Predict the reference structure????

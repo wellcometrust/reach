@@ -32,6 +32,24 @@ def split_reference(reference):
 
     return components
 
+def process_references(references):
+    raw_reference_components = []
+    for reference in references:
+        # Get the components for this reference and store
+        components = split_reference(reference['Reference'])
+
+        for component in components:
+            raw_reference_components.append({
+                'Reference component': component,
+                'Reference id': reference['Reference id'],
+                'Document uri': reference['Document uri'],
+                'Document id': reference['Document id']
+            })
+
+    reference_components = pd.DataFrame(raw_reference_components)
+
+    logger.info("Reference components found")
+    return reference_components
 
 def decide_components(single_reference):
     """With the predicted components of one reference, decide which of
