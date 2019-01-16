@@ -14,9 +14,8 @@ To develop for this project, you will need:
 4. A clean csv file containing all your references
 
 Once you have everything installed, run:
-  * `virtualenv env --python python3.6`
-  * `pip install -r requirements.txt`
-  * `source env/bin/activate`
+  * `make virtualenv`
+  * `source build/virtualenv/bin/activate`
 
 ## How to use it
 ### Method 1.
