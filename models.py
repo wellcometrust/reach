@@ -132,11 +132,17 @@ class DatabaseEngine():
                 Reference.publication_id == serial_ref['document_hash']
             )).first()
             if not new_ref:
-                new_ref = Reference(
+                new_ref_stm = insert(Reference).values(
                     document=document,
                     publication_id=serial_ref['publication_id'],
                     cosine_similarity=serial_ref['cosine_similarity'],
                     datetime_creation=serial_ref['datetime_creation']
                 )
-                self.session.add(new_ref)
+                new_ref_stm = new_ref_stm.on_conflict_do_nothing(
+                    index_elements=[
+                        'id_document',
+                        'publication_id',
+                    ]
+                )
+            self.session.execute(new_ref_stm)
         self.session.commit()
