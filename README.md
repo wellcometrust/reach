@@ -8,14 +8,14 @@ It also requires a PostgreSQL server to store the results on production.
 
 ### Development
 To develop for this project, you will need:
-1. Python 3.5 or higher and `pipenv`
+1. Python 3.5 or higher and `virtualenv`
 2. PostgreSQL 9 or higher
 3. A clean json file containing reference sections
 4. A clean csv file containing all your references
 
 Once you have everything installed, run:
-  * `pipenv install`
-  * `pipenv shell`
+  * `make virtualenv`
+  * `source build/virtualenv/bin/activate`
 
 ## How to use it
 ### Method 1.
