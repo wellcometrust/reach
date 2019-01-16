@@ -1,8 +1,7 @@
 from .separate import (process_reference_section,
                        summarise_predicted_references,
-                       split_sections,
-                       split_reference)
-from .predict import predict_references, predict_structure
+                       split_sections)
+from .predict import predict_references, predict_structure, split_reference
 from .fuzzymatch import FuzzyMatcher
 from .file_manager import FileManager
 from .serialiser import serialise_matched_reference, serialise_reference
