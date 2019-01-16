@@ -6,33 +6,9 @@ import numpy as np
 import pandas as pd
 from settings import settings
 
+from .predict import split_reference
+
 logger = settings.logger
-
-
-def split_reference(reference):
-    """Split up one individual reference into reference components.
-    Each component is numbered by the reference it came from.
-    """
-    components = []
-
-    # I need to divide each reference by the full stops
-    # AND commas and categorise
-    reference_sentences_mid = [
-        elem.strip()
-        for elem in reference.replace(
-            ',', '.'
-        ).replace(
-            '?', '?.'
-        ).replace(
-            '!', '!.'
-        ).split(".")
-    ]
-
-    for ref in reference_sentences_mid:
-        if ref:
-            components.append(ref)
-
-    return components
 
 
 def split_sections(references_section, regex="\n"):
