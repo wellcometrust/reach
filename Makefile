@@ -1,6 +1,6 @@
 .DEFAULT_GOAL := all
 
-VIRTUALENV := env
+VIRTUALENV := build/virtualenv
 
 IMAGE := uk.ac.wellcome/reference-parser
 ECR_IMAGE := 160358319781.dkr.ecr.eu-west-1.amazonaws.com/$(IMAGE)
@@ -24,7 +24,7 @@ push: image
 $(VIRTUALENV)/.installed: requirements.txt
 	@if [ -d $(VIRTUALENV) ]; then rm -rf $(VIRTUALENV); fi
 	@mkdir -p $(VIRTUALENV)
-	virtualenv --python python3.6 $(VIRTUALENV)
+	virtualenv --python python3 $(VIRTUALENV)
 	$(VIRTUALENV)/bin/pip3 install -r requirements.txt
 	touch $@
 
