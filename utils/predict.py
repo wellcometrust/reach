@@ -7,6 +7,32 @@ from multiprocessing import Pool
 logger = settings.logger
 
 
+def split_reference(reference):
+    """Split up one individual reference into reference components.
+    Each component is numbered by the reference it came from.
+    """
+    components = []
+
+    # I need to divide each reference by the full stops
+    # AND commas and categorise
+    reference_sentences_mid = [
+        elem.strip()
+        for elem in reference.replace(
+            ',', '.'
+        ).replace(
+            '?', '?.'
+        ).replace(
+            '!', '!.'
+        ).split(".")
+    ]
+
+    for ref in reference_sentences_mid:
+        if ref:
+            components.append(ref)
+
+    return components
+
+
 def decide_components(single_reference):
     """With the predicted components of one reference, decide which of
     these should be used for each component i.e. if there are multiple
