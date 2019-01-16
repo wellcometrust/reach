@@ -18,6 +18,7 @@ from models import DatabaseEngine
 from settings import settings
 
 
+
 def check_references_file(ref_file, references_file):
     assert 'title' in ref_file, (
         "ref_file.title not defined in " + 
@@ -29,6 +30,20 @@ def check_references_file(ref_file, references_file):
         references_file +
         " consider renaming current uber id column name to 'uber_id'"
     )
+
+def transform_scraper_file(scraper_data):
+    sections_data = []
+    for _, document in scraper_data.iterrows():
+        if document["sections"]:
+
+            section = document['sections']['Reference']
+            
+            sections_data.append({
+                'Section': section,
+                'Document uri': document['uri'],
+                'Document id': document['hash']
+            })
+    return sections_data
 
 def get_file(file_str, file_type, get_scraped = False):
     if file_str.startswith('s3://'):
@@ -70,8 +85,9 @@ def run_predict(scraper_file, references_file,
 
     # Split the reference sections using regex
     logger.info('[+] Spliting the references')
+    sections_data = transform_scraper_file(scraper_file)
     splited_references = process_reference_section(
-        scraper_file,
+        sections_data,
         settings.ORGANISATION_REGEX
     )
     splited_components = process_references(splited_references)

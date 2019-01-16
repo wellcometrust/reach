@@ -33,7 +33,7 @@ def split_sections(references_section, regex="\n"):
 
     return references
 
-def process_reference_section(raw_text_data, regex):
+def process_reference_section(sections_data, regex):
     """Converts the unstructured text into reference components
     Input:
     - The unstructured references (e.g. from WHO)
@@ -49,7 +49,7 @@ def process_reference_section(raw_text_data, regex):
         "Processing unstructured references into reference components ... "
     )
 
-    assert 'sections' in raw_text_data, "raw_text_data.sections not defined"
+    # assert 'sections' in raw_text_data, "raw_text_data.sections not defined"
 
     # e.g.
     # Document 1:
@@ -58,20 +58,16 @@ def process_reference_section(raw_text_data, regex):
     # Eric, 1987
 
     references_data = []
-    for _, document in raw_text_data.iterrows():
-        if document["sections"]:
+    for section in sections_data:
 
-            # Get all the references text for this WHO document and split it
-            # up into individual references
-            references_section = document['sections']['Reference']
-            references = split_sections(references_section, regex)
-            for reference in references:
-                references_data.append({
-                    'Reference': reference,
-                    'Reference id': hash(reference),
-                    'Document uri': document['uri'],
-                    'Document id': document['hash']
-                })
+        references = split_sections(section['Section'], regex)
+        for reference in references:
+            references_data.append({
+                'Reference': reference,
+                'Reference id': hash(reference),
+                'Document uri': section['Document uri'],
+                'Document id': section['Document id']
+            })
 
     return references_data
 
