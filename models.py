@@ -133,7 +133,7 @@ class DatabaseEngine():
             )).first()
             if not new_ref:
                 new_ref_stm = insert(Reference).values(
-                    document=document,
+                    id_document=document.id,
                     publication_id=serial_ref['publication_id'],
                     cosine_similarity=serial_ref['cosine_similarity'],
                     datetime_creation=serial_ref['datetime_creation']
