@@ -4,8 +4,10 @@ and a list of publication.
 
 from argparse import ArgumentParser
 from urllib.parse import urlparse
-import time
+from collections import namedtuple
 import os
+import time
+
 import sentry_sdk
 
 from utils import (FileManager,
@@ -16,7 +18,6 @@ from utils import (FileManager,
                    predict_structure)
 from models import DatabaseEngine
 from settings import settings
-
 
 
 def check_references_file(ref_file, references_file):
@@ -31,19 +32,25 @@ def check_references_file(ref_file, references_file):
         " consider renaming current uber id column name to 'uber_id'"
     )
 
+SectionedDocument = namedtuple(
+    'SectionedDocument',
+    ['section', 'uri', 'id']
+)
+
 def transform_scraper_file(scraper_data):
+    """Takes a pandas dataframe. Yields back individual
+    SectionedDocument tuples.
+    """
     sections_data = []
     for _, document in scraper_data.iterrows():
         if document["sections"]:
 
             section = document['sections']['Reference']
-            
-            sections_data.append({
-                'Section': section,
-                'Document uri': document['uri'],
-                'Document id': document['hash']
-            })
-    return sections_data
+            yield SectionedDocument(
+                section,
+                document['uri'],
+                document['hash']
+            )
 
 def get_file(file_str, file_type, get_scraped = False):
     if file_str.startswith('s3://'):
@@ -83,69 +90,68 @@ def run_predict(scraper_file, references_file,
     mnb = get_file(model_file, 'pickle')
     vectorizer = get_file(vectorizer_file, 'pickle')
 
-    # Split the reference sections using regex
-    logger.info('[+] Spliting the references')
-    sections_data = transform_scraper_file(scraper_file)
-    splited_references = process_reference_section(
-        sections_data,
-        settings.ORGANISATION_REGEX
-    )
-    splited_components = process_references(splited_references)
     t0 = time.time()
+    nb_references = 0
+    for doc in transform_scraper_file(scraper_file):
 
-    # Predict the references types (eg title/author...)
-    logger.info('[+] Predicting the reference components')
-    reference_components_predictions = predict_references(
-        mnb,
-        vectorizer,
-        splited_components
-    )
-
-    # Predict the reference structure????
-    predicted_reference_structures = predict_structure(
-        reference_components_predictions,
-        settings.PREDICTION_PROBABILITY_THRESHOLD
-    )
-
-    fuzzy_matcher = FuzzyMatcher(
-        ref_file,
-        settings.FUZZYMATCH_THRESHOLD
-    )
-    all_match_data = fuzzy_matcher.fuzzy_match_blocks(
-        settings.BLOCKSIZE,
-        predicted_reference_structures,
-        settings.FUZZYMATCH_THRESHOLD
-    )
-
-    if output_url.startswith('file://'):
-        # use everything after first two slashes; this handles
-        # absolute and relative urls equally well
-        output_dir = output_url[7:]
-        predicted_reference_structures.to_csv(
-            os.path.join(
-                output_dir,
-                settings.PREF_REFS_FILENAME
-                )
-            )
-        all_match_data.to_csv(
-            os.path.join(
-                output_dir,
-                settings.MATCHES_FILENAME
-                )
-            )
-    else:
-        database = DatabaseEngine(output_url)
-        database.save_to_database(
-            predicted_reference_structures,
-            all_match_data,
+        logger.info('[+] Splitting the reference sections')
+        splitted_references = process_reference_section(
+            doc,
+            settings.ORGANISATION_REGEX
         )
+
+        logger.info('[+] Parsing the references')
+        splitted_components = process_references(splitted_references)
+        reference_components_predictions = predict_references(
+            mnb,
+            vectorizer,
+            splitted_components
+        )
+        predicted_reference_structures = predict_structure(
+            reference_components_predictions,
+            settings.PREDICTION_PROBABILITY_THRESHOLD
+        )
+
+        logger.info('[+] Matching the references')
+        fuzzy_matcher = FuzzyMatcher(
+            ref_file,
+            settings.FUZZYMATCH_THRESHOLD
+        )
+        all_match_data = fuzzy_matcher.fuzzy_match_blocks(
+            settings.BLOCKSIZE,
+            predicted_reference_structures,
+            settings.FUZZYMATCH_THRESHOLD
+        )
+        if output_url.startswith('file://'):
+            # use everything after first two slashes; this handles
+            # absolute and relative urls equally well
+            output_dir = output_url[7:]
+            predicted_reference_structures.to_csv(
+                os.path.join(
+                    output_dir,
+                    f"{doc.id}_{settings.PREF_REFS_FILENAME}"
+                    )
+                )
+            all_match_data.to_csv(
+                os.path.join(
+                    output_dir,
+                    f"{doc.id}_{settings.MATCHES_FILENAME}"
+                    )
+                )
+        else:
+            database = DatabaseEngine(output_url)
+            database.save_to_database(
+                predicted_reference_structures,
+                all_match_data,
+            )
+        nb_references += len(splitted_references)
 
     t1 = time.time()
     total = t1-t0
 
     logger.info(
         "Time taken to predict and match for %s is %s",
-        str(len(splited_references)),
+        str(nb_references),
         str(total)
     )
 
