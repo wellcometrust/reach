@@ -31,10 +31,10 @@ def split_sections(references_section, regex="\n"):
 
     return references
 
-def process_reference_section(sections_data, regex):
+def process_reference_section(doc, regex):
     """Converts the unstructured text into reference components
     Input:
-    - The unstructured references (e.g. from WHO)
+    - a SectionedDocument tuple
     Output:
     - A list of reference components from these
     - The number of references for each document
@@ -56,15 +56,13 @@ def process_reference_section(sections_data, regex):
     # Eric, 1987
 
     references_data = []
-    for section in sections_data:
-
-        references = split_sections(section['Section'], regex)
-        for reference in references:
-            references_data.append({
-                'Reference': reference,
-                'Reference id': hash(reference),
-                'Document uri': section['Document uri'],
-                'Document id': section['Document id']
-            })
-
+    references = split_sections(doc.section, regex)
+    for reference in references:
+        references_data.append({
+            'Reference': reference,
+            'Reference id': hash(reference),
+            # TODO: remove these
+            'Document uri': doc.uri,
+            'Document id': doc.id,
+        })
     return references_data
