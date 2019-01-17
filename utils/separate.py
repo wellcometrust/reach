@@ -36,11 +36,11 @@ def process_reference_section(doc, regex):
     Input:
     - a SectionedDocument tuple
     Output:
-    - A list of reference components from these
-    - The number of references for each document
-    - Meta info for each document index
+    - A list of references data which come into a dict with keys
+        about the reference string, reference id, document uri and 
+        document id
     Nomenclature:
-    Document > Reference > Reference components
+    Document > References
     """
 
     logger.info(
