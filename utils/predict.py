@@ -32,6 +32,7 @@ def split_reference(reference):
 
     return components
 
+
 def process_references(references):
     raw_reference_components = []
     for reference in references:
@@ -50,6 +51,7 @@ def process_references(references):
 
     logger.info("Reference components found")
     return reference_components
+
 
 def decide_components(single_reference):
     """With the predicted components of one reference, decide which of

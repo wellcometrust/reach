@@ -37,11 +37,11 @@ SectionedDocument = namedtuple(
     ['section', 'uri', 'id']
 )
 
+
 def transform_scraper_file(scraper_data):
     """Takes a pandas dataframe. Yields back individual
     SectionedDocument tuples.
     """
-    sections_data = []
     for _, document in scraper_data.iterrows():
         if document["sections"]:
 
@@ -122,6 +122,7 @@ def run_predict(scraper_file, references_file,
             predicted_reference_structures,
             settings.FUZZYMATCH_THRESHOLD
         )
+
         if output_url.startswith('file://'):
             # use everything after first two slashes; this handles
             # absolute and relative urls equally well

@@ -31,13 +31,14 @@ def split_sections(references_section, regex="\n"):
 
     return references
 
+
 def process_reference_section(doc, regex):
     """Converts the unstructured text into reference components
     Input:
     - a SectionedDocument tuple
     Output:
     - A list of references data which come into a dict with keys
-        about the reference string, reference id, document uri and 
+        about the reference string, reference id, document uri and
         document id
     Nomenclature:
     Document > References
