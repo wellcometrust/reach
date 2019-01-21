@@ -14,7 +14,6 @@ class BaseSpider(scrapy.Spider):
         self.uuid = id
 
     def on_error(self, failure):
-        self.logger.error(repr(failure))
 
         if failure.check(HttpError):
             response = failure.value.response
@@ -27,6 +26,9 @@ class BaseSpider(scrapy.Spider):
         elif failure.check(TimeoutError):
             request = failure.request
             self.logger.error('TimeoutError on %s', request.url)
+
+        else:
+            self.logger.error(repr(failure))
 
     def _check_headers(self, response_headers,
                        desired_extension=b'application/pdf'):
