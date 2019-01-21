@@ -80,4 +80,4 @@ class BaseSpider(scrapy.Spider):
             'keywords': {}
         })
 
-        yield article
+        return article

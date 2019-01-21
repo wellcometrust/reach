@@ -65,7 +65,7 @@ class TestPdfObjects(unittest.TestCase):
 
     def test_mean(self):
         font_mean = self.pdf_file_object.get_mean_font_size()
-        self.assertEqual(font_mean, 24)
+        self.assertEqual(font_mean, 22)
 
     def test_upper_mean(self):
         upper_mean = self.pdf_file_object.get_upper_mean_font_size()
@@ -73,7 +73,7 @@ class TestPdfObjects(unittest.TestCase):
 
     def test_list_by_size(self):
         list_fonts = self.pdf_file_object.get_font_size_list()
-        self.assertEqual(list_fonts, [29, 22])
+        self.assertEqual(list_fonts, [17, 29, 22])
 
     def test_bold(self):
         list_bold_lines = self.pdf_file_object.get_bold_lines()
@@ -98,7 +98,7 @@ class TestPdfObjects(unittest.TestCase):
         self.assertTrue('bold' in keyword_lines.keys())
         self.assertEqual(len(keyword_lines['bold']), 1)
         self.assertTrue('test' in keyword_lines.keys())
-        self.assertEqual(len(keyword_lines['test']), 6)
+        self.assertEqual(len(keyword_lines['test']), 5)
         self.assertEqual('bold' in keyword_lines['bold'][0], True)
 
     def test_lines_by_keywords_and_context(self):
@@ -107,7 +107,7 @@ class TestPdfObjects(unittest.TestCase):
         self.assertTrue('bold' in keyword_lines.keys())
         self.assertEqual(len(keyword_lines['bold']), 5)
         self.assertTrue('test' in keyword_lines.keys())
-        self.assertEqual(len(keyword_lines['test']), 24)
+        self.assertEqual(len(keyword_lines['test']), 22)
 
     def test_from_json(self):
         pdf_file = PdfFile()
