@@ -1,10 +1,9 @@
 import scrapy
-import os
 import tempfile
 from scrapy.spidermiddlewares.httperror import HttpError
 from twisted.internet.error import DNSLookupError
 from twisted.internet.error import TimeoutError
-from urllib.parse import urlparse
+from wsf_scraping.items import Article
 
 
 class BaseSpider(scrapy.Spider):
@@ -35,19 +34,50 @@ class BaseSpider(scrapy.Spider):
         content_type = response_headers.get('content-type', '').split(b';')[0]
         return desired_extension == content_type
 
-    def _save_file(self, url, response_body):
-        filename = os.path.basename(urlparse(url).path)
-        tempdir = tempfile.mkdtemp()
-        if filename:
-            if not filename.lower().endswith('.pdf'):
-                filename = filename + '.pdf'
-            filepath = os.path.join(tempdir, filename)
-            with open(filepath, 'wb') as f:
-                f.write(response_body)
-            return filepath
-        else:
+    def save_pdf(self, response):
+        """ Save the response body to a temporary PDF file.
+
+        If the response body is PDF-typed, save the PDF to a tempfile to parse
+        it later. Else, just drop te item.
+
+        Args:
+            - response: The reponse object passed by scrapy
+
+        Returns:
+            - A scrapy Article item.
+        """
+
+        data_dict = response.meta.get('data_dict', {})
+
+        is_pdf = self._check_headers(response.headers)
+
+        if not is_pdf:
+            self.logger.info('Not a PDF, aborting (%s)', response.url)
+            return
+
+        if not response.body:
             self.logger.warning(
-                 'Empty filename, could not save the file. [Url: %s]',
-                 url
+                'Empty filename or content, could not save the file.'
+                ' [Url: %s]',
+                response.request.url
             )
-            return ''
+            return
+
+        # Download PDF file to /tmp
+        with tempfile.NamedTemporaryFile(delete=False) as tf:
+            tf.write(response.body)
+            filename = tf.name
+
+        article = Article({
+            'title': data_dict.get('title'),
+            'uri': response.request.url,
+            'year': data_dict.get('year'),
+            'authors': data_dict.get('authors'),
+            'types': data_dict.get('types'),
+            'subjects': data_dict.get('subjects'),
+            'pdf': filename,
+            'sections': {},
+            'keywords': {}
+        })
+
+        yield article
