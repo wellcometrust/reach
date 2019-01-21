@@ -3,7 +3,6 @@ import scrapy
 from .base_spider import BaseSpider
 
 from scrapy.http import Request
-from wsf_scraping.items import GovArticle
 from urllib.parse import urlencode
 
 
@@ -87,32 +86,3 @@ class GovSpider(BaseSpider):
                 callback=self.parse,
                 errback=self.on_error,
             )
-
-    def save_pdf(self, response):
-        """ Retrieve the pdf file and scan it to scrape keywords and sections.
-        """
-        is_pdf = self._check_headers(response.headers)
-
-        if not is_pdf:
-            if self._check_headers(response.headers, b'text/html'):
-                yield Request(
-                    url=response.request.url,
-                    callback=self.parse,
-                    errback=self.on_error,
-                )
-            else:
-                self.logger.info('Not a PDF, aborting (%s)', response.url)
-                return
-
-        # Download PDF file to /tmp
-        filename = self._save_file(response.url, response.body)
-        gov_article = GovArticle({
-                'title': response.meta.get('title', ''),
-                'uri': response.request.url,
-                'pdf': filename,
-                'sections': {},
-                'keywords': {}
-            }
-        )
-
-        yield gov_article
