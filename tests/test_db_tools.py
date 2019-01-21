@@ -1,4 +1,5 @@
 import unittest
+import os
 from tools import DatabaseConnector
 
 
@@ -7,7 +8,7 @@ class TestDBTools(unittest.TestCase):
     def setUp(self):
         """Assuming the database is already set up."""
         self.database = DatabaseConnector(
-            'postgres://postgres:postgres@articles-db:5432/wsf_scraping_test'
+            os.environ['DATABASE_URL_TEST']
         )
         mock_publication = {
             'title': 'foo',
