@@ -2,7 +2,6 @@ import scrapy
 from urllib.parse import urlencode
 from scrapy.http import Request
 from collections import defaultdict
-from wsf_scraping.items import WHOArticle
 from .base_spider import BaseSpider
 from scrapy.utils.project import get_project_settings
 
@@ -146,37 +145,3 @@ class WhoIrisSpider(BaseSpider):
                 "Item is null - Canceling (%s)",
                 err_link
             )
-
-    def save_pdf(self, response):
-        """ Retrieve the pdf file and scan it to scrape keywords and sections.
-
-        @url http://apps.who.int/iris/bitstream/10665/123575/1/em_rc8_5_en.pdf
-        @returns items 1 1
-        @returns requests 0 0
-        """
-
-        is_pdf = self._check_headers(response.headers)
-
-        if not is_pdf:
-            self.logger.info('Not a PDF, aborting (%s)', response.url)
-            return
-
-        # Retrieve metadata
-        data_dict = response.meta.get('data_dict', {})
-
-        # Download PDF file to /tmp
-        filename = self._save_file(response.url, response.body)
-        who_article = WHOArticle({
-                'title': data_dict.get('title', ''),
-                'uri': response.request.url,
-                'year': data_dict.get('year', ''),
-                'authors': data_dict.get('authors', ''),
-                'types': data_dict.get('types'),
-                'subjects': data_dict.get('subjects'),
-                'pdf': filename,
-                'sections': {},
-                'keywords': {}
-            }
-        )
-
-        yield who_article

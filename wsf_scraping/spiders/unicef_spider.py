@@ -1,6 +1,5 @@
 import scrapy
 from scrapy.http import Request
-from wsf_scraping.items import UNICEFArticle
 from .base_spider import BaseSpider
 
 
@@ -63,30 +62,3 @@ class UnicefSpider(BaseSpider):
                 errback=self.on_error,
                 meta={'title': title}
             )
-
-    def save_pdf(self, response):
-        """ Retrieve the pdf file and scan it to scrape keywords and sections.
-
-        @url https://data.unicef.org/wp-content/uploads/2016/04/CPR-WEB.pdf
-        @returns items 1 1
-        @returns requests 0 0
-        """
-
-        is_pdf = self._check_headers(response.headers)
-
-        if not is_pdf:
-            self.logger.info('Not a PDF, aborting (%s)', response.url)
-            return
-
-        # Download PDF file to /tmp
-        filename = self._save_file(response.url, response.body)
-        unicef_article = UNICEFArticle({
-                'title': response.meta.get('title', ''),
-                'uri': response.request.url,
-                'pdf': filename,
-                'sections': {},
-                'keywords': {}
-            }
-        )
-
-        yield unicef_article

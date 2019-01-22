@@ -48,24 +48,8 @@ class WsfScrapingPipeline(object):
         keywords and section based on the section/keywords files provided.
         """
 
-        # keep_pdf = self.settings['KEEP_PDF']
-        download_only = self.settings['DOWNLOAD_ONLY']
-        # feed = self.settings['FEED_CONFIG']
-        pdf_result_path = os.path.join(
-            'results',
-            'pdfs',
-            spider_name,
-            os.path.basename(item['pdf']),
-        )
-
         # Convert PDF content to text format
         with open(item['pdf'], 'rb') as f:
-            if download_only:
-                os.rename(
-                    item['pdf'],
-                    pdf_result_path,
-                )
-                return item
 
             self.logger.info(
                 'Processing: %s',
@@ -74,6 +58,7 @@ class WsfScrapingPipeline(object):
 
             pdf_file, pdf_text = parse_pdf_document(f)
 
+            # If the PDF couldn't be converted, still remove the pdf file
             if not pdf_file:
                 os.remove(item['pdf'])
                 return item
@@ -106,7 +91,7 @@ class WsfScrapingPipeline(object):
 
         # If we need to keep the pdf, move it, else delete it
         try:
-            os.remove(item['pdf'])
+            os.unlink(item['pdf'])
         except FileNotFoundError:
             self.logger.warning(
                 "The file couldn't be found, and wasn't deleted."
@@ -173,7 +158,7 @@ class WsfScrapingPipeline(object):
             self.database.update_full_publication(full_item)
         else:
             # File is already scraped in the database
-            os.remove(item['pdf'])
+            os.unlink(item['pdf'])
             raise DropItem(
                 'Item footprint is already in the database'
             )
