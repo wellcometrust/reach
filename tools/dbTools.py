@@ -137,8 +137,8 @@ class DatabaseConnector:
             """,
             (publication['title'], publication['uri'], publication['pdf'],
              publication['hash'], publication.get('authors'),
-             publication.get('year'), publication['text'], publication['id'],
-             False)
+             publication.get('year'), publication['text'], False,
+             publication['id'],)
         )
 
     def insert_joints_and_text(self, table, items, id_publication):
