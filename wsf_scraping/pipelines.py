@@ -91,7 +91,7 @@ class WsfScrapingPipeline(object):
 
         # If we need to keep the pdf, move it, else delete it
         try:
-            os.remove(item['pdf'])
+            os.unlink(item['pdf'])
         except FileNotFoundError:
             self.logger.warning(
                 "The file couldn't be found, and wasn't deleted."
@@ -158,7 +158,7 @@ class WsfScrapingPipeline(object):
             self.database.update_full_publication(full_item)
         else:
             # File is already scraped in the database
-            os.remove(item['pdf'])
+            os.unlink(item['pdf'])
             raise DropItem(
                 'Item footprint is already in the database'
             )
