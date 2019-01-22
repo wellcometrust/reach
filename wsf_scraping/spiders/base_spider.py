@@ -40,6 +40,8 @@ class BaseSpider(scrapy.Spider):
         If the response body is PDF-typed, save the PDF to a tempfile to parse
         it later. Else, just drop te item.
 
+        The item will be later deleted in the pipeline.py file.
+
         Args:
             - response: The reponse object passed by scrapy
 
