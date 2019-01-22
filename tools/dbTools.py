@@ -131,12 +131,14 @@ class DatabaseConnector:
                 file_hash = %s,
                 authors = %s,
                 pub_year = %s,
-                pdf_text = %s
+                pdf_text = %s,
+                scrape_again = %s
             WHERE id = %s;
             """,
             (publication['title'], publication['uri'], publication['pdf'],
              publication['hash'], publication.get('authors'),
-             publication.get('year'), publication['text'], publication['id'],)
+             publication.get('year'), publication['text'], publication['id'],
+             False)
         )
 
     def insert_joints_and_text(self, table, items, id_publication):
