@@ -1,6 +1,5 @@
 import scrapy
 from .base_spider import BaseSpider
-from wsf_scraping.items import MSFArticle
 
 
 class MSFSpider(BaseSpider):
@@ -42,25 +41,3 @@ class MSFSpider(BaseSpider):
                 errback=self.on_error,
                 callback=self.save_pdf
             )
-
-    def save_pdf(self, response):
-        """ Retrieve the pdf file and scan it to scrape keywords and sections.
-        """
-
-        is_pdf = self._check_headers(response.headers)
-
-        if not is_pdf:
-            self.logger.info('Not a PDF, aborting (%s)', response.url)
-            return
-
-        # Download PDF file to /tmp
-        filename = self._save_file(response.url, response.body)
-        msf_article = MSFArticle({
-                'title': '',
-                'uri': response.request.url,
-                'pdf': filename,
-                'sections': {},
-                'keywords': {}
-        })
-
-        yield msf_article

@@ -3,7 +3,6 @@ import scrapy
 from lxml import html
 from scrapy.http import Request
 from .base_spider import BaseSpider
-from wsf_scraping.items import NICEArticle
 
 
 class NiceSpider(BaseSpider):
@@ -160,32 +159,3 @@ class NiceSpider(BaseSpider):
                 'No link found to download the pdf version (%s)',
                 response.request.url
             )
-
-    def save_pdf(self, response):
-        """ Retrieve the pdf file and scan it to scrape keywords and sections.
-
-        @url http://apps.who.int/iris/bitstream/10665/123575/1/em_rc8_5_en.pdf
-        @returns items 0
-        @returns requests 0 0
-        """
-
-        data_dict = response.meta.get('data_dict', {})
-
-        is_pdf = self._check_headers(response.headers)
-
-        if not is_pdf:
-            self.logger.info('Not a PDF, aborting (%s)', response.url)
-            return
-
-        # Download PDF file to /tmp
-        filename = self._save_file(response.url, response.body)
-        nice_article = NICEArticle({
-                'title': data_dict.get('title', ''),
-                'uri': response.request.url,
-                'year': data_dict.get('year', ''),
-                'pdf': filename,
-                'sections': {},
-                'keywords': {}
-        })
-
-        yield nice_article

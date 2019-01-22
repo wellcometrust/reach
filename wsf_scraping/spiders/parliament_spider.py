@@ -1,6 +1,5 @@
 import scrapy
 from scrapy.http import Request
-from wsf_scraping.items import ParliamentArticle
 from .base_spider import BaseSpider
 
 
@@ -58,14 +57,14 @@ class ParliamentSpider(BaseSpider):
             # The date is always in format `dd Mmm YYYY`
             title = li.css('h4 a::text').extract_first().strip()
             year = meta[0][-4:]
-            type = meta[1]
+            types = meta[1]
 
             yield Request(
                 url=response.urljoin(link),
                 meta={
                     'title': title,
                     'year': year,
-                    'type': type
+                    'types': types
                 },
                 callback=self.parse_others,
                 errback=self.on_error,
@@ -98,7 +97,7 @@ class ParliamentSpider(BaseSpider):
                 meta={
                     'title': response.meta.get('title'),
                     'year': response.meta.get('year'),
-                    'type': response.meta.get('type'),
+                    'types': response.meta.get('types'),
                 },
                 callback=self.save_pdf,
                 errback=self.on_error,
@@ -111,39 +110,8 @@ class ParliamentSpider(BaseSpider):
                         meta={
                             'title': response.meta.get('title'),
                             'year': response.meta.get('year'),
-                            'type': response.meta.get('type'),
+                            'types': response.meta.get('types'),
                         },
                         callback=self.save_pdf,
                         errback=self.on_error,
                     )
-
-    def save_pdf(self, response):
-        """Retrieve the pdf file and scan it to scrape keywords and sections.
-        """
-
-        # Some of the parliament's pdf are categorised as octetstream
-        is_pdf = self._check_headers(
-            response.headers
-        ) or self._check_headers(
-            response.headers,
-            b'application/octet-stream'
-        )
-
-        if not is_pdf:
-            self.logger.info('Not a PDF, aborting (%s)', response.url)
-            return
-
-        # Download PDF file to /tmp
-        filename = self._save_file(response.url, response.body)
-        parliament_article = ParliamentArticle({
-                'title': response.meta.get('title'),
-                'year': response.meta.get('year'),
-                'types': [response.meta.get('type')],
-                'uri': response.request.url,
-                'pdf': filename,
-                'sections': {},
-                'keywords': {}
-            }
-        )
-
-        yield parliament_article
