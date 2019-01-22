@@ -43,5 +43,11 @@ This repository includes a `settings.py` file, where you can manually configure 
 
 Once you're happy with your configuration, just run `python main.py`
 
+### Method 3.
+
+Edit the `main.py` arguments in `run_parser.sh` to include the names of the input and output file locations desired. If the `scraper_file`, `references_file`, `model_file`, and `vectorizer_file` arguments are to S3 locations then make sure these start with `s3://`, otherwise file names are assumed to be locally stored. If the `output_url` argument is to a local location, then make sure it begins with `file://`, otherwise it is assumed to be from a database.
+
+Then run in the terminal `./run_parser.sh`. 
+
 ## Contributing
 See the [Contributing guidelines](./CONTRIBUTING.md)
