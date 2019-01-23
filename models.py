@@ -59,9 +59,9 @@ class DatabaseEngine():
         DBSession = sessionmaker(bind=engine)
         return DBSession()
 
-    def __init__(self):
+    def __init__(self, url=settings.RDS_URL):
         self.meta = Base.metadata
-        self.session = self._get_session(settings.RDS_URL)
+        self.session = self._get_session(url)
         self.logger = settings.logger
 
     def save_to_database(self, documents, references):
