@@ -56,16 +56,12 @@ class WsfScrapingPipeline(object):
                 item['pdf']
             )
 
-            pdf_file, pdf_text = parse_pdf_document(f)
+            pdf_file = parse_pdf_document(f)
 
             # If the PDF couldn't be converted, still remove the pdf file
             if not pdf_file:
                 os.remove(item['pdf'])
                 return item
-
-            # In some case, the text contains NUL bit that are not allowed in
-            # PSQL. We just remove them.
-            item['text'] = pdf_text.replace('\0', '')
 
             for keyword in self.section_keywords:
                 # Fetch references or other keyworded list
