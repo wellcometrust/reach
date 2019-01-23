@@ -18,12 +18,12 @@ def parse_pdf_document(document):
     parsed_path = document.name.replace('.pdf', '.xml')
     # Run pdftohtml on the document, and output an xml formated document
     cmd = [
-            'pdftohtml',
-            '-i',
-            '-xml',
-            document.name,
-            parsed_path
-            ]
+        'pdftohtml',
+        '-i',
+        '-xml',
+        document.name,
+        parsed_path
+    ]
 
     try:
         with open(os.devnull, 'w') as FNULL:
@@ -42,6 +42,10 @@ def parse_pdf_document(document):
 
     except FileNotFoundError:
         return None, None
+
+    except TypeError:
+        logger.warning("Couldn't parse the converted file as it appears"
+                       " to be empty")
 
     text = soup.text
     file_pages = []
