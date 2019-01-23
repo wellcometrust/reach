@@ -108,15 +108,14 @@ class DatabaseConnector:
         self._execute(
             """
             INSERT INTO publication(title, url, pdf_name, file_hash,
-                             authors, pub_year, pdf_text,
+                             authors, pub_year,
                              id_provider, datetime_creation)
-            VALUES(%s, %s, %s, %s, %s, %s, %s, %s, %s)
+            VALUES(%s, %s, %s, %s, %s, %s, %s, %s)
             RETURNING id;
             """,
             (publication['title'], publication['uri'], publication['pdf'],
              publication['hash'], publication.get('authors'),
-             publication.get('year'), publication['text'], id_provider,
-             datetime.now(),)
+             publication.get('year'), id_provider, datetime.now(),)
         )
         return self.cursor.fetchone().id
 
@@ -131,14 +130,12 @@ class DatabaseConnector:
                 file_hash = %s,
                 authors = %s,
                 pub_year = %s,
-                pdf_text = %s,
                 scrape_again = %s
             WHERE id = %s;
             """,
             (publication['title'], publication['uri'], publication['pdf'],
              publication['hash'], publication.get('authors'),
-             publication.get('year'), publication['text'], False,
-             publication['id'],)
+             publication.get('year'), False, publication['id'],)
         )
 
     def insert_joints_and_text(self, table, items, id_publication):
