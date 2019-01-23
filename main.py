@@ -18,77 +18,54 @@ from settings import settings
 
 
 def check_references_file(ref_file, references_file):
-    assert 'title' in ref_file, "ref_file.title not defined in " + references_file + " consider renaming current title column name 'title'"
-    assert 'uber_id' in ref_file, "ref_file.uber_id not defined in " + references_file + " consider renaming current uber id column name to 'uber_id'"
+    assert 'title' in ref_file, (
+        "ref_file.title not defined in " + 
+        references_file + 
+        " consider renaming current title column name 'title'"
+    )
+    assert 'uber_id' in ref_file, (
+        "ref_file.uber_id not defined in " +
+        references_file +
+        " consider renaming current uber id column name to 'uber_id'"
+    )
+
+def get_file(file_str, file_type, get_scraped = None):
+    if file_str.startswith('s3://'):
+        u = urlparse(file_str)
+        fm = FileManager('S3', bucket=u.netloc)
+        file_name = os.path.basename(u.path)
+        file_dir = os.path.dirname(u.path)[1:]  # strip /
+    else:
+        fm = FileManager('LOCAL')
+        file_name = os.path.basename(file_str)
+        file_dir = os.path.dirname(file_str)
+    if get_scraped:
+        file = fm.get_scraping_results(
+            file_name,
+            file_dir,)
+    else:
+        file = fm.get_file(
+            file_name,
+            file_dir,
+            file_type)
+    return file
 
 def run_predict(scraper_file, references_file,
                 model_file, vectorizer_file,
                 output_url):
-    logger = settings.logger
-
-    logger.setLevel('INFO')
+ 
     logger.info("[+] Reading input files for %s", settings.ORGANISATION)
 
     # Loading the scraper results
-    if scraper_file.startswith('s3://'):
-        u = urlparse(scraper_file)
-        fm = FileManager('S3', bucket=u.netloc)
-        scraper_file_name = os.path.basename(u.path)
-        scraper_file_dir = os.path.dirname(u.path)[1:]  # strip first /
-    else:
-        fm = FileManager('LOCAL')
-        scraper_file_name = os.path.basename(scraper_file)
-        scraper_file_dir = os.path.dirname(scraper_file)
-    scraper_file = fm.get_scraping_results(
-        scraper_file_name,
-        scraper_file_dir,
-    )
+    scraper_file = get_file(scraper_file, "", True)
 
     # Loading the references file
-    if references_file.startswith('s3://'):
-        u = urlparse(references_file)
-        fm = FileManager('S3', bucket=u.netloc)
-        ref_file_name = os.path.basename(u.path)
-        ref_file_dir = os.path.dirname(u.path)[1:]  # strip /
-    else:
-        fm = FileManager('LOCAL')
-        ref_file_name = os.path.basename(references_file)
-        ref_file_dir = os.path.dirname(references_file)
-    ref_file = fm.get_file(
-        ref_file_name,
-        ref_file_dir,
-        'csv')
+    ref_file = get_file(references_file, 'csv')
     check_references_file(ref_file, references_file)
 
     # Loading the model and the vectoriser
-    if model_file.startswith('s3://'):
-        u = urlparse(model_file)
-        fm = FileManager('S3', bucket=u.netloc)
-        model_file_name = os.path.basename(u.path)
-        model_file_dir = os.path.dirname(u.path)[1:]  # strip /
-    else:
-        fm = FileManager('LOCAL')
-        model_file_name = os.path.basename(model_file)
-        model_file_dir = os.path.dirname(model_file)    
-    mnb = fm.get_file(
-        model_file_name,
-        model_file_dir,
-        'pickle')
-
-    if vectorizer_file.startswith('s3://'):
-        u = urlparse(vectorizer_file)
-        fm = FileManager('S3', bucket=u.netloc)
-        vect_file_name = os.path.basename(u.path)
-        vect_file_dir = os.path.dirname(u.path)[1:]  # strip /
-    else:
-        fm = FileManager('LOCAL')
-        vect_file_name = os.path.basename(vectorizer_file)
-        vect_file_dir = os.path.dirname(vectorizer_file)
-
-    vectorizer = fm.get_file(
-        vect_file_name,
-        vect_file_dir,
-        'pickle')
+    mnb = get_file(model_file, 'pickle')
+    vectorizer = get_file(vectorizer_file, 'pickle')
 
     # Split the reference sections using regex
     logger.info('[+] Spliting the references')
@@ -157,12 +134,14 @@ def run_predict(scraper_file, references_file,
 
 
 if __name__ == '__main__':
+    logger = settings.logger
+    logger.setLevel('INFO')
+
     # SENTRY_DSN must be present at import time. If we don't have it then,
     # we won't have it later either.
-    try:
+    if 'SENTRY_DSN' in os.environ:
+        logger.info("[+] Initialising Sentry")
         sentry_sdk.init(os.environ['SENTRY_DSN'])
-    except:
-        pass
 
     try:
         parser = ArgumentParser(description=__doc__.strip())
