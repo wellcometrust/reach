@@ -29,7 +29,7 @@ def check_references_file(ref_file, references_file):
         " consider renaming current uber id column name to 'uber_id'"
     )
 
-def get_file(file_str, file_type, get_scraped = None):
+def get_file(file_str, file_type, get_scraped = False):
     if file_str.startswith('s3://'):
         u = urlparse(file_str)
         fm = FileManager('S3', bucket=u.netloc)
@@ -57,7 +57,7 @@ def run_predict(scraper_file, references_file,
     logger.info("[+] Reading input files for %s", settings.ORGANISATION)
 
     # Loading the scraper results
-    scraper_file = get_file(scraper_file, "", True)
+    scraper_file = get_file(scraper_file, "", get_scraped=True)
 
     # Loading the references file
     ref_file = get_file(references_file, 'csv')
