@@ -30,10 +30,6 @@ def parse_pdf_document(document):
         with open(os.devnull, 'w') as FNULL:
             subprocess.check_call(cmd, stdout=FNULL, stderr=FNULL)
 
-        # Try to get file stats in order to check both its existance
-        # and if it has some content
-        os.stat(parsed_path)
-
     except subprocess.CalledProcessError as e:
         logger.warning(
             "The pdf [%s] could not be converted: %r",
@@ -42,11 +38,22 @@ def parse_pdf_document(document):
         )
         return None, None
 
+    try:
+        # Try to get file stats in order to check both its existance
+        # and if it has some content
+        st = os.stat(parsed_path)
+
     except OSError as e:
         if e.errno != errno.ENOENT:
             raise
 
         logger.warning('Error trying to open the parsed file: %s', e)
+        return None, None
+
+    if st.st_size == 0:
+        logger.warning(
+            'Error trying to open the parsed file: The file is empty'
+        )
         return None, None
 
     with open(parsed_path, 'rb') as html_file:
