@@ -1,5 +1,6 @@
 import math
 import os
+import errno
 import subprocess
 import logging
 from bs4 import BeautifulSoup as bs
@@ -19,19 +20,16 @@ def parse_pdf_document(document):
 
     # Run pdftohtml on the document, and output an xml formated document
     cmd = [
-            'pdftohtml',
-            '-i',
-            '-xml',
-            document.name,
-            parsed_path
-            ]
+        'pdftohtml',
+        '-i',
+        '-xml',
+        document.name,
+        parsed_path
+    ]
 
     try:
         with open(os.devnull, 'w') as FNULL:
             subprocess.check_call(cmd, stdout=FNULL, stderr=FNULL)
-
-        with open(parsed_path, 'rb') as html_file:
-            soup = bs(html_file.read(), 'html.parser')
 
     except subprocess.CalledProcessError as e:
         logger.warning(
@@ -41,8 +39,26 @@ def parse_pdf_document(document):
         )
         return None, None
 
-    except FileNotFoundError:
+    try:
+        # Try to get file stats in order to check both its existance
+        # and if it has some content
+        st = os.stat(parsed_path)
+
+    except OSError as e:
+        if e.errno != errno.ENOENT:
+            raise
+
+        logger.warning('Error trying to open the parsed file: %s', e)
         return None, None
+
+    if st.st_size == 0:
+        logger.warning(
+            'Error trying to open the parsed file: The file is empty'
+        )
+        return None, None
+
+    with open(parsed_path, 'rb') as html_file:
+        soup = bs(html_file.read(), 'html.parser')
 
     text = soup.text
     file_pages = []
