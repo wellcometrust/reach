@@ -2,7 +2,7 @@
 
 IMAGE := uk.ac.wellcome/web-scraper
 ECR_IMAGE := 160358319781.dkr.ecr.eu-west-1.amazonaws.com/$(IMAGE)
-VERSION := 2018.12.0
+VERSION := 2019.1.0
 
 .PHONY: base_image
 base_image:
