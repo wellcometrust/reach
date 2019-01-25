@@ -50,7 +50,7 @@ Make an output folder `output_folder_name` and run `main.py` with arguments of y
 ```
 mkdir -p /tmp/parser-output/output_folder_name
 
-python3 $DIR/main.py \
+python3 main.py \
 	--scraper-file "s3://datalabs-data/scraper-results/msf/20190117.json" \
 	--references-file "match-references/MRC_Publications_Nov2018_JGHT_JHSRI.csv" \
 	--model-file "s3://datalabs-data/reference_parser_models/RefSorter_classifier.pkl" \
