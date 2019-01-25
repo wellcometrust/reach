@@ -48,7 +48,7 @@ def process_reference_section(doc, regex):
         "Processing unstructured references into reference components ... "
     )
 
-    # assert 'sections' in raw_text_data, "raw_text_data.sections not defined"
+    assert doc.section, "document section is empty"
 
     # e.g.
     # Document 1:
