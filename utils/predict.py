@@ -3,7 +3,6 @@ from functools import partial
 from settings import settings
 from multiprocessing import Pool
 
-import pickle
 logger = settings.logger
 
 
