@@ -11,12 +11,12 @@ SCRAPING_COLUMNS = ('title', 'hash', 'sections', 'uri')
 
 
 class FileManager():
-    def __init__(self, mode='LOCAL'):
+    def __init__(self, mode='LOCAL', bucket=settings.BUCKET):
         self.mode = mode
         self.logger = settings.logger
         self.logger.setLevel('INFO')
         if self.mode == 'S3':
-            self.s3 = S3(settings.BUCKET)
+            self.s3 = S3(bucket)
 
         self.loaders = {
             'csv': self.load_csv_file,
