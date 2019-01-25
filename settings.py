@@ -17,17 +17,17 @@ class BaseSettings:
 
     BUCKET = "datalabs-data"
 
-    SCRAPER_RESULTS_DIR = "scraper-results/{}".format(ORGANISATION)
+    SCRAPER_RESULTS_DIR = "s3://{}/scraper-results/{}".format(BUCKET, ORGANISATION)
     SCRAPER_RESULTS_FILENAME = ''
 
-    REFERENCES_DIR = "wellcome_publications"
+    REFERENCES_DIR = "s3://{}/wellcome_publications".format(BUCKET)
     REFERENCES_FILENAME = 'uber_api_publications.csv'
 
     LOCAL_OUTPUT_DIR = 'local_output'
     PREF_REFS_FILENAME = 'predicted_reference_structures.csv'
     MATCHES_FILENAME = 'all_match_data.csv'
 
-    MODEL_DIR = "reference_parser_models"
+    MODEL_DIR = "s3://{}/reference_parser_models".format(BUCKET)
     CLASSIFIER_FILENAME = "RefSorter_classifier.pkl"
     VECTORIZER_FILENAME = "RefSorter_vectorizer.pkl"
 
@@ -51,13 +51,14 @@ class ProdSettings(BaseSettings):
 
     S3 = True
 
-    RDS_URL = "postgresql+psycopg2://{user}:{passw}@{host}:{port}/{db}".format(
+    OUTPUT_URL = "postgresql+psycopg2://{user}:{passw}@{host}:{port}/{db}".format(
           user=RDS_USERNAME,
           passw=RDS_PASSWORD,
           host=RDS_HOST,
           port=RDS_PORT,
           db=RDS_REFERENCES_DATABASE
     )
+    RDS_URL = OUTPUT_URL  # DEPRECATED
 
 
 class LocalSettings(BaseSettings):
@@ -71,13 +72,19 @@ class LocalSettings(BaseSettings):
     RDS_PORT = os.environ.get('RDS_PORT', 5432)
     RDS_REFERENCES_DATABASE = "parser_references"
 
-    RDS_URL = "postgresql+psycopg2://{user}:{passw}@{host}:{port}/{db}".format(
+
+    SCRAPER_RESULTS_DIR = "scraper-results/{}".format(BaseSettings.ORGANISATION)
+    REFERENCES_DIR = "wellcome_publications"
+    MODEL_DIR = "reference_parser_models"
+
+    OUTPUT_URL = "postgresql+psycopg2://{user}:{passw}@{host}:{port}/{db}".format(
           user=RDS_USERNAME,
           passw=RDS_PASSWORD,
           host=RDS_HOST,
           port=RDS_PORT,
           db=RDS_REFERENCES_DATABASE
     )
+    RDS_URL = OUTPUT_URL  # DEPRECATED
 
 
 settings_mode = {
