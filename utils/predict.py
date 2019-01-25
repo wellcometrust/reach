@@ -145,6 +145,9 @@ def predict_structure(reference_components_predictions,
     each reference for each document in turn.
     """
 
+    # Convert to pd dataframe, although when this function is refactored we shouldnt have to do this
+    reference_components_predictions = pd.DataFrame.from_dict(reference_components_predictions)
+
     all_structured_references = []
     document_ids = set(reference_components_predictions['Document id'])
 
