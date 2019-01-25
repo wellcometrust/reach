@@ -17,7 +17,6 @@ class TestDBTools(unittest.TestCase):
             'hash': '0' * 32,
             'authors': 'John Doe, Jane Doe',
             'year': '1999',
-            'text': 'Very long sentence' * 300,
         }
         sections = {'foo': 'bar' * 32}
         keywords = {'bar': 'foo' * 32}
