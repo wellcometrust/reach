@@ -3,7 +3,7 @@ from functools import partial
 from settings import settings
 from multiprocessing import Pool
 
-
+import pickle
 logger = settings.logger
 
 
@@ -25,7 +25,6 @@ def decide_components(single_reference):
             ]).astype(int).cumsum()
     })
     single_reference = pd.concat([single_reference, block_number], axis=1)
-
     single_reference_components = {}
 
     for classes in set(single_reference["Predicted Category"]):
@@ -59,7 +58,7 @@ def decide_components(single_reference):
                 # of the same probabilities it takes the first one)
                 # could decide to do this randomly with argmax.choice()
                 # (random choice)
-
+                
                 highest_probability_index = single_reference[
                     single_reference['Predicted Category'] == classes
                 ]['Prediction Probability'].idxmax()
@@ -240,14 +239,13 @@ def _get_year_or_component(component, mnb, vectorizer):
 
 def predict_references(mnb,
                        vectorizer,
-                       reference_components,
+                       reference_components_list,
                        num_workers=None):
 
     logger.info(
         "[+] Predicting the categories of %s  reference components ...",
-        str(len(reference_components))
+        str(len(reference_components_list))
     )
-
     predict_all = []
 
     # The model cant deal with predicting so many all at once,
@@ -266,20 +264,17 @@ def predict_references(mnb,
         partial(_get_year_or_component,
                 mnb=mnb,
                 vectorizer=vectorizer),
-        reference_components.get('Reference component', [])
+        reference_components_list
     ))
 
-    predict_all = pd.DataFrame.from_dict(predict_all)
-
-    reference_components_predictions = reference_components.reset_index()
-
-    reference_components_predictions[
-        "Predicted Category"
-    ] = predict_all['Predicted Category']
-
-    reference_components_predictions[
-        "Prediction Probability"
-    ] = predict_all['Prediction Probability']
+    components_predictions = []
+    for dic in predict_all:
+        tup = ()
+        for key,val in dic.items():
+            tup = (*tup,val)
+        components_predictions.append(tup)
 
     logger.info("Predictions complete")
-    return reference_components_predictions
+    return components_predictions
+
+
