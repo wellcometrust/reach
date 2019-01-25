@@ -78,12 +78,17 @@ def run_predict(scraper_file, references_file,
 
     # Predict the references types (eg title/author...)
     logger.info('[+] Predicting the reference components')
-    reference_components_predictions = predict_references(
+    components_predictions = predict_references(
         mnb,
         vectorizer,
-        splited_references
+        splited_references['Reference component']
     )
-
+    
+    # Link predictions back with all original data (Document id etc)
+    reference_components_predictions = splited_references
+    reference_components_predictions["Predicted Category"] = [tup[0] for tup in components_predictions]
+    reference_components_predictions["Prediction Probability"] = [tup[1] for tup in components_predictions]
+    
     # Predict the reference structure????
     predicted_reference_structures = predict_structure(
         reference_components_predictions,
