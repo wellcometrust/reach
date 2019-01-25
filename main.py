@@ -92,15 +92,20 @@ def run_predict(scraper_file, references_file,
 
     t0 = time.time()
     nb_references = 0
-    for doc in transform_scraper_file(scraper_file):
+    nb_documents = sum(scraper_file['sections'].notnull())
+    for i, doc in enumerate(transform_scraper_file(scraper_file)):
+        logger.info('[+] Processing references from document {} of {}'.format(
+            i,
+            nb_documents
+        ))
 
-        logger.info('[+] Splitting the reference sections')
+        # logger.info('[+] Splitting the reference sections')
         splitted_references = process_reference_section(
             doc,
             settings.ORGANISATION_REGEX
         )
 
-        logger.info('[+] Parsing the references')
+        # logger.info('[+] Parsing the references')
         splitted_components = process_references(splitted_references)
         reference_components_predictions = predict_references(
             mnb,
@@ -112,7 +117,7 @@ def run_predict(scraper_file, references_file,
             settings.PREDICTION_PROBABILITY_THRESHOLD
         )
 
-        logger.info('[+] Matching the references')
+        # logger.info('[+] Matching the references')
         fuzzy_matcher = FuzzyMatcher(
             ref_file,
             settings.FUZZYMATCH_THRESHOLD
