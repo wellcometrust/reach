@@ -16,15 +16,16 @@ class BaseSpider(scrapy.Spider):
 
         if failure.check(HttpError):
             response = failure.value.response
-            self.logger.error('HttpError on %s', response.url)
+            self.logger.warning('HttpError (%s) on %s',
+                                response.url, response.status)
 
         elif failure.check(DNSLookupError):
             request = failure.request
-            self.logger.error('DNSLookupError on %s', request.url)
+            self.logger.warning('DNSLookupError on %s', request.url)
 
         elif failure.check(TimeoutError):
             request = failure.request
-            self.logger.error('TimeoutError on %s', request.url)
+            self.logger.warning('TimeoutError on %s', request.url)
 
         else:
             self.logger.error(repr(failure))
