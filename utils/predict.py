@@ -207,46 +207,76 @@ def predict_reference_comp(mnb, vectorizer, word_list):
         single_predict.max() for single_predict in predict_component_probas
     ]
 
-    return predict_component, predict_component_proba
+    return predict_component[0], predict_component_proba[0]
 
-
-def _get_year_or_component(component, mnb, vectorizer):
+def is_year(component):
     valid_years_range = range(1800, 2020)
-    if (
-       (component.isdecimal()
-        and int(component) in valid_years_range)
-       or (
-           len(component) == 6
-           and component[1:5].isdecimal()
-           and int(component[1:5]) in valid_years_range)
-       ):
-        return {
-            'Predicted Category': 'PubYear',
-            'Prediction Probability': 1
-        }
+    return (
+                (
+                    component.isdecimal()
+                    and int(component) in valid_years_range
+                )
+                or
+                (
+                    len(component) == 6
+                    and component[1:5].isdecimal()
+                    and int(component[1:5]) in valid_years_range
+                )
+            )
+        
 
+def _get_component(component, mnb, vectorizer):
+
+    if is_year(component):
+        pred_cat = 'PubYear'
+        pred_prob = 1
     else:
-        # If it's not a year, then classify with the model
-        (predict_comp,
-         predict_component_proba) = predict_reference_comp(
+        pred_cat, pred_prob = predict_reference_comp(
             mnb,
             vectorizer,
             [component]
         )
-        return {
-            'Predicted Category': predict_comp[0],
-            'Prediction Probability': predict_component_proba[0]
+
+    return {
+            'Predicted Category': pred_cat,
+            'Prediction Probability': pred_prob
             }
+
+def dict_to_tuples(list_dict):
+    """
+    Input: List of dicts
+    Output: List of tuples
+    """
+
+    list_tuples = []
+    for dic in list_dict:
+        tup = ()
+        for key,val in dic.items():
+            tup = (*tup,val)
+        list_tuples.append(tup)
+
+    return list_tuples
 
 
 def predict_references(mnb,
                        vectorizer,
-                       reference_components_list,
+                       reference_components,
                        num_workers=None):
+
+    """
+    Predicts the categories for a list of reference components.
+    Input:
+    - mnb: The trained multinomial naive Bayes model for predicting the categories of reference components
+    - vectorizer: The vector of word counts in the training set
+    - reference_components: A list of reference components
+    - num_workers: How many different processors you want to use in multiprocessing the predicting
+    Output:
+    - A list of tuples ("Predicted Category", "Prediction Probability")
+    """
 
     logger.info(
         "[+] Predicting the categories of %s  reference components ...",
-        str(len(reference_components_list))
+        str(len(reference_components))
     )
     predict_all = []
 
@@ -263,20 +293,14 @@ def predict_references(mnb,
         )
 
     predict_all = list(pool_map(
-        partial(_get_year_or_component,
+        partial(_get_component,
                 mnb=mnb,
                 vectorizer=vectorizer),
-        reference_components_list
+        reference_components
     ))
 
-    components_predictions = []
-    for dic in predict_all:
-        tup = ()
-        for key,val in dic.items():
-            tup = (*tup,val)
-        components_predictions.append(tup)
+    components_predictions = dict_to_tuples(predict_all)
 
     logger.info("Predictions complete")
     return components_predictions
-
 
