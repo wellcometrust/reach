@@ -85,9 +85,13 @@ def run_predict(scraper_file, references_file,
     )
     
     # Link predictions back with all original data (Document id etc)
+    # When we merge and splited_references is a dict not a dataframe then we could just merge the list of dicts
     reference_components_predictions = splited_references
-    reference_components_predictions["Predicted Category"] = [tup[0] for tup in components_predictions]
-    reference_components_predictions["Prediction Probability"] = [tup[1] for tup in components_predictions]
+    reference_components_predictions["Predicted Category"] = (
+        [components_prediction["Predicted Category"] for components_prediction in components_predictions]
+        )
+    reference_components_predictions["Prediction Probability"] = (
+        [components_prediction["Prediction Probability"] for components_prediction in components_predictions])
     
     # Predict the reference structure????
     predicted_reference_structures = predict_structure(

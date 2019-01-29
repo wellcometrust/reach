@@ -255,7 +255,7 @@ def predict_references(mnb,
     - reference_components: A list of reference components
     - num_workers: How many different processors you want to use in multiprocessing the predicting
     Output:
-    - A list of tuples ("Predicted Category", "Prediction Probability")
+    - A list of dicts [{"Predicted Category": , "Prediction Probability": } ...]
     """
 
     logger.info(
@@ -284,5 +284,6 @@ def predict_references(mnb,
     ))
 
     logger.info("Predictions complete")
-    return [tuple(d.values()) for d in predict_all]
+
+    return predict_all
 
