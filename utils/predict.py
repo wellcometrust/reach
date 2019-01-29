@@ -1,7 +1,6 @@
 import pandas as pd
 from functools import partial
 from settings import settings
-from multiprocessing import Pool
 
 
 logger = settings.logger
@@ -185,9 +184,8 @@ def _get_structure(reference_id, document):
     return pd.DataFrame.from_dict(single_reference)
 
 
-def predict_structure(reference_components_predictions,
-                      prediction_probability_threshold,
-                      num_workers=None):
+def predict_structure(pool_map, reference_components_predictions,
+                      prediction_probability_threshold):
     """Predict the structured references for all the references. Go through
     each reference for each document in turn.
     """
@@ -199,15 +197,6 @@ def predict_structure(reference_components_predictions,
         "[+] Predicting structure of references from %s  documents...",
         str(len(document_ids))
     )
-    if num_workers == 1:
-        pool_map = map
-    else:
-        pool = Pool(num_workers)
-        pool_map = pool.map
-        logger.info(
-            '[+] Using pooled predictor with %s workers',
-            pool._processes
-        )
     for document_id in document_ids:
         document = reference_components_predictions.loc[
             reference_components_predictions['Document id'] == document_id
@@ -284,10 +273,9 @@ def _get_year_or_component(component, mnb, vectorizer):
             }
 
 
-def predict_references(mnb,
+def predict_references(pool_map, mnb,
                        vectorizer,
-                       reference_components,
-                       num_workers=None):
+                       reference_components):
 
     logger.info(
         "[+] Predicting the categories of %s  reference components ...",
@@ -298,15 +286,6 @@ def predict_references(mnb,
 
     # The model cant deal with predicting so many all at once,
     # so predict in a loop
-    if num_workers == 1:
-        pool_map = map
-    else:
-        pool = Pool(num_workers)
-        pool_map = pool.map
-        logger.info(
-            '[+] Using pooled predictor with %s workers',
-            pool._processes
-        )
 
     predict_all = list(pool_map(
         partial(_get_year_or_component,
