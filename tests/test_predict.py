@@ -4,7 +4,7 @@ import pickle
 
 from utils import predict_references
 
-MODELS_DIR = os.path.join( os.path.dirname(__file__), '..', 'reference_parser_models')
+MODELS_DIR = os.path.join(os.path.dirname(__file__), '..', 'reference_parser_models')
 
 with open(os.path.join(MODELS_DIR, "RefSorter_classifier.pkl"), "rb") as f:
     mnb = pickle.load(f)
