@@ -77,7 +77,18 @@ def get_file(file_str, file_type, get_scraped = False):
 def run_predict(scraper_file, references_file,
                 model_file, vectorizer_file,
                 pool_map, output_url):
- 
+    """
+    Entry point for reference parser.
+
+    Args:
+        scraper_file: path / S3 url to scraper results file
+        references_file: path/S3 url to references CSV file
+        model_file: path/S3 url to model pickle file (three formats FTW!)
+        vectorizer_file: path/S3 url to vectorizer pickle file
+        pool_map: (possibly parallel) implementation of map() builtin
+        output_url: file/S3 url for output files
+    """
+
     logger.info("[+] Reading input files for %s", settings.ORGANISATION)
 
     # Loading the scraper results
