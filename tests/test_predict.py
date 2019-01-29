@@ -21,7 +21,10 @@ class TestPredict(unittest.TestCase):
 		components_predictions = predict_references(mnb,vectorizer,["Component","Component","Component"])
 		all_categories = ['Authors', 'Title', 'Journal', 'PubYear', 'Volume', 'Issue', 'Pagination']
 		self.assertEqual(
-			isinstance(components_predictions, list) and
+			isinstance(components_predictions, list),
+			True, "Should be a list"
+			)
+		self.assertEqual(
 			all([components_prediction[0] in all_categories for components_prediction in components_predictions]),
 			True, "Should be a list of categories from {}".format(all_categories)
 			)
