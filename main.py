@@ -3,8 +3,9 @@ and a list of publication.
 """
 
 from argparse import ArgumentParser
-from urllib.parse import urlparse
 from collections import namedtuple
+from multiprocessing import Pool
+from urllib.parse import urlparse
 import os
 import time
 
@@ -75,7 +76,7 @@ def get_file(file_str, file_type, get_scraped = False):
 
 def run_predict(scraper_file, references_file,
                 model_file, vectorizer_file,
-                output_url):
+                pool_map, output_url):
  
     logger.info("[+] Reading input files for %s", settings.ORGANISATION)
 
@@ -108,11 +109,13 @@ def run_predict(scraper_file, references_file,
         # logger.info('[+] Parsing the references')
         splitted_components = process_references(splitted_references)
         reference_components_predictions = predict_references(
+            pool_map,
             mnb,
             vectorizer,
             splitted_components
         )
         predicted_reference_structures = predict_structure(
+            pool_map,
             reference_components_predictions,
             settings.PREDICTION_PROBABILITY_THRESHOLD
         )
@@ -194,6 +197,9 @@ if __name__ == '__main__':
             '--output-url',
             help='URL (file://!) or DSN for output'
         )
+        parser.add_argument(
+            '--num-workers',
+            help='Number of workers to use for parallel processing.')
         args = parser.parse_args()
 
         if args.scraper_file is None:
@@ -237,18 +243,35 @@ if __name__ == '__main__':
         else:
             output_url = args.output_url
 
+        if args.num_workers == 1:
+            pool = None
+            pool_map = map
+        else:
+            pool = Pool(args.num_workers)
+            pool_map = pool.map
+            logger.info(
+                '[+] Creatings worker pool with %s workers',
+                pool._processes
+            )
+
+
         if settings.DEBUG:
             import cProfile
             cProfile.run(
                 ''.join([
                     'run_predict(scraper_file, references_file,',
-                    'model_file, vectorizer_file, output_url)'
+                    'model_file, vectorizer_file, pool_map, output_url)'
                 ]),
                 'stats_dumps'
             )
         else:
             run_predict(scraper_file, references_file,
-                        model_file, vectorizer_file, output_url)
+                        model_file, vectorizer_file, pool_map, output_url)
+
+        if pool is not None:
+            pool.terminate()
+            pool.join()
+
     except Exception as e:
         sentry_sdk.capture_exception(e)
         raise
