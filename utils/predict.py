@@ -242,22 +242,6 @@ def _get_component(component, mnb, vectorizer):
             'Prediction Probability': pred_prob
             }
 
-def dict_to_tuples(list_dict):
-    """
-    Input: List of dicts
-    Output: List of tuples
-    """
-
-    list_tuples = []
-    for dic in list_dict:
-        tup = ()
-        for key,val in dic.items():
-            tup = (*tup,val)
-        list_tuples.append(tup)
-
-    return list_tuples
-
-
 def predict_references(mnb,
                        vectorizer,
                        reference_components,
@@ -299,8 +283,6 @@ def predict_references(mnb,
         reference_components
     ))
 
-    components_predictions = dict_to_tuples(predict_all)
-
     logger.info("Predictions complete")
-    return components_predictions
+    return [tuple(d.values()) for d in predict_all]
 
