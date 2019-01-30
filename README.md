@@ -60,6 +60,18 @@ python3 $DIR/main.py \
 
 If the `scraper_file`, `references_file`, `model_file`, and `vectorizer_file` arguments are to S3 locations then make sure these start with `s3://`, otherwise file names are assumed to be locally stored. If the `output_url` argument is to a local location, then make sure it begins with `file://`, otherwise it is assumed to be from a database.
 
+### Method 4.
+
+If you would like to run the parser for the latest scraped files and to save the output locally, then you will first need to get the latest file names by running
+```
+chmod u+x utils/export_env
+source utils/export_env
+```
+And then run
+`python parse_latest.py`
+
+Warning that this could take some time.
+
 
 ## Contributing
 See the [Contributing guidelines](./CONTRIBUTING.md)
