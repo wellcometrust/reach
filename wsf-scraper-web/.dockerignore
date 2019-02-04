@@ -1,0 +1,7 @@
+crawls
+env
+Dockerfile
+.gitignore
+var/*
+results/*
+data/*
