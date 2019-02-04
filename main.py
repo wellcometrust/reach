@@ -3,14 +3,18 @@ and a list of publication.
 """
 
 from argparse import ArgumentParser
+from collections import namedtuple
+from multiprocessing import Pool
 from urllib.parse import urlparse
-import time
 import os
+import time
+
 import sentry_sdk
 
 from utils import (FileManager,
                    FuzzyMatcher,
                    process_reference_section,
+                   process_references,
                    predict_references,
                    predict_structure)
 from models import DatabaseEngine
@@ -28,6 +32,26 @@ def check_references_file(ref_file, references_file):
         references_file +
         " consider renaming current uber id column name to 'uber_id'"
     )
+
+SectionedDocument = namedtuple(
+    'SectionedDocument',
+    ['section', 'uri', 'id']
+)
+
+
+def transform_scraper_file(scraper_data):
+    """Takes a pandas dataframe. Yields back individual
+    SectionedDocument tuples.
+    """
+    for _, document in scraper_data.iterrows():
+        if document["sections"]:
+
+            section = document['sections']['Reference']
+            yield SectionedDocument(
+                section,
+                document['uri'],
+                document['hash']
+            )
 
 def get_file(file_str, file_type, get_scraped = False):
     if file_str.startswith('s3://'):
@@ -52,8 +76,19 @@ def get_file(file_str, file_type, get_scraped = False):
 
 def run_predict(scraper_file, references_file,
                 model_file, vectorizer_file,
-                output_url):
- 
+                pool_map, output_url):
+    """
+    Entry point for reference parser.
+
+    Args:
+        scraper_file: path / S3 url to scraper results file
+        references_file: path/S3 url to references CSV file
+        model_file: path/S3 url to model pickle file (three formats FTW!)
+        vectorizer_file: path/S3 url to vectorizer pickle file
+        pool_map: (possibly parallel) implementation of map() builtin
+        output_url: file/S3 url for output files
+    """
+
     logger.info("[+] Reading input files for %s", settings.ORGANISATION)
 
     # Loading the scraper results
@@ -67,78 +102,91 @@ def run_predict(scraper_file, references_file,
     mnb = get_file(model_file, 'pickle')
     vectorizer = get_file(vectorizer_file, 'pickle')
 
-    # Split the reference sections using regex
-    logger.info('[+] Spliting the references')
-    splited_references = process_reference_section(
-        scraper_file,
-        settings.ORGANISATION_REGEX
-    )
-
     t0 = time.time()
+    nb_references = 0
+    nb_documents = sum(scraper_file['sections'].notnull())
+    for i, doc in enumerate(transform_scraper_file(scraper_file)):
+        logger.info('[+] Processing references from document {} of {}'.format(
+            i,
+            nb_documents
+        ))
 
-    # Predict the references types (eg title/author...)
-    logger.info('[+] Predicting the reference components')
-    components_predictions = predict_references(
-        mnb,
-        vectorizer,
-        splited_references['Reference component']
-    )
-    
-    # Link predictions back with all original data (Document id etc)
-    # When we merge and splited_references is a dict not a dataframe then we could just merge the list of dicts
-    reference_components_predictions = splited_references
-    reference_components_predictions["Predicted Category"] = [
-        d["Predicted Category"] for d in components_predictions
-    ]
-    reference_components_predictions["Prediction Probability"] = [
-        d["Prediction Probability"] for d in components_predictions
-    ]
-    
-    # Predict the reference structure????
-    predicted_reference_structures = predict_structure(
-        reference_components_predictions,
-        settings.PREDICTION_PROBABILITY_THRESHOLD
-    )
-
-    fuzzy_matcher = FuzzyMatcher(
-        ref_file,
-        settings.FUZZYMATCH_THRESHOLD
-    )
-    all_match_data = fuzzy_matcher.fuzzy_match_blocks(
-        settings.BLOCKSIZE,
-        predicted_reference_structures,
-        settings.FUZZYMATCH_THRESHOLD
-    )
-
-    if output_url.startswith('file://'):
-        # use everything after first two slashes; this handles
-        # absolute and relative urls equally well
-        output_dir = output_url[7:]
-        predicted_reference_structures.to_csv(
-            os.path.join(
-                output_dir,
-                settings.PREF_REFS_FILENAME
-                )
-            )
-        all_match_data.to_csv(
-            os.path.join(
-                output_dir,
-                settings.MATCHES_FILENAME
-                )
-            )
-    else:
-        database = DatabaseEngine(output_url)
-        database.save_to_database(
-            predicted_reference_structures,
-            all_match_data,
+        # Split references section into references
+        splitted_references = process_reference_section(
+            doc,
+            settings.ORGANISATION_REGEX
         )
+
+        # Split references into components
+        splitted_components = process_references(splitted_references)
+
+        # Predict the references types (eg title/author...)
+        logger.info('[+] Predicting the reference components')
+        components_predictions = predict_references(
+            pool_map,
+            mnb,
+            vectorizer,
+            splitted_components['Reference component']
+        )
+
+        # Link predictions back with all original data (Document id etc)
+        # When we merge and splitted_components is a dict not a dataframe then we could just merge the list of dicts
+        reference_components_predictions = splitted_components
+        reference_components_predictions["Predicted Category"] = [
+            d["Predicted Category"] for d in components_predictions
+        ]
+        reference_components_predictions["Prediction Probability"] = [
+            d["Prediction Probability"] for d in components_predictions
+        ]
+        
+        # Predict the reference structure
+        predicted_reference_structures = predict_structure(
+            pool_map,
+            reference_components_predictions,
+            settings.PREDICTION_PROBABILITY_THRESHOLD
+        )
+
+        # logger.info('[+] Matching the references')
+        fuzzy_matcher = FuzzyMatcher(
+            ref_file,
+            settings.FUZZYMATCH_THRESHOLD
+        )
+        all_match_data = fuzzy_matcher.fuzzy_match_blocks(
+            settings.BLOCKSIZE,
+            predicted_reference_structures,
+            settings.FUZZYMATCH_THRESHOLD
+        )
+
+        if output_url.startswith('file://'):
+            # use everything after first two slashes; this handles
+            # absolute and relative urls equally well
+            output_dir = output_url[7:]
+            predicted_reference_structures.to_csv(
+                os.path.join(
+                    output_dir,
+                    f"{doc.id}_{settings.PREF_REFS_FILENAME}"
+                    )
+                )
+            all_match_data.to_csv(
+                os.path.join(
+                    output_dir,
+                    f"{doc.id}_{settings.MATCHES_FILENAME}"
+                    )
+                )
+        else:
+            database = DatabaseEngine(output_url)
+            database.save_to_database(
+                predicted_reference_structures,
+                all_match_data,
+            )
+        nb_references += len(splitted_references)
 
     t1 = time.time()
     total = t1-t0
 
     logger.info(
         "Time taken to predict and match for %s is %s",
-        str(len(splited_references)),
+        str(nb_references),
         str(total)
     )
 
@@ -175,6 +223,9 @@ if __name__ == '__main__':
             '--output-url',
             help='URL (file://!) or DSN for output'
         )
+        parser.add_argument(
+            '--num-workers',
+            help='Number of workers to use for parallel processing.')
         args = parser.parse_args()
 
         if args.scraper_file is None:
@@ -218,18 +269,35 @@ if __name__ == '__main__':
         else:
             output_url = args.output_url
 
+        if args.num_workers == 1:
+            pool = None
+            pool_map = map
+        else:
+            pool = Pool(args.num_workers)
+            pool_map = pool.map
+            logger.info(
+                '[+] Creatings worker pool with %s workers',
+                pool._processes
+            )
+
+
         if settings.DEBUG:
             import cProfile
             cProfile.run(
                 ''.join([
                     'run_predict(scraper_file, references_file,',
-                    'model_file, vectorizer_file, output_url)'
+                    'model_file, vectorizer_file, pool_map, output_url)'
                 ]),
                 'stats_dumps'
             )
         else:
             run_predict(scraper_file, references_file,
-                        model_file, vectorizer_file, output_url)
+                        model_file, vectorizer_file, pool_map, output_url)
+
+        if pool is not None:
+            pool.terminate()
+            pool.join()
+
     except Exception as e:
         sentry_sdk.capture_exception(e)
         raise
