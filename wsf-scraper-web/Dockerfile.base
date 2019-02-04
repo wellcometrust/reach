@@ -1,0 +1,29 @@
+# Use a basic Python image
+FROM python:3.6.4
+
+# Poppler is needed to run pdftotext convertion
+RUN apt-get update -yqq \
+  && apt-get install -yqq --no-install-recommends \
+    gcc \
+    libpoppler-cpp-dev \
+    poppler-utils \
+    pkg-config \
+    locales \
+  && apt-get -q clean
+
+# Build UTF8 locale to avoid encoding issues with Scrapy encoding
+# C.UTF-8 is the new en_US.UTF-8.
+RUN locale-gen C.UTF-8
+ENV LC_ALL=C.UTF-8
+ENV LANG=C.UTF-8
+ENV LANGUAGE=C.UTF-8
+
+WORKDIR /wsf_scraper
+
+COPY Pipfile /wsf_scraper/Pipfile
+COPY Pipfile.lock /wsf_scraper/Pipfile.lock
+
+# Install dependencies using pipenv
+RUN pip install -U pip
+RUN pip install pipenv
+RUN pipenv install --system --deploy

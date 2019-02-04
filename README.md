@@ -1,6 +1,20 @@
-# Wellcome Reference Parser
-This repository uses a home trained model to identify components from a set of
-scraped reference sections and to find those directly related to Wellcome.
+# Wellcome Policy Tool
+
+This repository will include all code needed to bring up Wellcome's
+Policy Tool, a service that reports which research publications are
+cited in the policy documents produced by policy organizations such as
+the WHO, MSF, and the UK government.
+
+## wsf-web-scraper/
+
+See [wsf-web-scraper/README.md](wsf-web-scraper/README.md).
+
+## Wellcome Reference Parser
+
+The top-level files in this repo currently hold Policy Tool's reference
+parser, which uses a home trained model to identify components from a
+set of scraped reference sections and to find those directly related to
+Wellcome.
 
 ## Requirements
 This project use Pipenv to manage its dependencies.
