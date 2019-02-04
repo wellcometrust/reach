@@ -2,37 +2,9 @@
 
 import re
 
-import numpy as np
-import pandas as pd
 from settings import settings
 
 logger = settings.logger
-
-
-def split_reference(reference):
-    """Split up one individual reference into reference components.
-    Each component is numbered by the reference it came from.
-    """
-    components = []
-
-    # I need to divide each reference by the full stops
-    # AND commas and categorise
-    reference_sentences_mid = [
-        elem.strip()
-        for elem in reference.replace(
-            ',', '.'
-        ).replace(
-            '?', '?.'
-        ).replace(
-            '!', '!.'
-        ).split(".")
-    ]
-
-    for ref in reference_sentences_mid:
-        if ref:
-            components.append(ref)
-
-    return components
 
 
 def split_sections(references_section, regex="\n"):
@@ -60,23 +32,23 @@ def split_sections(references_section, regex="\n"):
     return references
 
 
-def process_reference_section(raw_text_data, regex):
+def process_reference_section(doc, regex):
     """Converts the unstructured text into reference components
     Input:
-    - The unstructured references (e.g. from WHO)
+    - a SectionedDocument tuple
     Output:
-    - A list of reference components from these
-    - The number of references for each document
-    - Meta info for each document index
+    - A list of references data which come into a dict with keys
+        about the reference string, reference id, document uri and
+        document id
     Nomenclature:
-    Document > Reference > Reference components
+    Document > References
     """
 
     logger.info(
         "Processing unstructured references into reference components ... "
     )
 
-    assert 'sections' in raw_text_data, "raw_text_data.sections not defined"
+    assert doc.section, "document section is empty"
 
     # e.g.
     # Document 1:
@@ -84,94 +56,14 @@ def process_reference_section(raw_text_data, regex):
     # Document 2:
     # Eric, 1987
 
-    raw_reference_components = []
-
-    for _, document in raw_text_data.iterrows():
-        if document["sections"]:
-
-            # Get all the references text for this WHO document and split it
-            # up into individual references
-            references_section = document['sections']['Reference']
-            references = split_sections(references_section, regex)
-
-            for reference in references:
-                # Get the components for this reference and store
-                components = split_reference(reference)
-
-                for component in components:
-                    raw_reference_components.append({
-                        'Reference component': component,
-                        'Reference id': hash(reference),
-                        'Document uri': document['uri'],
-                        'Document id': document['hash']
-                    })
-
-    reference_components = pd.DataFrame(raw_reference_components)
-
-    logger.info("Reference components found")
-
-    return reference_components
-
-
-def summarise_predicted_references(reference_components, raw_text_data):
-    """Get the number of references and information for each document."""
-
-    logger.info("Number of references for each document being found ... ")
-    assert 'sections' in raw_text_data, "raw_text_data.sections not defined"
-
-    #####
-    # 1. Get some sumamry reference information about each document
-    #####
-
-    all_document_info = pd.DataFrame(
-        raw_text_data[['pdf', 'title', 'uri', 'year']]
-    )
-    all_document_info['Document'] = range(0, len(raw_text_data))
-
-    predicted_number_refs_temp = []
-
-    for document_number in set(all_document_info):
-        document_references = reference_components.loc[
-            reference_components[
-                'Document number'
-            ] == document_number]['Reference number'].unique()
-        predicted_number_refs_temp.append(
-            [document_number, len(document_references)]
-        )
-
-    predicted_number_refs = pd.DataFrame(
-        predicted_number_refs_temp,
-        columns=['Document', 'Predicted number of references']
-    )
-    predicted_number_refs = predicted_number_refs.join(
-        all_document_info.set_index('Document'),
-        on='Document'
-    )
-
-    #####
-    # 2. Get the number of pdfs which have data in the references
-    #    section part of the JSON
-    #####
-
-    count_ref = len([i for i in raw_text_data["sections"] if i])
-
-    logger.info("Number of JSON with reference section is %s", str(count_ref))
-    logger.info("Number of JSON is %s", str(len(raw_text_data)))
-    logger.info(
-        "Average number of references predicted %s",
-        str(round(np.mean(
-            predicted_number_refs['Predicted number of references']
-        )))
-    )
-
-    return predicted_number_refs
-
-
-def save_reference_components(reference_components):
-    logger.info("Saving reference components ... ")
-    reference_components.to_csv('reference_components.csv', index=False)
-
-
-def save_predicted_number_refs(predicted_number_refs):
-    logger.info("Saving predicted number of references ... ")
-    predicted_number_refs.to_csv('predicted_number_refs.csv', index=False)
+    references_data = []
+    references = split_sections(doc.section, regex)
+    for reference in references:
+        references_data.append({
+            'Reference': reference,
+            'Reference id': hash(reference),
+            # TODO: remove these
+            'Document uri': doc.uri,
+            'Document id': doc.id,
+        })
+    return references_data

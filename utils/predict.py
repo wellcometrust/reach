@@ -1,9 +1,54 @@
 import pandas as pd
 from functools import partial
 from settings import settings
-from multiprocessing import Pool
 
 logger = settings.logger
+
+
+def split_reference(reference):
+    """Split up one individual reference into reference components.
+    Each component is numbered by the reference it came from.
+    """
+    components = []
+
+    # I need to divide each reference by the full stops
+    # AND commas and categorise
+    reference_sentences_mid = [
+        elem.strip()
+        for elem in reference.replace(
+            ',', '.'
+        ).replace(
+            '?', '?.'
+        ).replace(
+            '!', '!.'
+        ).split(".")
+    ]
+
+    for ref in reference_sentences_mid:
+        if ref:
+            components.append(ref)
+
+    return components
+
+
+def process_references(references):
+    raw_reference_components = []
+    for reference in references:
+        # Get the components for this reference and store
+        components = split_reference(reference['Reference'])
+
+        for component in components:
+            raw_reference_components.append({
+                'Reference component': component,
+                'Reference id': reference['Reference id'],
+                'Document uri': reference['Document uri'],
+                'Document id': reference['Document id']
+            })
+
+    reference_components = pd.DataFrame(raw_reference_components)
+
+    logger.info("Reference components found")
+    return reference_components
 
 
 def decide_components(single_reference):
@@ -137,9 +182,8 @@ def _get_structure(reference_id, document):
     return pd.DataFrame.from_dict(single_reference)
 
 
-def predict_structure(reference_components_predictions,
-                      prediction_probability_threshold,
-                      num_workers=None):
+def predict_structure(pool_map, reference_components_predictions,
+                      prediction_probability_threshold):
     """Predict the structured references for all the references. Go through
     each reference for each document in turn.
     """
@@ -154,15 +198,6 @@ def predict_structure(reference_components_predictions,
         "[+] Predicting structure of references from %s  documents...",
         str(len(document_ids))
     )
-    if num_workers == 1:
-        pool_map = map
-    else:
-        pool = Pool(num_workers)
-        pool_map = pool.map
-        logger.info(
-            '[+] Using pooled predictor with %s workers',
-            pool._processes
-        )
     for document_id in document_ids:
         document = reference_components_predictions.loc[
             reference_components_predictions['Document id'] == document_id
@@ -242,10 +277,9 @@ def _get_component(component, mnb, vectorizer):
             'Prediction Probability': pred_prob
             }
 
-def predict_references(mnb,
+def predict_references(pool_map, mnb,
                        vectorizer,
-                       reference_components,
-                       num_workers=None):
+                       reference_components):
 
     """
     Predicts the categories for a list of reference components.
@@ -266,15 +300,6 @@ def predict_references(mnb,
 
     # The model cant deal with predicting so many all at once,
     # so predict in a loop
-    if num_workers == 1:
-        pool_map = map
-    else:
-        pool = Pool(num_workers)
-        pool_map = pool.map
-        logger.info(
-            '[+] Using pooled predictor with %s workers',
-            pool._processes
-        )
 
     predict_all = list(pool_map(
         partial(_get_component,
