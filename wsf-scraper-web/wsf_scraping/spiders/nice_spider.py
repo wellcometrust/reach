@@ -147,7 +147,7 @@ class NiceSpider(BaseSpider):
             href = response.css('#nice-download::attr("href")').extract_first()
 
         if href:
-            return Request(
+            yield Request(
                 url=response.urljoin(href),
                 errback=self.on_error,
                 callback=self.save_pdf,
