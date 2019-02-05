@@ -1,9 +1,9 @@
 import scrapy
+from datetime import datetime
 from urllib.parse import urlencode
 from scrapy.http import Request
 from collections import defaultdict
 from .base_spider import BaseSpider
-from scrapy.utils.project import get_project_settings
 
 
 class WhoIrisSpider(BaseSpider):
@@ -15,7 +15,6 @@ class WhoIrisSpider(BaseSpider):
     }
 
     def __init__(self, *args, **kwargs):
-        settings = get_project_settings()
         years_list = kwargs.get('years_list', False)
         id = kwargs.get('uuid', '')
 
@@ -23,7 +22,7 @@ class WhoIrisSpider(BaseSpider):
         if years_list:
             self.years = years_list.split(',')
         else:
-            self.years = settings['WHO_IRIS_YEARS']
+            self.years = range(1970, datetime.now().year)
 
     def start_requests(self):
         """ This sets up the urls to scrape for each years.
