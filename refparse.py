@@ -75,10 +75,10 @@ def get_file(file_str, file_type, get_scraped = False):
     return file
 
 def run_predict(scraper_file, references_file,
-                model_file, vectorizer_file,
-                pool_map, output_url):
+    model_file, vectorizer_file, pool_map, output_url):
     """
-    Entry point for reference parser.
+    Parsers references using a (potentially parallelized) map()
+    implementation.
 
     Args:
         scraper_file: path / S3 url to scraper results file
@@ -176,6 +176,50 @@ def run_predict(scraper_file, references_file,
     )
 
 
+def parse_references(scraper_file, references_file,
+    model_file, vectorizer_file, output_url, num_workers):
+
+    """
+    Entry point for reference parser.
+    
+    Args:
+        scraper_file: path / S3 url to scraper results file
+        references_file: path/S3 url to references CSV file
+        model_file: path/S3 url to model pickle file (three formats FTW!)
+        vectorizer_file: path/S3 url to vectorizer pickle file
+        output_url: file/S3 url for output files
+        num_workers: number of workers to use, or None for multiprocessing's
+            default (number of cores).
+    """
+    if num_workers == 1:
+        pool = None
+        pool_map = map
+    else:
+        pool = Pool(num_workers)
+        pool_map = pool.map
+        logger.info(
+            '[+] Creatings worker pool with %s workers',
+            pool._processes
+        )
+
+    if settings.DEBUG:
+        import cProfile
+        cProfile.run(
+            ''.join([
+                'run_predict(scraper_file, references_file,',
+                'model_file, vectorizer_file, pool_map, output_url)'
+            ]),
+            'stats_dumps'
+        )
+    else:
+        run_predict(scraper_file, references_file,
+                    model_file, vectorizer_file, pool_map, output_url)
+
+    if pool is not None:
+        pool.terminate()
+        pool.join()
+
+
 if __name__ == '__main__':
     logger = settings.logger
     logger.setLevel('INFO')
@@ -254,35 +298,11 @@ if __name__ == '__main__':
         else:
             output_url = args.output_url
 
-        if args.num_workers == 1:
-            pool = None
-            pool_map = map
-        else:
-            pool = Pool(args.num_workers)
-            pool_map = pool.map
-            logger.info(
-                '[+] Creatings worker pool with %s workers',
-                pool._processes
-            )
-
-
-        if settings.DEBUG:
-            import cProfile
-            cProfile.run(
-                ''.join([
-                    'run_predict(scraper_file, references_file,',
-                    'model_file, vectorizer_file, pool_map, output_url)'
-                ]),
-                'stats_dumps'
-            )
-        else:
-            run_predict(scraper_file, references_file,
-                        model_file, vectorizer_file, pool_map, output_url)
-
-        if pool is not None:
-            pool.terminate()
-            pool.join()
+        parse_references(scraper_file, references_file,
+            model_file, vectorizer_file, output_url, args.num_workers)
 
     except Exception as e:
         sentry_sdk.capture_exception(e)
         raise
+
+

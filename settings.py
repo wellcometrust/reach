@@ -17,7 +17,8 @@ class BaseSettings:
 
     BUCKET = "datalabs-data"
 
-    SCRAPER_RESULTS_DIR = "s3://{}/scraper-results/{}".format(BUCKET, ORGANISATION)
+    SCRAPER_RESULTS_BASEDIR = "s3://{}/scraper-results".format(BUCKET)
+    SCRAPER_RESULTS_DIR = "{}/{}".format(SCRAPER_RESULTS_BASEDIR, ORGANISATION)
     SCRAPER_RESULTS_FILENAME = ''
 
     REFERENCES_DIR = "s3://{}/wellcome_publications".format(BUCKET)
