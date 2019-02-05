@@ -1,8 +1,6 @@
 import unittest
 from scrapy.http import Response, Request
 from wsf_scraping.spiders.base_spider import BaseSpider
-from wsf_scraping.spiders.who_iris_spider import WhoIrisSpider
-from wsf_scraping.spiders.nice_spider import NiceSpider
 from wsf_scraping.spiders.unicef_spider import UnicefSpider
 from wsf_scraping.spiders.msf_spider import MSFSpider
 from wsf_scraping.spiders.gov_spider import GovSpider
@@ -44,30 +42,6 @@ class TestSpiders(unittest.TestCase):
         base_spider = BaseSpider()
 
         res = base_spider.save_pdf(self.pdf_response)
-        self.assertTrue(res)
-        self.assertTrue('foo' == res['title'])
-
-    def test_who_spider(self):
-        """Tests if, given a pdf-like response containing a data_dict metadata,
-        the save_pdf method does:
-          - Create a NamedTemporaryFile
-          - Return an item
-        """
-        who_spider = WhoIrisSpider()
-
-        res = who_spider.save_pdf(self.pdf_response)
-        self.assertTrue(res)
-        self.assertTrue('foo' == res['title'])
-
-    def test_nice_spider(self):
-        """Tests if, given a pdf-like response containing a data_dict metadata,
-        the save_pdf method does:
-          - Create a NamedTemporaryFile
-          - Return an item
-        """
-        nice_spider = NiceSpider()
-
-        res = nice_spider.save_pdf(self.pdf_response)
         self.assertTrue(res)
         self.assertTrue('foo' == res['title'])
 
