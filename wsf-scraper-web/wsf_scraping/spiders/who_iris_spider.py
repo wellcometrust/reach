@@ -1,5 +1,4 @@
 import scrapy
-from datetime import datetime
 from urllib.parse import urlencode
 from scrapy.http import Request
 from collections import defaultdict
@@ -9,6 +8,7 @@ from .base_spider import BaseSpider
 class WhoIrisSpider(BaseSpider):
     name = 'who_iris'
     data = {}
+    years = []
 
     custom_settings = {
         'JOBDIR': 'crawls/who_iris'
@@ -21,13 +21,13 @@ class WhoIrisSpider(BaseSpider):
         self.uuid = id
         if years_list:
             self.years = years_list.split(',')
-        else:
-            self.years = range(1970, datetime.now().year)
 
     def start_requests(self):
         """ This sets up the urls to scrape for each years.
         """
 
+        if not self.years:
+            self.years = self.settings['WHO_IRIS_YEARS']
         urls = []
         # Initial URL (splited for PEP8 compliance)
         query_dict = {
