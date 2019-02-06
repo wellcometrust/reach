@@ -2,7 +2,6 @@ import unittest
 from scrapy.http import Response, Request
 from wsf_scraping.spiders.base_spider import BaseSpider
 from wsf_scraping.spiders.unicef_spider import UnicefSpider
-from wsf_scraping.spiders.msf_spider import MSFSpider
 from wsf_scraping.spiders.gov_spider import GovSpider
 from wsf_scraping.spiders.parliament_spider import ParliamentSpider
 
@@ -54,18 +53,6 @@ class TestSpiders(unittest.TestCase):
         unicef_spider = UnicefSpider()
 
         res = unicef_spider.save_pdf(self.pdf_response)
-        self.assertTrue(res)
-        self.assertTrue('foo' == res['title'])
-
-    def test_msf_spider(self):
-        """Tests if, given a pdf-like response containing a data_dict metadata,
-        the save_pdf method does:
-          - Create a NamedTemporaryFile
-          - Return an item
-        """
-        msf_spider = MSFSpider()
-
-        res = msf_spider.save_pdf(self.pdf_response)
         self.assertTrue(res)
         self.assertTrue('foo' == res['title'])
 
