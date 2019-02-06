@@ -6,16 +6,11 @@ from wsf_scraping.spiders.msf_spider import MsfSpider
 TEST_PDF = 'tests/pdfs/test_pdf.pdf'
 
 
-class MsfSettings:
-    WHO_IRIS_YEARS = [2012, 2013, 2014, 2015, 2016, 2017]
-
-
 class TestMsfSpider(unittest.TestCase):
 
     def setUp(self):
         self.test_file = open(TEST_PDF, 'rb')
         self.spider = MsfSpider()
-        self.spider.settings = MsfSettings()
 
     def tearDown(self):
         self.test_file.close()

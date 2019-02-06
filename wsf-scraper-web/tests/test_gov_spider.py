@@ -6,16 +6,11 @@ from wsf_scraping.spiders.gov_spider import GovSpider
 TEST_PDF = 'tests/pdfs/test_pdf.pdf'
 
 
-class WhoSettings:
-    WHO_IRIS_YEARS = [2012, 2013, 2014, 2015, 2016, 2017]
-
-
-class TestWhoSpider(unittest.TestCase):
+class TestGovSpider(unittest.TestCase):
 
     def setUp(self):
         self.test_file = open(TEST_PDF, 'rb')
         self.spider = GovSpider()
-        self.spider.settings = WhoSettings()
 
     def tearDown(self):
         self.test_file.close()

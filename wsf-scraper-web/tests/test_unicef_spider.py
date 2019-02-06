@@ -6,16 +6,11 @@ from wsf_scraping.spiders.unicef_spider import UnicefSpider
 TEST_PDF = 'tests/pdfs/test_pdf.pdf'
 
 
-class UnicefSettings:
-    WHO_IRIS_YEARS = [2012, 2013, 2014, 2015, 2016, 2017]
-
-
-class TestMsfSpider(unittest.TestCase):
+class TestUnicefSpider(unittest.TestCase):
 
     def setUp(self):
         self.test_file = open(TEST_PDF, 'rb')
         self.spider = UnicefSpider()
-        self.spider.settings = UnicefSettings()
 
     def tearDown(self):
         self.test_file.close()
