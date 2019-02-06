@@ -13,7 +13,7 @@ import sentry_sdk
 
 from utils import (FileManager,
                    FuzzyMatcher,
-                   process_reference_section,
+                   process_references_section,
                    process_references,
                    predict_references,
                    predict_structure)
@@ -112,7 +112,7 @@ def run_predict(scraper_file, references_file,
         ))
 
         # Split references section into references
-        splitted_references = process_reference_section(
+        splitted_references = process_references_section(
             doc,
             settings.ORGANISATION_REGEX
         )
