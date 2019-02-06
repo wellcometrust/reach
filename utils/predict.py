@@ -284,10 +284,10 @@ def predict_references(pool_map, mnb,
     """
     Predicts the categories for a list of reference components.
     Input:
+    - pool_map: Pool map used for multiprocessing the predicting
     - mnb: The trained multinomial naive Bayes model for predicting the categories of reference components
     - vectorizer: The vector of word counts in the training set
     - reference_components: A list of reference components
-    - num_workers: How many different processors you want to use in multiprocessing the predicting
     Output:
     - A list of dicts [{"Predicted Category": , "Prediction Probability": } ...]
     """

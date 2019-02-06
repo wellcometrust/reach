@@ -121,7 +121,7 @@ def run_predict(scraper_file, references_file,
         splitted_components = process_references(splitted_references)
 
         # Predict the references types (eg title/author...)
-        logger.info('[+] Predicting the reference components')
+        # logger.info('[+] Predicting the reference components')
         components_predictions = predict_references(
             pool_map,
             mnb,
