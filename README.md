@@ -45,31 +45,39 @@ Once you're happy with your configuration, just run `python main.py`
 
 ### Method 3.
 
-Make an output folder `output_folder_name` and run `refparse.py` with arguments of your file locations, e.g. in the terminal run:
+Make an output folder `output_folder_name`, set the ORGANISATION environmental variable to the one you are parsing, and run `refparse.py` with arguments of your file locations, e.g. for msf in the terminal run:
 
 ```
 mkdir -p /tmp/parser-output/output_folder_name
 
-./refparse.py \
+export ORGANISATION=msf
+
+python ./refparse.py \
 	--scraper-file "s3://datalabs-data/scraper-results/msf/20190117.json" \
 	--references-file "match-references/MRC_Publications_Nov2018_JGHT_JHSRI.csv" \
 	--model-file "s3://datalabs-data/reference_parser_models/RefSorter_classifier.pkl" \
 	--vectorizer-file "s3://datalabs-data/reference_parser_models/RefSorter_vectorizer.pkl" \
 	--output-url "file:///tmp/parser-output/output_folder_name" \
-    --num-workers None
+  --num-workers None
 ```
 
 If the `scraper_file`, `references_file`, `model_file`, and `vectorizer_file` arguments are to S3 locations then make sure these start with `s3://`, otherwise file names are assumed to be locally stored. If the `output_url` argument is to a local location, then make sure it begins with `file://`, otherwise it is assumed to be from a database.
 
 ### Method 4.
 
-If you would like to run the parser for the latest scraped files and to save the output locally, then run
-`python parse_latest.py organisation`. Where `organisation` is one of gov_uk, msf, nice, parliament, unicef, or who_iris.
+If you would like to run the parser for the latest scraped files and to save the output locally, then first save an environmental variable with your organisation name in and then run the parser, e.g. for msf:
+```
+export ORGANISATION=msf
+python parse_latest.py msf
+```
+Where the organisation is one of gov_uk, msf, nice, parliament, unicef, or who_iris.
 
 If you want to specify the arguments for the other inputs then you can, otherwise default values will be given:
 
 ```
-./parse_latest.py msf \
+export ORGANISATION=msf
+
+python ./parse_latest.py msf \
     --references-file "match-references/MRC_Publications_Nov2018_JGHT_JHSRI.csv" \
     --model-file "s3://datalabs-data/reference_parser_models/RefSorter_classifier.pkl" \
     --vectorizer-file "s3://datalabs-data/reference_parser_models/RefSorter_vectorizer.pkl" \
