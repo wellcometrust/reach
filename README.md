@@ -62,13 +62,8 @@ If the `scraper_file`, `references_file`, `model_file`, and `vectorizer_file` ar
 
 ### Method 4.
 
-If you would like to run the parser for the latest scraped files and to save the output locally, then you will first need to get the latest file names by running
-```
-chmod u+x utils/export_env
-source utils/export_env
-```
-And then run
-`python parse_latest.py`
+If you would like to run the parser for the latest scraped files and to save the output locally, then run
+`python parse_latest.py organisation`. Where `organisation` is one of gov_uk, msf, nice, parliament, unicef, or who_iris.
 
 Warning that this could take some time.
 
