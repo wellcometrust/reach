@@ -2,7 +2,7 @@ import scrapy
 from .base_spider import BaseSpider
 
 
-class MSFSpider(BaseSpider):
+class MsfSpider(BaseSpider):
     name = 'msf'
 
     custom_settings = {

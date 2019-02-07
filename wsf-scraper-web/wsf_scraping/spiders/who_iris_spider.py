@@ -3,32 +3,31 @@ from urllib.parse import urlencode
 from scrapy.http import Request
 from collections import defaultdict
 from .base_spider import BaseSpider
-from scrapy.utils.project import get_project_settings
 
 
 class WhoIrisSpider(BaseSpider):
     name = 'who_iris'
     data = {}
+    years = []
 
     custom_settings = {
         'JOBDIR': 'crawls/who_iris'
     }
 
     def __init__(self, *args, **kwargs):
-        settings = get_project_settings()
         years_list = kwargs.get('years_list', False)
         id = kwargs.get('uuid', '')
 
         self.uuid = id
         if years_list:
             self.years = years_list.split(',')
-        else:
-            self.years = settings['WHO_IRIS_YEARS']
 
     def start_requests(self):
         """ This sets up the urls to scrape for each years.
         """
 
+        if not self.years:
+            self.years = self.settings['WHO_IRIS_YEARS']
         urls = []
         # Initial URL (splited for PEP8 compliance)
         query_dict = {
