@@ -10,9 +10,7 @@ COPY ./entrypoint.sh /wsf_scraper/entrypoint.sh
 
 COPY ./scrapy.cfg /wsf_scraper/scrapy.cfg
 
-# Pipenv require these two files to install requirements in the pinned version
-COPY ./Pipfile /wsf_scraper/Pipfile
-COPY ./Pipfile.lock /wsf_scraper/Pipfile.lock
+COPY ./requirements.txt /wsf_scraper/requirements.txt
 
 # Scrapy needs a var directory to store logs
 RUN mkdir -p var/tmp
