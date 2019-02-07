@@ -52,19 +52,23 @@ if __name__ == "__main__":
     # The directory name will be the name of the organisation 
     # and the date of scrape (which is the name of the file)
     folder_name = org + os.path.splitext(os.path.basename(key_name))[0]
-    dir_name = './tmp/parser-output/{}'.format(folder_name)
-    if not os.path.exists(dir_name):
-        os.mkdir(dir_name)
+    dir_name = '{}_{}'.format(args.output_url,folder_name)
+
+    if not os.path.exists(dir_name[7:]):
+        # use everything after first two slashes;
+        os.mkdir(dir_name[7:])
     
     scraper_file = "s3://datalabs-data/{}".format(key_name)
-    
+
     parse_references(
         scraper_file,
         args.references_file,
         args.model_file,
         args.vectorizer_file,
-        "file://{}".format(dir_name),
+        dir_name,
         args.num_workers,
         logger
-    )
+        )
+
+
 
