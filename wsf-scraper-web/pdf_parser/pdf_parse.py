@@ -37,7 +37,7 @@ def parse_pdf_document(document):
             document.name,
             e.stderr,
         )
-        return None, None
+        return None
 
     try:
         # Try to get file stats in order to check both its existance
@@ -49,13 +49,13 @@ def parse_pdf_document(document):
             raise
 
         logger.warning('Error trying to open the parsed file: %s', e)
-        return None, None
+        return None
 
     if st.st_size == 0:
         logger.warning(
             'Error trying to open the parsed file: The file is empty'
         )
-        return None, None
+        return None
 
     with open(parsed_path, 'rb') as html_file:
         soup = bs(html_file.read(), 'html.parser')
