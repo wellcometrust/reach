@@ -28,6 +28,9 @@ ORG_NAMES = (
 )
 
 if __name__ == "__main__":
+    logger = settings.logger
+    logger.setLevel('INFO')
+    
     parser = create_argparser(__doc__.strip())
     parser.add_argument('org_name', choices=ORG_NAMES)
 
@@ -61,6 +64,7 @@ if __name__ == "__main__":
         args.model_file,
         args.vectorizer_file,
         "file://{}".format(dir_name),
-        args.num_workers
+        args.num_workers,
+        logger
     )
 

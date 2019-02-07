@@ -75,7 +75,7 @@ def get_file(file_str, file_type, get_scraped = False):
     return file
 
 def run_predict(scraper_file, references_file,
-    model_file, vectorizer_file, pool_map, output_url):
+    model_file, vectorizer_file, pool_map, output_url, logger):
     """
     Parsers references using a (potentially parallelized) map()
     implementation.
@@ -87,6 +87,7 @@ def run_predict(scraper_file, references_file,
         vectorizer_file: path/S3 url to vectorizer pickle file
         pool_map: (possibly parallel) implementation of map() builtin
         output_url: file/S3 url for output files
+        logger: logging configuration name
     """
 
     logger.info("[+] Reading input files for %s", settings.ORGANISATION)
@@ -177,7 +178,7 @@ def run_predict(scraper_file, references_file,
 
 
 def parse_references(scraper_file, references_file,
-    model_file, vectorizer_file, output_url, num_workers):
+    model_file, vectorizer_file, output_url, num_workers, logger):
 
     """
     Entry point for reference parser.
@@ -190,6 +191,7 @@ def parse_references(scraper_file, references_file,
         output_url: file/S3 url for output files
         num_workers: number of workers to use, or None for multiprocessing's
             default (number of cores).
+        logger: logging configuration name
     """
     if num_workers == 1:
         pool = None
@@ -197,13 +199,13 @@ def parse_references(scraper_file, references_file,
     else:
         pool = Pool(num_workers)
         pool_map = pool.map
-        logger.info(
-            '[+] Creatings worker pool with %s workers',
-            pool._processes
-        )
+        # logger.info(
+        #     '[+] Creatings worker pool with %s workers',
+        #     pool._processes
+        # )
 
     run_predict(scraper_file, references_file,
-                model_file, vectorizer_file, pool_map, output_url)
+                model_file, vectorizer_file, pool_map, output_url, logger)
 
     if pool is not None:
         pool.terminate()
@@ -305,7 +307,7 @@ if __name__ == '__main__':
                 args.model_file, args.vectorizer_file, args.output_url)
         else:
             parse_references(args.scraper_file, args.references_file,
-                args.model_file, args.vectorizer_file, args.output_url, args.args.num_workers)
+                args.model_file, args.vectorizer_file, args.output_url, args.num_workers, logger)
 
     except Exception as e:
         sentry_sdk.capture_exception(e)
