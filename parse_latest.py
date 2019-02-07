@@ -13,9 +13,8 @@ import os
 import sys
 import boto3
 
+from refparse import parse_references, create_argparser
 from settings import settings
-from refparse import parse_references
-
 
 parser = ArgumentParser(description=__doc__.strip())
 
@@ -27,9 +26,11 @@ ORG_NAMES = (
     'unicef',
     'who_iris'
 )
-parser.add_argument('org_name', choices=ORG_NAMES)
 
 if __name__ == "__main__":
+    parser = create_argparser(__doc__.strip())
+    parser.add_argument('org_name', choices=ORG_NAMES)
+
     args = parser.parse_args()
     org = args.org_name
 
@@ -49,16 +50,17 @@ if __name__ == "__main__":
     # and the date of scrape (which is the name of the file)
     folder_name = org + os.path.splitext(os.path.basename(key_name))[0]
     dir_name = './tmp/parser-output/{}'.format(folder_name)
-
     if not os.path.exists(dir_name):
         os.mkdir(dir_name)
-
-    run_script = 'python3 refparse.py \
-         --scraper-file "s3://datalabs-data/{}" \
-         --references-file "s3://datalabs-data/wellcome_publications/uber_api_publications.csv" \
-         --model-file "s3://datalabs-data/reference_parser_models/RefSorter_classifier.pkl" \
-         --vectorizer-file "s3://datalabs-data/reference_parser_models/RefSorter_vectorizer.pkl" \
-         --output-url "file://{}"'.format(org, dir_name)
-
-    os.system(run_script)
+    
+    scraper_file = "s3://datalabs-data/{}".format(key_name)
+    
+    parse_references(
+        scraper_file,
+        args.references_file,
+        args.model_file,
+        args.vectorizer_file,
+        "file://{}".format(dir_name),
+        args.num_workers
+    )
 

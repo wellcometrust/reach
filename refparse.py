@@ -202,23 +202,74 @@ def parse_references(scraper_file, references_file,
             pool._processes
         )
 
-    if settings.DEBUG:
-        import cProfile
-        cProfile.run(
-            ''.join([
-                'run_predict(scraper_file, references_file,',
-                'model_file, vectorizer_file, pool_map, output_url)'
-            ]),
-            'stats_dumps'
-        )
-    else:
-        run_predict(scraper_file, references_file,
-                    model_file, vectorizer_file, pool_map, output_url)
+    run_predict(scraper_file, references_file,
+                model_file, vectorizer_file, pool_map, output_url)
 
     if pool is not None:
         pool.terminate()
         pool.join()
 
+
+def parse_references_profile(scraper_file, references_file,
+    model_file, vectorizer_file, output_url):
+    """
+    Entry point for reference parser, single worker, with profiling.
+    
+    Args:
+        scraper_file: path / S3 url to scraper results file
+        references_file: path/S3 url to references CSV file
+        model_file: path/S3 url to model pickle file (three formats FTW!)
+        vectorizer_file: path/S3 url to vectorizer pickle file
+        output_url: file/S3 url for output files
+    """
+    import cProfile
+    cProfile.run(
+        ''.join([
+            'run_predict(scraper_file, references_file,',
+            'model_file, vectorizer_file, map, output_url)'
+        ]),
+        'stats_dumps'
+    )
+
+
+def create_argparser(description):
+    parser = ArgumentParser(description)
+    parser.add_argument(
+        '--references-file',
+        help='Path or S3 URL to references CSV file to match against',
+        default = os.path.join(
+            settings.REFERENCES_DIR,
+            settings.REFERENCES_FILENAME
+            )
+    )
+    parser.add_argument(
+        '--model-file',
+        help='Path or S3 URL to model pickle file',
+        default = os.path.join(
+            settings.MODEL_DIR,
+            settings.CLASSIFIER_FILENAME
+            )
+    )
+    parser.add_argument(
+        '--vectorizer-file',
+        help='Path or S3 URL to vectorizer pickle file',
+        default = os.path.join(
+            settings.MODEL_DIR,
+            settings.VECTORIZER_FILENAME
+            )
+    )
+    parser.add_argument(
+        '--output-url',
+        help='URL (file://!) or DSN for output',
+        default = settings.OUTPUT_URL
+    )
+
+    parser.add_argument(
+        '--num-workers',
+        help='Number of workers to use for parallel processing.'
+    )
+
+    return parser
 
 if __name__ == '__main__':
     logger = settings.logger
@@ -231,75 +282,30 @@ if __name__ == '__main__':
         sentry_sdk.init(os.environ['SENTRY_DSN'])
 
     try:
-        parser = ArgumentParser(description=__doc__.strip())
+        parser = create_argparser(description=__doc__.strip())
         parser.add_argument(
             '--scraper-file',
-            help='Path or S3 URL to scraper results file'
-        )
-        parser.add_argument(
-            '--references-file',
-            help='Path or S3 URL to references CSV file to match against'
-        )
-        parser.add_argument(
-            '--model-file',
-            help='Path or S3 URL to model pickle file'
-        )
-        parser.add_argument(
-            '--vectorizer-file',
-            help='Path or S3 URL to vectorizer pickle file'
-        )
-        parser.add_argument(
-            '--output-url',
-            help='URL (file://!) or DSN for output'
-        )
-        parser.add_argument(
-            '--num-workers',
-            help='Number of workers to use for parallel processing.')
-        args = parser.parse_args()
-
-        if args.scraper_file is None:
-            scraper_file = os.path.join(
+            help='Path or S3 URL to scraper results file',
+            default=os.path.join(
                 settings.SCRAPER_RESULTS_DIR,
                 settings.SCRAPER_RESULTS_FILENAME
             )
-        else:
-            scraper_file = args.scraper_file
+        )
 
-        if args.references_file is None:
-            references_file = os.path.join(
-                settings.REFERENCES_DIR,
-                settings.REFERENCES_FILENAME
-            )
-        else:
-            references_file = args.references_file
+        parser.add_argument(
+            '--profile',
+            action='store_true',
+            help='Run parser, single worker, with cProfile for profiling')
+        args = parser.parse_args()
 
-        if args.model_file is None:
-            model_file = os.path.join(
-                settings.MODEL_DIR,
-                settings.CLASSIFIER_FILENAME
-            )
-        else:
-            model_file = args.model_file
 
-        if args.vectorizer_file is None:
-            vectorizer_file = os.path.join(
-                settings.MODEL_DIR,
-                settings.VECTORIZER_FILENAME
-            )
+        if args.profile:
+            assert args.num_workers is None or args.num_workers == 1
+            parse_references_profile(args.scraper_file, args.references_file,
+                args.model_file, args.vectorizer_file, args.output_url)
         else:
-            vectorizer_file = args.vectorizer_file
-
-        if args.output_url is None:
-            output_url = settings.OUTPUT_URL
-            #os.path.join(
-            #    settings.REFERENCES_DIR,
-            #    settings.REFERENCES_FILENAME
-            #)
-        else:
-            output_url = args.output_url
-
-        parse_references(scraper_file, references_file,
-            model_file, vectorizer_file, output_url, args.num_workers)
+            parse_references(args.scraper_file, args.references_file,
+                args.model_file, args.vectorizer_file, args.output_url, args.args.num_workers)
 
     except Exception as e:
         sentry_sdk.capture_exception(e)
