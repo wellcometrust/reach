@@ -112,13 +112,11 @@ def run_predict(scraper_file, references_file,
             nb_documents
         ))
 
-        # logger.info('[+] Splitting the reference sections')
         splitted_references = process_reference_section(
             doc,
             settings.ORGANISATION_REGEX
         )
 
-        # logger.info('[+] Parsing the references')
         splitted_components = process_references(splitted_references)
         reference_components_predictions = predict_references(
             pool_map,
@@ -132,7 +130,6 @@ def run_predict(scraper_file, references_file,
             settings.PREDICTION_PROBABILITY_THRESHOLD
         )
 
-        # logger.info('[+] Matching the references')
         fuzzy_matcher = FuzzyMatcher(
             ref_file,
             settings.FUZZYMATCH_THRESHOLD
@@ -195,17 +192,11 @@ def parse_references(scraper_file, references_file,
     """
     print(type(num_workers))
     if num_workers == 1:
-
         pool = None
         pool_map = map
     else:
-        print("here")
         pool = Pool(num_workers)
         pool_map = pool.map
-        # logger.info(
-        #     '[+] Creatings worker pool with %s workers',
-        #     pool._processes
-        # )
 
     run_predict(scraper_file, references_file,
                 model_file, vectorizer_file, pool_map, output_url, logger)
