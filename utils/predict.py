@@ -2,7 +2,6 @@ import pandas as pd
 from functools import partial
 from settings import settings
 
-
 logger = settings.logger
 
 
@@ -70,7 +69,6 @@ def decide_components(single_reference):
             ]).astype(int).cumsum()
     })
     single_reference = pd.concat([single_reference, block_number], axis=1)
-
     single_reference_components = {}
 
     for classes in set(single_reference["Predicted Category"]):
@@ -104,7 +102,7 @@ def decide_components(single_reference):
                 # of the same probabilities it takes the first one)
                 # could decide to do this randomly with argmax.choice()
                 # (random choice)
-
+                
                 highest_probability_index = single_reference[
                     single_reference['Predicted Category'] == classes
                 ]['Prediction Probability'].idxmax()
@@ -190,6 +188,9 @@ def predict_structure(pool_map, reference_components_predictions,
     each reference for each document in turn.
     """
 
+    # Convert to pd dataframe, although when this function is refactored we shouldnt have to do this
+    reference_components_predictions = pd.DataFrame.from_dict(reference_components_predictions)
+
     all_structured_references = []
     document_ids = set(reference_components_predictions['Document id'])
 
@@ -241,70 +242,73 @@ def predict_reference_comp(mnb, vectorizer, word_list):
         single_predict.max() for single_predict in predict_component_probas
     ]
 
-    return predict_component, predict_component_proba
+    return predict_component[0], predict_component_proba[0]
 
-
-def _get_year_or_component(component, mnb, vectorizer):
+def is_year(component):
     valid_years_range = range(1800, 2020)
-    if (
-       (component.isdecimal()
-        and int(component) in valid_years_range)
-       or (
-           len(component) == 6
-           and component[1:5].isdecimal()
-           and int(component[1:5]) in valid_years_range)
-       ):
-        return {
-            'Predicted Category': 'PubYear',
-            'Prediction Probability': 1
-        }
+    return (
+                (
+                    component.isdecimal()
+                    and int(component) in valid_years_range
+                )
+                or
+                (
+                    len(component) == 6
+                    and component[1:5].isdecimal()
+                    and int(component[1:5]) in valid_years_range
+                )
+            )
+        
 
+def _get_component(component, mnb, vectorizer):
+
+    if is_year(component):
+        pred_cat = 'PubYear'
+        pred_prob = 1
     else:
-        # If it's not a year, then classify with the model
-        (predict_comp,
-         predict_component_proba) = predict_reference_comp(
+        pred_cat, pred_prob = predict_reference_comp(
             mnb,
             vectorizer,
             [component]
         )
-        return {
-            'Predicted Category': predict_comp[0],
-            'Prediction Probability': predict_component_proba[0]
-            }
 
+    return {
+            'Predicted Category': pred_cat,
+            'Prediction Probability': pred_prob
+            }
 
 def predict_references(pool_map, mnb,
                        vectorizer,
                        reference_components):
 
+    """
+    Predicts the categories for a list of reference components.
+    Input:
+    - pool_map: Pool map used for multiprocessing the predicting
+    - mnb: The trained multinomial naive Bayes model for predicting the categories of reference components
+    - vectorizer: The vector of word counts in the training set
+    - reference_components: A list of reference components
+    Output:
+    - A list of dicts [{"Predicted Category": , "Prediction Probability": } ...]
+    """
+
     logger.info(
         "[+] Predicting the categories of %s  reference components ...",
         str(len(reference_components))
     )
-
     predict_all = []
 
     # The model cant deal with predicting so many all at once,
     # so predict in a loop
 
     predict_all = list(pool_map(
-        partial(_get_year_or_component,
+        partial(_get_component,
                 mnb=mnb,
                 vectorizer=vectorizer),
-        reference_components.get('Reference component', [])
+        reference_components
     ))
 
-    predict_all = pd.DataFrame.from_dict(predict_all)
-
-    reference_components_predictions = reference_components.reset_index()
-
-    reference_components_predictions[
-        "Predicted Category"
-    ] = predict_all['Predicted Category']
-
-    reference_components_predictions[
-        "Prediction Probability"
-    ] = predict_all['Prediction Probability']
-
     logger.info("Predictions complete")
-    return reference_components_predictions
+
+    return predict_all
+
