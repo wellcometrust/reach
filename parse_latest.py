@@ -49,26 +49,31 @@ if __name__ == "__main__":
         (obj.key, obj) for obj in bucket.objects.filter(Prefix=prefix).all()
     )
 
-    # The directory name will be the name of the organisation 
-    # and the date of scrape (which is the name of the file)
-    folder_name = org + os.path.splitext(os.path.basename(key_name))[0]
-    dir_name = '{}_{}'.format(args.output_url,folder_name)
-
-    if not os.path.exists(dir_name[7:]):
-        # use everything after first two slashes;
-        os.mkdir(dir_name[7:])
-    
-    scraper_file = "s3://datalabs-data/{}".format(key_name)
-
-    parse_references(
-        scraper_file,
-        args.references_file,
-        args.model_file,
-        args.vectorizer_file,
-        dir_name,
-        args.num_workers,
-        logger
+    if args.output_url.startswith('file://'):
+        # The directory name will be the name of the organisation 
+        # and the date of scrape (which is the name of the file)
+        output_url = '{}_{}_{}'.format(
+            args.output_url,
+            org,
+            os.path.splitext(os.path.basename(key_name))[0]
         )
+        if not os.path.exists(output_url[7:]):
+            os.mkdir(output_url[7:])
+        
+        scraper_file = "s3://{}/{}".format(bucket_name, key_name)
+
+        parse_references(
+            scraper_file,
+            args.references_file,
+            args.model_file,
+            args.vectorizer_file,
+            output_url,
+            args.num_workers,
+            logger
+            )
+    else:
+        logger.info("Output url should start with 'file://'")
+        pass
 
 
 

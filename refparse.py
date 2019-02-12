@@ -190,7 +190,6 @@ def parse_references(scraper_file, references_file,
             default (number of cores).
         logger: logging configuration name
     """
-    print(type(num_workers))
     if num_workers == 1:
         pool = None
         pool_map = map
