@@ -13,7 +13,7 @@ import sentry_sdk
 
 from utils import (FileManager,
                    FuzzyMatcher,
-                   process_reference_section,
+                   process_references_section,
                    process_references,
                    predict_references,
                    predict_structure)
@@ -112,18 +112,35 @@ def run_predict(scraper_file, references_file,
             nb_documents
         ))
 
-        splitted_references = process_reference_section(
+        # Split references section into references
+        splitted_references = process_references_section(
             doc,
             settings.ORGANISATION_REGEX
         )
 
+        # Split references into components
         splitted_components = process_references(splitted_references)
-        reference_components_predictions = predict_references(
+
+        # Predict the references types (eg title/author...)
+        # logger.info('[+] Predicting the reference components')
+        components_predictions = predict_references(
             pool_map,
             mnb,
             vectorizer,
-            splitted_components
+            splitted_components['Reference component']
         )
+
+        # Link predictions back with all original data (Document id etc)
+        # When we merge and splitted_components is a dict not a dataframe then we could just merge the list of dicts
+        reference_components_predictions = splitted_components
+        reference_components_predictions["Predicted Category"] = [
+            d["Predicted Category"] for d in components_predictions
+        ]
+        reference_components_predictions["Prediction Probability"] = [
+            d["Prediction Probability"] for d in components_predictions
+        ]
+        
+        # Predict the reference structure
         predicted_reference_structures = predict_structure(
             pool_map,
             reference_components_predictions,

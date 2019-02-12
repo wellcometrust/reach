@@ -7,17 +7,17 @@ from settings import settings
 logger = settings.logger
 
 
-def split_sections(references_section, regex="\n"):
+def split_section(references_section, regex="\n"):
     """
     Split up a raw text reference section into individual references
     """
     references = re.split(regex, references_section)
     # Remove any row with less than 10 characters in
     # (these can't be references)
-    references = [k for k in references if len(k) > 10]
+    references = [r for r in references if len(r) > 10]
     # delete '-\n', convert \n to spaces, convert â€™ to ', convert â€“ to -
     references = [
-        elem.replace(
+        reference.replace(
             "-\n", ""
         ).replace(
             "\n", " "
@@ -26,13 +26,13 @@ def split_sections(references_section, regex="\n"):
         ).replace(
             "â€“", "-"
         )
-        for elem in references
+        for reference in references
     ]
 
     return references
 
 
-def process_reference_section(doc, regex):
+def process_references_section(doc, regex):
     """Converts the unstructured text into reference components
     Input:
     - a SectionedDocument tuple
@@ -43,11 +43,6 @@ def process_reference_section(doc, regex):
     Nomenclature:
     Document > References
     """
-
-    logger.info(
-        "Processing unstructured references into reference components ... "
-    )
-
     assert doc.section, "document section is empty"
 
     # e.g.
@@ -57,7 +52,7 @@ def process_reference_section(doc, regex):
     # Eric, 1987
 
     references_data = []
-    references = split_sections(doc.section, regex)
+    references = split_section(doc.section, regex)
     for reference in references:
         references_data.append({
             'Reference': reference,
