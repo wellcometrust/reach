@@ -4,7 +4,7 @@ VIRTUALENV := build/virtualenv
 
 IMAGE := uk.ac.wellcome/reference-parser
 ECR_IMAGE := 160358319781.dkr.ecr.eu-west-1.amazonaws.com/$(IMAGE)
-VERSION := 2019.2.1
+VERSION := 2019.2.2
 
 # Tags to use when run within codebuild.
 #
