@@ -13,8 +13,6 @@ class BaseSettings:
     BLOCKSIZE = 1000
     FUZZYMATCH_THRESHOLD = 0.8
 
-    ORGANISATION = os.environ.get('ORGANISATION', 'nice')
-
     BUCKET = "datalabs-data"
 
     SCRAPER_RESULTS_BASEDIR = "s3://{}/scraper-results".format(BUCKET)
@@ -32,15 +30,7 @@ class BaseSettings:
     CLASSIFIER_FILENAME = "RefSorter_classifier.pkl"
     VECTORIZER_FILENAME = "RefSorter_vectorizer.pkl"
 
-    _regex_dict = {
-        'who_iris': "\\n[\d\.\s\\n]+(?=[A-Z])",
-        'nice': "\\n[\d\.\s\\n]+(?=[A-Z])",
-        'unicef': "\\n[\d\.\s\\n]+(?=[A-Z])",
-        'msf': "\\n[\d\.\s\\n]+(?=[A-Z])",
-        'parliament': "\\n[\d\.\s\\n]+(?=[A-Z])",
-        'gov_uk': "\\n[\d\.\s\\n]+(?=[A-Z])"
-    }
-    ORGANISATION_REGEX = _regex_dict.get(ORGANISATION, "\n")
+    ORGANISATION_REGEX = "\\n[\d\.\s\\n]+(?=[A-Z])"
 
 
 class ProdSettings(BaseSettings):
