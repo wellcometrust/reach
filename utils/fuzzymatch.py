@@ -6,15 +6,16 @@ from sklearn.metrics.pairwise import cosine_similarity
 
 
 class FuzzyMatcher:
-    def __init__(self, real_publications, titles):
+    def __init__(self, real_publications, match_threshold):
         self.logger = settings.logger
         self.vectorizer = TfidfVectorizer(lowercase=True, ngram_range=(1, 1))
         self.tfidf_matrix = self.vectorizer.fit_transform(
             real_publications['title']
         )
         self.real_publications = real_publications
+        self.threshold = match_threshold
 
-    def match_vectorised(self, predicted_publications, threshold):
+    def match_vectorised(self, predicted_publications):
         # Todo - Make sure not resetting index works the same
         predicted_publications.dropna(
             subset=['Title'],
@@ -29,7 +30,7 @@ class FuzzyMatcher:
         )
 
         high_similarity_indices = np.argwhere(
-            title_similarities > threshold
+            title_similarities > self.threshold
         )
         
         predicted_index = high_similarity_indices[:,0]
@@ -50,7 +51,7 @@ class FuzzyMatcher:
         
         return match_data
 
-    def fuzzy_match(self, predicted_publications, threshold):
+    def fuzzy_match(self, predicted_publications):
         self.logger.info(
             "Fuzzy matching for %s predicted publications ...",
             len(predicted_publications)
@@ -58,8 +59,7 @@ class FuzzyMatcher:
 
         all_match_data = pd.DataFrame(
             self.match_vectorised(
-                predicted_publications,
-                threshold
+                predicted_publications
             ),
             columns=[
                 'Document id',
