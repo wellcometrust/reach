@@ -71,10 +71,11 @@ def decide_components(single_reference):
     single_reference = pd.concat([single_reference, block_number], axis=1)
     single_reference_components = {}
 
-    for classes in set(single_reference["Predicted Category"]):
+    categories =  settings.REF_CLASSES
+    for category in categories:
 
         # Are there any sentences of this type (i.e. Authors, Title)?
-        classornot = sum(single_reference['Predicted Category'] == classes)
+        classornot = sum(single_reference['Predicted Category'] == category)
 
         if classornot != 0:
 
@@ -82,18 +83,18 @@ def decide_components(single_reference):
             number_blocks = len(
                 single_reference['Block'][single_reference[
                     'Predicted Category'
-                ] == classes].unique()
+                ] == category].unique()
             )
 
             if number_blocks == 1:
                 # Just record this block separated by commas
                 single_reference_components.update({
-                    classes: ", ".join(
+                    category: ", ".join(
                         single_reference[
                             'Reference component'
                         ][single_reference[
                             'Predicted Category'
-                        ] == classes]
+                        ] == category]
                     )
                 })
             else:
@@ -104,7 +105,7 @@ def decide_components(single_reference):
                 # (random choice)
                 
                 highest_probability_index = single_reference[
-                    single_reference['Predicted Category'] == classes
+                    single_reference['Predicted Category'] == category
                 ]['Prediction Probability'].idxmax()
 
                 highest_probability_block = single_reference[
@@ -113,7 +114,7 @@ def decide_components(single_reference):
 
                 # Use everything in this block, separated by comma
                 single_reference_components.update({
-                    classes: ", ".join(
+                    category: ", ".join(
                         single_reference[
                             "Reference component"
                         ][single_reference[
@@ -123,7 +124,7 @@ def decide_components(single_reference):
                 })
         else:
             # There are none of this classification, append with blank
-            single_reference_components.update({classes: ""})
+            single_reference_components.update({category: ""})
 
     return single_reference_components
 
