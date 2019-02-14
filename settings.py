@@ -73,8 +73,9 @@ class LocalSettings(BaseSettings):
     RDS_PORT = os.environ.get('RDS_PORT', 5432)
     RDS_REFERENCES_DATABASE = "parser_references"
 
-
-    SCRAPER_RESULTS_DIR = "scraper-results/{}".format(BaseSettings.ORGANISATION)
+    SCRAPER_RESULTS_DIR = "scraper-results/{}".format(
+        BaseSettings.ORGANISATION
+    )
     REFERENCES_DIR = "wellcome_publications"
     MODEL_DIR = "reference_parser_models"
 
