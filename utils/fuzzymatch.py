@@ -12,15 +12,14 @@ class FuzzyMatcher:
         self.tfidf_matrix = self.vectorizer.fit_transform(
             real_publications['title']
         )
-        self.titles = real_publications['title']
-        self.ids = real_publications['uber_id']
+        self.real_publications = real_publications
 
     def match_vectorised(self, predicted_publications, threshold):
-        # Get rid of ones without titles and reset
-        # index (important for next steps)
-        predicted_publications = predicted_publications.loc[pd.notnull(
-            predicted_publications['Title']
-        )].reset_index()
+        # Todo - Make sure not resetting index works the same
+        predicted_publications.dropna(
+            subset=['Title'],
+            inplace=True
+        )
 
         title_vectors = self.vectorizer.transform(
             predicted_publications['Title']
@@ -29,60 +28,47 @@ class FuzzyMatcher:
             title_vectors, self.tfidf_matrix
         )
 
-        # Save all the titles which match with over the threshold
-        # similarity, if any
-        high_similarity_index = tuple(np.argwhere(
-            title_similarities > threshold)
+        high_similarity_indices = np.argwhere(
+            title_similarities > threshold
         )
-
-        # The predicted publication indexes of the similar matches
-        predicted_index = [t[0] for t in high_similarity_index]
-
-        # The real publication indexes of the similar matches
-        real_index = [t[1] for t in high_similarity_index]
-
-        match_data = np.column_stack(
-            (predicted_publications['Document id'][predicted_index],
-             predicted_publications['Reference id'][predicted_index],
-             predicted_publications['Title'][predicted_index],
-             self.titles[real_index],
-             self.ids[real_index],
-             [title_similarities[t[0]][t[1]] for t in high_similarity_index])
-        )
+        
+        predicted_index = high_similarity_indices[:,0]
+        real_index = high_similarity_indices[:,1]
+        
+        match_data = pd.concat([
+            predicted_publications.iloc[predicted_index][[
+                'Document id',
+                'Reference id',
+                'Title']],
+            self.real_publications.iloc[real_index][[
+                'title',
+                'uber_id']],
+            pd.DataFrame({
+                'Cosine_Similarity': [title_similarities[t[0]][t[1]] for t in high_similarity_indices]
+            })],
+            axis=1)
+        
         return match_data
 
-    def fuzzy_match_blocks(self, blocksize, predicted_publications, threshold):
+    def fuzzy_match(self, predicted_publications, threshold):
         self.logger.info(
             "Fuzzy matching for %s predicted publications ...",
             len(predicted_publications)
         )
 
-        counter = 0
-        nextblocksize = blocksize
-
-        all_match_data = []
-        while counter < len(predicted_publications):
-            match_data = self.match_vectorised(
-                predicted_publications[counter:(counter + nextblocksize)],
-                threshold
-            )
-
-            counter = counter + nextblocksize
-
-            # How many to go through in the next block (default is blocksize
-            # unless there aren't enough left)
-            if (len(predicted_publications) - counter) >= blocksize:
-                nextblocksize = blocksize
-            else:
-                # Just do the remainder next time
-                nextblocksize = len(predicted_publications) - counter
-            for m in match_data:
-                all_match_data.append(m)
-
         all_match_data = pd.DataFrame(
-            all_match_data,
-            columns=['Document id', 'Reference id', 'Predicted_Ref_Title',
-                     'WT_Ref_Title', 'WT_Ref_Id', 'Cosine_Similarity']
+            self.match_vectorised(
+                predicted_publications,
+                threshold
+            ),
+            columns=[
+                'Document id',
+                'Reference id',
+                'Predicted_Ref_Title',
+                'WT_Ref_Title',
+                'WT_Ref_Id',
+                'Cosine_Similarity'
+            ]
         )
 
         self.logger.info(all_match_data.head())

@@ -10,7 +10,6 @@ class BaseSettings:
     DEBUG = True
 
     PREDICTION_PROBABILITY_THRESHOLD = 0.75
-    BLOCKSIZE = 1000
     FUZZYMATCH_THRESHOLD = 0.8
 
     ORGANISATION = os.environ.get('ORGANISATION', 'nice')
