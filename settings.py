@@ -33,10 +33,12 @@ class BaseSettings:
     VECTORIZER_FILENAME = "RefSorter_vectorizer.pkl"
 
     _regex_dict = {
-        'who_iris': "(|\.)\\n[0-9]{1,3}\.(\s|\\n)",
-        'nice': "(|\s)(|.)(|\s)\n(|[0-9]{1,3})(|.)(|\s)(?=[A-Z])",
-        'unicef': "\\n[0-9]{1,3}(\.|)\s{0,2}(\\n|)",
-        'msf': "\\n[0-9]{0,3}(\.\s{0,2}|\\n)"
+        'who_iris': "\\n[\d\.\s\\n]+(?=[A-Z])",
+        'nice': "\\n[\d\.\s\\n]+(?=[A-Z])",
+        'unicef': "\\n[\d\.\s\\n]+(?=[A-Z])",
+        'msf': "\\n[\d\.\s\\n]+(?=[A-Z])",
+        'parliament': "\\n[\d\.\s\\n]+(?=[A-Z])",
+        'gov_uk': "\\n[\d\.\s\\n]+(?=[A-Z])"
     }
     ORGANISATION_REGEX = _regex_dict.get(ORGANISATION, "\n")
 
