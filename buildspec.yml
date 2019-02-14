@@ -9,4 +9,4 @@ phases:
       - cd wsf-web-scraper && make codebuild-docker-push
 
 artifacts:
-files: []
+    files: []
