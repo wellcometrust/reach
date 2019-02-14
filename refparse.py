@@ -103,6 +103,11 @@ def run_predict(scraper_file, references_file,
     mnb = get_file(model_file, 'pickle')
     vectorizer = get_file(vectorizer_file, 'pickle')
 
+    fuzzy_matcher = FuzzyMatcher(
+        ref_file,
+        settings.FUZZYMATCH_THRESHOLD
+    )
+
     t0 = time.time()
     nb_references = 0
     nb_documents = sum(scraper_file['sections'].notnull())
@@ -111,6 +116,9 @@ def run_predict(scraper_file, references_file,
             i,
             nb_documents
         ))
+        # REMOVEEEE
+        if i > 10:
+            break
 
         # Split references section into references
         splitted_references = process_references_section(
@@ -147,12 +155,7 @@ def run_predict(scraper_file, references_file,
             settings.PREDICTION_PROBABILITY_THRESHOLD
         )
 
-        fuzzy_matcher = FuzzyMatcher(
-            ref_file,
-            settings.FUZZYMATCH_THRESHOLD
-        )
-        all_match_data = fuzzy_matcher.fuzzy_match_blocks(
-            settings.BLOCKSIZE,
+        all_match_data = fuzzy_matcher.fuzzy_match(
             predicted_reference_structures,
             settings.FUZZYMATCH_THRESHOLD
         )
