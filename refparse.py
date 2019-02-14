@@ -160,8 +160,7 @@ def run_predict(scraper_file, references_file,
         )
 
         all_match_data = fuzzy_matcher.fuzzy_match(
-            predicted_reference_structures,
-            settings.FUZZYMATCH_THRESHOLD
+            predicted_reference_structures
         )
 
         if output_url.startswith('file://'):
