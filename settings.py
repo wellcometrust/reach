@@ -40,6 +40,8 @@ class BaseSettings:
     }
     ORGANISATION_REGEX = _regex_dict.get(ORGANISATION, "\n")
 
+    REF_CLASSES = ['Authors', 'Journal', 'Volume', 'Issue', 'Pagination', 'Title','PubYear']
+
 
 class ProdSettings(BaseSettings):
     DEBUG = False
