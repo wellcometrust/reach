@@ -62,7 +62,7 @@ COOKIES_ENABLED = False
 #  who_iris and who_iris_single_page dedicated settings
 WHO_IRIS_RPP = 250
 WHO_IRIS_LIMIT = False
-WHO_IRIS_YEARS = range(2012, datetime.now().year)
+WHO_IRIS_YEARS = range(2012, datetime.now().year + 1)
 
 # nice dedicated settings
 NICE_GET_HISTORY = False
