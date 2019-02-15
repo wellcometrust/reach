@@ -47,8 +47,10 @@ codebuild-docker-push: push
 virtualenv: $(VIRTUALENV)/.installed
 
 .PHONY: tests
+tests: virtualenv
 tests:
-	python -m unittest
+	./build/virtualenv/bin/python -m unittest
+
 
 .PHONY: all
 all: image
