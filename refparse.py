@@ -119,9 +119,6 @@ def run_predict(scraper_file, references_file,
             i,
             nb_documents
         ))
-        # REMOVEEEE
-        if i > 10:
-            break
 
         # Split references section into references
         splitted_references = process_references_section(
