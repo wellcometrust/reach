@@ -13,8 +13,6 @@ class BaseSettings:
     BLOCKSIZE = 1000
     FUZZYMATCH_THRESHOLD = 0.8
 
-    ORGANISATION = os.environ.get('ORGANISATION', 'nice')
-
     BUCKET = "datalabs-data"
 
     SCRAPER_RESULTS_BASEDIR = "s3://{}/scraper-results".format(BUCKET)
