@@ -21,34 +21,35 @@ class FuzzyMatcher:
             subset=['Title'],
             inplace=True
         )
-
         title_vectors = self.vectorizer.transform(
             predicted_publications['Title']
         )
+
         title_similarities = cosine_similarity(
             title_vectors, self.tfidf_matrix
         )
-
-        high_similarity_indices = np.argwhere(
+        above_threshold_indices = np.nonzero(
             title_similarities > self.threshold
         )
-        
-        predicted_index = high_similarity_indices[:,0]
-        real_index = high_similarity_indices[:,1]
+        cosine_similarities = title_similarities[
+            above_threshold_indices
+        ]
+
+        predicted_indices, real_indices = above_threshold_indices
         
         match_data = pd.concat([
-            predicted_publications.iloc[predicted_index][[
+            predicted_publications.iloc[predicted_indices][[
                 'Document id',
                 'Reference id',
                 'Title']],
-            self.real_publications.iloc[real_index][[
+            self.real_publications.iloc[real_indices][[
                 'title',
                 'uber_id']],
             pd.DataFrame({
-                'Cosine_Similarity': [title_similarities[t[0]][t[1]] for t in high_similarity_indices]
+                'Cosine_Similarity': cosine_similarities
             })],
             axis=1)
-        
+
         return match_data
 
     def fuzzy_match(self, predicted_publications):
@@ -57,18 +58,15 @@ class FuzzyMatcher:
             len(predicted_publications)
         )
 
-        all_match_data = pd.DataFrame(
-            self.match_vectorised(
-                predicted_publications
-            ),
-            columns=[
-                'Document id',
-                'Reference id',
-                'Predicted_Ref_Title',
-                'WT_Ref_Title',
-                'WT_Ref_Id',
-                'Cosine_Similarity'
-            ]
+        all_match_data = self.match_vectorised(
+            predicted_publications
+        )
+        all_match_data.rename(
+            columns={
+                'title': 'WT_Ref_Title',
+                'uber_id': 'WT_Ref_Id'
+            },
+            inplace=True
         )
 
         self.logger.info(all_match_data.head())
