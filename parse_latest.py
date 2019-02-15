@@ -49,15 +49,15 @@ if __name__ == "__main__":
     )
 
     if args.output_url.startswith('file://'):
-        # The directory name will be the name of the organisation
+        # The output subfolder will be the name of the organisation 
         # and the date of scrape (which is the name of the file)
-        output_url = '{}_{}_{}'.format(
+        output_url = '{}/{}_{}'.format(
             args.output_url,
             org,
             os.path.splitext(os.path.basename(key_name))[0]
         )
         if not os.path.exists(output_url[7:]):
-            os.mkdir(output_url[7:])
+            os.makedirs(output_url[7:])
 
         scraper_file = "s3://{}/{}".format(bucket_name, key_name)
 
