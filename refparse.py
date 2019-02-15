@@ -90,7 +90,7 @@ def run_predict(scraper_file, references_file,
         logger: logging configuration name
     """
 
-    logger.info("[+] Reading input files for %s", settings.ORGANISATION)
+    logger.info("[+] Reading input files")
 
     # Loading the scraper results
     scraper_file = get_file(scraper_file, "", get_scraped=True)

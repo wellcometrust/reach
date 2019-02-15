@@ -13,10 +13,12 @@ class BaseSettings:
     BLOCKSIZE = 1000
     FUZZYMATCH_THRESHOLD = 0.8
 
+    ORGANISATION = os.environ.get('ORGANISATION', 'nice')
+
     BUCKET = "datalabs-data"
 
     SCRAPER_RESULTS_BASEDIR = "s3://{}/scraper-results".format(BUCKET)
-    SCRAPER_RESULTS_DIR = "{}/{}".format(SCRAPER_RESULTS_BASEDIR, ORGANISATION)
+    SCRAPER_RESULTS_DIR = "{}".format(SCRAPER_RESULTS_BASEDIR)
     SCRAPER_RESULTS_FILENAME = ''
 
     REFERENCES_DIR = "s3://{}/wellcome_publications".format(BUCKET)
@@ -66,7 +68,7 @@ class LocalSettings(BaseSettings):
     RDS_REFERENCES_DATABASE = "parser_references"
 
 
-    SCRAPER_RESULTS_DIR = "scraper-results/{}".format(BaseSettings.ORGANISATION)
+    SCRAPER_RESULTS_DIR = "scraper-results"
     REFERENCES_DIR = "wellcome_publications"
     MODEL_DIR = "reference_parser_models"
 
