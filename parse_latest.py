@@ -1,16 +1,15 @@
 """
 This code lets you run the reference parser with the
 latest scraped documents for an input organisations.
-e.g. 
+e.g.
 python parse_latest.py msf
-which will parse and match the latest msf scrape in S3 
-with the uber wellcome publications stored in S3 
+which will parse and match the latest msf scrape in S3
+with the uber wellcome publications stored in S3
 """
 
 from argparse import ArgumentParser
 from urllib.parse import urlparse
 import os
-import sys
 import boto3
 
 from refparse import parse_references, create_argparser
@@ -30,7 +29,7 @@ ORG_NAMES = (
 if __name__ == "__main__":
     logger = settings.logger
     logger.setLevel('INFO')
-    
+
     parser = create_argparser(__doc__.strip())
     parser.add_argument('org_name', choices=ORG_NAMES)
 
@@ -59,7 +58,7 @@ if __name__ == "__main__":
         )
         if not os.path.exists(output_url[7:]):
             os.makedirs(output_url[7:])
-        
+
         scraper_file = "s3://{}/{}".format(bucket_name, key_name)
 
         parse_references(
@@ -74,6 +73,3 @@ if __name__ == "__main__":
     else:
         logger.info("Output url should start with 'file://'")
         pass
-
-
-
