@@ -23,7 +23,7 @@ docker-build:
 		.
 
 .PHONY: docker-push
-push: docker-test
+docker-push: docker-test
 	$$(aws ecr get-login --no-include-email --region eu-west-1) && \
 	docker push $(ECR_IMAGE):$(VERSION) && \
 	docker push $(ECR_IMAGE):latest
