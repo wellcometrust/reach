@@ -1,4 +1,4 @@
-from .split import process_references_section
+from .split import process_references_section, split_section
 from .predict import predict_references, predict_structure, process_references
 from .fuzzymatch import FuzzyMatcher
 from .file_manager import FileManager
@@ -12,5 +12,6 @@ __all__ = [
     serialise_matched_reference,
     serialise_reference,
     predict_references,
-    predict_structure
+    predict_structure,
+    split_section,
 ]

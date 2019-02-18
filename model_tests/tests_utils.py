@@ -5,8 +5,8 @@ from .test_settings import settings
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
 
-from utils import (Predictor, FuzzyMatcher,
-                   split_sections, split_reference)
+from utils import (predict_references, predict_structure, FuzzyMatcher,
+                   split_section, process_references_section)
 
 
 def test_get_reference_components(predicted_number_refs, actual_number_refs):
@@ -233,8 +233,8 @@ def test_number_refs(raw_text_data, actual_number_refs, organisation_regex,
                     references_section = this_doc_reference[
                         "sections"
                     ]["Reference"]
-                    references = split_sections(references_section,
-                                                organisation_regex)
+                    references = split_section(references_section,
+                                               organisation_regex)
 
                     if this_document_actual_number == 0:
                         difference_per = None
@@ -289,7 +289,9 @@ def test_structure(actual_reference_structures, components_id_name,
     raw_reference_components = []
     for _, actual_structure in actual_reference_structures.iterrows():
         # Get the components for this reference and store
-        components = split_reference(actual_structure['Actual reference'])
+        components = process_references_section(
+            actual_structure['Actual reference']
+        )
         for component in components:
             raw_reference_components.append({
                 'Reference component': component,
@@ -301,12 +303,10 @@ def test_structure(actual_reference_structures, components_id_name,
     reference_components_ref_structures = pd.DataFrame(
         raw_reference_components)
 
-    predictor = Predictor()
-
-    ref_components_ref_structures_predictions = predictor.predict_references(
+    ref_components_ref_structures_predictions = predict_references(
         mnb, vectorizer, reference_components_ref_structures)
 
-    predicted_reference_structures = predictor.predict_structure(
+    predicted_reference_structures = predict_structure(
         ref_components_ref_structures_predictions,
         settings.PREDICTION_PROBABILITY_THRESHOLD)
 
