@@ -55,7 +55,7 @@ python manage.py run_predict [OPTIONS] SCRAPER_FILE REFERENCES_FILE
 ### Method 2.
 This repository includes a `settings.py` file, where you can manually configure your options.
 
-Once you're happy with your configuration, just run `python main.py`
+Once you're happy with your configuration, just run `python refparse.py`
 
 ### Method 3.
 

@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 import logging
 import os
+from datetime import datetime
 
 # Get feed configuration from environment variable. Default to debug
 FEED_CONFIG = os.environ.get('SCRAPY_FEED_CONFIG', 'DEBUG')
@@ -61,7 +62,7 @@ COOKIES_ENABLED = False
 #  who_iris and who_iris_single_page dedicated settings
 WHO_IRIS_RPP = 250
 WHO_IRIS_LIMIT = False
-WHO_IRIS_YEARS = [2012, 2013, 2014, 2015, 2016, 2017]
+WHO_IRIS_YEARS = range(2012, datetime.now().year + 1)
 
 # nice dedicated settings
 NICE_GET_HISTORY = False

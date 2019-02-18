@@ -23,6 +23,8 @@ def parse_pdf_document(document):
         'pdftohtml',
         '-i',
         '-xml',
+        '-zoom',
+        '1.5',
         document.name,
         parsed_path
     ]

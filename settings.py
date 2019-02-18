@@ -10,7 +10,6 @@ class BaseSettings:
     DEBUG = True
 
     PREDICTION_PROBABILITY_THRESHOLD = 0.75
-    BLOCKSIZE = 1000
     FUZZYMATCH_THRESHOLD = 0.8
 
     BUCKET = "datalabs-data"
@@ -31,6 +30,8 @@ class BaseSettings:
     VECTORIZER_FILENAME = "RefSorter_vectorizer.pkl"
 
     ORGANISATION_REGEX = "\\n[\d\.\s\\n]+(?=[A-Z])"
+
+    REF_CLASSES = ['Authors', 'Journal', 'Volume', 'Issue', 'Pagination', 'Title','PubYear']
 
 
 class ProdSettings(BaseSettings):
@@ -65,8 +66,8 @@ class LocalSettings(BaseSettings):
     RDS_PORT = os.environ.get('RDS_PORT', 5432)
     RDS_REFERENCES_DATABASE = "parser_references"
 
-
     SCRAPER_RESULTS_DIR = "scraper-results"
+
     REFERENCES_DIR = "wellcome_publications"
     MODEL_DIR = "reference_parser_models"
 
