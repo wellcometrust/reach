@@ -101,6 +101,11 @@ python ./parse_latest.py msf \
 
 Warning that this could take some time.
 
+## Unit testing
+You can run the unittests for this project by running:
+`make docker-test`
+
+This will test that your last changes didn't affect how the program works.
 
 ## Contributing
 See the [Contributing guidelines](./CONTRIBUTING.md)
