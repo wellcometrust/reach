@@ -12,12 +12,10 @@ class BaseSettings:
     PREDICTION_PROBABILITY_THRESHOLD = 0.75
     FUZZYMATCH_THRESHOLD = 0.8
 
-    ORGANISATION = os.environ.get('ORGANISATION', 'nice')
-
     BUCKET = "datalabs-data"
 
     SCRAPER_RESULTS_BASEDIR = "s3://{}/scraper-results".format(BUCKET)
-    SCRAPER_RESULTS_DIR = "{}/{}".format(SCRAPER_RESULTS_BASEDIR, ORGANISATION)
+    SCRAPER_RESULTS_DIR = "{}".format(SCRAPER_RESULTS_BASEDIR)
     SCRAPER_RESULTS_FILENAME = ''
 
     REFERENCES_DIR = "s3://{}/wellcome_publications".format(BUCKET)
@@ -31,13 +29,7 @@ class BaseSettings:
     CLASSIFIER_FILENAME = "RefSorter_classifier.pkl"
     VECTORIZER_FILENAME = "RefSorter_vectorizer.pkl"
 
-    _regex_dict = {
-        'who_iris': "(|\.)\\n[0-9]{1,3}\.(\s|\\n)",
-        'nice': "(|\s)(|.)(|\s)\n(|[0-9]{1,3})(|.)(|\s)(?=[A-Z])",
-        'unicef': "\\n[0-9]{1,3}(\.|)\s{0,2}(\\n|)",
-        'msf': "\\n[0-9]{0,3}(\.\s{0,2}|\\n)"
-    }
-    ORGANISATION_REGEX = _regex_dict.get(ORGANISATION, "\n")
+    ORGANISATION_REGEX = "\\n[\d\.\s\\n]+(?=[A-Z])"
 
     REF_CLASSES = ['Authors', 'Journal', 'Volume', 'Issue', 'Pagination', 'Title','PubYear']
 
@@ -74,9 +66,8 @@ class LocalSettings(BaseSettings):
     RDS_PORT = os.environ.get('RDS_PORT', 5432)
     RDS_REFERENCES_DATABASE = "parser_references"
 
-    SCRAPER_RESULTS_DIR = "scraper-results/{}".format(
-        BaseSettings.ORGANISATION
-    )
+    SCRAPER_RESULTS_DIR = "scraper-results"
+
     REFERENCES_DIR = "wellcome_publications"
     MODEL_DIR = "reference_parser_models"
 
