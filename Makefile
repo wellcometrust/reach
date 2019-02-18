@@ -13,8 +13,8 @@ CODEBUILD_VERSION := codebuild-$(shell date +%Y%m%dT%H%M%SZ)-$(shell \
 	echo $$CODEBUILD_RESOLVED_SOURCE_VERSION | cut -c1-7)
 CODEBUILD_LATEST_TAG := codebuild-latest
 
-.PHONY: image
-image:
+.PHONY: docker-build
+docker-build:
 	docker build \
 		-t $(IMAGE):$(VERSION) \
 		-t $(IMAGE):latest \
@@ -22,8 +22,8 @@ image:
 		-t $(ECR_IMAGE):latest \
 		.
 
-.PHONY: push
-push: image
+.PHONY: docker-push
+push: docker-test
 	$$(aws ecr get-login --no-include-email --region eu-west-1) && \
 	docker push $(ECR_IMAGE):$(VERSION) && \
 	docker push $(ECR_IMAGE):latest
@@ -38,19 +38,18 @@ $(VIRTUALENV)/.installed: requirements.txt
 # Builds, tests, & pushes docker images with CodeBuild specific VERSION
 # and LATEST_TAG.
 .PHONY: codebuild-docker-push
-codebuild-docker-push: tests
 codebuild-docker-push: VERSION := $(CODEBUILD_VERSION)
 codebuild-docker-push: LATEST_TAG := $(CODEBUILD_LATEST_TAG)
-codebuild-docker-push: push
+codebuild-docker-push: docker-push
 
 .PHONY: virtualenv
 virtualenv: $(VIRTUALENV)/.installed
 
-.PHONY: tests
-tests: virtualenv
-tests:
-	./build/virtualenv/bin/python -m unittest
-
+.PHONY: docker-test
+docker-test: docker-build
+	docker run -v $$(pwd)/requirements.txt:/requirements.txt \
+	    --rm $(ECR_IMAGE):$(VERSION) \
+		sh -c "pip3 install -r requirements.txt && python3 -m unittest"
 
 .PHONY: all
-all: image
+all: docker-build

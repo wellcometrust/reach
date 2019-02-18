@@ -18,8 +18,8 @@ CODEBUILD_LATEST_TAG := codebuild-latest
 base_image:
 	docker build -t web-scraper.base -f Dockerfile.base .
 
-.PHONY: image
-image: base_image
+.PHONY: docker-build
+docker-build: base_image
 	docker build \
 		-t $(IMAGE):$(VERSION) \
 		-t $(IMAGE):latest \
@@ -27,8 +27,8 @@ image: base_image
 		-t $(ECR_IMAGE):latest \
 		.
 
-.PHONY: push
-push: image
+.PHONY: docker-push
+docker-push: docker-test
 	$$(aws ecr get-login --no-include-email --region eu-west-1) && \
 	docker push $(ECR_IMAGE):$(VERSION) && \
 	docker push $(ECR_IMAGE):latest
@@ -38,8 +38,7 @@ push: image
 .PHONY: codebuild-docker-push
 codebuild-docker-push: VERSION := $(CODEBUILD_VERSION)
 codebuild-docker-push: LATEST_TAG := $(CODEBUILD_LATEST_TAG)
-codebuild-docker-push: tests
-codebuild-docker-push: push
+codebuild-docker-push: docker-push
 
 $(VIRTUALENV)/.installed: requirements.txt
 	@if [ -d $(VIRTUALENV) ]; then rm -rf $(VIRTUALENV); fi
@@ -51,10 +50,12 @@ $(VIRTUALENV)/.installed: requirements.txt
 .PHONY: virtualenv
 virtualenv: $(VIRTUALENV)/.installed
 
-.PHONY: tests
-tests: virtualenv
-tests:
-	./build/virtualenv/bin/python -m unittest
+.PHONY: docker-test
+docker-test: docker-build
+	docker run -v $$(pwd)/requirements.txt:/requirements.txt \
+	    --rm $(ECR_IMAGE):$(VERSION) \
+		sh -c "pip3 install -r requirements.txt && python3 -m unittest"
+
 
 .PHONY: all
-all: base_image image
+all: base_image docker-build
