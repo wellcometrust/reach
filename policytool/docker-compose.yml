@@ -1,0 +1,55 @@
+version: '3.4'
+services:
+  articles-db:
+    container_name: articles-db
+    build:
+      context: ./db
+      dockerfile: Dockerfile
+    ports:
+      - 5436:5432
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+
+  airflow:
+    # container_name: airflow-web
+    image: 160358319781.dkr.ecr.eu-west-1.amazonaws.com/uk.ac.wellcome/web-scraper:latest
+    ports:
+      - 8080:8080
+    environment:
+      AIRFLOW_HOME: /airflow
+
+      AIRFLOW_CONN_DIMENSIONS_DEFAULT: "https://${DIMENSIONS_USERNAME}:${DIMENSIONS_PASSWORD}@app.dimensions.ai/api/"
+
+      # S3 prefix for all datalabs operators.
+      # (in `core` because we must be in an existing section of the cfg)
+      AIRFLOW__CORE__DATALABS_S3_PREFIX: "s3://datalabs-dev/airflow" # No trailing /!
+
+      # dev creds encryption key, cf.
+      # https://airflow.readthedocs.io/en/stable/howto/secure-connections.html
+      # (but not used; everything's from env atm)
+      AIRFLOW__CORE__FERNET_KEY: "${AIRFLOW_FERNET_KEY}"
+
+      # For local dev, also send task logs to stderr.
+      AIRFLOW__CORE__LOGGING_CONFIG_CLASS: "scraper.airflow.logging_config.CONSOLE_LOGGING_CONFIG"
+
+      AIRFLOW__CORE__SQLALCHEMY_CONN: "sqlite:////airflow/db/airflow.db"
+
+      AWS_ACCESS_KEY_ID: "${AWS_ACCESS_KEY_ID}"
+      AWS_SECRET_ACCESS_KEY: "${AWS_SECRET_ACCESS_KEY}"
+
+      DATALABS_AIRFLOW_VERSION: "localdev"
+
+      SENTRY_DSN: "${SENTRY_DSN}"
+
+    command:
+      - sh
+      - "-c"
+      # https://github.com/puckel/docker-airflow/blob/master/script/entrypoint.sh
+      # says the scheduler needs to run in the same container when using
+      # LocalExecutor. But only run it if initdb succeeds.
+      - "/src/policytool/scraper/airflow/initdb.sh && (airflow scheduler & airflow webserver -p 8080)"
+    volumes:
+      - ./scraper/airflow/airflow.cfg:/airflow/airflow.cfg
+      - ./scraper:/src/policytool/scraper/
+      - ./build/airflow.db:/airflow/db

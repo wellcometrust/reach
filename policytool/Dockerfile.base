@@ -1,0 +1,25 @@
+# Use a basic Python image
+FROM python:3.6.4
+
+# Build UTF8 locale to avoid encoding issues with Scrapy encoding
+# C.UTF-8 is the new en_US.UTF-8.
+ENV LC_ALL=C.UTF-8
+ENV LANG=C.UTF-8
+ENV LANGUAGE=C.UTF-8
+
+WORKDIR /policytool
+COPY requirements.txt /policytool/requirements.txt
+
+# Poppler is needed to run pdftotext convertion
+RUN apt-get update -yqq && \
+    apt-get install -yqq --no-install-recommends \
+        build-essential \
+        libpoppler-cpp-dev \
+        poppler-utils \
+        pkg-config \
+        locales && \
+    apt-get -q clean && \
+    locale-gen C.UTF-8 && \
+    pip install -U pip && \
+    AIRFLOW_GPL_UNIDECODE=yes python3 -m pip install -r requirements.txt && \
+    apt-get remove --purge -y build-essential

@@ -1,0 +1,8 @@
+build/
+crawls
+env
+Dockerfile
+.gitignore
+scraper/var/*
+scraper/results/*
+scraper/data/*
