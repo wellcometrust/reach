@@ -38,6 +38,7 @@ push: image
 .PHONY: codebuild-docker-push
 codebuild-docker-push: VERSION := $(CODEBUILD_VERSION)
 codebuild-docker-push: LATEST_TAG := $(CODEBUILD_LATEST_TAG)
+codebuild-docker-push: tests
 codebuild-docker-push: push
 
 $(VIRTUALENV)/.installed: requirements.txt
@@ -49,6 +50,11 @@ $(VIRTUALENV)/.installed: requirements.txt
 
 .PHONY: virtualenv
 virtualenv: $(VIRTUALENV)/.installed
+
+.PHONY: tests
+tests: virtualenv
+tests:
+	./build/virtualenv/bin/python -m unittest
 
 .PHONY: all
 all: base_image image
