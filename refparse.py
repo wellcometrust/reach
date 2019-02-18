@@ -21,10 +21,16 @@ from models import DatabaseEngine
 from settings import settings
 
 
+SectionedDocument = namedtuple(
+    'SectionedDocument',
+    ['section', 'uri', 'id']
+)
+
+
 def check_references_file(ref_file, references_file):
     assert 'title' in ref_file, (
-        "ref_file.title not defined in " + 
-        references_file + 
+        "ref_file.title not defined in " +
+        references_file +
         " consider renaming current title column name 'title'"
     )
     assert 'uber_id' in ref_file, (
@@ -32,11 +38,6 @@ def check_references_file(ref_file, references_file):
         references_file +
         " consider renaming current uber id column name to 'uber_id'"
     )
-
-SectionedDocument = namedtuple(
-    'SectionedDocument',
-    ['section', 'uri', 'id']
-)
 
 
 def transform_scraper_file(scraper_data):
@@ -53,7 +54,8 @@ def transform_scraper_file(scraper_data):
                 document['hash']
             )
 
-def get_file(file_str, file_type, get_scraped = False):
+
+def get_file(file_str, file_type, get_scraped=False):
     if file_str.startswith('s3://'):
         u = urlparse(file_str)
         fm = FileManager('S3', bucket=u.netloc)
@@ -74,8 +76,9 @@ def get_file(file_str, file_type, get_scraped = False):
             file_type)
     return file
 
+
 def run_predict(scraper_file, references_file,
-    model_file, vectorizer_file, pool_map, output_url, logger):
+                model_file, vectorizer_file, pool_map, output_url, logger):
     """
     Parsers references using a (potentially parallelized) map()
     implementation.
@@ -102,6 +105,11 @@ def run_predict(scraper_file, references_file,
     # Loading the model and the vectoriser
     mnb = get_file(model_file, 'pickle')
     vectorizer = get_file(vectorizer_file, 'pickle')
+
+    fuzzy_matcher = FuzzyMatcher(
+        ref_file,
+        settings.FUZZYMATCH_THRESHOLD
+    )
 
     t0 = time.time()
     nb_references = 0
@@ -131,7 +139,8 @@ def run_predict(scraper_file, references_file,
         )
 
         # Link predictions back with all original data (Document id etc)
-        # When we merge and splitted_components is a dict not a dataframe then we could just merge the list of dicts
+        # When we merge and splitted_components is a dict not a dataframe then
+        # we could just merge the list of dicts
         reference_components_predictions = splitted_components
         reference_components_predictions["Predicted Category"] = [
             d["Predicted Category"] for d in components_predictions
@@ -139,7 +148,7 @@ def run_predict(scraper_file, references_file,
         reference_components_predictions["Prediction Probability"] = [
             d["Prediction Probability"] for d in components_predictions
         ]
-        
+
         # Predict the reference structure
         predicted_reference_structures = predict_structure(
             pool_map,
@@ -147,14 +156,8 @@ def run_predict(scraper_file, references_file,
             settings.PREDICTION_PROBABILITY_THRESHOLD
         )
 
-        fuzzy_matcher = FuzzyMatcher(
-            ref_file,
-            settings.FUZZYMATCH_THRESHOLD
-        )
-        all_match_data = fuzzy_matcher.fuzzy_match_blocks(
-            settings.BLOCKSIZE,
-            predicted_reference_structures,
-            settings.FUZZYMATCH_THRESHOLD
+        all_match_data = fuzzy_matcher.fuzzy_match(
+            predicted_reference_structures
         )
 
         if output_url.startswith('file://'):
@@ -191,12 +194,12 @@ def run_predict(scraper_file, references_file,
     )
 
 
-def parse_references(scraper_file, references_file,
-    model_file, vectorizer_file, output_url, num_workers, logger):
+def parse_references(scraper_file, references_file, model_file,
+                     vectorizer_file, output_url, num_workers, logger):
 
     """
     Entry point for reference parser.
-    
+
     Args:
         scraper_file: path / S3 url to scraper results file
         references_file: path/S3 url to references CSV file
@@ -223,10 +226,10 @@ def parse_references(scraper_file, references_file,
 
 
 def parse_references_profile(scraper_file, references_file,
-    model_file, vectorizer_file, output_url):
+                             model_file, vectorizer_file, output_url):
     """
     Entry point for reference parser, single worker, with profiling.
-    
+
     Args:
         scraper_file: path / S3 url to scraper results file
         references_file: path/S3 url to references CSV file
@@ -249,31 +252,34 @@ def create_argparser(description):
     parser.add_argument(
         '--references-file',
         help='Path or S3 URL to references CSV file to match against',
-        default = os.path.join(
+        default=os.path.join(
             settings.REFERENCES_DIR,
             settings.REFERENCES_FILENAME
             )
     )
+
     parser.add_argument(
         '--model-file',
         help='Path or S3 URL to model pickle file',
-        default = os.path.join(
+        default=os.path.join(
             settings.MODEL_DIR,
             settings.CLASSIFIER_FILENAME
             )
     )
+
     parser.add_argument(
         '--vectorizer-file',
         help='Path or S3 URL to vectorizer pickle file',
-        default = os.path.join(
+        default=os.path.join(
             settings.MODEL_DIR,
             settings.VECTORIZER_FILENAME
             )
     )
+
     parser.add_argument(
         '--output-url',
         help='URL (file://!) or DSN for output',
-        default = settings.OUTPUT_URL
+        default=settings.OUTPUT_URL
     )
 
     parser.add_argument(
@@ -283,6 +289,7 @@ def create_argparser(description):
     )
 
     return parser
+
 
 if __name__ == '__main__':
     logger = settings.logger
@@ -311,17 +318,26 @@ if __name__ == '__main__':
             help='Run parser, single worker, with cProfile for profiling')
         args = parser.parse_args()
 
-
         if args.profile:
             assert args.num_workers is None or args.num_workers == 1
-            parse_references_profile(args.scraper_file, args.references_file,
-                args.model_file, args.vectorizer_file, args.output_url)
+            parse_references_profile(
+                args.scraper_file,
+                args.references_file,
+                args.model_file,
+                args.vectorizer_file,
+                args.output_url
+            )
         else:
-            parse_references(args.scraper_file, args.references_file,
-                args.model_file, args.vectorizer_file, args.output_url, args.num_workers, logger)
+            parse_references(
+                args.scraper_file,
+                args.references_file,
+                args.model_file,
+                args.vectorizer_file,
+                args.output_url,
+                args.num_workers,
+                logger
+            )
 
     except Exception as e:
         sentry_sdk.capture_exception(e)
         raise
-
-
