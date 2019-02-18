@@ -6,7 +6,7 @@ phases:
       - "echo resolved source version: $CODEBUILD_RESOLVED_SOURCE_VERSION"
       - "echo source version: $CODEBUILD_SOURCE_VERSION"
       - make codebuild-docker-push
-      - cd wsf-scraper-web && make codebuild-docker-push
+      - cd scraper && make codebuild-docker-push
 
 artifacts:
     files: []
