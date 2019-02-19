@@ -8,7 +8,7 @@ setuptools.setup(
     name="wellcome-policytool",
     version="0.0.1",
     author="Wellcome Trust Data Labs Team",
-    author_email=" datalabs-engineering@wellcomecloud.onmicrosoft.com",
+    author_email="datalabs-engineering@wellcomecloud.onmicrosoft.com",
     description="Wellcome Trust Data Labs Policy Tool",
     long_description=long_description,
     long_description_content_type="text/markdown",
