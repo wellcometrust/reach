@@ -8,3 +8,16 @@ data/*
 model_tests/results/*
 model_tests/data_test/*
 !model_tests/results/.gitkeep
+
+
+scraper/data
+scraper/results
+scraper/crawl
+
+**settings*
+!**settings.py
+
+scraper/crawls*
+scraper/build*
+scraper/var/*
+!scraper/var/tmp/.gitkeep
