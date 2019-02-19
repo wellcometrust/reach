@@ -11,4 +11,4 @@ Pipfile
 Pipfile.lock
 README.md
 pull_request_template.md
-wsf-scraper-web
+scraper
