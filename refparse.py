@@ -123,7 +123,7 @@ def run_predict(scraper_file, references_file,
 
         # TO DO: Rather than just skip,
         # return empty lists in predict_references, predict_structure and fuzzy_match_blocks
-        if not splitted_components:
+        if len(splitted_components) == 0:
             continue
 
         # Predict the references types (eg title/author...)
