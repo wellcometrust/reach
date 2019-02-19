@@ -129,6 +129,11 @@ def run_predict(scraper_file, references_file,
         # Split references into components
         splitted_components = process_references(splitted_references)
 
+        # TO DO: Rather than just skip,
+        # return empty lists in predict_references, predict_structure and fuzzy_match_blocks
+        if len(splitted_components) == 0:
+            continue
+
         # Predict the references types (eg title/author...)
         # logger.info('[+] Predicting the reference components')
         components_predictions = predict_references(
