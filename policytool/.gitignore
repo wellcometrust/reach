@@ -14,7 +14,6 @@ settings*
 
 db.sqlite3
 
-setup.py
 crawls*
 build*
 var/*
