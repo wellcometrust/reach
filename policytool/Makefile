@@ -54,7 +54,7 @@ virtualenv: $(VIRTUALENV)/.installed
 docker-test: docker-build
 	docker run -v $$(pwd)/requirements.txt:/requirements.txt \
 	    --rm $(ECR_IMAGE):$(VERSION) \
-		sh -c "pip3 install -r requirements.txt && python3 -m unittest"
+		sh -c "cd /src/policytool/scraper && python3 -m unittest"
 
 
 .PHONY: all
