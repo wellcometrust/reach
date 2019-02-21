@@ -52,13 +52,13 @@ class FuzzyMatcher:
             predicted_publications.iloc[predicted_indices][[
                 'Document id',
                 'Reference id',
-                'Title']],
+                'Title']].reset_index(),
             self.real_publications.iloc[real_indices][[
                 'title',
-                'uber_id']],
+                'uber_id']].reset_index(),
             pd.DataFrame({
                 'Cosine_Similarity': cosine_similarities
-            })],
+            }).reset_index()],
             axis=1)
 
         return match_data
