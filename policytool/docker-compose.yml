@@ -41,6 +41,8 @@ services:
       DATALABS_AIRFLOW_VERSION: "localdev"
 
       SENTRY_DSN: "${SENTRY_DSN}"
+      DATABASE_URL: "postgres://postgres:postgres@articles-db:5432/wsf_scraping"
+
 
     command:
       - sh
