@@ -7,22 +7,22 @@ from datetime import datetime
 FEED_CONFIG = os.environ.get('SCRAPY_FEED_CONFIG', 'DEBUG')
 BOT_NAME = 'wsf_scraper'
 
-SPIDER_MODULES = ['wsf_scraping.spiders']
-NEWSPIDER_MODULE = 'wsf_scraping.spiders'
+SPIDER_MODULES = ['scraper.wsf_scraping.spiders']
+NEWSPIDER_MODULE = 'scraper.wsf_scraping.spiders'
 
 # Custom contrats for spider testing
 SPIDER_CONTRACTS = {
-    'wsf_scraping.contracts.AjaxContract': 10,
+    'scraper.wsf_scraping.contracts.AjaxContract': 10,
 }
 ITEM_PIPELINES = {
-    'wsf_scraping.pipelines.WsfScrapingPipeline': 10,
+    'scraper.wsf_scraping.pipelines.WsfScrapingPipeline': 10,
 }
 FEED_STORAGES = {
-    'aws': 'tools.AWSFeedStorage',
+    'aws': 'scraper.tools.AWSFeedStorage',
 }
 
 LOG_LEVEL = 'INFO'
-LOG_FORMATTER = 'wsf_scraping.middlewares.PoliteLogFormatter'
+LOG_FORMATTER = 'scraper.wsf_scraping.middlewares.PoliteLogFormatter'
 
 # Set pdfminer log to WARNING
 logging.getLogger("pdfminer").setLevel(logging.WARNING)
@@ -33,7 +33,7 @@ DEPTH_PRIORITY = 1
 SCHEDULER_DISK_QUEUE = 'scrapy.squeues.PickleFifoDiskQueue'
 
 # Crawl responsibly by identifying yourself (and your website)
-USER_AGENT = 'wsf_scraping'
+USER_AGENT = 'Wellcome Policy Tool Scraper (datalabs-ops@wellcome.ac.uk)'
 
 # Obey robots.txt rules
 ROBOTSTXT_OBEY = True
