@@ -1,5 +1,6 @@
 import scrapy
 import tempfile
+from scrapy.exceptions import CloseSpider
 from scrapy.spidermiddlewares.httperror import HttpError
 from twisted.internet.error import DNSLookupError
 from twisted.internet.error import TimeoutError
@@ -65,6 +66,16 @@ class BaseSpider(scrapy.Spider):
                 response.request.url
             )
             return
+
+        max_article = self.settings.getint('MAX_ARTICLE')
+        current_item_count = self.crawler.stats.get_value('item_scraped_count')
+        if max_article > 0 and current_item_count:
+            if current_item_count >= max_article:
+                raise CloseSpider(
+                    'Specified article count ({max_article}) raised'.format(
+                        max_article=max_article,
+                    )
+                )
 
         # Download PDF file to /tmp
         with tempfile.NamedTemporaryFile(delete=False) as tf:

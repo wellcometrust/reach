@@ -59,6 +59,8 @@ AUTOTHROTTLE_TARGET_CONCURRENCY = 1.0
 # Disable cookies
 COOKIES_ENABLED = False
 
+MAX_ARTICLE = -1
+
 #  who_iris and who_iris_single_page dedicated settings
 WHO_IRIS_RPP = 250
 WHO_IRIS_LIMIT = False
