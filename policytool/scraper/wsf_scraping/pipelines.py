@@ -51,11 +51,6 @@ class WsfScrapingPipeline(object):
         # Convert PDF content to text format
         with open(item['pdf'], 'rb') as f:
 
-            self.logger.info(
-                'Processing: %s',
-                item['pdf']
-            )
-
             pdf_file = parse_pdf_document(f)
 
             # If the PDF couldn't be converted, still remove the pdf file
