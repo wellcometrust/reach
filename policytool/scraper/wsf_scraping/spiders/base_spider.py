@@ -3,7 +3,7 @@ import tempfile
 from scrapy.spidermiddlewares.httperror import HttpError
 from twisted.internet.error import DNSLookupError
 from twisted.internet.error import TimeoutError
-from wsf_scraping.items import Article
+from ..items import Article
 
 
 class BaseSpider(scrapy.Spider):
