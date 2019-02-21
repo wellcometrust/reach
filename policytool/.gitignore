@@ -7,7 +7,6 @@ dbs
 data
 results
 crawl
-scrapy.cfg
 
 settings*
 !settings.py
