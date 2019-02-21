@@ -3,18 +3,16 @@ import datetime
 from airflow import DAG
 import airflow.utils.dates
 
-
-from scraper.airflow.tasks.hello_world_task import TestTaskOperator
 from scraper.airflow.tasks.run_spider import RunSpiderOperator
 
 
 ORGANISATIONS = [
     'who_iris',
-    # 'nice',
-    # 'gov',
-    # 'msf',
-    # 'unicef',
-    # 'parliament',
+    'nice',
+    'gov_uk',
+    'msf',
+    'unicef',
+    'parliament',
 ]
 
 args = {
@@ -29,11 +27,6 @@ dag = DAG(
     default_args=args,
     schedule_interval='0 0 * * 0'
 )
-
-# hello_world_task = TestTaskOperator(
-#     task_id='print_hello_world',
-#     dag=dag,
-# )
 
 
 for organisation in ORGANISATIONS:

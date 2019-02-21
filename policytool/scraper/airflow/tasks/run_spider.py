@@ -23,7 +23,7 @@ logger = logging.getLogger(__name__)
 SPIDERS = {
     'who_iris': WhoIrisSpider,
     'nice': NiceSpider,
-    'gov': GovSpider,
+    'gov_uk': GovSpider,
     'msf': MsfSpider,
     'unicef': UnicefSpider,
     'parliament': ParliamentSpider,
@@ -52,8 +52,7 @@ class RunSpiderOperator(BaseOperator):
 
         # Initialise settings for a limited scraping
         settings = get_project_settings()
-        settings.set('WHO_IRIS_LIMIT', True)
-        settings.set('WHO_IRIS_RPP', 10)
+        settings.set('MAX_ARTICLE', 10)
         settings.set('WHO_IRIS_YEARS', [2018])
         settings.set('DATABASE_URL', os.environ['DATABASE_URL'])
 
