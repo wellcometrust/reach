@@ -30,7 +30,7 @@ SPIDERS = {
 }
 
 
-class RunSpiderOperator(BaseOperator):
+class DummySpidersOperator(BaseOperator):
     """
     Pulls data from the dimensions.ai to a bucket in S3.
 
@@ -45,7 +45,7 @@ class RunSpiderOperator(BaseOperator):
 
     @apply_defaults
     def __init__(self, organisation, *args, **kwargs):
-        super(RunSpiderOperator, self).__init__(*args, **kwargs)
+        super(DummySpidersOperator, self).__init__(*args, **kwargs)
         self.organisation = organisation
 
     def execute(self, context):
