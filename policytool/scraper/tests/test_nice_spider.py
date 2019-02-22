@@ -1,19 +1,18 @@
 import unittest
-from scrapy.http import Response, Request, TextResponse, HtmlResponse
-
+from scrapy.http import Response, Request, HtmlResponse, TextResponse
+from scrapy.utils.project import get_project_settings
 from wsf_scraping.spiders.nice_spider import NiceSpider
 
 TEST_PDF = 'tests/pdfs/test_pdf.pdf'
 
 
-class NiceSettings:
-    # nice dedicated settings
-    NICE_GET_HISTORY = True
-    NICE_GET_EVIDENCES = True
-    NICE_ARTICLES_COUNT = -1
+class Crawler:
 
-    def getbool(self, name):
-        return bool(getattr(self, name))
+    class Stats:
+        def get_value(*args):
+            return None
+
+    stats = Stats()
 
 
 class TestNiceSpider(unittest.TestCase):
@@ -21,7 +20,8 @@ class TestNiceSpider(unittest.TestCase):
     def setUp(self):
         self.test_file = open(TEST_PDF, 'rb')
         self.spider = NiceSpider()
-        self.spider.settings = NiceSettings()
+        self.spider.settings = get_project_settings()
+        self.spider.crawler = Crawler()
 
     def tearDown(self):
         self.test_file.close()
@@ -61,7 +61,7 @@ class TestNiceSpider(unittest.TestCase):
         its history and a request to its evidences.
         """
 
-        with open('./tests/mock_sites/nice/1.json', 'r') as html_site:
+        with open('./tests/mock_sites/nice/1.html', 'r') as html_site:
             request = Request('http://foo.bar')
             response = TextResponse(
                 'http://foo.bar',
@@ -73,7 +73,6 @@ class TestNiceSpider(unittest.TestCase):
             res = self.spider.parse(response)
 
             # Check if the spider sends three requests to the other functions.
-            self.assertTrue(next(res))
             self.assertTrue(next(res))
             self.assertTrue(next(res))
 

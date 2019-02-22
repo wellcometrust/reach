@@ -1,9 +1,18 @@
 import unittest
 from scrapy.http import Response, Request, HtmlResponse
-
+from scrapy.utils.project import get_project_settings
 from wsf_scraping.spiders.msf_spider import MsfSpider
 
 TEST_PDF = 'tests/pdfs/test_pdf.pdf'
+
+
+class Crawler:
+
+    class Stats:
+        def get_value(*args):
+            return None
+
+    stats = Stats()
 
 
 class TestMsfSpider(unittest.TestCase):
@@ -11,6 +20,8 @@ class TestMsfSpider(unittest.TestCase):
     def setUp(self):
         self.test_file = open(TEST_PDF, 'rb')
         self.spider = MsfSpider()
+        self.spider.settings = get_project_settings()
+        self.spider.crawler = Crawler()
 
     def tearDown(self):
         self.test_file.close()

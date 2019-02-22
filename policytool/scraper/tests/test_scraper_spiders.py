@@ -1,14 +1,27 @@
 import unittest
 from scrapy.http import Response, Request
+from scrapy.utils.project import get_project_settings
 from wsf_scraping.spiders.base_spider import BaseSpider
 
 TEST_PDF = 'tests/pdfs/test_pdf.pdf'
 
 
-class TestSpiders(unittest.TestCase):
+class Crawler:
+
+    class Stats:
+        def get_value(*args):
+            return None
+
+    stats = Stats()
+
+
+class TestBaseSpider(unittest.TestCase):
 
     def setUp(self):
         self.test_file = open(TEST_PDF, 'rb')
+        self.spider = BaseSpider()
+        self.spider.settings = get_project_settings()
+        self.spider.crawler = Crawler()
 
         meta = {
             'data_dict': {
@@ -35,8 +48,7 @@ class TestSpiders(unittest.TestCase):
           - Create a NamedTemporaryFile
           - Return an item
         """
-        base_spider = BaseSpider()
 
-        res = base_spider.save_pdf(self.pdf_response)
+        res = self.spider.save_pdf(self.pdf_response)
         self.assertTrue(res)
         self.assertTrue('foo' == res['title'])
