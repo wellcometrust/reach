@@ -17,7 +17,7 @@ class Article(scrapy.Item):
     sections = scrapy.Field()
     keywords = scrapy.Field()
     hash = scrapy.Field()
-    text = scrapy.Field()
+    has_text = scrapy.Field()
     types = scrapy.Field()
     subjects = scrapy.Field()
     authors = scrapy.Field()

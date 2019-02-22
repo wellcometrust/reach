@@ -97,6 +97,7 @@ class WsfScrapingPipeline(object):
         item['pdf'] = os.path.basename(item['pdf'])
         item['provider'] = spider_name
         item['date_scraped'] = datetime.now().strftime('%Y%m%d')
+        item['has_text'] = True
         return item
 
     def process_item(self, item, spider):
@@ -111,7 +112,7 @@ class WsfScrapingPipeline(object):
 
         if not db_item:
             full_item = self.check_keywords(item, spider.name, item['pdf'])
-            if not item.get('text'):
+            if not item.get('has_text'):
                 raise DropItem(
                     'Empty file text, could not find section or keywords.'
                 )
