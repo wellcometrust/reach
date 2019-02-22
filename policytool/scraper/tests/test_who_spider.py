@@ -1,21 +1,27 @@
 import unittest
 from scrapy.http import Response, Request, HtmlResponse
-
+from scrapy.utils.project import get_project_settings
 from wsf_scraping.spiders.who_iris_spider import WhoIrisSpider
 
 TEST_PDF = 'tests/pdfs/test_pdf.pdf'
 
 
-class WhoSettings:
-    WHO_IRIS_YEARS = [2012, 2013, 2014, 2015, 2016, 2017]
+class Crawler:
+
+    class Stats:
+        def get_value(*args):
+            return None
+
+    stats = Stats()
 
 
-class TestWhoSpider(unittest.TestCase):
+class TestWhoIrisSpider(unittest.TestCase):
 
     def setUp(self):
         self.test_file = open(TEST_PDF, 'rb')
         self.spider = WhoIrisSpider()
-        self.spider.settings = WhoSettings()
+        self.spider.settings = get_project_settings()
+        self.spider.crawler = Crawler()
 
     def tearDown(self):
         self.test_file.close()
