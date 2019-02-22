@@ -3,7 +3,7 @@ import datetime
 from airflow import DAG
 import airflow.utils.dates
 
-from scraper.airflow.tasks.run_spider import RunSpiderOperator
+from scraper.airflow.tasks.dummy_spiders_operator import DummySpidersOperator
 
 
 ORGANISATIONS = [
@@ -30,7 +30,7 @@ dag = DAG(
 
 
 for organisation in ORGANISATIONS:
-    run_spider = RunSpiderOperator(
+    run_spider = DummySpidersOperator(
         task_id='run_{spider}_spider'.format(spider=organisation),
         organisation=organisation,
         dag=dag,
