@@ -91,7 +91,7 @@ else:
     # By default, log the results in a local folder
     FEED_URI = './results/%(name)s.json'
 
-DATABASE_URL = os.environ['DATABASE_URL']
+DATABASE_URL = os.environ.get('DATABASE_URL')
 
 # Lists to look for (case insensitive)
 SECTIONS_KEYWORDS_FILE = './resources/section_keywords.txt'
