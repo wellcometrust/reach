@@ -2,7 +2,6 @@ import scrapy
 import tempfile
 from scrapy.exceptions import CloseSpider
 from scrapy.spidermiddlewares.httperror import HttpError
-from scrapy.utils.project import get_project_settings
 from twisted.internet.error import DNSLookupError
 from twisted.internet.error import TimeoutError
 from ..items import Article
@@ -13,10 +12,6 @@ class BaseSpider(scrapy.Spider):
     def __init__(self, *args, **kwargs):
         id = kwargs.get('uuid', '')
         self.uuid = id
-
-        settings = get_project_settings()
-        db_url = settings['DATABASE_URL']
-        assert settings['DATABASE_URL'], 'DATABASE_URL: %r' % db_url
 
     def on_error(self, failure):
 

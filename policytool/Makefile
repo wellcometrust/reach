@@ -52,9 +52,10 @@ virtualenv: $(VIRTUALENV)/.installed
 
 .PHONY: docker-test
 docker-test: docker-build
-	docker run -v $$(pwd)/requirements.txt:/requirements.txt \
-	    --rm $(ECR_IMAGE):$(VERSION) \
-		sh -c "cd /src/policytool/scraper && python3 -m unittest"
+	# docker run -v $$(pwd)/requirements.txt:/requirements.txt \
+	#     --rm $(ECR_IMAGE):$(VERSION) \
+	# 	sh -c "cd /src/policytool/scraper && python3 -m unittest"
+	docker-compose run --rm -w /src/policytool/scraper airflow sh -c "python -m unittest"
 
 
 .PHONY: all
