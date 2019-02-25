@@ -80,7 +80,7 @@ If the `scraper_file`, `references_file`, `model_file`, and `vectorizer_file` ar
 If you would like to run the parser for the latest scraped files and to save the output locally, then run the following:
 ```
 python parse_latest.py msf \
---output-url "file:///tmp/parser-output"
+--output-url "file://./tmp/parser-output"
 ```
 
 If you want to specify the arguments for the other inputs then you can, otherwise default values will be given:
@@ -90,7 +90,7 @@ python ./parse_latest.py msf \
     --references-file "match-references/MRC_Publications_Nov2018_JGHT_JHSRI.csv" \
     --model-file "s3://datalabs-data/reference_parser_models/RefSorter_classifier.pkl" \
     --vectorizer-file "s3://datalabs-data/reference_parser_models/RefSorter_vectorizer.pkl" \
-    --output-url "file:///tmp/parser-output/output_folder_name" \
+    --output-url "file://./tmp/parser-output/output_folder_name" \
     --num-workers 1
 ```
 
