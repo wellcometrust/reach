@@ -10,6 +10,8 @@ from airflow.utils.decorators import apply_defaults
 
 from scrapy.crawler import CrawlerProcess
 from scrapy.utils.project import get_project_settings
+
+import scraper.wsf_scraping.settings
 from scraper.wsf_scraping.spiders.who_iris_spider import WhoIrisSpider
 from scraper.wsf_scraping.spiders.nice_spider import NiceSpider
 from scraper.wsf_scraping.spiders.gov_spider import GovSpider
@@ -51,10 +53,28 @@ class DummySpidersOperator(BaseOperator):
     def execute(self, context):
 
         # Initialise settings for a limited scraping
+
+        os.environ.setdefault(
+            'SCRAPY_SETTINGS_MODULE',
+            'scraper.wsf_scraping.settings'
+        )
+
+        # So long as we don't re-load this module somewhere, these monkey
+        # patches will stay.
+        scraper.wsf_scraping.settings.MAX_ARTICLE = 10
+        scraper.wsf_scraping.settings.WHO_IRIS_CONSTRAINT = [2018]
+
+        """
+        d = {}
+        for key in dir(settings_module):
+            if key.isupper():
+                print(key, getattr(settings_module, key))
+                d[key] = getattr(settings_module, key)
+        """
+
         settings = get_project_settings()
-        settings.set('MAX_ARTICLE', 10)
-        settings.set('WHO_IRIS_YEARS', [2018])
-        settings.set('DATABASE_URL', os.environ['DATABASE_URL'])
+        for key in sorted(settings):
+            print(key, settings[key])
 
         process = CrawlerProcess(settings)
         spider = SPIDERS[self.organisation]
