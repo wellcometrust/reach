@@ -1,6 +1,4 @@
-import json
 import scrapy
-from lxml import html
 from scrapy.http import Request
 from .base_spider import BaseSpider
 
@@ -15,25 +13,14 @@ class NiceSpider(BaseSpider):
     def start_requests(self):
         """Set up the initial request to the website to scrape."""
 
-        articles_count = self.settings['NICE_ARTICLES_COUNT']
-
         # Initial URL (splited for PEP8 compliance). -1 length displays
         # the whole list.
-        base_url = 'https://www.nice.org.uk/guidance/published/ajax'
-        param1 = '?iDisplayLength=%s' % articles_count
-        param2 = '&type=apg,csg,cg,mpg,ph,sg,sc'
-        url = ''.join([base_url, param1, param2])
-
-        # NICE guidance listing should be called by an AJAX requests
-        headers = {
-            'X-Requested-With': 'XMLHttpRequest',
-            'referer': 'https://www.nice.org.uk/guidance/published'
-        }
+        url = ('https://www.nice.org.uk/Search?'
+               'om=[{%22gst%22:[%22Published%22]}]&ps=50&sp=on')
 
         self.logger.info('Initial url: %s', url)
         yield scrapy.Request(
             url=url,
-            headers=headers,
             errback=self.on_error,
             dont_filter=True,
             callback=self.parse,
@@ -50,49 +37,56 @@ class NiceSpider(BaseSpider):
         """
 
         # Grab the link to the detailed article, its evidences and history
-        try:
-            articles = json.loads(response.text)
-            doc_links = []
-            evidence_links = []
-            history_links = []
+        articles = response.css(
+            '.media-body .media-heading a::attr(href)'
+        ).extract()
+        doc_links = []
+        evidence_links = []
+        history_links = []
 
-            for doc in articles['aaData']:
-                doc_link = html.fromstring(doc['ProductTitle']).get('href')
+        for doc_link in articles:
 
-                doc_links.append('https://www.nice.org.uk%s' % doc_link)
-                if self.settings.getbool('NICE_GET_EVIDENCES'):
-                    evidence_links.append(
-                        'https://www.nice.org.uk%s/evidence' % doc_link
-                    )
-                if self.settings.getbool('NICE_GET_HISTORY'):
-                    history_links.append(
-                        'https://www.nice.org.uk%s/history' % doc_link
-                    )
-
-            for url in doc_links:
-                yield scrapy.Request(
-                    url=url,
-                    errback=self.on_error,
-                    callback=self.parse_article
+            doc_links.append('https://www.nice.org.uk%s' % doc_link)
+            if self.settings.getbool('NICE_GET_EVIDENCES'):
+                evidence_links.append(
+                    'https://www.nice.org.uk%s/evidence' % doc_link
+                )
+            if self.settings.getbool('NICE_GET_HISTORY'):
+                history_links.append(
+                    'https://www.nice.org.uk%s/history' % doc_link
                 )
 
-            for url in evidence_links:
-                yield scrapy.Request(
-                    url=url,
-                    errback=self.on_error,
-                    callback=self.parse_related_documents
-                )
+        for url in doc_links:
+            yield scrapy.Request(
+                url=url,
+                errback=self.on_error,
+                callback=self.parse_article
+            )
 
-            for url in history_links:
-                yield scrapy.Request(
-                    url=url,
-                    errback=self.on_error,
-                    callback=self.parse_related_documents
-                )
+        for url in evidence_links:
+            yield scrapy.Request(
+                url=url,
+                errback=self.on_error,
+                callback=self.parse_related_documents
+            )
 
-        except json.decoder.JSONDecodeError:
-            self.logger.info('Response was not json serialisable')
-            return
+        for url in history_links:
+            yield scrapy.Request(
+                url=url,
+                errback=self.on_error,
+                callback=self.parse_related_documents
+            )
+
+        next_page_url = response.xpath(
+            './/li/a[contains(., "Next")]/@href'
+        ).extract_first()
+        if next_page_url:
+            yield Request(
+                url=response.urljoin(next_page_url),
+                callback=self.parse,
+                errback=self.on_error,
+                dont_filter=True,
+            )
 
     def parse_related_documents(self, response):
         """ Scrape the guidance evidencies. Then, redirect to the PDF pages.
@@ -126,11 +120,12 @@ class NiceSpider(BaseSpider):
         @returns items 0 0
         """
 
+        date = response.css(
+            '.published-date time::attr(datetime)'
+        ).extract_first()
         data_dict = {
             'title': response.css('h1::text').extract_first(),
-            'year': response.css(
-                '.published-date time::attr(datetime)'
-            ).extract_first()[:4]
+            'year': date[:4] if date else None
         }
 
         # First case: PDF exists as PDF, epub etc.
