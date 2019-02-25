@@ -66,7 +66,7 @@ mkdir -p ./tmp/parser-output/output_folder_name
 
 python ./refparse.py \
     --scraper-file "s3://datalabs-data/scraper-results/msf/20190117.json" \
-    --references-file "match-references/MRC_Publications_Nov2018_JGHT_JHSRI.csv" \
+    --references-file "path/to/references.csv" \
     --model-file "s3://datalabs-data/reference_parser_models/RefSorter_classifier.pkl" \
     --vectorizer-file "s3://datalabs-data/reference_parser_models/RefSorter_vectorizer.pkl" \
     --output-url "file://./tmp/parser-output/output_folder_name"
@@ -86,7 +86,7 @@ If you want to specify the arguments for the other inputs then you can, otherwis
 
 ```
 python ./parse_latest.py msf \
-    --references-file "match-references/MRC_Publications_Nov2018_JGHT_JHSRI.csv" \
+    --references-file "path/to/references.csv" \
     --model-file "s3://datalabs-data/reference_parser_models/RefSorter_classifier.pkl" \
     --vectorizer-file "s3://datalabs-data/reference_parser_models/RefSorter_vectorizer.pkl" \
     --output-url "file://./tmp/parser-output/output_folder_name"
