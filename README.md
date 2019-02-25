@@ -62,14 +62,14 @@ Once you're happy with your configuration, just run `python refparse.py`
 Make an output folder `output_folder_name` and run `refparse.py` with arguments of your file locations, e.g. for msf in the terminal run:
 
 ```
-mkdir -p /tmp/parser-output/output_folder_name
+mkdir -p ./tmp/parser-output/output_folder_name
 
 python ./refparse.py \
     --scraper-file "s3://datalabs-data/scraper-results/msf/20190117.json" \
     --references-file "match-references/MRC_Publications_Nov2018_JGHT_JHSRI.csv" \
     --model-file "s3://datalabs-data/reference_parser_models/RefSorter_classifier.pkl" \
     --vectorizer-file "s3://datalabs-data/reference_parser_models/RefSorter_vectorizer.pkl" \
-    --output-url "file:///tmp/parser-output/output_folder_name" \
+    --output-url "file://./tmp/parser-output/output_folder_name" \
     --num-workers 1
 ```
 
