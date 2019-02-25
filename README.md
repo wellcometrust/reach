@@ -70,7 +70,7 @@ python ./refparse.py \
     --model-file "s3://datalabs-data/reference_parser_models/RefSorter_classifier.pkl" \
     --vectorizer-file "s3://datalabs-data/reference_parser_models/RefSorter_vectorizer.pkl" \
     --output-url "file:///tmp/parser-output/output_folder_name" \
-    --num-workers None
+    --num-workers 1
 ```
 
 If the `scraper_file`, `references_file`, `model_file`, and `vectorizer_file` arguments are to S3 locations then make sure these start with `s3://`, otherwise file names are assumed to be locally stored. If the `output_url` argument is to a local location, then make sure it begins with `file://`, otherwise it is assumed to be from a database.
@@ -79,7 +79,8 @@ If the `scraper_file`, `references_file`, `model_file`, and `vectorizer_file` ar
 
 If you would like to run the parser for the latest scraped files and to save the output locally, then run the following:
 ```
-python parse_latest.py msf
+python parse_latest.py msf \
+--output-url "file:///tmp/parser-output"
 ```
 
 If you want to specify the arguments for the other inputs then you can, otherwise default values will be given:
@@ -89,8 +90,8 @@ python ./parse_latest.py msf \
     --references-file "match-references/MRC_Publications_Nov2018_JGHT_JHSRI.csv" \
     --model-file "s3://datalabs-data/reference_parser_models/RefSorter_classifier.pkl" \
     --vectorizer-file "s3://datalabs-data/reference_parser_models/RefSorter_vectorizer.pkl" \
-    --output-url "file:///tmp/parser-output/output_folder_name" \
-    --num-workers None
+    --output-url "file:///tmp/parser-output" \
+    --num-workers 1
 ```
 
 Warning that this could take some time.
