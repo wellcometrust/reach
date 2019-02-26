@@ -7,22 +7,22 @@ from datetime import datetime
 FEED_CONFIG = os.environ.get('SCRAPY_FEED_CONFIG', 'DEBUG')
 BOT_NAME = 'wsf_scraper'
 
-SPIDER_MODULES = ['wsf_scraping.spiders']
-NEWSPIDER_MODULE = 'wsf_scraping.spiders'
+SPIDER_MODULES = ['scraper.wsf_scraping.spiders']
+NEWSPIDER_MODULE = 'scraper.wsf_scraping.spiders'
 
 # Custom contrats for spider testing
 SPIDER_CONTRACTS = {
-    'wsf_scraping.contracts.AjaxContract': 10,
+    'scraper.wsf_scraping.contracts.AjaxContract': 10,
 }
 ITEM_PIPELINES = {
-    'wsf_scraping.pipelines.WsfScrapingPipeline': 10,
+    'scraper.wsf_scraping.pipelines.WsfScrapingPipeline': 10,
 }
 FEED_STORAGES = {
-    'aws': 'tools.AWSFeedStorage',
+    'aws': 'scraper.tools.AWSFeedStorage',
 }
 
 LOG_LEVEL = 'INFO'
-LOG_FORMATTER = 'wsf_scraping.middlewares.PoliteLogFormatter'
+LOG_FORMATTER = 'scraper.wsf_scraping.middlewares.PoliteLogFormatter'
 
 # Set pdfminer log to WARNING
 logging.getLogger("pdfminer").setLevel(logging.WARNING)
@@ -33,7 +33,7 @@ DEPTH_PRIORITY = 1
 SCHEDULER_DISK_QUEUE = 'scrapy.squeues.PickleFifoDiskQueue'
 
 # Crawl responsibly by identifying yourself (and your website)
-USER_AGENT = 'wsf_scraping'
+USER_AGENT = 'Wellcome Policy Tool Scraper (datalabs-ops@wellcome.ac.uk)'
 
 # Obey robots.txt rules
 ROBOTSTXT_OBEY = True
@@ -59,10 +59,17 @@ AUTOTHROTTLE_TARGET_CONCURRENCY = 1.0
 # Disable cookies
 COOKIES_ENABLED = False
 
+MAX_ARTICLE = int(os.environ.get('MAX_ARTICLE', '-1'))
+
 #  who_iris and who_iris_single_page dedicated settings
 WHO_IRIS_RPP = 250
 WHO_IRIS_LIMIT = False
-WHO_IRIS_YEARS = range(2012, datetime.now().year + 1)
+if 'WHO_IRIS_YEARS' in os.environ:
+    WHO_IRIS_YEARS = [
+        int(x) for x in os.environ['WHO_IRIS_YEARS'].split(',')
+    ]
+else:
+    WHO_IRIS_YEARS = list(range(2012, datetime.now().year + 1))
 
 # nice dedicated settings
 NICE_GET_HISTORY = False
@@ -94,7 +101,19 @@ else:
 DATABASE_URL = os.environ.get('DATABASE_URL')
 
 # Lists to look for (case insensitive)
-SECTIONS_KEYWORDS_FILE = './resources/section_keywords.txt'
+SECTIONS_KEYWORDS_FILE = os.path.join(
+    os.environ.get(
+        'RESOURCES_FILES',
+        './resources'
+    ),
+    'section_keywords.txt'
+)
 
 # Keywords to look for (case insensitive)
-KEYWORDS_FILE = './resources/keywords.txt'
+KEYWORDS_FILE = os.path.join(
+    os.environ.get(
+        'RESOURCES_FILES',
+        './resources'
+    ),
+    'keywords.txt'
+)
