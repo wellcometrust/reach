@@ -3,11 +3,11 @@ import os
 import logging
 from datetime import datetime
 from scrapy import spiderloader
-from tools import DatabaseConnector
-from tools.utils import parse_keywords_files, get_file_hash
+from scraper.tools import DatabaseConnector
+from scraper.tools.utils import parse_keywords_files, get_file_hash
 from scrapy.utils.project import get_project_settings
 from scrapy.exceptions import DropItem
-from pdf_parser.pdf_parse import parse_pdf_document, grab_section
+from scraper.pdf_parser.pdf_parse import parse_pdf_document, grab_section
 
 
 class WsfScrapingPipeline(object):
@@ -50,11 +50,6 @@ class WsfScrapingPipeline(object):
 
         # Convert PDF content to text format
         with open(item['pdf'], 'rb') as f:
-
-            self.logger.info(
-                'Processing: %s',
-                item['pdf']
-            )
 
             pdf_file = parse_pdf_document(f)
 

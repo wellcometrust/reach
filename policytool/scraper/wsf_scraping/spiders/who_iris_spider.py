@@ -8,26 +8,17 @@ from .base_spider import BaseSpider
 class WhoIrisSpider(BaseSpider):
     name = 'who_iris'
     data = {}
-    years = []
 
     custom_settings = {
         'JOBDIR': 'crawls/who_iris'
     }
 
-    def __init__(self, *args, **kwargs):
-        years_list = kwargs.get('years_list', False)
-        id = kwargs.get('uuid', '')
-
-        self.uuid = id
-        if years_list:
-            self.years = years_list.split(',')
-
     def start_requests(self):
         """ This sets up the urls to scrape for each years.
         """
-
-        if not self.years:
-            self.years = self.settings['WHO_IRIS_YEARS']
+        keys = [key for key in self.settings.keys()]
+        print(keys)
+        years = self.settings['WHO_IRIS_YEARS']
         urls = []
         # Initial URL (splited for PEP8 compliance)
         query_dict = {
@@ -44,7 +35,7 @@ class WhoIrisSpider(BaseSpider):
         query_params = urlencode(query_dict) + '&filter_0={filter_0}'
         url = base_url + '?' + query_params
 
-        for year in self.years:
+        for year in years:
             self.data['filter_0'] = year
             # Format it with initial data and launch the process
             urls.append((url.format(**self.data), year))
