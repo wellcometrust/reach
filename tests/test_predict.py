@@ -6,19 +6,16 @@ from utils import predict_references
 
 MODELS_DIR = os.path.join(os.path.dirname(__file__), '..', 'reference_parser_models')
 
-with open(os.path.join(MODELS_DIR, "RefSorter_classifier.pkl"), "rb") as f:
-    mnb = pickle.load(f)
-
-with open(os.path.join(MODELS_DIR, "RefSorter_vectorizer.pkl"), "rb") as f:
-    vectorizer = pickle.load(f)
+with open(os.path.join(MODELS_DIR, "reference_parser_pipeline.pkl"), "rb") as f:
+    model = pickle.load(f)
 
 class TestPredict(unittest.TestCase):
 	def test_empty_components(self):
-		components_predictions = predict_references(map,mnb,vectorizer,[])
+		components_predictions = predict_references(map,model,[])
 		self.assertEqual(components_predictions, [], "Should be []")
 
 	def test_normal_components(self):
-		components_predictions = predict_references(map,mnb,vectorizer,["Component","Component","Component"])
+		components_predictions = predict_references(map,model,["Component","Component","Component"])
 		all_categories = ['Authors', 'Title', 'Journal', 'PubYear', 'Volume', 'Issue', 'Pagination']
 		self.assertEqual(
 			isinstance(components_predictions, list),
@@ -30,15 +27,15 @@ class TestPredict(unittest.TestCase):
 			)
 
 	def test_size(self):
-		components_predictions = predict_references(map,mnb,vectorizer,["Component","Component","Component"])
+		components_predictions = predict_references(map,model,["Component","Component","Component"])
 		self.assertEqual(len(components_predictions) , 3, "Should be 3")
 
 	def test_string_component(self):
-		components_predictions = predict_references(map,mnb,vectorizer,["Component"])
+		components_predictions = predict_references(map,model,["Component"])
 		self.assertEqual(isinstance(components_predictions[0]['Predicted Category'], str), True, "Should be a string")
 
 	def test_year_component(self):
-		components_predictions = predict_references(map,mnb,vectorizer,["1999"])
+		components_predictions = predict_references(map,model,["1999"])
 		self.assertEqual(components_predictions[0]['Predicted Category'], 'PubYear', "Should be 'PubYear'")
 
 
