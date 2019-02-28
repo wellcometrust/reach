@@ -67,12 +67,11 @@ mkdir -p ./tmp/parser-output/output_folder_name
 python ./refparse.py \
     --scraper-file "s3://datalabs-data/scraper-results/msf/20190117.json" \
     --references-file "path/to/references.csv" \
-    --model-file "s3://datalabs-data/reference_parser_models/RefSorter_classifier.pkl" \
-    --vectorizer-file "s3://datalabs-data/reference_parser_models/RefSorter_vectorizer.pkl" \
+    --model-file "s3://datalabs-data/reference_parser_models/reference_parser_pipeline.pkl" \
     --output-url "file://./tmp/parser-output/output_folder_name"
 ```
 
-If the `scraper_file`, `references_file`, `model_file`, and `vectorizer_file` arguments are to S3 locations then make sure these start with `s3://`, otherwise file names are assumed to be locally stored. If the `output_url` argument is to a local location, then make sure it begins with `file://`, otherwise it is assumed to be from a database.
+If the `scraper_file`, `references_file`, `model_file`, arguments are to S3 locations then make sure these start with `s3://`, otherwise file names are assumed to be locally stored. If the `output_url` argument is to a local location, then make sure it begins with `file://`, otherwise it is assumed to be from a database.
 
 ### Method 4.
 
@@ -87,9 +86,10 @@ If you want to specify the arguments for the other inputs then you can, otherwis
 ```
 python ./parse_latest.py msf \
     --references-file "path/to/references.csv" \
-    --model-file "s3://datalabs-data/reference_parser_models/RefSorter_classifier.pkl" \
-    --vectorizer-file "s3://datalabs-data/reference_parser_models/RefSorter_vectorizer.pkl" \
+    --model-file "s3://datalabs-data/reference_parser_models/
+    reference_parser_pipeline.pkl" \
     --output-url "file://./tmp/parser-output/output_folder_name"
+
 ```
 
 Warning that this could take some time.

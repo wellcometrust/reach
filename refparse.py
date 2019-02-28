@@ -78,7 +78,7 @@ def get_file(file_str, file_type, get_scraped=False):
 
 
 def run_predict(scraper_file, references_file,
-                model_file, vectorizer_file, pool_map, output_url, logger):
+                model_file, pool_map, output_url, logger):
     """
     Parsers references using a (potentially parallelized) map()
     implementation.
@@ -87,7 +87,6 @@ def run_predict(scraper_file, references_file,
         scraper_file: path / S3 url to scraper results file
         references_file: path/S3 url to references CSV file
         model_file: path/S3 url to model pickle file (three formats FTW!)
-        vectorizer_file: path/S3 url to vectorizer pickle file
         pool_map: (possibly parallel) implementation of map() builtin
         output_url: file/S3 url for output files
         logger: logging configuration name
@@ -102,9 +101,8 @@ def run_predict(scraper_file, references_file,
     ref_file = get_file(references_file, 'csv')
     check_references_file(ref_file, references_file)
 
-    # Loading the model and the vectoriser
-    mnb = get_file(model_file, 'pickle')
-    vectorizer = get_file(vectorizer_file, 'pickle')
+    # Loading the pipeline
+    model = get_file(model_file, 'pickle')
 
     fuzzy_matcher = FuzzyMatcher(
         ref_file,
@@ -138,8 +136,7 @@ def run_predict(scraper_file, references_file,
         # logger.info('[+] Predicting the reference components')
         components_predictions = predict_references(
             pool_map,
-            mnb,
-            vectorizer,
+            model,
             splitted_components['Reference component']
         )
 
@@ -200,7 +197,7 @@ def run_predict(scraper_file, references_file,
 
 
 def parse_references(scraper_file, references_file, model_file,
-                     vectorizer_file, output_url, num_workers, logger):
+                     output_url, num_workers, logger):
 
     """
     Entry point for reference parser.
@@ -209,7 +206,6 @@ def parse_references(scraper_file, references_file, model_file,
         scraper_file: path / S3 url to scraper results file
         references_file: path/S3 url to references CSV file
         model_file: path/S3 url to model pickle file (three formats FTW!)
-        vectorizer_file: path/S3 url to vectorizer pickle file
         output_url: file/S3 url for output files
         num_workers: number of workers to use, or None for multiprocessing's
             default (number of cores).
@@ -223,7 +219,7 @@ def parse_references(scraper_file, references_file, model_file,
         pool_map = pool.map
 
     run_predict(scraper_file, references_file,
-                model_file, vectorizer_file, pool_map, output_url, logger)
+                model_file, pool_map, output_url, logger)
 
     if pool is not None:
         pool.terminate()
@@ -231,7 +227,7 @@ def parse_references(scraper_file, references_file, model_file,
 
 
 def parse_references_profile(scraper_file, references_file,
-                             model_file, vectorizer_file, output_url):
+                             model_file, output_url):
     """
     Entry point for reference parser, single worker, with profiling.
 
@@ -239,14 +235,13 @@ def parse_references_profile(scraper_file, references_file,
         scraper_file: path / S3 url to scraper results file
         references_file: path/S3 url to references CSV file
         model_file: path/S3 url to model pickle file (three formats FTW!)
-        vectorizer_file: path/S3 url to vectorizer pickle file
         output_url: file/S3 url for output files
     """
     import cProfile
     cProfile.run(
         ''.join([
             'run_predict(scraper_file, references_file,',
-            'model_file, vectorizer_file, map, output_url)'
+            'model_file, map, output_url)'
         ]),
         'stats_dumps'
     )
@@ -269,15 +264,6 @@ def create_argparser(description):
         default=os.path.join(
             settings.MODEL_DIR,
             settings.CLASSIFIER_FILENAME
-            )
-    )
-
-    parser.add_argument(
-        '--vectorizer-file',
-        help='Path or S3 URL to vectorizer pickle file',
-        default=os.path.join(
-            settings.MODEL_DIR,
-            settings.VECTORIZER_FILENAME
             )
     )
 
@@ -325,11 +311,11 @@ if __name__ == '__main__':
 
         if args.profile:
             assert args.num_workers is None or args.num_workers == 1
+
             parse_references_profile(
                 args.scraper_file,
                 args.references_file,
                 args.model_file,
-                args.vectorizer_file,
                 args.output_url
             )
         else:
@@ -337,7 +323,6 @@ if __name__ == '__main__':
                 args.scraper_file,
                 args.references_file,
                 args.model_file,
-                args.vectorizer_file,
                 args.output_url,
                 args.num_workers,
                 logger
