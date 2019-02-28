@@ -230,15 +230,14 @@ def predict_structure(pool_map, reference_components_predictions,
     return all_structured_references
 
 
-def predict_reference_comp(mnb, vectorizer, word_list):
+def predict_reference_comp(model, word_list):
     # To test what individual things predict,
     # it can deal with a list input or not
     # The maximum probability found is the probability
     # of the predicted classification
 
-    vec_list = vectorizer.transform(word_list).toarray()
-    predict_component = mnb.predict(vec_list)
-    predict_component_probas = mnb.predict_proba(vec_list)
+    predict_component = model.predict(word_list)
+    predict_component_probas = model.predict_proba(word_list)
     predict_component_proba = [
         single_predict.max() for single_predict in predict_component_probas
     ]
@@ -261,15 +260,14 @@ def is_year(component):
             )
         
 
-def _get_component(component, mnb, vectorizer):
+def _get_component(component, model):
 
     if is_year(component):
         pred_cat = 'PubYear'
         pred_prob = 1
     else:
         pred_cat, pred_prob = predict_reference_comp(
-            mnb,
-            vectorizer,
+            model,
             [component]
         )
 
@@ -278,16 +276,14 @@ def _get_component(component, mnb, vectorizer):
             'Prediction Probability': pred_prob
             }
 
-def predict_references(pool_map, mnb,
-                       vectorizer,
+def predict_references(pool_map, model,
                        reference_components):
 
     """
     Predicts the categories for a list of reference components.
     Input:
     - pool_map: Pool map used for multiprocessing the predicting
-    - mnb: The trained multinomial naive Bayes model for predicting the categories of reference components
-    - vectorizer: The vector of word counts in the training set
+    - model: The trained multinomial naive Bayes model for predicting the categories of reference components
     - reference_components: A list of reference components
     Output:
     - A list of dicts [{"Predicted Category": , "Prediction Probability": } ...]
@@ -304,8 +300,7 @@ def predict_references(pool_map, mnb,
 
     predict_all = list(pool_map(
         partial(_get_component,
-                mnb=mnb,
-                vectorizer=vectorizer),
+                model=model),
         reference_components
     ))
 
