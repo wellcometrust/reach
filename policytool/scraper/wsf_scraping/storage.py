@@ -150,7 +150,7 @@ class LocalStorage(Storage):
             item = json.loads(row)
             hash_list = current_manifest.get(item['hash'][:2], None)
             if hash_list:
-                if item['hash'] not in hash_list.keys():
+                if item['hash'] not in hash_list:
                     hash_list[item['hash']] = item
             else:
                 current_manifest[item['hash'][:2]] = {item['hash']: item}

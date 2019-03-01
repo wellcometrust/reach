@@ -54,7 +54,7 @@ class WsfScrapingPipeline(object):
         Returns:
             - True if the file hash is in the manifest, else False.
         """
-        if hash[:2] in self.manifest.keys():
+        if hash[:2] in self.manifest:
             if hash in self.manifest[hash[:2]]:
                 return True
         return False
@@ -77,9 +77,9 @@ class WsfScrapingPipeline(object):
             )
         item['hash'] = get_file_hash(item['pdf'])
 
-        scraped = self.is_in_manifest(item['hash'])
+        in_manifest = self.is_in_manifest(item['hash'])
 
-        if not scraped:
+        if not in_manifest:
             self.storage.save(item['pdf'], item['hash'])
         else:
             raise DropItem(
