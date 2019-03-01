@@ -86,10 +86,8 @@ If you want to specify the arguments for the other inputs then you can, otherwis
 ```
 python ./parse_latest.py msf \
     --references-file "path/to/references.csv" \
-    --model-file "s3://datalabs-data/reference_parser_models/
-    reference_parser_pipeline.pkl" \
+    --model-file "s3://datalabs-data/reference_parser_models/reference_parser_pipeline.pkl" \
     --output-url "file://./tmp/parser-output/output_folder_name"
-
 ```
 
 Warning that this could take some time.
