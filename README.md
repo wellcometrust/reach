@@ -74,13 +74,6 @@ python ./refparse.py \
 
 If the `scraper_file`, `references_file`, `model_file`, and `vectorizer_file` arguments are to S3 locations then make sure these start with `s3://`, otherwise file names are assumed to be locally stored. If the `output_url` argument is to a local location, then make sure it begins with `file://`, otherwise it is assumed to be from a database.
 
-The references from each documents are saved in a separate file in the output folder. You can merge all of them together by running
-```
-python merge_results.py \
-    --references-file "s3://datalabs-data/reference_parser/data/raw/uber_api_publications.csv" \
-    --output-url  "file://./tmp/parser-output/output_folder_name"
-```
-
 ### Method 4.
 
 If you would like to run the parser for the latest scraped files and to save the output locally, then run the following:
@@ -100,6 +93,14 @@ python ./parse_latest.py msf \
 ```
 
 Warning that this could take some time.
+
+## Merging results
+The parsed and matched references from each documents are saved in a separate file in the output folder. You can merge all of them together by running
+```
+python merge_results.py \
+    --references-file "s3://datalabs-data/reference_parser/data/raw/uber_api_publications.csv" \
+    --output-url  "file://./tmp/parser-output/output_folder_name"
+```
 
 ## Unit testing
 You can run the unittests for this project by running:
