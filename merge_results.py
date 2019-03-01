@@ -11,19 +11,21 @@ import glob
 
 import pandas as pd
 
+from refparse import get_file
 
-def get_csv_names(file_dir, suffix):
+
+def get_csv_names(output_url, suffix):
     """
     This function goes to a folder location and returns a list
     of all the names of the csvs within it.
     Input: 
-        file_dir - the file directory to look in
+        output_url - the file directory to look in
         suffix - the suffix of the csv name
     Output: 
         csv_names - a list of csv folder/filenames
     """
     csv_names = glob.glob(
-        os.path.join(file_dir, '**/*{}.csv'.format(suffix)), recursive=True
+        os.path.join(output_url, '**/*{}.csv'.format(suffix)), recursive=True
     )
 
     return csv_names
@@ -74,14 +76,12 @@ def concat_predicted_csvs(predicted_csv_names):
 def create_argparser(description):
     parser = ArgumentParser(description)
     parser.add_argument(
-        '--file_dir',
-        help='Directory of saved output folders',
-        default = './tmp/parser-output/charlene'
+        '--output-url',
+        help='Directory of saved output folders'
     )
     parser.add_argument(
-        '--match_refs_file',
-        help='Original references file which was used in parsing of saved outputs',
-        default = './match-references/charlene_publications_format.csv'
+        '--references-file',
+        help='Original references file which was used in parsing of saved outputs'
     )
     return parser
 
@@ -90,13 +90,13 @@ if __name__ == '__main__':
     parser = create_argparser(__doc__.strip())
     args = parser.parse_args()
 
-    file_dir = args.file_dir
+    output_url = args.output_url
     output_folder_name = 'merged_all_matches'
-    
-    match_refs = pd.read_csv(args.match_refs_file)
 
-    match_csv_names = get_csv_names(file_dir, '_all_match_data')
-    predicted_csv_names = get_csv_names(file_dir, '_predicted_reference_structures')
+    ref_file = get_file(args.references_file, 'csv')
+
+    match_csv_names = get_csv_names(output_url, '_all_match_data')
+    predicted_csv_names = get_csv_names(output_url, '_predicted_reference_structures')
 
     all_match = concat_match_csvs(match_csv_names)
     all_url = concat_predicted_csvs(predicted_csv_names)
@@ -107,13 +107,11 @@ if __name__ == '__main__':
         ) # Join with url
     
     all_matches_refs = all_matches_url.join(
-        match_refs.set_index('uber_id'),
+        ref_file.set_index('uber_id'),
         on='WT_Ref_Id'
         ) # Join with references information
 
-    if not os.path.exists('{}/{}'.format(file_dir, output_folder_name)):
-            os.makedirs('{}/{}'.format(file_dir, output_folder_name))
+    if not os.path.exists('{}/{}'.format(output_url, output_folder_name)):
+            os.makedirs('{}/{}'.format(output_url, output_folder_name))
 
-    all_matches_refs.to_csv('{}/{}/merged_all_matches.csv'.format(file_dir, output_folder_name))
-
-
+    all_matches_refs.to_csv('{}/{}/merged_all_matches.csv'.format(output_url, output_folder_name))
