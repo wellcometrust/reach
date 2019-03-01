@@ -65,7 +65,6 @@ if __name__ == "__main__":
             scraper_file,
             args.references_file,
             args.model_file,
-            args.vectorizer_file,
             output_url,
             args.num_workers,
             logger
