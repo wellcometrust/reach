@@ -66,7 +66,7 @@ mkdir -p ./tmp/parser-output/output_folder_name
 
 python ./refparse.py \
     --scraper-file "s3://datalabs-data/scraper-results/msf/20190117.json" \
-    --references-file "path/to/references.csv" \
+    --references-file "s3://datalabs-data/wellcome_publications/uber_api_publications.csv" \
     --model-file "s3://datalabs-data/reference_parser_models/reference_parser_pipeline.pkl" \
     --output-url "file://./tmp/parser-output/output_folder_name"
 ```
@@ -85,7 +85,7 @@ If you want to specify the arguments for the other inputs then you can, otherwis
 
 ```
 python ./parse_latest.py msf \
-    --references-file "path/to/references.csv" \
+    --references-file "s3://datalabs-data/wellcome_publications/uber_api_publications.csv" \
     --model-file "s3://datalabs-data/reference_parser_models/reference_parser_pipeline.pkl" \
     --output-url "file://./tmp/parser-output/output_folder_name"
 ```
@@ -96,8 +96,8 @@ Warning that this could take some time.
 The parsed and matched references from each documents are saved in a separate file in the output folder. You can merge all of them together by running
 ```
 python merge_results.py \
-    --references-file "s3://datalabs-data/reference_parser/data/raw/uber_api_publications.csv" \
-    --output-url  "file://./tmp/parser-output/output_folder_name"
+    --references-file "s3://datalabs-data/wellcome_publications/uber_api_publications.csv" \
+    --output-url  "./tmp/parser-output/output_folder_name"
 ```
 
 ## Unit testing
