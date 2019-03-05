@@ -51,6 +51,15 @@ class FileSystem(ABC):
         """
         return
 
+    @abstractmethod
+    def get(self, file_hash):
+        """Get the file matching the given hash from the storage.
+
+        Args:
+            - file_hash: The md5 digest of the file to retrieve.
+        """
+        return
+
 
 class S3FileSystem(FileSystem):
     def __init__(self, path, organisation, bucket):
@@ -125,6 +134,18 @@ class S3FileSystem(FileSystem):
             Body=json.dumps(current_manifest).encode('utf-8')
         )
 
+    def get(self, file_hash):
+        prefix = os.path.join(self.path, file_hash[:2])
+        response = self.client.get_object(
+            Bucket=self.bucket,
+            Prefix=prefix,
+            Key=file_hash,
+        )
+        if response.get('Body'):
+            return json.loads(response['Body'].read())
+        else:
+            return {}
+
 
 class LocalFileSystem(FileSystem):
     def __init__(self, path, organisation):
@@ -169,3 +190,14 @@ class LocalFileSystem(FileSystem):
                 current_manifest[item['hash'][:2]] = {item['hash']: item}
         with open(os.path.join(self.path, key), 'w') as manifest_file:
             manifest_file.write(json.dumps(current_manifest))
+
+    def get(self, file_hash):
+        key = 'policytool-scrape--scraper-{organisation}.json'.format(
+            organisation=self.organisation,
+        )
+        path = os.path.join(self.path, file_hash[:2], file_hash)
+        if os.path.isfile(path):
+            with open(os.path.join(self.path, key), 'rb') as pdf:
+                return pdf.read()
+        else:
+            return {}
