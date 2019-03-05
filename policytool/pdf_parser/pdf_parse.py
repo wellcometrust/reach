@@ -64,6 +64,7 @@ def parse_pdf_document(document):
 
     file_pages = []
     pages = soup.find_all('page')
+    full_text = soup.text
 
     for num, page in enumerate(pages):
         words = page.find_all('text')
@@ -98,7 +99,7 @@ def parse_pdf_document(document):
     pdf_file = PdfFile(file_pages)
     html_file.close()
     os.remove(parsed_path)
-    return pdf_file
+    return pdf_file, full_text
 
 
 def grab_section(pdf_file, keyword):
