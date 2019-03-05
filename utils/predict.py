@@ -185,49 +185,22 @@ def _get_structure(reference_id, document):
 
 def predict_structure(pool_map, reference_components_predictions,
                       prediction_probability_threshold):
-    """Predict the structured references for all the references. Go through
-    each reference for each document in turn.
+    """
+    Predict the structured references for all the references of
+    one document.
     """
 
     # Convert to pd dataframe, although when this function is refactored we shouldnt have to do this
     reference_components_predictions = pd.DataFrame.from_dict(reference_components_predictions)
 
-    all_structured_references = []
-    document_ids = set(reference_components_predictions['Document id'])
-
-    logger.info(
-        "[+] Predicting structure of references from %s  documents...",
-        str(len(document_ids))
-    )
-    for document_id in document_ids:
-        document = reference_components_predictions.loc[
-            reference_components_predictions['Document id'] == document_id
-        ]
-
-        reference_ids = set(document['Reference id'])
-
-        # doc_references = map(
-        #     lambda x: _get_structure(x, document),
-        #     reference_ids
-        # )
-        doc_references = pool_map(
-            partial(_get_structure,
-                    document=document),
-            reference_ids
-        )
-        all_structured_references.extend(
-            doc_references
-        )
-
-    all_structured_references = pd.concat(
-        all_structured_references,
-        axis=0,
-        ignore_index=True,
-        sort=False
+    doc_references = pool_map(
+        partial(_get_structure,
+                document=reference_components_predictions),
+        reference_components_predictions['Reference id']
     )
 
     logger.info("[+] Reference structure predicted")
-    return all_structured_references
+    return pd.concat(doc_references)
 
 
 def predict_reference_comp(model, word_list):
