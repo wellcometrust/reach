@@ -1,8 +1,6 @@
 """
-Operators for fetching data from dimensions.ai.
+Operator for scraping 10 articles from every orgnisations as a test.
 """
-
-
 import os
 import logging
 from airflow.models import BaseOperator
@@ -37,12 +35,7 @@ class DummySpidersOperator(BaseOperator):
     Pulls data from the dimensions.ai to a bucket in S3.
 
     Args:
-        data_source: 'grants' or 'publications'
-        year: year for which to pull data (int)
-        s3_key: destination url (s3://BUCKET_NAME/KEY_NAME)
-        aws_conn_id: AWS connection name
-        dimensions_conn_id: dimensions.ai connection name
-        replace: True if task should overwrite existing s3 key
+        organisation: The organisation to pull documents from.
     """
 
     @apply_defaults
@@ -62,15 +55,7 @@ class DummySpidersOperator(BaseOperator):
         # So long as we don't re-load this module somewhere, these monkey
         # patches will stay.
         scraper.wsf_scraping.settings.MAX_ARTICLE = 10
-        scraper.wsf_scraping.settings.WHO_IRIS_CONSTRAINT = [2018]
-
-        """
-        d = {}
-        for key in dir(settings_module):
-            if key.isupper():
-                print(key, getattr(settings_module, key))
-                d[key] = getattr(settings_module, key)
-        """
+        scraper.wsf_scraping.settings.WHO_IRIS_YEARS = [2018]
 
         settings = get_project_settings()
         for key in sorted(settings):
