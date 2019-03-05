@@ -19,7 +19,7 @@ def get_file_hash(file_path):
     return hasher.hexdigest()
 
 
-class Storage(ABC):
+class FileSystem(ABC):
 
     @abstractmethod
     def save(self, body, file_hash):
@@ -51,7 +51,7 @@ class Storage(ABC):
         return
 
 
-class S3Storage(Storage):
+class S3FileSystem(FileSystem):
     def __init__(self, path, organisation):
         self.client = boto3.client('s3')
         self.bucket = path.split('/')[0]
@@ -113,7 +113,7 @@ class S3Storage(Storage):
         )
 
 
-class LocalStorage(Storage):
+class LocalFileSystem(FileSystem):
     def __init__(self, path, organisation):
         self.path = path
         self.organisation = organisation

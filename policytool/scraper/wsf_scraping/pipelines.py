@@ -2,7 +2,7 @@
 import logging
 from urllib.parse import urlparse
 from scrapy.utils.project import get_project_settings
-from .storage import S3Storage, LocalStorage, get_file_hash
+from .file_system import S3FileSystem, LocalFileSystem, get_file_hash
 from scrapy.exceptions import DropItem
 
 
@@ -33,8 +33,8 @@ class WsfScrapingPipeline(object):
         """Take the output url and set the right feed storage for the pdf.
 
         Sets the storage system in use for the pipeline in the following:
-          * S3Storage: Store the pdfs in Amazon S3.
-          * LocalStorage: Store the pdfs in a local directory.
+          * S3FileSystem: Store the pdfs in Amazon S3.
+          * LocalFileSystem: Store the pdfs in a local directory.
 
         Args:
             - url: A string reprensenting the location to store the pdf files.
@@ -42,9 +42,9 @@ class WsfScrapingPipeline(object):
         parsed_url = urlparse(url)
         scheme = parsed_url.scheme
         if scheme == 's3':
-            self.storage = S3Storage(parsed_url.path, organisation)
+            self.storage = S3FileSystem(parsed_url.path, organisation)
         else:
-            self.storage = LocalStorage(parsed_url.path, organisation)
+            self.storage = LocalFileSystem(parsed_url.path, organisation)
 
     def is_in_manifest(self, hash):
         """Check if a file hash is in the current manifest.
