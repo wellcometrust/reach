@@ -23,6 +23,7 @@ At any time, there will be multiple DAGs running for the policy tool,
 including:
 
 1. `policytool-scrape`: scrapes all policy organizations.
+1. `policytool-parse`: parse all the scraped pdf from policy organizations.
 1. `policytool-epmc-pubs`: fetches publications from EPMC.
 1. `policytool-match-dimensions-pubs`: matches publications from dimensions
 1. `policytool-match-epmc-pubs`: matches publications from EPMC
@@ -47,6 +48,26 @@ So, some example S3 outputs for this DAG are:
 s3://${BUCKET_NAME}/airflow/output/policytool-scrape/scraper-who/policytool-scrape--scraper-who.json.gz
 s3://${BUCKET_NAME}/airflow/output/policytool-scrape/scraper-who/pdf/0a/0a4cb4bebf2a177e43dc36274820880cdcacb2.pdf
 s3://${BUCKET_NAME}/airflow/output/policytool-scrape/summary/policytool-scrape--summary.json.gz
+```
+
+## `policytool.parse`
+
+There's one task per organization in `policytool.parse`. Task names would include:
+
+- `parser-who`
+- `parser-msf`
+- `parser-govuk`
+
+A final task may also be added to summarize their results into a single output:
+
+- `summary`
+
+So, some example S3 outputs for this DAG are:
+
+```
+s3://${BUCKET_NAME}/airflow/output/policytool-parse/parser-who/policytool-scrape--parser-who.json.gz
+s3://${BUCKET_NAME}/airflow/output/policytool-parse/parser-who/pdf/0a/0a4cb4bebf2a177e43dc36274820880cdcacb2.pdf
+s3://${BUCKET_NAME}/airflow/output/policytool-parse/summary/policytool-scrape--summary.json.gz
 ```
 
 ## `policytool-epmc-pubs`
@@ -84,7 +105,7 @@ scraper-${ORGANIZATION} --------------------> refparser-${ORGANIZATION}
 (from policytool.scrape)                       |
                                                |
                                                v
-publications -------------------------------> matcher-${ORGANIZATION} 
+publications -------------------------------> matcher-${ORGANIZATION}
 (from policytool.epmc-pubs or outside DAG)     |
                                                |
                                                v
@@ -96,8 +117,8 @@ Key steps:
 1. A scraper, in the `policytool-scrape` DAg, pulls PDF from an organization's
    websites, storing each of them to S3 and writing a `manifest.json` file
    containing the list of all scraped PDFs and other metadata.
-1. A refparser extracts references from all PDFs listed by a 
-   `manifest.json` and writes them to an output `references.json` 
+1. A refparser extracts references from all PDFs listed by a
+   `manifest.json` and writes them to an output `references.json`
    file.
 1. A matcher reads from all publications, and from a `references.json`,
    producing matched referencies (citations) and writing them to an
@@ -125,4 +146,3 @@ s3://${BUCKET_NAME}/airflow/output/policytool-match-epmc-pubs/matcher-msf/
 s3://${BUCKET_NAME}/airflow/output/policytool-match-epmc-pubs/concat-matches/
     policytool-match-epmc-pubs--concat-matches.json.gz
 ```
-
