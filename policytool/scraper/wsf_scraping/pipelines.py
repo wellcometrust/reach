@@ -41,7 +41,7 @@ class WsfScrapingPipeline(object):
         """
         parsed_url = urlparse(url)
         scheme = parsed_url.scheme
-        if scheme == 's3':
+        if scheme == 'manifests3':
             self.storage = S3FileSystem(parsed_url.path, organisation)
         else:
             self.storage = LocalFileSystem(parsed_url.path, organisation)

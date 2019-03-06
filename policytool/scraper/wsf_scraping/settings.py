@@ -18,7 +18,7 @@ ITEM_PIPELINES = {
     'scraper.wsf_scraping.pipelines.WsfScrapingPipeline': 10,
 }
 FEED_STORAGES = {
-    'aws': 'scraper.feed_storages.ManifestFeedStorage',
+    'manifests3': 'scraper.feed_storages.ManifestFeedStorage',
     'local': 'scraper.feed_storages.ManifestFeedStorage',
 }
 

@@ -24,7 +24,7 @@ class ManifestFeedStorage(BlockingFeedStorage):
         Should always return a class object.
         """
         path = self.parsed_url.path.replace('%(name)s', spider.name)
-        if self.parsed_url.scheme == 'manifest_s3':
+        if self.parsed_url.scheme == 'manifests3':
             self.storage = S3Storage(path, spider.name)
         else:
             self.storage = LocalStorage(path, spider.name)
