@@ -32,10 +32,10 @@ def split_section(references_section, regex="\n"):
     return references
 
 
-def split_references_section(doc, regex):
+def split_references_section(section, regex):
     """Converts the unstructured text into reference components
     Input:
-    - a SectionedDocument tuple
+    - a References section string
     Output:
     - A list of references data which come into a dict with keys
         about the reference string, reference id, document uri and
@@ -52,13 +52,10 @@ def split_references_section(doc, regex):
     # Eric, 1987
 
     references_data = []
-    references = split_section(doc.section, regex)
+    references = split_section(section, regex)
     for reference in references:
         references_data.append({
             'Reference': reference,
-            'Reference id': hash(reference),
-            # TODO: remove these
-            'Document uri': doc.uri,
-            'Document id': doc.id,
+            'Reference id': hash(reference)
         })
     return references_data

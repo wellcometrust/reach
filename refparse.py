@@ -117,7 +117,7 @@ def run_predict(scraper_file, references_file,
         ))
 
         splitted_references = split_references_section(
-            doc,
+            doc.section,
             settings.ORGANISATION_REGEX
         )
 
@@ -126,6 +126,8 @@ def run_predict(scraper_file, references_file,
             model,
             splitted_references
         )
+        structured_references['Document id'] = doc.id
+        structured_references['Document uri'] = doc.uri
 
         matched_references = fuzzy_matcher.fuzzy_match(
             structured_references
