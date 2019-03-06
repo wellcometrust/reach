@@ -62,6 +62,9 @@ class WsfScrapingPipeline(object):
     def process_item(self, item, spider):
         """Process items sent by the spider.
 
+        The returned items will then be sent to the FeedStorage, where they
+        are stored in a temporary file and processed at the end of the process.
+
         Args:
             - item: The item returned by the spider.
             - spider: The spider from which the item id coming.
