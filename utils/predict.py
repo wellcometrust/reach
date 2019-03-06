@@ -221,19 +221,9 @@ def predict_reference_comp(model, word_list):
 
 def is_year(component):
     valid_years_range = range(1800, 2020)
-    return (
-                (
-                    component.isdecimal()
-                    and int(component) in valid_years_range
-                )
-                or
-                (
-                    len(component) == 6
-                    and component[1:5].isdecimal()
-                    and int(component[1:5]) in valid_years_range
-                )
-            )
-        
+    if len(component) == 6:
+        component = component[1:5]
+    return component.isdecimal() and int(component) in valid_years_range
 
 def _get_component(component, model):
 
