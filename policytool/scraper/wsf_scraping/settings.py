@@ -18,7 +18,8 @@ ITEM_PIPELINES = {
     'scraper.wsf_scraping.pipelines.WsfScrapingPipeline': 10,
 }
 FEED_STORAGES = {
-    'aws': 'scraper.tools.AWSFeedStorage',
+    'manifests3': 'scraper.wsf_scraping.feed_storage.ManifestFeedStorage',
+    'local': 'scraper.wsf_scraping.feed_storage.ManifestFeedStorage',
 }
 
 LOG_LEVEL = 'INFO'
@@ -74,12 +75,7 @@ else:
 # nice dedicated settings
 NICE_GET_HISTORY = False
 NICE_GET_EVIDENCES = False
-NICE_ARTICLES_COUNT = -1
 
-# Wether or not keep the PDF on a keyword match
-PARSING_METHOD = 'pdftotext'  # pdftotext|pdfminer
-KEEP_PDF = False
-DOWNLOAD_ONLY = False
 KEYWORDS_CONTEXT = 0
 
 # Jsonlines are cleaner for big feeds
@@ -87,16 +83,8 @@ FEED_FORMAT = 'jsonlines'
 FEED_EXPORT_ENCODING = 'utf-8'
 FEED_TEMPDIR = 'var/tmp/'
 
-if FEED_CONFIG == 'AWS':
-    AWS_S3_BUCKET = 'datalabs-data'
-    AWS_S3_FILE_NAME = 'scraper-results/%(name)s'
-    FEED_URI = 'aws://{bucket}/{filename}'.format(
-        bucket=AWS_S3_BUCKET,
-        filename=AWS_S3_FILE_NAME
-    )
-else:
-    # By default, log the results in a local folder
-    FEED_URI = './results/%(name)s.json'
+# By default, log the results in a local folder
+FEED_URI = os.environ.get('SCRAPY_FEED_URI', 'local:///tmp/%(name)s')
 
 DATABASE_URL = os.environ.get('DATABASE_URL')
 
