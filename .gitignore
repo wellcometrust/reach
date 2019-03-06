@@ -4,7 +4,7 @@
 data/*
 !data/.gitkeep
 .idea
-*env*
+build*
 model_tests/results/*
 model_tests/data_test/*
 !model_tests/results/.gitkeep
@@ -17,7 +17,6 @@ scraper/crawl
 **settings*
 !**settings.py
 
-scraper/crawls*
-scraper/build*
-scraper/var/*
-!scraper/var/tmp/.gitkeep
+policytool/crawls*
+policytool/results*
+policytool/build*

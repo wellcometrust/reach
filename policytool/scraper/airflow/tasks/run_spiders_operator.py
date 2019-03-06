@@ -1,15 +1,16 @@
 """
-Operator for scraping 10 articles from every orgnisations as a test.
+Operator to run the web scraper on every organisation.
 """
 import os
 import logging
+import scraper.wsf_scraping.settings
+
 from airflow.models import BaseOperator
 from airflow.utils.decorators import apply_defaults
 
 from scrapy.crawler import CrawlerProcess
 from scrapy.utils.project import get_project_settings
 
-import scraper.wsf_scraping.settings
 from scraper.wsf_scraping.spiders.who_iris_spider import WhoIrisSpider
 from scraper.wsf_scraping.spiders.nice_spider import NiceSpider
 from scraper.wsf_scraping.spiders.gov_spider import GovSpider
@@ -30,7 +31,7 @@ SPIDERS = {
 }
 
 
-class DummySpidersOperator(BaseOperator):
+class RunSpiderOperator(BaseOperator):
     """
     Pulls data from the dimensions.ai to a bucket in S3.
 
@@ -40,26 +41,28 @@ class DummySpidersOperator(BaseOperator):
 
     @apply_defaults
     def __init__(self, organisation, *args, **kwargs):
-        super(DummySpidersOperator, self).__init__(*args, **kwargs)
+        super(RunSpiderOperator, self).__init__(*args, **kwargs)
         self.organisation = organisation
 
     def execute(self, context):
-
-        # Initialise settings for a limited scraping
-
         os.environ.setdefault(
             'SCRAPY_SETTINGS_MODULE',
             'scraper.wsf_scraping.settings'
         )
-
-        # So long as we don't re-load this module somewhere, these monkey
-        # patches will stay.
-        scraper.wsf_scraping.settings.MAX_ARTICLE = 10
-        scraper.wsf_scraping.settings.WHO_IRIS_YEARS = [2018]
+        path = os.path.join(
+            'datalabs-data',
+            'airflow',
+            'output',
+            'policytool-scrape',
+            'scraper-{organisation}'.format(
+                organisation=self.organisation
+            ),
+        )
+        scraper.wsf_scraping.settings.FEED_URI = 'manifests3://{path}'.format(
+            path=path
+        )
 
         settings = get_project_settings()
-        for key in sorted(settings):
-            print(key, settings[key])
 
         process = CrawlerProcess(settings)
         spider = SPIDERS[self.organisation]
