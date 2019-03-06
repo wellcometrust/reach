@@ -129,56 +129,6 @@ def decide_components(single_reference):
     return single_reference_components
 
 
-def single_reference_structure(components_single_reference,
-                               prediction_probability_threshold):
-    """Predict the structure for a single reference given all
-    the components predicted for it.
-    """
-    # Delete all the rows which have a probability <0.75
-    components_single_reference = components_single_reference[
-        components_single_reference[
-            'Prediction Probability'
-        ].astype(float) > prediction_probability_threshold
-    ]
-
-    # Decide the best options for each reference component, resulting
-    # in one structured reference
-    single_reference = pd.DataFrame(
-        decide_components(components_single_reference),
-        index=[0]
-    )
-
-    return single_reference
-
-
-def _get_structure(components_single_reference):
-    # The components and predictions for one document one reference
-
-    # Structure:
-    single_reference = single_reference_structure(
-        components_single_reference,
-        settings.PREDICTION_PROBABILITY_THRESHOLD
-    )
-
-    if len(single_reference) != 0:
-
-        # Only if there were some enteries for this reference with
-        # high prediction probabilies
-        single_reference[
-            "Document id"
-        ] = components_single_reference['Document id'].iloc[0]
-
-        single_reference[
-            "Reference id"
-        ] = components_single_reference['Reference id'].iloc[0]
-
-        single_reference[
-            "Document uri"
-        ] = components_single_reference['Document uri'].iloc[0]
-
-    return pd.DataFrame.from_dict(single_reference)
-
-
 def predict_structure(pool_map, reference_components_predictions,
                       prediction_probability_threshold):
     """
@@ -186,23 +136,28 @@ def predict_structure(pool_map, reference_components_predictions,
     one document.
     """
 
-    # Convert to pd dataframe, although when this function is refactored we shouldnt have to do this
-    reference_components_predictions = pd.DataFrame.from_dict(reference_components_predictions)
-
+    document_id = reference_components_predictions.iloc[0]['Document id']
+    document_uri = reference_components_predictions.iloc[0]['Document uri']
+    reference_ids = reference_components_predictions['Reference id'].unique()
+    
     document_components_list = [
         reference_components_predictions.loc[
             reference_components_predictions['Reference id'] == reference_id
-        ]
-        for reference_id in reference_components_predictions['Reference id'].unique()
+        ] for reference_id in reference_ids
     ]
 
     doc_references = pool_map(
-        _get_structure,
+        decide_components,
         document_components_list
     )
+    doc_references = pd.DataFrame(doc_references)
+
+    doc_references['Document id'] = document_id
+    doc_references['Document uri'] = document_uri
+    doc_references['Reference id'] = reference_ids
 
     logger.info("[+] Reference structure predicted")
-    return pd.concat(doc_references)
+    return doc_references
 
 
 def predict_reference_comp(model, word_list):
