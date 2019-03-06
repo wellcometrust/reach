@@ -60,6 +60,7 @@ def decide_components(single_reference):
 
     # Add a block number, this groups neighbouring predictions of
     # the same type together.
+
     block_number = pd.DataFrame({
         'Block': (
             single_reference[
@@ -74,56 +75,31 @@ def decide_components(single_reference):
     categories =  settings.REF_CLASSES
     for category in categories:
 
-        # Are there any sentences of this type (i.e. Authors, Title)?
-        classornot = sum(single_reference['Predicted Category'] == category)
+        category_exists = category in single_reference['Predicted Category'].tolist()
 
-        if classornot != 0:
+        if category_exists:
+            # Pick the block containing the highest probability
+            # argmax takes the first argument anyway (so if there are 2
+            # of the same probabilities it takes the first one)
+            # could decide to do this randomly with argmax.choice()
+            # (random choice)
 
-            # Find how many blocks there are of this class type
-            number_blocks = len(
-                single_reference['Block'][single_reference[
-                    'Predicted Category'
-                ] == category].unique()
-            )
+            highest_probability_index = single_reference[
+                single_reference['Predicted Category'] == category
+            ]['Prediction Probability'].idxmax()
 
-            if number_blocks == 1:
-                # Just record this block separated by commas
-                single_reference_components.update({
-                    category: ", ".join(
-                        single_reference[
-                            'Reference component'
-                        ][single_reference[
-                            'Predicted Category'
-                        ] == category]
-                    )
-                })
-            else:
-                # Pick the block containing the highest probability
-                # argmax takes the first argument anyway (so if there are 2
-                # of the same probabilities it takes the first one)
-                # could decide to do this randomly with argmax.choice()
-                # (random choice)
-                
-                highest_probability_index = single_reference[
-                    single_reference['Predicted Category'] == category
-                ]['Prediction Probability'].idxmax()
+            highest_probability_block = single_reference[
+                'Block'
+            ][highest_probability_index]
 
-                highest_probability_block = single_reference[
-                    'Block'
-                ][highest_probability_index]
-
-                # Use everything in this block, separated by comma
-                single_reference_components.update({
-                    category: ", ".join(
-                        single_reference[
-                            "Reference component"
-                        ][single_reference[
-                            'Block'
-                        ] == highest_probability_block]
-                    )
-                })
+            single_reference_components = ", ".join(
+                    single_reference[
+                        "Reference component"
+                    ][single_reference[
+                        'Block'
+                    ] == highest_probability_block]
+                )
         else:
-            # There are none of this classification, append with blank
             single_reference_components.update({category: ""})
 
     return single_reference_components
@@ -174,11 +150,13 @@ def predict_reference_comp(model, word_list):
 
     return predict_component[0], predict_component_proba[0]
 
+
 def is_year(component):
     valid_years_range = range(1800, 2020)
     if len(component) == 6:
         component = component[1:5]
     return component.isdecimal() and int(component) in valid_years_range
+
 
 def _get_component(component, model):
 
