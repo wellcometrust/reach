@@ -55,5 +55,6 @@ services:
     volumes:
       - ./scraper/airflow/airflow.cfg:/airflow/airflow.cfg
       - ./scraper:/src/policytool/scraper/
+      - ./pdf_parser:/src/policytool/pdf_parser/
       - ./resources:/src/policytool/resources/
       - ./build/airflow.db:/airflow/db
