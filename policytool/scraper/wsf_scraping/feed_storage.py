@@ -25,7 +25,11 @@ class ManifestFeedStorage(BlockingFeedStorage):
         """
         path = self.parsed_url.path.replace('%(name)s', spider.name)
         if self.parsed_url.scheme == 'manifests3':
-            self.file_system = S3FileSystem(path, spider.name)
+            self.file_system = S3FileSystem(
+                path,
+                spider.name,
+                self.parsed_url.netloc
+            )
         else:
             self.file_system = LocalFileSystem(path, spider.name)
         return super(ManifestFeedStorage, self).open(spider)
@@ -34,4 +38,8 @@ class ManifestFeedStorage(BlockingFeedStorage):
         """This method is called once the process is finished, and will try
         to upload a manifest file file to S3.
         """
+        self.logger.info('Updating the manifest at {bucket}/{uri}'.format(
+            bucket=self.parsed_url.netloc,
+            uri=self.parsed_url.path,
+        ))
         self.file_system.update_manifest(data_file)
