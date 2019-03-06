@@ -1,3 +1,7 @@
+"""
+DAG to run the policy tool on every organisation.
+"""
+
 import datetime
 
 from airflow import DAG
@@ -18,7 +22,7 @@ ORGANISATIONS = [
 args = {
     'depends_on_past': False,
     'start_date': airflow.utils.dates.days_ago(2),
-    'retries': 0,  # XXX
+    'retries': 0,
     'retry_delay': datetime.timedelta(minutes=5),
 }
 
