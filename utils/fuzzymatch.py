@@ -16,7 +16,6 @@ class FuzzyMatcher:
         self.threshold = match_threshold
 
     def match_vectorised(self, predicted_publications):
-
         if predicted_publications.shape[0] == 0:
             return pd.DataFrame({
                 'Document id': [],
