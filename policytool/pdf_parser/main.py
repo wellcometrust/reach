@@ -4,7 +4,9 @@ find some words with their context.
 """
 import os
 import logging
-from scraper.wsf_scraping.storage import S3Storage, LocalStorage
+import tempfile
+import json
+from scraper.wsf_scraping.file_system import S3FileSystem, LocalFileSystem
 from urllib.parse import urlparse
 from argparse import ArgumentParser
 from pdf_parser.pdf_parse import parse_pdf_document, grab_section
@@ -13,14 +15,26 @@ logger = logging.getLogger(__name__)
 logger.setLevel('INFO')
 
 
-def write_to_file(output_url, item):
+def write_to_file(output_url, items, organisation):
     """Write the results of the parsing in an output file.
 
     Args:
         output_url: The file to write the results to.
         item: A dictionnary containing the results of the parsing for a pdf.
     """
-    return
+    parsed_url = urlparse(output_url)
+    if parsed_url.scheme == 'manifests3':
+        file_system = S3FileSystem(
+            parsed_url.path,
+            organisation,
+            parsed_url.netloc
+        )
+    else:
+        file_system = LocalFileSystem(
+            parsed_url.path,
+            organisation)
+    key = 'policytool-parse--parser-{org}.json'.format(org=organisation)
+    file_system.save(json.dumps(items), '', key)
 
 
 def run_parsing(pdf, words, titles, context):
@@ -135,6 +149,7 @@ def create_argparser(description):
 
 
 def parse_pdfs(input_url, output_url, resource_file, organisation, context):
+    logger.info(output_url)
     keywords_file = os.path.join(resource_file, 'keywords.txt')
     sections_file = os.path.join(resource_file, 'section_keywords.txt')
 
@@ -144,23 +159,34 @@ def parse_pdfs(input_url, output_url, resource_file, organisation, context):
 
     parsed_url = urlparse(input_url)
     if parsed_url.scheme == 'manifests3':
-        storage = S3Storage(output_url, organisation)
+        file_system = S3FileSystem(
+            parsed_url.path,
+            organisation,
+            parsed_url.netloc,
+        )
     else:
-        storage = LocalStorage(output_url, organisation)
+        file_system = LocalFileSystem(output_url, organisation)
 
     parsed_items = []
-    for directory in storage.get_manifest():
-        for item in directory:
-            pdf = storage.get(item)
-            item = run_parsing(
-                pdf,
-                words,
-                titles,
-                context,
-            )
+    manifest = file_system.get_manifest()
+    for directory in manifest:
+        for item in manifest[directory]:
+            logger.info(item)
+            pdf = file_system.get(item)
+
+            # Download PDF file to /tmp
+            with tempfile.NamedTemporaryFile(delete=False) as tf:
+                tf.write(pdf.read())
+                tf.seek(0)
+                item = run_parsing(
+                    tf.name,
+                    words,
+                    titles,
+                    context,
+                )
             parsed_items.append(item)
 
-    write_to_file(parsed_items)
+    write_to_file(output_url, json.dumps(parsed_items), organisation)
 
 
 if __name__ == '__main__':
