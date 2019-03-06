@@ -18,8 +18,8 @@ ITEM_PIPELINES = {
     'scraper.wsf_scraping.pipelines.WsfScrapingPipeline': 10,
 }
 FEED_STORAGES = {
-    'manifests3': 'scraper.feed_storages.ManifestFeedStorage',
-    'local': 'scraper.feed_storages.ManifestFeedStorage',
+    'manifests3': 'scraper.wsf_scraping.feed_storage.ManifestFeedStorage',
+    'local': 'scraper.wsf_scraping.feed_storage.ManifestFeedStorage',
 }
 
 LOG_LEVEL = 'INFO'
