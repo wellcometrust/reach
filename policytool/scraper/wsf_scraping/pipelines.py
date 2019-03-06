@@ -14,8 +14,6 @@ class WsfScrapingPipeline(object):
 
         self.settings = get_project_settings()
         uri = self.settings['FEED_URI'].replace('%(name)s', organisation)
-        self.setup_storage(uri, organisation)
-        self.manifest = self.storage.get_manifest()
 
         # Initialize logging
         self.logger = logging.getLogger(__name__)
@@ -24,6 +22,8 @@ class WsfScrapingPipeline(object):
             'Pipeline initialized FEED_CONFIG=%s',
             self.settings.get('FEED_CONFIG'),
         )
+        self.setup_storage(uri, organisation)
+        self.manifest = self.storage.get_manifest()
 
     @classmethod
     def from_crawler(cls, crawler):
@@ -42,8 +42,14 @@ class WsfScrapingPipeline(object):
         parsed_url = urlparse(url)
         scheme = parsed_url.scheme
         if scheme == 'manifests3':
-            self.storage = S3FileSystem(parsed_url.path, organisation)
+            self.logger.debug('Using S3 File system')
+            self.storage = S3FileSystem(
+                parsed_url.path,
+                organisation,
+                parsed_url.netloc
+            )
         else:
+            self.logger.debug('Using Local File System')
             self.storage = LocalFileSystem(parsed_url.path, organisation)
 
     def is_in_manifest(self, hash):

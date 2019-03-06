@@ -1,6 +1,7 @@
 import boto3
 import os
 import hashlib
+import logging
 import json
 from abc import ABC, abstractmethod
 from botocore.exceptions import ClientError
@@ -52,43 +53,54 @@ class FileSystem(ABC):
 
 
 class S3FileSystem(FileSystem):
-    def __init__(self, path, organisation):
+    def __init__(self, path, organisation, bucket):
+        self.logger = logging.getLogger(__name__)
+        self.logger.setLevel(logging.INFO)
         self.client = boto3.client('s3')
-        self.bucket, self.prefix = path.split('/', 1)
+        self.bucket = bucket
+        self.prefix = path[1:]
         self.organisation = organisation
 
     def save(self, body, file_hash):
 
-        # The prefix is the path concatenated with 'pdf' and a directory named
-        # from the first two characters of the file's md5 digest.
-        prefix = os.path.join(
+        key = os.path.join(
             self.prefix,
             'pdf',
             file_hash[:2],
+            file_hash,
         )
+        self.logger.debug('Writing {key} to S3'.format(key=key))
 
         try:
             self.client.put_object(
                 Bucket=self.bucket,
-                Prefix=prefix,
-                Key=file_hash,
+                Key=key,
                 Body=body,
             )
         except ClientError as e:
             raise e
 
     def get_manifest(self):
-        response = self.client.get_object(
-            Bucket=self.bucket,
-            Prefix=self.prefix,
-            Key='policytool-scrape--scraper-{organisation}.json'.format(
+        key = os.path.join(
+            self.prefix,
+            'policytool-scrape--scraper-{organisation}.json'.format(
                 organisation=self.organisation,
             ),
         )
-        if response.get('Body'):
-            return json.loads(response['Body'].read())
-        else:
-            return {}
+        try:
+            response = self.client.get_object(
+                Bucket=self.bucket,
+                Key=key,
+            )
+            if response.get('Body'):
+                return json.loads(response['Body'].read())
+            else:
+                return dict()
+        except ClientError as e:
+            if e.response['Error']['Code'] == 'NoSuchKey':
+                return dict()
+            else:
+                raise
 
     def update_manifest(self, data_file):
         current_manifest = self.get_manifest()
@@ -101,14 +113,16 @@ class S3FileSystem(FileSystem):
                     hash_list.append(item['hash'])
             else:
                 current_manifest[item['hash'][:2]] = [item['hash']]
-
-        self.client.put_object(
-            Bucket=self.bucket,
-            Prefix=self.prefix,
-            Key='policytool-scrape--scraper-{organisation}.json'.format(
+        key = os.path.join(
+            self.prefix,
+            'policytool-scrape--scraper-{organisation}.json'.format(
                 organisation=self.organisation,
             ),
-            Body=current_manifest.encode('utf-8')
+        )
+        self.client.put_object(
+            Bucket=self.bucket,
+            Key=key,
+            Body=json.dumps(current_manifest).encode('utf-8')
         )
 
 
