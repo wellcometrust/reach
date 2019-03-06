@@ -32,7 +32,7 @@ def split_section(references_section, regex="\n"):
     return references
 
 
-def process_references_section(doc, regex):
+def split_references_section(doc, regex):
     """Converts the unstructured text into reference components
     Input:
     - a SectionedDocument tuple
