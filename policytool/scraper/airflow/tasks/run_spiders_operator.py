@@ -40,26 +40,18 @@ class RunSpiderOperator(BaseOperator):
     """
 
     @apply_defaults
-    def __init__(self, organisation, *args, **kwargs):
+    def __init__(self, organisation, path, *args, **kwargs):
         super(RunSpiderOperator, self).__init__(*args, **kwargs)
         self.organisation = organisation
+        self.path = path
 
     def execute(self, context):
         os.environ.setdefault(
             'SCRAPY_SETTINGS_MODULE',
             'scraper.wsf_scraping.settings'
         )
-        path = os.path.join(
-            'datalabs-data',
-            'airflow',
-            'output',
-            'policytool-scrape',
-            'scraper-{organisation}'.format(
-                organisation=self.organisation
-            ),
-        )
         scraper.wsf_scraping.settings.FEED_URI = 'manifests3://{path}'.format(
-            path=path
+            path=self.path
         )
 
         settings = get_project_settings()
