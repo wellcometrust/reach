@@ -63,8 +63,6 @@ class RunSpiderOperator(BaseOperator):
         )
 
         settings = get_project_settings()
-        for key in sorted(settings):
-            print(key, settings[key])
 
         process = CrawlerProcess(settings)
         spider = SPIDERS[self.organisation]
