@@ -54,7 +54,6 @@ class FileSystem(ABC):
     @abstractmethod
     def get(self, file_hash):
         """Get the file matching the given hash from the storage.
-
         Args:
             - file_hash: The md5 digest of the file to retrieve.
         """
@@ -70,14 +69,8 @@ class S3FileSystem(FileSystem):
         self.prefix = path[1:]
         self.organisation = organisation
 
-    def save(self, body, file_hash):
-
-        key = os.path.join(
-            self.prefix,
-            'pdf',
-            file_hash[:2],
-            file_hash,
-        )
+    def save(self, body, path, filename):
+        key = os.path.join(self.prefix, path, filename)
         self.logger.debug('Writing {key} to S3'.format(key=key))
 
         try:
@@ -135,41 +128,39 @@ class S3FileSystem(FileSystem):
         )
 
     def get(self, file_hash):
-        prefix = os.path.join(self.path, file_hash[:2])
-        response = self.client.get_object(
-            Bucket=self.bucket,
-            Prefix=prefix,
-            Key=file_hash,
-        )
-        if response.get('Body'):
-            return json.loads(response['Body'].read())
-        else:
-            return {}
+        try:
+            key = os.path.join(self.prefix, 'pdf', file_hash[:2], file_hash)
+            response = self.client.get_object(
+                Bucket=self.bucket,
+                Key=key,
+            )
+            return response['Body']
+        except ClientError as e:
+            raise e
 
 
 class LocalFileSystem(FileSystem):
-    def __init__(self, path, organisation):
-        self.path = path
+    def __init__(self, prefix, organisation):
+        self.prefix = prefix
         self.organisation = organisation
 
-    def save(self, body, file_hash):
+    def save(self, body, path, filename):
         prefix = os.path.join(
-            self.path,
-            'pdf',
-            file_hash[:2],
+            self.prefix,
+            path
         )
         if not os.path.exists(prefix):
             os.makedirs(prefix, exist_ok=True)
-        with open(os.path.join(prefix, file_hash), 'wb') as pdf_file:
+        with open(os.path.join(prefix, filename), 'wb') as pdf_file:
             pdf_file.write(body.encode('utf-8'))
 
     def get_manifest(self):
         key = 'policytool-scrape--scraper-{organisation}.json'.format(
             organisation=self.organisation,
         )
-        path = os.path.join(self.path, key)
+        path = os.path.join(self.prefix, key)
         if os.path.isfile(path):
-            with open(os.path.join(self.path, key), 'r') as manifest:
+            with open(os.path.join(self.prefix, key), 'r') as manifest:
                 return json.load(manifest)
         else:
             return {}
@@ -188,16 +179,14 @@ class LocalFileSystem(FileSystem):
                     hash_list[item['hash']] = item
             else:
                 current_manifest[item['hash'][:2]] = {item['hash']: item}
-        with open(os.path.join(self.path, key), 'w') as manifest_file:
+        with open(os.path.join(self.prefix, key), 'w') as manifest_file:
             manifest_file.write(json.dumps(current_manifest))
 
     def get(self, file_hash):
-        key = 'policytool-scrape--scraper-{organisation}.json'.format(
-            organisation=self.organisation,
-        )
-        path = os.path.join(self.path, file_hash[:2], file_hash)
-        if os.path.isfile(path):
-            with open(os.path.join(self.path, key), 'rb') as pdf:
-                return pdf.read()
+        key = os.path.join(self.prefix, file_hash[:2], file_hash)
+
+        if os.path.isfile(key):
+            with open(os.path.join(self.prefix, key), 'rb') as pdf:
+                return pdf
         else:
             return {}
