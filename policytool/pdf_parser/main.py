@@ -108,7 +108,7 @@ def create_argparser(description):
 
     parser.add_argument(
         '--output-url',
-        help='URL (local://! | s3://!)',
+        help='URL (local://! | manifests3://!)',
         default=os.environ['PDF_PARSER_OUTPUT_URL']
     )
 
@@ -134,23 +134,19 @@ def create_argparser(description):
     return parser
 
 
-if __name__ == '__main__':
-
-    parser = create_argparser(description=__doc__.strip())
-    args = parser.parse_args()
-
-    keywords_file = os.path.join(args.resource_file, 'keywords.txt')
-    sections_file = os.path.join(args.resource_file, 'section_keywords.txt')
+def parse_pdfs(input_url, output_url, resource_file, organisation, context):
+    keywords_file = os.path.join(resource_file, 'keywords.txt')
+    sections_file = os.path.join(resource_file, 'section_keywords.txt')
 
     # Get the sections and keywords to look for.
     words = parse_keywords_files(keywords_file)
     titles = parse_keywords_files(sections_file)
 
-    parsed_url = urlparse(args.input_url)
-    if parsed_url.scheme == 's3':
-        storage = S3Storage(args.output_url, args.organisation)
+    parsed_url = urlparse(input_url)
+    if parsed_url.scheme == 'manifests3':
+        storage = S3Storage(output_url, organisation)
     else:
-        storage = LocalStorage(args.output_url, args.organisation)
+        storage = LocalStorage(output_url, organisation)
 
     parsed_items = []
     for directory in storage.get_manifest():
@@ -160,8 +156,22 @@ if __name__ == '__main__':
                 pdf,
                 words,
                 titles,
-                args.keywords_search_context
+                context,
             )
             parsed_items.append(item)
 
     write_to_file(parsed_items)
+
+
+if __name__ == '__main__':
+
+    parser = create_argparser(description=__doc__.strip())
+    args = parser.parse_args()
+
+    parse_pdfs(
+        args.input_url,
+        args.output_url,
+        args.resource_file,
+        args.organisation,
+        args.keywords_search_context,
+    )
