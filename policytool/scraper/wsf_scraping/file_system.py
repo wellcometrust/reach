@@ -54,8 +54,7 @@ class FileSystem(ABC):
 class S3FileSystem(FileSystem):
     def __init__(self, path, organisation):
         self.client = boto3.client('s3')
-        self.bucket = path.split('/')[0]
-        self.prefix = path.split('/')[1:]
+        self.bucket, self.prefix = path.split('/', 1)
         self.organisation = organisation
 
     def save(self, body, file_hash):
