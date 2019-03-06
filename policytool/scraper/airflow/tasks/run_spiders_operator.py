@@ -3,6 +3,8 @@ Operator to run the web scraper on every organisation.
 """
 import os
 import logging
+import scraper.wsf_scraping.settings
+
 from airflow.models import BaseOperator
 from airflow.utils.decorators import apply_defaults
 
@@ -46,6 +48,18 @@ class RunSpiderOperator(BaseOperator):
         os.environ.setdefault(
             'SCRAPY_SETTINGS_MODULE',
             'scraper.wsf_scraping.settings'
+        )
+        path = os.path.join(
+            'datalabs-data',
+            'airflow',
+            'output',
+            'policytool-scrape',
+            'scraper-{organisation}'.format(
+                organisation=self.organisation
+            ),
+        )
+        scraper.wsf_scraping.settings.FEED_URI = 'manifests3://{path}'.format(
+            path=path
         )
 
         settings = get_project_settings()
