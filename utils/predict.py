@@ -151,12 +151,8 @@ def single_reference_structure(components_single_reference,
     return single_reference
 
 
-def _get_structure(reference_id, document):
+def _get_structure(components_single_reference):
     # The components and predictions for one document one reference
-
-    components_single_reference = document.loc[
-        document['Reference id'] == reference_id
-    ].reset_index()
 
     # Structure:
     single_reference = single_reference_structure(
@@ -170,15 +166,15 @@ def _get_structure(reference_id, document):
         # high prediction probabilies
         single_reference[
             "Document id"
-        ] = components_single_reference['Document id'][0]
+        ] = components_single_reference['Document id'].iloc[0]
 
         single_reference[
             "Reference id"
-        ] = components_single_reference['Reference id'][0]
+        ] = components_single_reference['Reference id'].iloc[0]
 
         single_reference[
             "Document uri"
-        ] = components_single_reference['Document uri'][0]
+        ] = components_single_reference['Document uri'].iloc[0]
 
     return pd.DataFrame.from_dict(single_reference)
 
@@ -193,10 +189,16 @@ def predict_structure(pool_map, reference_components_predictions,
     # Convert to pd dataframe, although when this function is refactored we shouldnt have to do this
     reference_components_predictions = pd.DataFrame.from_dict(reference_components_predictions)
 
+    document_components_list = [
+        reference_components_predictions.loc[
+            reference_components_predictions['Reference id'] == reference_id
+        ]
+        for reference_id in reference_components_predictions['Reference id'].unique()
+    ]
+
     doc_references = pool_map(
-        partial(_get_structure,
-                document=reference_components_predictions),
-        reference_components_predictions['Reference id']
+        _get_structure,
+        document_components_list
     )
 
     logger.info("[+] Reference structure predicted")
