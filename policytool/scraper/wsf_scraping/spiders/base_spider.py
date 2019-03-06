@@ -90,8 +90,6 @@ class BaseSpider(scrapy.Spider):
             'types': data_dict.get('types'),
             'subjects': data_dict.get('subjects'),
             'pdf': filename,
-            'sections': {},
-            'keywords': {}
         })
 
         return article
