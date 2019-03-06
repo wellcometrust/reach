@@ -5,6 +5,7 @@ data/*
 !data/.gitkeep
 .idea
 *env*
+!policytool/export_env.py
 model_tests/results/*
 model_tests/data_test/*
 !model_tests/results/.gitkeep
