@@ -13,10 +13,8 @@ import sentry_sdk
 
 from utils import (FileManager,
                    FuzzyMatcher,
-                   process_references_section,
-                   process_references,
-                   predict_references,
-                   predict_structure)
+                   split_references_section,
+                   structure_references)
 from models import DatabaseEngine
 from settings import settings
 
@@ -118,61 +116,32 @@ def run_predict(scraper_file, references_file,
             nb_documents
         ))
 
-        # Split references section into references
-        splitted_references = process_references_section(
+        splitted_references = split_references_section(
             doc,
             settings.ORGANISATION_REGEX
         )
 
-        # Split references into components
-        splitted_components = process_references(splitted_references)
-
-        # TO DO: Rather than just skip,
-        # return empty lists in predict_references, predict_structure and fuzzy_match_blocks
-        if len(splitted_components) == 0:
-            continue
-
-        # Predict the references types (eg title/author...)
-        # logger.info('[+] Predicting the reference components')
-        components_predictions = predict_references(
+        structured_references = structure_references(
             pool_map,
             model,
-            splitted_components['Reference component']
+            splitted_references
         )
 
-        # Link predictions back with all original data (Document id etc)
-        # When we merge and splitted_components is a dict not a dataframe then
-        # we could just merge the list of dicts
-        reference_components_predictions = splitted_components
-        reference_components_predictions["Predicted Category"] = [
-            d["Predicted Category"] for d in components_predictions
-        ]
-        reference_components_predictions["Prediction Probability"] = [
-            d["Prediction Probability"] for d in components_predictions
-        ]
-
-        # Predict the reference structure
-        predicted_reference_structures = predict_structure(
-            pool_map,
-            reference_components_predictions,
-            settings.PREDICTION_PROBABILITY_THRESHOLD
-        )
-
-        all_match_data = fuzzy_matcher.fuzzy_match(
-            predicted_reference_structures
+        matched_references = fuzzy_matcher.fuzzy_match(
+            structured_references
         )
 
         if output_url.startswith('file://'):
             # use everything after first two slashes; this handles
             # absolute and relative urls equally well
             output_dir = output_url[7:]
-            predicted_reference_structures.to_csv(
+            structured_references.to_csv(
                 os.path.join(
                     output_dir,
                     f"{doc.id}_{settings.PREF_REFS_FILENAME}"
                     )
                 )
-            all_match_data.to_csv(
+            matched_references.to_csv(
                 os.path.join(
                     output_dir,
                     f"{doc.id}_{settings.MATCHES_FILENAME}"
@@ -181,8 +150,8 @@ def run_predict(scraper_file, references_file,
         else:
             database = DatabaseEngine(output_url)
             database.save_to_database(
-                predicted_reference_structures,
-                all_match_data,
+                structured_references,
+                matched_references,
             )
         nb_references += len(splitted_references)
 

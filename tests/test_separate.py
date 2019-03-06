@@ -1,6 +1,6 @@
 import unittest
 
-from utils import split_section, process_references_section
+from utils import split_section, split_references_section
 from refparse import SectionedDocument
 
 
@@ -42,4 +42,4 @@ class TestProcessReferenceSection(unittest.TestCase):
             'id'
         )
         with self.assertRaises(AssertionError):
-            process_references_section(doc, '\n')
+            split_references_section(doc, '\n')
