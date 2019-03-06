@@ -1,6 +1,6 @@
 import logging
 
-from scraper.wsf_scraping.storage import S3Storage, LocalStorage
+from scraper.wsf_scraping.file_system import S3FileSystem, LocalFileSystem
 from six.moves.urllib.parse import urlparse
 from scrapy.extensions.feedexport import BlockingFeedStorage
 
@@ -25,13 +25,13 @@ class ManifestFeedStorage(BlockingFeedStorage):
         """
         path = self.parsed_url.path.replace('%(name)s', spider.name)
         if self.parsed_url.scheme == 'manifests3':
-            self.storage = S3Storage(path, spider.name)
+            self.file_system = S3FileSystem(path, spider.name)
         else:
-            self.storage = LocalStorage(path, spider.name)
+            self.file_system = LocalFileSystem(path, spider.name)
         return super(ManifestFeedStorage, self).open(spider)
 
     def _store_in_thread(self, data_file):
         """This method is called once the process is finished, and will try
         to upload a manifest file file to S3.
         """
-        self.storage.update_manifest(data_file)
+        self.file_system.update_manifest(data_file)
