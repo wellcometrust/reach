@@ -1,152 +1,167 @@
 """
-This is some dummy code to be replaced in the pdf parsing task.
+Parse a set of pdfs from a given directory to extract their text, sections and
+find some words with their context.
 """
+import os
+import logging
+from scraper.wsf_scraping.storage import S3Storage, LocalStorage
+from urllib.parse import urlparse
+from argparse import ArgumentParser
+from pdf_parser.pdf_parse import parse_pdf_document, grab_section
 
-# from pdf_parser.pdf_parse import parse_pdf_document, grab_section
-# from scraper.utils.dbTools import DatabaseConnector
-# import os
-# import datetime
-# import logging
-#
-# logger = logging.getLogger(__name__)
-# logger.setLevel('INFO')
-#
-#
-# KEYWORDS_FILE = ''
-# SECTIONS_KEYWORDS_FILE = ''
-# KEYWORDS_CONTEXT = ''
-#
-#
-# def parse_keywords_files(file_path):
-#     """Convert keyword files into lists, ignoring # commented lines."""
-#     logger = logging.getLogger(__name__)
-#     logger.debug("Try to open keyword files")
-#     keywords_list = []
-#     try:
-#         with open(file_path, 'r', encoding='utf-8') as f:
-#             logger.debug("Successfully opened %s", file_path)
-#             for line in f:
-#                 line = line.replace('\n', '')
-#                 if line and line[0] != '#':
-#                     keywords_list.append(line.lower())
-#     except IOError:
-#         logger.warning(
-#             "Unable to open keywords file at location %s", file_path
-#         )
-#         keywords_list = []
-#     finally:
-#         return keywords_list
-#
-#
-# def check_keywords(self, item, spider_name, base_pdf_path):
-#     """Convert the pdf file to a python object and analyse it to find
-#     keywords and section based on the section/keywords files provided.
-#     """
-#
-#     # Convert PDF content to text format
-#     with open(item['pdf'], 'rb') as f:
-#
-#         logger.info(
-#             'Processing: %s',
-#             item['pdf']
-#         )
-#
-#         pdf_file = parse_pdf_document(f)
-#         # Get the sections and keywords to look for.
-#         keywords = parse_keywords_files(
-#             KEYWORDS_FILE
-#         )
-#         section_keywords = parse_keywords_files(
-#             SECTIONS_KEYWORDS_FILE
-#         )
-#         # If the PDF couldn't be converted, still remove the pdf file
-#         if not pdf_file:
-#             os.remove(item['pdf'])
-#             return item
-#
-#         for keyword in section_keywords:
-#             # Fetch references or other keyworded list
-#             section = grab_section(pdf_file, keyword)
-#
-#             # Add references and PDF name to JSON returned file
-#             # If no section matchs, leave the attribute undefined
-#             if section:
-#                 item['sections'][keyword.title()] = section
-#
-#         # Fetch references or other keyworded list
-#         keyword_dict = pdf_file.get_lines_by_keywords(
-#             keywords,
-#             KEYWORDS_CONTEXT
-#         )
-#
-#         # Add references and PDF name to JSON returned file
-#         # If no section matchs, leave the attribute undefined
-#         if keyword_dict:
-#             item['keywords'] = keyword_dict
-#
-#     # has_keywords = len(item['keywords'])
-#
-#     # If we need to keep the pdf, move it, else delete it
-#     try:
-#         os.unlink(item['pdf'])
-#     except FileNotFoundError:
-#         logger.warning(
-#             "The file couldn't be found, and wasn't deleted."
-#         )
-#
-#     # Remove the path from the value we are storing
-#     item['pdf'] = os.path.basename(item['pdf'])
-#     item['provider'] = spider_name
-#     item['date_scraped'] = datetime.now().strftime('%Y%m%d')
-#     item['has_text'] = True
-#     return item
-#
-#
-# if __name__ == '__main__':
-#     item = {}
-#     name = ''
-#     scraped = False
-#     database = DatabaseConnector()
-#     if not scraped:
-#         full_item = check_keywords(item, name, item['pdf'])
-#
-#         id_provider = database.get_or_create_name(
-#             name, 'provider'
-#         )
-#         id_publication = database.insert_full_publication(
-#             full_item,
-#             id_provider
-#         )
-#         database.insert_joints_and_text(
-#             'section',
-#             full_item.get('sections'),
-#             id_publication
-#         )
-#         database.insert_joints_and_text(
-#             'keyword',
-#             full_item.get('keywords'),
-#             id_publication
-#         )
-#         database.insert_joints(
-#             'type',
-#             full_item.get('types'),
-#             id_publication
-#         )
-#         database.insert_joints(
-#             'subject',
-#             full_item.get('subjects'),
-#             id_publication
-#         )
-#
-#     elif scraped.scrape_again:
-#
-#         # Convert the item to dict so we can give it an ID
-#         full_item = dict(check_keywords(
-#             item, name, item['pdf']
-#         ))
-#
-#         full_item['id'] = scraped.id
-#         database.update_full_publication(full_item)
-#     else:
-#         # File is already scraped in the database
-#         os.unlink(item['pdf'])
+logger = logging.getLogger(__name__)
+logger.setLevel('INFO')
+
+
+def write_to_file(output_url, item):
+    """Write the results of the parsing in an output file.
+
+    Args:
+        output_url: The file to write the results to.
+        item: A dictionnary containing the results of the parsing for a pdf.
+    """
+    return
+
+
+def run_parsing(pdf, words, titles, context):
+    """Parse the given pdf and returns a dict containing its test, sections and
+       keywords.
+
+    Args:
+        pdf: A pdf file binary.
+        words: A list of words to look for.
+        titles: A list containing the titles of the sections to look for.
+    Return:
+        item: A dict containing the pdf text, sections and keywords.
+    """
+    # Convert PDF content to text format
+    with open(pdf, 'rb') as f:
+
+        pdf_file, pdf_text = parse_pdf_document(f)
+        # If the PDF couldn't be converted, still remove the pdf file
+        if not pdf_file:
+            return None
+
+        # Fetch references or other keyworded list
+        keyword_dict = pdf_file.get_lines_by_keywords(
+            words,
+            context
+        )
+
+        section_dict = {}
+        for title in titles:
+            # Fetch references or other keyworded list
+            section = grab_section(pdf_file, title)
+
+            # Add references and PDF name to JSON returned file
+            # If no section matchs, leave the attribute undefined
+            if section:
+                section_dict[title.title()] = section
+
+    return {
+        'sections': section_dict,
+        'keywords': keyword_dict,
+        'text': pdf_text
+    }
+
+
+def parse_keywords_files(file_path):
+    """Convert keyword files into lists, ignoring # commented lines.
+
+    Args:
+        file_path: The absolute path to a word|title file to use.
+    Returns:
+        keywords_list: A list of words|titles to look for in the documents.
+    """
+    logger.debug("Try to open keyword files")
+    keywords_list = []
+    try:
+        with open(file_path, 'r', encoding='utf-8') as f:
+            logger.debug("Successfully opened %s", file_path)
+            for line in f:
+                line = line.replace('\n', '')
+                if line and line[0] != '#':
+                    keywords_list.append(line.lower())
+    except IOError:
+        logger.warning(
+            "Unable to open keywords file at location %s", file_path
+        )
+        keywords_list = []
+    finally:
+        return keywords_list
+
+
+def create_argparser(description):
+    """Create the argument parser for this module.
+
+    Args:
+        description: The module description.
+    Returns:
+        parser: The argument parser from this configuration.
+    """
+    parser = ArgumentParser(description)
+    parser.add_argument(
+        '--input-url',
+        help='Path or S3 URL to the manifest file.',
+        default=os.environ['PDF_PARSER_INPUT_URL']
+    )
+
+    parser.add_argument(
+        '--output-url',
+        help='URL (local://! | s3://!)',
+        default=os.environ['PDF_PARSER_OUTPUT_URL']
+    )
+
+    parser.add_argument(
+        '--resource-files',
+        help='Path to the keyword and section titles files',
+        default=os.environ['PDF_PARSER_resources']
+    )
+
+    parser.add_argument(
+        '--keyword-search-context',
+        help='Number of lines to save before and after finding a word.',
+        default=os.environ['PDF_PARSER_CONTEXT'],
+        type=int
+    )
+
+    parser.add_argument(
+        '--organisation',
+        help='The orgnasition to scrape: [who_iris|nice|gov_uk|msf|unicef'
+             '|parliament]',
+    )
+
+    return parser
+
+
+if __name__ == '__main__':
+
+    parser = create_argparser(description=__doc__.strip())
+    args = parser.parse_args()
+
+    keywords_file = os.path.join(args.resource_file, 'keywords.txt')
+    sections_file = os.path.join(args.resource_file, 'section_keywords.txt')
+
+    # Get the sections and keywords to look for.
+    words = parse_keywords_files(keywords_file)
+    titles = parse_keywords_files(sections_file)
+
+    parsed_url = urlparse(args.input_url)
+    if parsed_url.scheme == 's3':
+        storage = S3Storage(args.output_url, args.organisation)
+    else:
+        storage = LocalStorage(args.output_url, args.organisation)
+
+    parsed_items = []
+    for directory in storage.get_manifest():
+        for item in directory:
+            pdf = storage.get(item)
+            item = run_parsing(
+                pdf,
+                words,
+                titles,
+                args.keywords_search_context
+            )
+            parsed_items.append(item)
+
+    write_to_file(parsed_items)
