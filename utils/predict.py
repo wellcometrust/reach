@@ -40,9 +40,7 @@ def process_references(references):
         for component in components:
             raw_reference_components.append({
                 'Reference component': component,
-                'Reference id': reference['Reference id'],
-                'Document uri': reference['Document uri'],
-                'Document id': reference['Document id']
+                'Reference id': reference['Reference id']
             })
 
     logger.info("Reference components found")
@@ -103,8 +101,7 @@ def decide_components(single_reference):
     return single_reference_components
 
 
-def predict_structure(pool_map, reference_components_predictions,
-                      prediction_probability_threshold):
+def predict_structure(pool_map, reference_components_predictions):
     """
     Predict the structured references for all the references of
     one document.
@@ -120,13 +117,9 @@ def predict_structure(pool_map, reference_components_predictions,
         decide_components,
         document_components_list
     )
-    
-    document_id = reference_components_predictions[0]['Document id']
-    document_uri = reference_components_predictions[0]['Document uri']
+
     for i, ref in enumerate(doc_references):
         ref.update({
-            'Document id': document_id,
-            'Document uri': document_uri,
             'Reference id': reference_ids[i]
         })
 
@@ -235,7 +228,7 @@ def structure_references(pool_map, model, splitted_references):
     # Predict the reference structure
     predicted_reference_structures = predict_structure(
         pool_map,
-        reference_components_predictions,
-        settings.PREDICTION_PROBABILITY_THRESHOLD
+        reference_components_predictions
     )
+    
     return predicted_reference_structures
