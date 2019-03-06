@@ -81,7 +81,7 @@ KEYWORDS_CONTEXT = 0
 # Jsonlines are cleaner for big feeds
 FEED_FORMAT = 'jsonlines'
 FEED_EXPORT_ENCODING = 'utf-8'
-FEED_TEMPDIR = 'var/tmp/'
+FEED_TEMPDIR = '/tmp/'
 
 # By default, log the results in a local folder
 FEED_URI = os.environ.get('SCRAPY_FEED_URI', 'local:///tmp/%(name)s')
