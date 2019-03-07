@@ -6,6 +6,7 @@ from argparse import ArgumentParser
 from collections import namedtuple
 from multiprocessing import Pool
 from urllib.parse import urlparse
+from functools import partial
 import os
 import time
 
@@ -139,15 +140,14 @@ def run_predict(scraper_file, references_file,
             settings.ORGANISATION_REGEX
         )
 
-        # To do: Replace for loop with pool map to regain efficiency
-        structured_references = []
-        for reference in splitted_references:
-            # A better name would be parse here but we use it differently here
-            structured_reference = structure_reference(
-                model,
-                reference
-            )
-            structured_references.append(structured_reference)
+        # For some weird reason not using pool map 
+        #   in my laptop is more performant
+        structured_references = pool_map(
+            # A better name would be parse_reference
+            #   here but we use it differently here
+            partial(structure_reference, model),
+            splitted_references
+        )
 
         structured_references = transform_structured_references(
             splitted_references,
