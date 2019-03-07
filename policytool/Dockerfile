@@ -6,6 +6,7 @@ FROM web-scraper.base
 COPY setup.py /src/policytool/
 COPY README.md /src/policytool/
 COPY scraper/ /src/policytool/scraper/
+COPY pdf_parser/ /src/policytool/pdf_parser/
 
 COPY ./entrypoint.sh /entrypoint.sh
 

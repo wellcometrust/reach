@@ -39,7 +39,7 @@ def parse_pdf_document(document):
             document.name,
             e.stderr,
         )
-        return None
+        return None, None
 
     try:
         # Try to get file stats in order to check both its existance
@@ -51,19 +51,20 @@ def parse_pdf_document(document):
             raise
 
         logger.warning('Error trying to open the parsed file: %s', e)
-        return None
+        return None, None
 
     if st.st_size == 0:
         logger.warning(
             'Error trying to open the parsed file: The file is empty'
         )
-        return None
+        return None, None
 
     with open(parsed_path, 'rb') as html_file:
         soup = bs(html_file.read(), 'html.parser')
 
     file_pages = []
     pages = soup.find_all('page')
+    full_text = soup.text
 
     for num, page in enumerate(pages):
         words = page.find_all('text')
@@ -98,7 +99,7 @@ def parse_pdf_document(document):
     pdf_file = PdfFile(file_pages)
     html_file.close()
     os.remove(parsed_path)
-    return pdf_file
+    return pdf_file, full_text
 
 
 def grab_section(pdf_file, keyword):
