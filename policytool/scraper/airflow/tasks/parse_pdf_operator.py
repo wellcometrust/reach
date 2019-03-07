@@ -7,7 +7,7 @@ import logging
 from airflow.models import BaseOperator
 from airflow.utils.decorators import apply_defaults
 
-from pdf_parser.main import parse_pdfs
+from pdf_parser.main import parse_all_pdf
 
 
 logger = logging.getLogger(__name__)
@@ -41,4 +41,4 @@ class ParsePdfOperator(BaseOperator):
         output = 'manifests3://{path}'.format(
             path=self.output_path,
         )
-        parse_pdfs(input, output, RESOURCE_FILES, self.organisation, 2)
+        parse_all_pdf(input, output, RESOURCE_FILES, self.organisation, 2)

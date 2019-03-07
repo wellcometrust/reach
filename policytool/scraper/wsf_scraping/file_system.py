@@ -31,7 +31,7 @@ class FileSystem(ABC):
         Returns:
             - path: The full path of the saved file.
         """
-        return
+        pass
 
     @abstractmethod
     def get_manifest(self):
@@ -40,7 +40,7 @@ class FileSystem(ABC):
         Args:
             - organisation: A string representing the name of the organisation.
         """
-        return
+        pass
 
     @abstractmethod
     def update_manifest(self, data_file):
@@ -49,7 +49,7 @@ class FileSystem(ABC):
         Args:
             - data_file: The file object sent by Scrapy's feed storage.
         """
-        return
+        pass
 
     @abstractmethod
     def get(self, file_hash):
@@ -57,7 +57,7 @@ class FileSystem(ABC):
         Args:
             - file_hash: The md5 digest of the file to retrieve.
         """
-        return
+        pass
 
 
 class S3FileSystem(FileSystem):
@@ -97,10 +97,10 @@ class S3FileSystem(FileSystem):
             if response.get('Body'):
                 return json.loads(response['Body'].read())
             else:
-                return dict()
+                return {}
         except ClientError as e:
             if e.response['Error']['Code'] == 'NoSuchKey':
-                return dict()
+                return {}
             else:
                 raise
 
@@ -134,9 +134,12 @@ class S3FileSystem(FileSystem):
                 Bucket=self.bucket,
                 Key=key,
             )
-            return response['Body']
+            if response.get('Body'):
+                return response['Body']
         except ClientError as e:
             raise e
+
+        return None
 
 
 class LocalFileSystem(FileSystem):
@@ -189,4 +192,4 @@ class LocalFileSystem(FileSystem):
             with open(os.path.join(self.prefix, key), 'rb') as pdf:
                 return pdf
         else:
-            return {}
+            return None

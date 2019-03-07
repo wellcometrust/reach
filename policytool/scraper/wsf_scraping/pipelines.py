@@ -95,7 +95,7 @@ class WsfScrapingPipeline(object):
                 item['hash'][:2],
             )
             with open(item['pdf'], 'rb') as pdf:
-                self.storage.save(pdf.read(), path, item['hash'])
+                self.storage.save(pdf, path, item['hash'])
         else:
             raise DropItem(
                 'This pdf is already in the manifest file.'
