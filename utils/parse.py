@@ -31,7 +31,7 @@ def split_reference(reference):
     return components
 
 
-def process_references(references):
+def split_references(references):
     raw_reference_components = []
     for reference in references:
         # Get the components for this reference and store
@@ -47,99 +47,104 @@ def process_references(references):
     return raw_reference_components
 
 
-def decide_components(single_reference):
+def decide_components(reference_components):
     """With the predicted components of one reference, decide which of
     these should be used for each component i.e. if there are multiple
     authors predicted and they arent next to each other, then decide which
     one to use.
     """
-    single_reference = pd.DataFrame(single_reference)
+    reference_components = pd.DataFrame(reference_components)
 
-    # Add a block number, this groups neighbouring predictions of
-    # the same type together.
-    block_number = pd.DataFrame({
-        'Block': (
-            single_reference[
-                "Predicted Category"
-            ].shift(1) != single_reference[
-                "Predicted Category"
-            ]).astype(int).cumsum()
-    })
-    single_reference = pd.concat([single_reference, block_number], axis=1)
-    single_reference_components = {}
-
+    # Add a group number for components that are next to components
+    #   with same category. For example title next to a title.
+    group_number = (
+        reference_components[
+            "Predicted Category"
+        ].shift(1) != reference_components[
+            "Predicted Category"
+        ]
+    ).astype(int).cumsum()
+    reference_components['Group'] = group_number
+    
+    structured_reference = {}
     categories =  settings.REF_CLASSES
     for category in categories:
 
-        cat = ""
-        category_exists = category in single_reference['Predicted Category'].tolist()
+        merged_component = ""
+        category_exists = category in reference_components['Predicted Category'].tolist()
         if category_exists:
-            # Pick the block containing the highest probability
+            # Pick the group containing the highest probability
             # argmax takes the first argument anyway (so if there are 2
             # of the same probabilities it takes the first one)
             # could decide to do this randomly with argmax.choice()
             # (random choice)
 
-            highest_probability_index = single_reference[
-                single_reference['Predicted Category'] == category
+            max_probability_index = reference_components[
+                reference_components['Predicted Category'] == category
             ]['Prediction Probability'].idxmax()
 
-            highest_probability_block = single_reference[
-                'Block'
-            ][highest_probability_index]
+            max_probability_group = reference_components[
+                'Group'
+            ][max_probability_index]
 
-            cat = ", ".join(
-                    single_reference[
+            merged_component = ", ".join(
+                    reference_components[
                         "Reference component"
-                    ][single_reference[
-                        'Block'
-                    ] == highest_probability_block]
+                    ][reference_components[
+                        'Group'
+                    ] == max_probability_group]
                 )
             
-        single_reference_components.update({category: cat})
+        structured_reference.update({category: merged_component})
 
-    return single_reference_components
+    return structured_reference
 
 
-def predict_structure(pool_map, reference_components_predictions):
+def merge_components(pool_map, predicted_components):
     """
     Predict the structured references for all the references of
     one document.
     """
-    reference_ids = list(set([c['Reference id'] for c in reference_components_predictions]))
+    reference_ids = list(set([
+        comp['Reference id'] for comp in predicted_components]
+    ))
 
-    document_components_list = [
-        [c for c in reference_components_predictions if c['Reference id']==reference_id]
+    # We group components by reference before merging
+    references_components = [
+        [
+            comp for comp in predicted_components 
+            if comp['Reference id']==reference_id
+        ]
         for reference_id in reference_ids
     ]
 
-    doc_references = pool_map(
+    merged_components = pool_map(
         decide_components,
-        document_components_list
+        references_components
     )
 
-    for i, ref in enumerate(doc_references):
-        ref.update({
+    for i, reference_components in enumerate(merged_components):
+        reference_components.update({
             'Reference id': reference_ids[i]
         })
 
     logger.info("[+] Reference structure predicted")
-    return pd.DataFrame(doc_references)
+    return merged_components
 
 
-def predict_reference_comp(model, word_list):
+def _predict_component(model, word_list):
     # To test what individual things predict,
     # it can deal with a list input or not
     # The maximum probability found is the probability
     # of the predicted classification
 
-    predict_component = model.predict(word_list)
-    predict_component_probas = model.predict_proba(word_list)
-    predict_component_proba = [
-        single_predict.max() for single_predict in predict_component_probas
+    component_prediction = model.predict(word_list)
+    component_prediction_probabilities = model.predict_proba(word_list)
+    component_prediction_probability = [
+        p.max() for p in component_prediction_probabilities
     ]
 
-    return predict_component[0], predict_component_proba[0]
+    return component_prediction[0], component_prediction_probability[0]
 
 
 def is_year(component):
@@ -149,24 +154,23 @@ def is_year(component):
     return component.isdecimal() and int(component) in valid_years_range
 
 
-def _get_component(component, model):
+def predict_component(component, model):
 
     if is_year(component):
         pred_cat = 'PubYear'
         pred_prob = 1
     else:
-        pred_cat, pred_prob = predict_reference_comp(
+        pred_cat, pred_prob = _predict_component(
             model,
             [component]
         )
 
     return {
-            'Predicted Category': pred_cat,
-            'Prediction Probability': pred_prob
-            }
+        'Predicted Category': pred_cat,
+        'Prediction Probability': pred_prob
+    }
 
-def predict_references(pool_map, model,
-                       reference_components):
+def predict_components(pool_map, model, reference_components):
 
     """
     Predicts the categories for a list of reference components.
@@ -182,53 +186,44 @@ def predict_references(pool_map, model,
         "[+] Predicting the categories of %s  reference components ...",
         str(len(reference_components))
     )
-    predict_all = []
 
-    # The model cant deal with predicting so many all at once,
-    # so predict in a loop
-
-    predict_all = list(pool_map(
-        partial(_get_component,
+    predictions = list(pool_map(
+        partial(predict_component,
                 model=model),
-        reference_components
+        [comp['Reference component'] for comp in reference_components]
     ))
+
+    predicted_components = []
+    for i, predicted_component in enumerate(predictions):
+        predicted_components.append({
+            'Reference id': reference_components[i]['Reference id'],
+            'Reference component': reference_components[i]['Reference component'],
+            'Predicted Category': predicted_component['Predicted Category'],
+            'Prediction Probability': predicted_component['Prediction Probability']
+        })
 
     logger.info("Predictions complete")
 
-    return predict_all
+    return predicted_components
 
 
 def structure_references(pool_map, model, splitted_references):
-    # Split references into components
-    splitted_components = process_references(splitted_references)
+    splitted_components = split_references(splitted_references)
 
     # TO DO: Rather than just skip,
     # return empty lists in predict_references, predict_structure and fuzzy_match_blocks
     if len(splitted_components) == 0:
         return []
 
-    # Predict the references types (eg title/author...)
-    # logger.info('[+] Predicting the reference components')
-    components_predictions = predict_references(
+    predicted_components = predict_components(
         pool_map,
         model,
-        [c['Reference component'] for c in splitted_components]
+        splitted_components
     )
 
-    # Link predictions back with all original data (Document id etc)
-    # When we merge and splitted_components is a dict not a dataframe then
-    # we could just merge the list of dicts
-    reference_components_predictions = splitted_components
-    for i, d in enumerate(components_predictions):
-        reference_components_predictions[i].update({
-            'Predicted Category': d['Predicted Category'],
-            'Prediction Probability': d['Prediction Probability']
-        })
-
-    # Predict the reference structure
-    predicted_reference_structures = predict_structure(
+    structured_references = merge_components(
         pool_map,
-        reference_components_predictions
+        predicted_components
     )
     
-    return predicted_reference_structures
+    return structured_references

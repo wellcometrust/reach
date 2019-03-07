@@ -13,7 +13,7 @@ import sentry_sdk
 
 from utils import (FileManager,
                    FuzzyMatcher,
-                   split_references_section,
+                   split_section,
                    structure_references)
 from models import DatabaseEngine
 from settings import settings
@@ -116,16 +116,23 @@ def run_predict(scraper_file, references_file,
             nb_documents
         ))
 
-        splitted_references = split_references_section(
+        splitted_references = split_section(
             doc.section,
             settings.ORGANISATION_REGEX
         )
 
+        # A better name would be parse here but we use it differently here
         structured_references = structure_references(
             pool_map,
             model,
             splitted_references
         )
+
+        # DataFrame is pushed here because
+        # - fuzzy matcher needs a dataframe
+        # - to_csv needs a dataframe
+        # so instead of init the dataframe twice we do it here for now
+        structured_references = pd.DataFrame(structured_references)
         structured_references['Document id'] = doc.id
         structured_references['Document uri'] = doc.uri
 
