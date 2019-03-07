@@ -42,7 +42,7 @@ def split_references(references):
                 'Reference id': reference['Reference id']
             })
 
-    logger.info("Reference components found")
+    # logger.info("Reference components found")
     return raw_reference_components
 
 
@@ -118,7 +118,7 @@ def merge_components(pool_map, predicted_components):
             'Reference id': reference_ids[i]
         })
 
-    logger.info("[+] Reference structure predicted")
+    # logger.info("[+] Reference structure predicted")
     return merged_components
 
 
@@ -172,10 +172,10 @@ def predict_components(pool_map, model, reference_components):
     - A list of dicts [{"Predicted Category": , "Prediction Probability": } ...]
     """
 
-    logger.info(
-        "[+] Predicting the categories of %s  reference components ...",
-        str(len(reference_components))
-    )
+    # logger.info(
+    #     "[+] Predicting the categories of %s  reference components ...",
+    #     str(len(reference_components))
+    # )
 
     predictions = list(pool_map(
         partial(predict_component,
@@ -192,7 +192,7 @@ def predict_components(pool_map, model, reference_components):
             'Prediction Probability': predicted_component['Prediction Probability']
         })
 
-    logger.info("Predictions complete")
+    # logger.info("Predictions complete")
 
     return predicted_components
 

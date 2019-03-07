@@ -309,4 +309,5 @@ if __name__ == '__main__':
 
     except Exception as e:
         sentry_sdk.capture_exception(e)
+        logger.error(e)
         raise
