@@ -1,4 +1,3 @@
-import pandas as pd
 from functools import partial
 from settings import settings
 
@@ -53,47 +52,38 @@ def decide_components(reference_components):
     authors predicted and they arent next to each other, then decide which
     one to use.
     """
-    reference_components = pd.DataFrame(reference_components)
-
+    
     # Add a group number for components that are next to components
     #   with same category. For example title next to a title.
-    group_number = (
-        reference_components[
-            "Predicted Category"
-        ].shift(1) != reference_components[
-            "Predicted Category"
-        ]
-    ).astype(int).cumsum()
-    reference_components['Group'] = group_number
+    group_index = 1
+    for i, comp in enumerate(reference_components[:-1]):
+        comp['Group'] = group_index
+        next_comp = reference_components[i+1]
+        if next_comp['Predicted Category'] != comp['Predicted Category']:
+            group_index += 1
+    reference_components[-1]['Group'] = group_index
     
     structured_reference = {}
     categories =  settings.REF_CLASSES
     for category in categories:
 
         merged_component = ""
-        category_exists = category in reference_components['Predicted Category'].tolist()
-        if category_exists:
-            # Pick the group containing the highest probability
-            # argmax takes the first argument anyway (so if there are 2
-            # of the same probabilities it takes the first one)
-            # could decide to do this randomly with argmax.choice()
-            # (random choice)
 
-            max_probability_index = reference_components[
-                reference_components['Predicted Category'] == category
-            ]['Prediction Probability'].idxmax()
+        category_components = [
+            comp for comp in reference_components
+            if comp['Predicted Category']==category
+        ]
+        if category_components:
+            max_prob_component = max(category_components, key=lambda x: x['Prediction Probability'])
+            max_prob_group = max_prob_component['Group']
 
-            max_probability_group = reference_components[
-                'Group'
-            ][max_probability_index]
-
-            merged_component = ", ".join(
-                    reference_components[
-                        "Reference component"
-                    ][reference_components[
-                        'Group'
-                    ] == max_probability_group]
-                )
+            group_components = [
+                comp for comp in category_components
+                if comp['Group'] == max_prob_group
+            ]
+            merged_component = ", ".join([
+                comp['Reference component'] for comp in group_components
+            ])
             
         structured_reference.update({category: merged_component})
 

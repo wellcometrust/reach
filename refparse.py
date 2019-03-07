@@ -10,6 +10,7 @@ import os
 import time
 
 import sentry_sdk
+import pandas as pd
 
 from utils import (FileManager,
                    FuzzyMatcher,
