@@ -15,7 +15,7 @@ import pandas as pd
 from utils import (FileManager,
                    FuzzyMatcher,
                    split_section,
-                   structure_references)
+                   structure_reference)
 from models import DatabaseEngine
 from settings import settings
 
@@ -52,6 +52,23 @@ def transform_scraper_file(scraper_data):
                 document['uri'],
                 document['hash']
             )
+
+def transform_structured_references(
+        splitted_references, structured_references,
+        document_id, document_uri):
+    # DataFrame is pushed here because
+    # - fuzzy matcher needs a dataframe
+    # - to_csv needs a dataframe
+    # so instead of init the dataframe twice we do it here for now
+    structured_references = pd.DataFrame(structured_references)
+    structured_references['Document id'] = document_id
+    structured_references['Document uri'] = document_uri
+
+    structured_references['Reference id'] = [
+        hash(reference)
+        for reference in splitted_references
+    ]
+    return structured_references
 
 
 def get_file(file_str, file_type, get_scraped=False):
@@ -112,11 +129,9 @@ def run_predict(scraper_file, references_file,
 
     t0 = time.time()
     nb_references = 0
-    nb_documents = len(sectioned_documents)
     for i, doc in enumerate(sectioned_documents):
-        logger.info('[+] Processing references from document {} of {}'.format(
-            i,
-            nb_documents
+        logger.info('[+] Processing references from document {}'.format(
+            i
         ))
 
         splitted_references = split_section(
@@ -124,20 +139,22 @@ def run_predict(scraper_file, references_file,
             settings.ORGANISATION_REGEX
         )
 
-        # A better name would be parse here but we use it differently here
-        structured_references = structure_references(
-            pool_map,
-            model,
-            splitted_references
-        )
+        # To do: Replace for loop with pool map to regain efficiency
+        structured_references = []
+        for reference in splitted_references:
+            # A better name would be parse here but we use it differently here
+            structured_reference = structure_reference(
+                model,
+                reference
+            )
+            structured_references.append(structured_reference)
 
-        # DataFrame is pushed here because
-        # - fuzzy matcher needs a dataframe
-        # - to_csv needs a dataframe
-        # so instead of init the dataframe twice we do it here for now
-        structured_references = pd.DataFrame(structured_references)
-        structured_references['Document id'] = doc.id
-        structured_references['Document uri'] = doc.uri
+        structured_references = transform_structured_references(
+            splitted_references,
+            structured_references,
+            doc.id,
+            doc.uri
+        )
 
         matched_references = fuzzy_matcher.fuzzy_match(
             structured_references
