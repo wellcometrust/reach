@@ -7,7 +7,7 @@ from settings import settings
 logger = settings.logger
 
 
-def split_section(references_section, regex="\n"):
+def _split_section(references_section, regex="\n"):
     """
     Split up a raw text reference section into individual references
     """
@@ -32,7 +32,7 @@ def split_section(references_section, regex="\n"):
     return references
 
 
-def split_references_section(section, regex):
+def split_section(section, regex):
     """Converts the unstructured text into reference components
     Input:
     - a References section string
@@ -43,7 +43,7 @@ def split_references_section(section, regex):
     Nomenclature:
     Document > References
     """
-    assert doc.section, "document section is empty"
+    assert section, "references section is empty"
 
     # e.g.
     # Document 1:
@@ -52,7 +52,7 @@ def split_references_section(section, regex):
     # Eric, 1987
 
     references_data = []
-    references = split_section(section, regex)
+    references = _split_section(section, regex)
     for reference in references:
         references_data.append({
             'Reference': reference,
