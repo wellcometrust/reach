@@ -8,11 +8,15 @@ def split_reference(reference):
     """Split up one individual reference into reference components.
     Each component is numbered by the reference it came from.
     """
+    if not reference:
+        return []
+
     components = []
 
     # I need to divide each reference by the full stops
     # AND commas and categorise
     reference_sentences_mid = [
+        # Notice that we remove spaces for elem
         elem.strip()
         for elem in reference.replace(
             ',', '.'
