@@ -63,10 +63,10 @@ class FuzzyMatcher:
         return match_data
 
     def fuzzy_match(self, predicted_publications):
-        self.logger.info(
-            "Fuzzy matching for %s predicted publications ...",
-            len(predicted_publications)
-        )
+        # self.logger.info(
+        #     "Fuzzy matching for %s predicted publications ...",
+        #     len(predicted_publications)
+        # )
 
         all_match_data = self.match_vectorised(
             predicted_publications
@@ -79,5 +79,6 @@ class FuzzyMatcher:
             inplace=True
         )
 
-        self.logger.info(all_match_data.head())
+        if not all_match_data.empty:
+            self.logger.info(all_match_data.head())
         return all_match_data
