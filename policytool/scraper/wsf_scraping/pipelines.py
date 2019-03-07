@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+import os
 import logging
 from urllib.parse import urlparse
 from scrapy.utils.project import get_project_settings
@@ -89,7 +90,12 @@ class WsfScrapingPipeline(object):
         in_manifest = self.is_in_manifest(item['hash'])
 
         if not in_manifest:
-            self.storage.save(item['pdf'], item['hash'])
+            path = os.path.join(
+                'pdf',
+                item['hash'][:2],
+            )
+            with open(item['pdf'], 'rb') as pdf:
+                self.storage.save(pdf, path, item['hash'])
         else:
             raise DropItem(
                 'This pdf is already in the manifest file.'
