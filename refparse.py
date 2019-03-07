@@ -108,10 +108,12 @@ def run_predict(scraper_file, references_file,
         settings.FUZZYMATCH_THRESHOLD
     )
 
+    sectioned_documents = transform_scraper_file(scraper_file)
+
     t0 = time.time()
     nb_references = 0
-    nb_documents = sum(scraper_file['sections'].notnull())
-    for i, doc in enumerate(transform_scraper_file(scraper_file)):
+    nb_documents = len(sectioned_documents)
+    for i, doc in enumerate(sectioned_documents):
         logger.info('[+] Processing references from document {} of {}'.format(
             i,
             nb_documents
