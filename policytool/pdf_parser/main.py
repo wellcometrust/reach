@@ -2,13 +2,14 @@
 Parse a set of pdfs from a given directory to extract their text, sections and
 find some words with their context.
 """
+from urllib.parse import urlparse
+from argparse import ArgumentParser
 import os
 import logging
 import tempfile
 import json
+
 from scraper.wsf_scraping.file_system import S3FileSystem, LocalFileSystem
-from urllib.parse import urlparse
-from argparse import ArgumentParser
 from pdf_parser.pdf_parse import parse_pdf_document, grab_section
 
 logger = logging.getLogger(__name__)
@@ -37,7 +38,7 @@ def write_to_file(output_url, items, organisation):
     file_system.save(json.dumps(items), '', key)
 
 
-def run_parsing(pdf, words, titles, context):
+def parse_pdf(pdf, words, titles, context, pdf_hash):
     """Parse the given pdf and returns a dict containing its test, sections and
        keywords.
 
@@ -45,6 +46,8 @@ def run_parsing(pdf, words, titles, context):
         pdf: A pdf file binary.
         words: A list of words to look for.
         titles: A list containing the titles of the sections to look for.
+        context: The number of lines to scrape before and after a keyword.
+        pdf_hash: The pdf md5 digest.
     Return:
         item: A dict containing the pdf text, sections and keywords.
     """
@@ -54,6 +57,9 @@ def run_parsing(pdf, words, titles, context):
         pdf_file, pdf_text = parse_pdf_document(f)
         # If the PDF couldn't be converted, still remove the pdf file
         if not pdf_file:
+            logger.warning('The pdf couldn\'t be parsed {pdf_hash}'.format(
+                pdf_hash=pdf_hash,
+            ))
             return None
 
         # Fetch references or other keyworded list
@@ -70,9 +76,13 @@ def run_parsing(pdf, words, titles, context):
             # Add references and PDF name to JSON returned file
             # If no section matchs, leave the attribute undefined
             if section:
-                section_dict[title.title()] = section
+                if section_dict.get(title.title()):
+                    section_dict[title.title()].append(section)
+                else:
+                    section_dict[title.title()] = [section]
 
     return {
+        'file_hash': pdf_hash,
         'sections': section_dict,
         'keywords': keyword_dict,
         'text': pdf_text
@@ -148,7 +158,26 @@ def create_argparser(description):
     return parser
 
 
-def parse_pdfs(input_url, output_url, resource_file, organisation, context):
+def parse_all_pdf(input_url, output_url, resource_file, organisation, context):
+    """Parses all the pdfs from the manifest in the input url and export the
+    result to the ouput url.
+
+    This method will get the manifest file located at the input url, and
+    iterate through it to:
+      * Dowload the pdf to a temporary file.
+      * Convert it to xml using the parse_pdf method to get its text, sections
+        and keywords, with the given number of context lines.
+      * Save the output to a json file located at the given output_url.
+
+    Args:
+        input_url: The location where the entry manifest file is located.
+        output_url: The location to put the file containing the parsed items.
+        resource_file: The location to find the files containing the titles
+                       and words to look for.
+        orgnaisation: The organisation to parse the files from.
+        context: The number of lines to save before and after finding a word
+                 from the keywords list.
+    """
     logger.info(output_url)
     keywords_file = os.path.join(resource_file, 'keywords.txt')
     sections_file = os.path.join(resource_file, 'section_keywords.txt')
@@ -171,18 +200,18 @@ def parse_pdfs(input_url, output_url, resource_file, organisation, context):
     manifest = file_system.get_manifest()
     for directory in manifest:
         for item in manifest[directory]:
-            logger.info(item)
             pdf = file_system.get(item)
 
             # Download PDF file to /tmp
             with tempfile.NamedTemporaryFile(delete=False) as tf:
                 tf.write(pdf.read())
                 tf.seek(0)
-                item = run_parsing(
+                item = parse_pdf(
                     tf.name,
                     words,
                     titles,
                     context,
+                    item,
                 )
             parsed_items.append(item)
 
@@ -194,7 +223,7 @@ if __name__ == '__main__':
     parser = create_argparser(description=__doc__.strip())
     args = parser.parse_args()
 
-    parse_pdfs(
+    parse_all_pdf(
         args.input_url,
         args.output_url,
         args.resource_file,
