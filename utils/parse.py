@@ -81,10 +81,6 @@ def predict_components(model, reference_components):
     - A list of dicts [{"Predicted Category": , "Prediction Probability": } ...]
     """
 
-    # logger.info(
-    #     "[+] Predicting the categories of %s  reference components ...",
-    #     str(len(reference_components))
-    # )
     if not reference_components:
         return []
 
@@ -108,7 +104,6 @@ def predict_components(model, reference_components):
             'Prediction Probability': prob
         })
 
-    # logger.info("Predictions complete")
     return predicted_components
 
 
