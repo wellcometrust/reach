@@ -10,25 +10,8 @@ def split_reference(reference):
     if not reference:
         return []
 
-    components = []
-
-    # I need to divide each reference by the full stops
-    # AND commas and categorise
-    reference_sentences_mid = [
-        # Notice that we remove spaces for elem
-        elem.strip()
-        for elem in reference.replace(
-            ',', '.'
-        ).replace(
-            '?', '?.'
-        ).replace(
-            '!', '!.'
-        ).split(".")
-    ]
-
-    for ref in reference_sentences_mid:
-        if ref:
-            components.append(ref)
+    # To do: Check whether removing strip is having an impact
+    components = [elem.strip() for elem in re.split('[,?!.]', reference)]
 
     return components
 
