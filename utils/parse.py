@@ -1,7 +1,10 @@
+import datetime
+import re
+
 from settings import settings
 
-logger = settings.logger
 
+VALID_YEARS = (1800, datetime.date.today().year + 1)
 
 def split_reference(reference):
     """Split up one individual reference into reference components.
@@ -63,14 +66,12 @@ def merge_components(reference_components):
 
 
 def is_year(component):
-    valid_years_range = range(1800, 2020)
     if len(component) == 6:
         component = component[1:5]
-    return component.isdecimal() and int(component) in valid_years_range
+    return component.isdecimal() and VALID_YEARS[0] <= int(component) < VALID_YEARS[1]
 
 
 def predict_components(model, reference_components):
-
     """
     Predicts the categories for a list of reference components.
     Input:
