@@ -16,7 +16,9 @@ import pandas as pd
 from utils import (FileManager,
                    FuzzyMatcher,
                    split_section,
-                   structure_reference)
+                   structure_reference,
+                   clean_series_text,
+                   hard_text_search)
 from models import DatabaseEngine
 from settings import settings
 
@@ -118,6 +120,11 @@ def run_predict(scraper_file, references_file,
     ref_file = get_file(references_file, 'csv')
     check_references_file(ref_file, references_file)
 
+    clean_ref_file = pd.DataFrame({
+        'uber_id' : ref_file['uber_id'],
+        'title' : clean_series_text(ref_file['title'])
+    })
+    
     # Loading the pipeline
     model = get_file(model_file, 'pickle')
 
@@ -158,6 +165,12 @@ def run_predict(scraper_file, references_file,
 
         matched_references = fuzzy_matcher.fuzzy_match(
             structured_references
+        )
+
+        matched_references = hard_text_search(
+            doc,
+            clean_ref_file,
+            matched_references
         )
 
         if output_url.startswith('file://'):
