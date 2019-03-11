@@ -64,14 +64,14 @@ class TestSplit(unittest.TestCase):
 	def test_split_by_question_mark(self):
 		self.assertEqual(
 			split_reference("To be? Or not to be?"),
-			["To be?", "Or not to be?"],
+			["To be", "Or not to be"],
 			"Should be a list with two elements"
 		)
 
 	def test_split_by_exclamation_mark(self):
 		self.assertEqual(
 			split_reference("To be! What a silly question"),
-			["To be!", "What a silly question"],
+			["To be", "What a silly question"],
 			"Should be a list with two elements"
 		)
 

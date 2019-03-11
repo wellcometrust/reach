@@ -14,7 +14,11 @@ def split_reference(reference):
         return []
 
     # To do: Check whether removing strip is having an impact
-    components = [elem.strip() for elem in re.split('[,?!.]', reference)]
+    components = [
+        elem.strip()
+        for elem in re.split('[,?!.]', reference)
+        if elem
+    ]
 
     return components
 
