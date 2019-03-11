@@ -1,9 +1,35 @@
 # Wellcome Policy Tool
 
-This repository will include all code needed to bring up Wellcome's
-Policy Tool, a service that reports which research publications are
-cited in the policy documents produced by policy organizations such as
-the WHO, MSF, and the UK government.
+Policy Tool is an open source service for discovering how research
+publications are being cited in global policy documents, including those
+produced by policy organizations such as the WHO, MSF, and the UK
+government. Key parts of it include:
+
+1. Web scrapers for pulling PDF documents from policy organizations,
+1. A reference parser for extracting references from these documents,
+1. A task for sourcing publications from EuropePMC,
+1. A task for matching references to publications, and
+1. An Airflow installation for automating web scraping, reference
+   parsing, publication sourcing, and reference matching.
+
+Work on a REST API and minimal search interface are forthcoming in early
+Q2 2019.
+
+Policy Tool is written in Python and developed using docker-compose. Key
+dependencies are:
+
+- a Kubernetes cluster that supports persistent volumes
+- a PostgreSQL or MySQL database for Airflow to use
+- a distributed storage service such as S3
+- (soon) an ElasticSearch cluster for searching documents
+
+Although parts of the Policy Tool have been in use at Wellcome since
+mid-2018, the project has only just gone open source starting in March
+2019. Given these early days, please be patient as various parts of it
+are made accessible to external users. All issues and pull requests
+are welcome. Contributing guidelines can be found in
+[CONTRIBUTING.md](./CONTRIBUTING.md).
+
 
 ## wsf-web-scraper/
 
