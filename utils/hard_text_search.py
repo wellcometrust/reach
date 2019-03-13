@@ -1,8 +1,6 @@
 import pandas as pd
 import re
 
-import datetime as dt
-import numpy as np
 
 def clean_text(string):
 	"""
