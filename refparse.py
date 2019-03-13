@@ -17,7 +17,7 @@ from utils import (FileManager,
                    FuzzyMatcher,
                    split_section,
                    structure_reference,
-                   clean_series_text,
+                   clean_text,
                    hard_text_search)
 from models import DatabaseEngine
 from settings import settings
@@ -120,10 +120,15 @@ def run_predict(scraper_file, references_file,
     ref_file = get_file(references_file, 'csv')
     check_references_file(ref_file, references_file)
 
-    clean_ref_file = pd.DataFrame({
-        'uber_id' : ref_file['uber_id'],
-        'title' : clean_series_text(ref_file['title'])
-    })
+    #Minimum no. of characters to allow in a title, informed by shortest true positive in UKRI data
+    min_chars = 18
+    #Duplicates the references file and cleans it up for the hard text search
+    clean_ref_file = ref_file
+    clean_ref_file['title'] = [clean_text(x) for x in clean_ref_file['title']]
+    clean_ref_file = clean_ref_file.loc[clean_ref_file['title'].str.len() >= min_chars]
+    clean_ref_file = clean_ref_file.drop_duplicates(subset = 'title')
+    #Converts to dict, for significantly faster run time over pandas DF
+    clean_ref_file = clean_ref_file.to_dict(orient = 'list')
     
     # Loading the pipeline
     model = get_file(model_file, 'pickle')
@@ -163,14 +168,14 @@ def run_predict(scraper_file, references_file,
             doc.uri
         )
 
-        matched_references = fuzzy_matcher.fuzzy_match(
+        fuzzy_matched_references = fuzzy_matcher.fuzzy_match(
             structured_references
         )
 
-        matched_references = hard_text_search(
+        all_matched_references = hard_text_search(
             doc,
             clean_ref_file,
-            matched_references
+            fuzzy_matched_references
         )
 
         if output_url.startswith('file://'):
@@ -183,7 +188,7 @@ def run_predict(scraper_file, references_file,
                     f"{doc.id}_{settings.PREF_REFS_FILENAME}"
                     )
                 )
-            matched_references.to_csv(
+            all_matched_references.to_csv(
                 os.path.join(
                     output_dir,
                     f"{doc.id}_{settings.MATCHES_FILENAME}"
@@ -193,7 +198,7 @@ def run_predict(scraper_file, references_file,
             database = DatabaseEngine(output_url)
             database.save_to_database(
                 structured_references,
-                matched_references,
+                all_matched_references,
             )
         nb_references += len(splitted_references)
 

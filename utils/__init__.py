@@ -3,7 +3,7 @@ from .parse import predict_components, merge_components, split_reference, struct
 from .fuzzymatch import FuzzyMatcher
 from .file_manager import FileManager
 from .serialiser import serialise_matched_reference, serialise_reference
-from .hard_text_search import clean_series_text, hard_text_search
+from .hard_text_search import clean_text, hard_text_search
 
 __all__ = [
     split_section,
@@ -15,6 +15,6 @@ __all__ = [
     FileManager,
     serialise_matched_reference,
     serialise_reference,
-    clean_series_text,
+    clean_text,
     hard_text_search
 ]

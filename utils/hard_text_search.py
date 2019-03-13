@@ -1,63 +1,63 @@
 import pandas as pd
 import re
 
-def clean_series_text(series):
+import datetime as dt
+import numpy as np
+
+def clean_text(string):
 	"""
 	Input:
-	-A pandas Series containing strings
+	-A string
 	Output:
-	-A pandas Series, with white space normalised and
+	-A string, with white space normalised and
 	 non-alphanumeric characters removed
-	Cleans up the text in a series such that it can easily be searched
+	Cleans up text such that it can easily be searched
 	"""
 
-	series = series.str.replace(
-			"\\n", " "
-		).str.replace(
-			"\s{1,}", " "
-		).str.replace(
-			"[^A-Za-z0-9 ]", ""
-		).str.lower()
+	string = re.sub("\\n", " ", string)
+	string = re.sub("\s{1,}", " ", string)
+	string = re.sub("[^A-Za-z0-9 ]", "", string)
 
-	return (series)
+	string = string.lower()
+
+	return (string)
 
 
-def hard_text_search(scraped_text, clean_ref_file, fuzzy_matches):
+def hard_text_search(scraped_text, ref_file, matches):
 	"""
 	Input:
-	-Raw scraped text, string
-	-Cleaned references file, pandas DF
-	-Fuzzy matches, pandas DF
+	-Raw scraped text (named tuple, SectionedDocument)
+	-Cleaned references file (dict, converted from pandas DF)
+	-Matches found by the fuzzy matcher (pandas DF)
 	Output:
-	-Extension to fuzzy_matches, with hard text search results concatenated
+	-Extension to matches, with hard text search results concatenated
 	"""
 
-	fuzzy_matches['Tool'] = 'Policy'
+	#Adds a flag, showing which process found the match, and removes duplicates
+	matches['Tool'] = "Policy"
+	matches = matches.loc[:,~matches.columns.duplicated()]
 
-	clean_scraped_text = clean_series_text(
-		pd.Series(scraped_text.section)
-	).to_frame()
+	clean_scraped_text = clean_text(scraped_text.section)
 
-	for _, clean_ref in clean_ref_file.iterrows():
+	for i in range(len(ref_file['title'])):
 
-		title = clean_ref['title']
-		id = clean_ref['uber_id']
+		title = ref_file['title'][i]
+		uber_id = ref_file['uber_id'][i]
 
 		#If there are new matches, append all relevant columns to the matched_refs DataFrame
-		if not fuzzy_matches['WT_Ref_Id'].str.contains(id).any():
-			if title in clean_scraped_text.iloc[0,0]:	
+		if not matches['WT_Ref_Id'].str.contains(uber_id).any():
+			if title in clean_scraped_text:
 
-				refs_matched_with_title = pd.Series({
+				refs_matched_with_title = {
 					'Document id'       : scraped_text.id,
 					'Reference id'      : hash(title),
 					'Title'             : title,
 					'WT_Ref_Title'      : title,
-					'WT_Ref_Id'         : id,
-					'Cosine Similarity' : 1,
+					'WT_Ref_Id'         : uber_id,
+					'Cosine_Similarity' : 1,
 					'Tool'              : "Hard Text"
-				}, index = [0])
+				}
 
-				fuzzy_matches = fuzzy_matches.loc[:,~fuzzy_matches.columns.duplicated()]
-				fuzzy_matches = fuzzy_matches.append(refs_matched_with_title, ignore_index=True)
+				matches = matches.append(refs_matched_with_title, ignore_index=True)
 
-	return (fuzzy_matches)
+	return (matches)
