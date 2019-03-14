@@ -17,8 +17,7 @@ from utils import (FileManager,
                    FuzzyMatcher,
                    split_section,
                    structure_reference,
-                   clean_text,
-                   hard_text_search)
+                   HardTextSearch)
 from models import DatabaseEngine
 from settings import settings
 
@@ -119,16 +118,6 @@ def run_predict(scraper_file, references_file,
     # Loading the references file
     ref_file = get_file(references_file, 'csv')
     check_references_file(ref_file, references_file)
-
-    #Minimum no. of characters to allow in a title, informed by shortest true positive in UKRI data
-    min_chars = 18
-    #Duplicates the references file and cleans it up for the hard text search
-    clean_ref_file = ref_file
-    clean_ref_file['title'] = [clean_text(x) for x in clean_ref_file['title']]
-    clean_ref_file = clean_ref_file.loc[clean_ref_file['title'].str.len() >= min_chars]
-    clean_ref_file = clean_ref_file.drop_duplicates(subset = 'title')
-    #Converts to dict, for significantly faster run time over pandas DF
-    clean_ref_file = clean_ref_file.to_dict(orient = 'list')
     
     # Loading the pipeline
     model = get_file(model_file, 'pickle')
@@ -136,6 +125,11 @@ def run_predict(scraper_file, references_file,
     fuzzy_matcher = FuzzyMatcher(
         ref_file,
         settings.FUZZYMATCH_THRESHOLD
+    )
+
+    text_matcher = HardTextSearch(
+        ref_file,
+        40
     )
 
     sectioned_documents = transform_scraper_file(scraper_file)
@@ -168,15 +162,16 @@ def run_predict(scraper_file, references_file,
             doc.uri
         )
 
-        fuzzy_matched_references = fuzzy_matcher.fuzzy_match(
+        matched_references_parser = fuzzy_matcher.fuzzy_match(
             structured_references
         )
 
-        all_matched_references = hard_text_search(
+        matched_references_hard_text = text_matcher.hard_text_search(
             doc,
-            clean_ref_file,
-            fuzzy_matched_references
+            matched_references_parser['WT_Ref_Id'].unique()
         )
+
+        all_matched_references = pd.concat([matched_references_parser, matched_references_hard_text])
 
         if output_url.startswith('file://'):
             # use everything after first two slashes; this handles
