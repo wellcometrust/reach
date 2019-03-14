@@ -64,6 +64,7 @@ class FuzzyMatcher:
         match_data['Tool'] = "Parser"
 
         match_data = match_data.loc[:,~match_data.columns.duplicated()]
+        match_data = match_data.loc[match_data['title'].str.len() >= 20]
 
         return match_data
 
