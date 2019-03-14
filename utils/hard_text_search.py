@@ -42,18 +42,19 @@ class HardTextSearch:
 
 		#Removes refs already found by fuzzy matcher
 		indices_to_exclude = [i for i,x in enumerate(self.ref_file['uber_id']) if x in refs_to_exclude]
+		filtered_ref_file = self.ref_file
 		for i in sorted(indices_to_exclude, reverse = True):
-			del self.ref_file['title'][i]
-			del self.ref_file['uber_id'][i]
+			del filtered_ref_file['title'][i]
+			del filtered_ref_file['uber_id'][i]
 
 		clean_scraped_text = self.clean_text(scraped_text.section)
 
 		matches = pd.DataFrame()
 
-		for i in range(len(self.ref_file['title'])):
+		for i in range(len(filtered_ref_file['title'])):
 
-			title = self.ref_file['title'][i]
-			uber_id = self.ref_file['uber_id'][i]
+			title = filtered_ref_file['title'][i]
+			uber_id = filtered_ref_file['uber_id'][i]
 
 			#If there are new matches, append all relevant columns to the matched_refs DataFrame
 			if title in clean_scraped_text:
