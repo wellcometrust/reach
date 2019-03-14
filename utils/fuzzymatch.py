@@ -23,7 +23,8 @@ class FuzzyMatcher:
                 'Title': [],
                 'title': [],
                 'uber_id': [],
-                'Cosine_Similarity': []
+                'Cosine_Similarity': [],
+                'Tool': []
             })
 
         # Todo - Make sure not resetting index works the same
@@ -59,6 +60,10 @@ class FuzzyMatcher:
                 'Cosine_Similarity': cosine_similarities
             }).reset_index()],
             axis=1)
+
+        match_data['Tool'] = "Parser"
+
+        match_data = match_data.loc[:,~match_data.columns.duplicated()]
 
         return match_data
 
