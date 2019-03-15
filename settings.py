@@ -31,6 +31,9 @@ class BaseSettings:
 
     ORGANISATION_REGEX = "\\n[\d\.\s\\n]+(?=[A-Z])"
 
+    FUZZY_MATCH_CHAR_LIMIT = 20
+    HARD_TEXT_CHAR_LIMIT = 40
+
     REF_CLASSES = ['Authors', 'Journal', 'Volume', 'Issue', 'Pagination', 'Title','PubYear']
 
 

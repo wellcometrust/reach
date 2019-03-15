@@ -1,12 +1,14 @@
 import pandas as pd
 import re
 
+from settings import settings
+
 class HardTextSearch:
-	def __init__(self, ref_file, min_chars):
+	def __init__(self, ref_file):
 		#Cleans up the ref file, changing from pandas DF to dict to reduce run time
-		ref_file['title'] = [self.clean_text(x) for x in ref_file['title']]
-		ref_file = ref_file.loc[ref_file['title'].str.len() >= min_chars]
-		ref_file = ref_file.drop_duplicates(subset = 'title')
+		ref_file['clean_title'] = ref_file['title'].apply(lambda x: self.clean_text(x))
+		ref_file = ref_file.loc[ref_file['clean_title'].str.len() >= settings.HARD_TEXT_CHAR_LIMIT]
+		ref_file = ref_file.drop_duplicates()
 		ref_file = ref_file.to_dict(orient = 'list')
 
 		self.ref_file = ref_file
@@ -31,7 +33,7 @@ class HardTextSearch:
 		return (string)
 
 
-	def hard_text_search(self, scraped_text, refs_to_exclude):
+	def hard_text_search(self, scraped_text):
 		"""
 		Input:
 		-Raw scraped text (named tuple, SectionedDocument)
@@ -40,21 +42,13 @@ class HardTextSearch:
 		-Extension to matches, with hard text search results concatenated
 		"""
 
-		#Removes refs already found by fuzzy matcher
-		indices_to_exclude = [i for i,x in enumerate(self.ref_file['uber_id']) if x in refs_to_exclude]
-		filtered_ref_file = self.ref_file
-		for i in sorted(indices_to_exclude, reverse = True):
-			del filtered_ref_file['title'][i]
-			del filtered_ref_file['uber_id'][i]
-
 		clean_scraped_text = self.clean_text(scraped_text.section)
 
 		matches = pd.DataFrame()
 
-		for i in range(len(filtered_ref_file['title'])):
+		for i in range(len(self.ref_file['clean_title'])):
 
-			title = filtered_ref_file['title'][i]
-			uber_id = filtered_ref_file['uber_id'][i]
+			title = self.ref_file['clean_title'][i]
 
 			#If there are new matches, append all relevant columns to the matched_refs DataFrame
 			if title in clean_scraped_text:
@@ -63,10 +57,9 @@ class HardTextSearch:
 					'Document id'       : scraped_text.id,
 					'Reference id'      : hash(title),
 					'Title'             : title,
-					'WT_Ref_Title'      : title,
-					'WT_Ref_Id'         : uber_id,
-					'Cosine_Similarity' : 1,
-					'Tool'              : "Hard Text"
+					'WT_Ref_Title'      : self.ref_file['title'][i],
+					'WT_Ref_Id'         : self.ref_file['uber_id'][i],
+					'Match_algorithm'   : "Hard Text"
 				}
 
 				matches = matches.append(refs_matched_with_title, ignore_index=True)
