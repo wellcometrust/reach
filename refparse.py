@@ -102,7 +102,7 @@ def remove_dups_and_concat(fuzzy_matches, text_matches):
 
     if not text_matches.empty:
         duplicate_matches = fuzzy_matches['WT_Ref_Id'][fuzzy_matches['WT_Ref_Id'].isin(text_matches['WT_Ref_Id'])]
-        print(duplicate_matches)
+
         #For duplicate matches: remove from text_matches, and renames 'Match_algorithm' in fuzzy_matches
         text_matches = text_matches[~text_matches['WT_Ref_Id'].isin(duplicate_matches)]
         fuzzy_matches['Match_algorithm'][fuzzy_matches['WT_Ref_Id'].isin(duplicate_matches)] = "Fuzzy and Text Searches"
