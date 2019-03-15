@@ -98,20 +98,20 @@ def get_file(file_str, file_type, get_scraped=False):
 def remove_dups_and_concat(fuzzy_matches, text_matches):
     #Remove duplicate columns and short matches in the fuzzy matches
     fuzzy_matches = fuzzy_matches.loc[:,~fuzzy_matches.columns.duplicated()]
-    fuzzy_matches = fuzzy_matches.loc[fuzzy_matches['WT_Ref_Title'].str.len() >= settings.FUZZY_MATCH_CHAR_LIMIT]
+    fuzzy_matches = fuzzy_matches.loc[fuzzy_matches['WT_Ref_Title'].str.len() >= settings.MIN_CHAR_LIMIT]
 
-    if not text_matches.empty:
-        duplicate_matches = fuzzy_matches['WT_Ref_Id'][fuzzy_matches['WT_Ref_Id'].isin(text_matches['WT_Ref_Id'])]
-
-        #For duplicate matches: remove from text_matches, and renames 'Match_algorithm' in fuzzy_matches
-        text_matches = text_matches[~text_matches['WT_Ref_Id'].isin(duplicate_matches)]
-        fuzzy_matches['Match_algorithm'][fuzzy_matches['WT_Ref_Id'].isin(duplicate_matches)] = "Fuzzy and Text Searches"
-
-        all_matches = pd.concat([fuzzy_matches, text_matches])
-        return (all_matches)
+    if text_matches.empty:
+        return fuzzy_matches
 
     else:
-        return (fuzzy_matches)
+        duplicate_ref_ids = fuzzy_matches['WT_Ref_Id'][fuzzy_matches['WT_Ref_Id'].isin(text_matches['WT_Ref_Id'])]
+
+        #For duplicate matches: remove from text_matches, and renames 'Match_algorithm' in fuzzy_matches
+        text_matches = text_matches[~text_matches['WT_Ref_Id'].isin(duplicate_ref_ids)]
+        fuzzy_matches['Match_algorithm'][fuzzy_matches['WT_Ref_Id'].isin(duplicate_ref_ids)] = "Fuzzy and Text Searches"
+
+        all_matches = pd.concat([fuzzy_matches, text_matches])
+        return all_matches
 
 
 def run_predict(scraper_file, references_file,

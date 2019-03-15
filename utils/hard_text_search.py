@@ -7,7 +7,7 @@ class HardTextSearch:
 	def __init__(self, ref_file):
 		#Cleans up the ref file, changing from pandas DF to dict to reduce run time
 		ref_file['clean_title'] = ref_file['title'].apply(lambda x: self.clean_text(x))
-		ref_file = ref_file.loc[ref_file['clean_title'].str.len() >= settings.HARD_TEXT_CHAR_LIMIT]
+		ref_file = ref_file.loc[ref_file['clean_title'].str.len() >= settings.HARD_TEXT_MIN_CHAR_LIMIT]
 		ref_file = ref_file.drop_duplicates()
 		ref_file = ref_file.to_dict(orient = 'list')
 
@@ -30,7 +30,7 @@ class HardTextSearch:
 
 		string = string.lower()
 
-		return (string)
+		return string
 
 
 	def hard_text_search(self, scraped_text):
@@ -46,9 +46,7 @@ class HardTextSearch:
 
 		matches = pd.DataFrame()
 
-		for i in range(len(self.ref_file['clean_title'])):
-
-			title = self.ref_file['clean_title'][i]
+		for i, title in enumerate(self.ref_file['clean_title']):
 
 			#If there are new matches, append all relevant columns to the matched_refs DataFrame
 			if title in clean_scraped_text:
@@ -64,4 +62,4 @@ class HardTextSearch:
 
 				matches = matches.append(refs_matched_with_title, ignore_index=True)
 
-		return (matches)
+		return matches
