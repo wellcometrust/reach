@@ -59,7 +59,7 @@ class HardTextSearch:
 					'Title'             : title,
 					'WT_Ref_Title'      : self.ref_file['title'][i],
 					'WT_Ref_Id'         : self.ref_file['uber_id'][i],
-					'Match_algorithm'   : "Hard Text"
+					'Match_algorithm'   : "Text Search"
 				}
 
 				matches = matches.append(refs_matched_with_title, ignore_index=True)
