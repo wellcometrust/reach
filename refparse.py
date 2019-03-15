@@ -95,6 +95,23 @@ def get_file(file_str, file_type, get_scraped=False):
     return file
 
 
+def remove_dups_and_concat(fuzzy_matches, text_matches):
+    #Remove duplicate columns and short matches in the fuzzy matches
+    fuzzy_matches = fuzzy_matches.loc[:,~fuzzy_matches.columns.duplicated()]
+    fuzzy_matches = fuzzy_matches.loc[fuzzy_matches['WT_Ref_Title'].str.len() >= settings.FUZZY_MATCH_CHAR_LIMIT]
+
+    if not text_matches.empty:
+        duplicate_matches = fuzzy_matches['WT_Ref_Id'][fuzzy_matches['WT_Ref_Id'].isin(text_matches['WT_Ref_Id'])]
+
+        #For duplicate matches: remove from text_matches, and renames 'Match_algorithm' in fuzzy_matches
+        text_matches = text_matches[~text_matches['WT_Ref_Id'].isin(duplicate_matches)]
+        fuzzy_matches['Match_algorithm'][fuzzy_matches['WT_Ref_Id'].isin(duplicate_matches)] = "Fuzzy Matcher and Hard Text"
+
+    all_matches = pd.concat([fuzzy_matches, text_matches])
+
+    return(all_matches)
+
+
 def run_predict(scraper_file, references_file,
                 model_file, pool_map, output_url, logger):
     """
@@ -128,8 +145,7 @@ def run_predict(scraper_file, references_file,
     )
 
     text_matcher = HardTextSearch(
-        ref_file,
-        40
+        ref_file
     )
 
     sectioned_documents = transform_scraper_file(scraper_file)
@@ -167,11 +183,10 @@ def run_predict(scraper_file, references_file,
         )
 
         matched_references_hard_text = text_matcher.hard_text_search(
-            doc,
-            matched_references_parser['WT_Ref_Id'].unique()
+            doc
         )
 
-        all_matched_references = pd.concat([matched_references_parser, matched_references_hard_text])
+        matched_references = remove_dups_and_concat(matched_references_parser, matched_references_hard_text)
 
         if output_url.startswith('file://'):
             # use everything after first two slashes; this handles
@@ -183,7 +198,7 @@ def run_predict(scraper_file, references_file,
                     f"{doc.id}_{settings.PREF_REFS_FILENAME}"
                     )
                 )
-            all_matched_references.to_csv(
+            matched_references.to_csv(
                 os.path.join(
                     output_dir,
                     f"{doc.id}_{settings.MATCHES_FILENAME}"
@@ -193,7 +208,7 @@ def run_predict(scraper_file, references_file,
             database = DatabaseEngine(output_url)
             database.save_to_database(
                 structured_references,
-                all_matched_references,
+                matched_references,
             )
         nb_references += len(splitted_references)
 
