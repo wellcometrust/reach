@@ -16,7 +16,8 @@ import pandas as pd
 from utils import (FileManager,
                    FuzzyMatcher,
                    split_section,
-                   structure_reference)
+                   structure_reference,
+                   HardTextSearch)
 from models import DatabaseEngine
 from settings import settings
 
@@ -94,6 +95,26 @@ def get_file(file_str, file_type, get_scraped=False):
     return file
 
 
+def remove_dups_and_concat(fuzzy_matches, text_matches):
+    #Remove duplicate columns and short matches in the fuzzy matches
+    fuzzy_matches = fuzzy_matches.loc[:,~fuzzy_matches.columns.duplicated()]
+
+    if not fuzzy_matches.empty:
+        fuzzy_matches = fuzzy_matches.loc[fuzzy_matches['WT_Ref_Title'].str.len() >= settings.MIN_CHAR_LIMIT]
+
+    if text_matches.empty:
+        return fuzzy_matches
+
+    duplicate_ref_ids = fuzzy_matches['WT_Ref_Id'][fuzzy_matches['WT_Ref_Id'].isin(text_matches['WT_Ref_Id'])]
+
+    #For duplicate matches: remove from text_matches, and renames 'Match_algorithm' in fuzzy_matches
+    text_matches = text_matches[~text_matches['WT_Ref_Id'].isin(duplicate_ref_ids)]
+    fuzzy_matches.at[fuzzy_matches['WT_Ref_Id'].isin(duplicate_ref_ids), 'Match_algorithm'] = "Fuzzy and Text Searches"
+
+    all_matches = pd.concat([fuzzy_matches, text_matches])
+    return all_matches
+
+
 def run_predict(scraper_file, references_file,
                 model_file, pool_map, output_url, logger):
     """
@@ -117,13 +138,17 @@ def run_predict(scraper_file, references_file,
     # Loading the references file
     ref_file = get_file(references_file, 'csv')
     check_references_file(ref_file, references_file)
-
+    
     # Loading the pipeline
     model = get_file(model_file, 'pickle')
 
     fuzzy_matcher = FuzzyMatcher(
         ref_file,
         settings.FUZZYMATCH_THRESHOLD
+    )
+
+    text_matcher = HardTextSearch(
+        ref_file
     )
 
     sectioned_documents = transform_scraper_file(scraper_file)
@@ -156,9 +181,15 @@ def run_predict(scraper_file, references_file,
             doc.uri
         )
 
-        matched_references = fuzzy_matcher.fuzzy_match(
+        matched_references_parser = fuzzy_matcher.fuzzy_match(
             structured_references
         )
+
+        matched_references_hard_text = text_matcher.hard_text_search(
+            doc
+        )
+
+        matched_references = remove_dups_and_concat(matched_references_parser, matched_references_hard_text)
 
         if output_url.startswith('file://'):
             # use everything after first two slashes; this handles
