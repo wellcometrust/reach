@@ -53,7 +53,7 @@ class HardTextSearch:
 
 				refs_matched_with_title = {
 					'Document id'       : scraped_text.id,
-					'Reference id'      : hash(title),
+					'Reference id'      : hash("UBER_ID:" + str( self.ref_file['uber_id'][i] )),
 					'Title'             : title,
 					'WT_Ref_Title'      : self.ref_file['title'][i],
 					'WT_Ref_Id'         : self.ref_file['uber_id'][i],
