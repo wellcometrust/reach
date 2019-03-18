@@ -103,15 +103,14 @@ def remove_dups_and_concat(fuzzy_matches, text_matches):
     if text_matches.empty:
         return fuzzy_matches
 
-    else:
-        duplicate_ref_ids = fuzzy_matches['WT_Ref_Id'][fuzzy_matches['WT_Ref_Id'].isin(text_matches['WT_Ref_Id'])]
+    duplicate_ref_ids = fuzzy_matches['WT_Ref_Id'][fuzzy_matches['WT_Ref_Id'].isin(text_matches['WT_Ref_Id'])]
 
-        #For duplicate matches: remove from text_matches, and renames 'Match_algorithm' in fuzzy_matches
-        text_matches = text_matches[~text_matches['WT_Ref_Id'].isin(duplicate_ref_ids)]
-        fuzzy_matches['Match_algorithm'][fuzzy_matches['WT_Ref_Id'].isin(duplicate_ref_ids)] = "Fuzzy and Text Searches"
+    #For duplicate matches: remove from text_matches, and renames 'Match_algorithm' in fuzzy_matches
+    text_matches = text_matches[~text_matches['WT_Ref_Id'].isin(duplicate_ref_ids)]
+    fuzzy_matches['Match_algorithm'][fuzzy_matches['WT_Ref_Id'].isin(duplicate_ref_ids)] = "Fuzzy and Text Searches"
 
-        all_matches = pd.concat([fuzzy_matches, text_matches])
-        return all_matches
+    all_matches = pd.concat([fuzzy_matches, text_matches])
+    return all_matches
 
 
 def run_predict(scraper_file, references_file,
