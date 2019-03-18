@@ -98,7 +98,9 @@ def get_file(file_str, file_type, get_scraped=False):
 def remove_dups_and_concat(fuzzy_matches, text_matches):
     #Remove duplicate columns and short matches in the fuzzy matches
     fuzzy_matches = fuzzy_matches.loc[:,~fuzzy_matches.columns.duplicated()]
-    fuzzy_matches = fuzzy_matches.loc[fuzzy_matches['WT_Ref_Title'].str.len() >= settings.MIN_CHAR_LIMIT]
+
+    if not fuzzy_matches.empty:
+        fuzzy_matches = fuzzy_matches.loc[fuzzy_matches['WT_Ref_Title'].str.len() >= settings.MIN_CHAR_LIMIT]
 
     if text_matches.empty:
         return fuzzy_matches
