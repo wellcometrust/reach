@@ -109,7 +109,7 @@ def remove_dups_and_concat(fuzzy_matches, text_matches):
 
     #For duplicate matches: remove from text_matches, and renames 'Match_algorithm' in fuzzy_matches
     text_matches = text_matches[~text_matches['WT_Ref_Id'].isin(duplicate_ref_ids)]
-    fuzzy_matches['Match_algorithm'][fuzzy_matches['WT_Ref_Id'].isin(duplicate_ref_ids)] = "Fuzzy and Text Searches"
+    fuzzy_matches.at[fuzzy_matches['WT_Ref_Id'].isin(duplicate_ref_ids), 'Match_algorithm'] = "Fuzzy and Text Searches"
 
     all_matches = pd.concat([fuzzy_matches, text_matches])
     return all_matches
