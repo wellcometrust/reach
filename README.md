@@ -104,7 +104,8 @@ If the `scraper_file`, `references_file`, `model_file`, arguments are to S3 loca
 If you would like to run the parser for the latest scraped files and to save the output locally, then run the following:
 ```
 python parse_latest.py msf \
---output-url "file://./tmp/parser-output"
+    --references-file "s3://datalabs-data/wellcome_publications/uber_api_publications.csv" \
+    --output-url "file://./tmp/parser-output"
 ```
 
 If you want to specify the arguments for the other inputs then you can, otherwise default values will be given:
