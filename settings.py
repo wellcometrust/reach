@@ -26,8 +26,7 @@ class BaseSettings:
     MATCHES_FILENAME = 'all_match_data.csv'
 
     MODEL_DIR = "s3://{}/reference_parser_models".format(BUCKET)
-    CLASSIFIER_FILENAME = "RefSorter_classifier.pkl"
-    VECTORIZER_FILENAME = "RefSorter_vectorizer.pkl"
+    CLASSIFIER_FILENAME = "reference_parser_pipeline.pkl"
 
     ORGANISATION_REGEX = "\\n[\d\.\s\\n]+(?=[A-Z])"
 
