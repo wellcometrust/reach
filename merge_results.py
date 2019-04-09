@@ -44,10 +44,13 @@ def concat_match_csvs(match_csv_names):
         if not match_data.empty:
             all_matches.append(match_data)
 
-    all_matches = pd.concat(all_matches)
+    if not all_matches:
+        return pd.DataFrame({
+            'Document id': [],
+            'WT_Ref_Id': []
+        })
 
-    return all_matches
-
+    return pd.concat(all_matches)
 
 def concat_predicted_csvs(predicted_csv_names):
     """
