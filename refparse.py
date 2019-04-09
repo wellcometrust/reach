@@ -280,11 +280,7 @@ def create_argparser(description):
     parser = ArgumentParser(description)
     parser.add_argument(
         '--references-file',
-        help='Path or S3 URL to references CSV file to match against',
-        default=os.path.join(
-            settings.REFERENCES_DIR,
-            settings.REFERENCES_FILENAME
-            )
+        help='Path or S3 URL to references CSV file to match against'
     )
 
     parser.add_argument(
