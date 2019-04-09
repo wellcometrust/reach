@@ -6,7 +6,7 @@ services:
       context: ./db
       dockerfile: Dockerfile
     ports:
-      - 5436:5432
+      - 127.0.0.1:5436:5432
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
@@ -15,7 +15,7 @@ services:
     # container_name: airflow-web
     image: 160358319781.dkr.ecr.eu-west-1.amazonaws.com/uk.ac.wellcome/web-scraper:latest
     ports:
-      - 8080:8080
+      - 127.0.0.1:8080:8080
     environment:
       AIRFLOW_HOME: /airflow
 
