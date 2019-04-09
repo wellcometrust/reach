@@ -18,9 +18,6 @@ class BaseSettings:
     SCRAPER_RESULTS_DIR = "{}".format(SCRAPER_RESULTS_BASEDIR)
     SCRAPER_RESULTS_FILENAME = ''
 
-    REFERENCES_DIR = "s3://{}/wellcome_publications".format(BUCKET)
-    REFERENCES_FILENAME = 'uber_api_publications.csv'
-
     LOCAL_OUTPUT_DIR = 'local_output'
     PREF_REFS_FILENAME = 'predicted_reference_structures.csv'
     MATCHES_FILENAME = 'all_match_data.csv'
@@ -70,7 +67,6 @@ class LocalSettings(BaseSettings):
 
     SCRAPER_RESULTS_DIR = "scraper-results"
 
-    REFERENCES_DIR = "wellcome_publications"
     MODEL_DIR = "reference_parser_models"
 
     OUTPUT_URL = "postgresql+psycopg2://{user}:{passw}@{host}:{port}/{db}".format(
