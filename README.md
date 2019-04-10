@@ -62,7 +62,7 @@ mkdir -p ./tmp/parser-output/output_folder_name
 
 python ./refparse.py \
     --scraper-file "s3://datalabs-data/scraper-results/msf/20190117.json" \
-    --references-file "s3://datalabs-data/wellcome_publications/uber_api_publications.csv" \
+    --references-file "file://./references_folder/references_file.csv" \
     --model-file "s3://datalabs-data/reference_parser_models/reference_parser_pipeline.pkl" \
     --output-url "file://./tmp/parser-output/output_folder_name"
 ```
@@ -73,7 +73,7 @@ If the `scraper_file`, `references_file`, `model_file`, arguments are to S3 loca
 The parsed and matched references from each documents are saved in a separate file in the output folder. You can merge all of them together by running
 ```
 python merge_results.py \
-    --references-file "s3://datalabs-data/wellcome_publications/uber_api_publications.csv" \
+    --references-file "file://./references_folder/references_file.csv" \
     --output-url  "./tmp/parser-output/output_folder_name"
 ```
 
