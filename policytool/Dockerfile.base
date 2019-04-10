@@ -1,5 +1,5 @@
-# Use a basic Python image
-FROM python:3.6.4
+# Use a basic Python image, but current Debian
+FROM python:3.6-slim-stretch
 
 # Build UTF8 locale to avoid encoding issues with Scrapy encoding
 # C.UTF-8 is the new en_US.UTF-8.
