@@ -8,19 +8,19 @@ x-airflow-image: &airflow-image
 
 x-airflow_env: &airflow-env
   AIRFLOW_HOME: /airflow
-  
+
   # AIRFLOW_CONN_DIMENSIONS_DEFAULT: "https://${DIMENSIONS_USERNAME}:${DIMENSIONS_PASSWORD}@app.dimensions.ai/api/"
-  
+
   # S3 prefix for all datalabs operators.
   # (in `core` because we must be in an existing section of the cfg)
   AIRFLOW__CORE__DATALABS_S3_PREFIX: "s3://datalabs-dev/airflow" # No trailing /!
   # AIRFLOW__CORE__DATALABS_ALTERYX_PREFIX: "s3://datalabs-staging/alteryx" # No trailing /!
-  
+
   # dev creds encryption key, cf.
   # https://airflow.readthedocs.io/en/stable/howto/secure-connections.html
   # (but not used; everything's from env atm)
   AIRFLOW__CORE__FERNET_KEY: "${AIRFLOW_FERNET_KEY}"
-  
+
   # Wait 20s to connect to PostgreSQL, in case it's coming up fresh.
   AIRFLOW__CORE__SQL_ALCHEMY_CONN: "postgresql://postgres:development@postgres:5432/airflow?connect_timeout=20"
   AIRFLOW__CELERY__BROKER_URL: "redis://redis:6379/0"
@@ -32,18 +32,20 @@ x-airflow_env: &airflow-env
   # For local dev, also send task logs to stderr.
   # no longer needed once we're on current airflow
   # AIRFLOW__CORE__LOGGING_CONFIG_CLASS: "scraper.airflow.logging_config.CONSOLE_LOGGING_CONFIG"
-  
+
   DATALABS_AIRFLOW_VERSION: "localdev"
-  
+
   SENTRY_DSN: "${SENTRY_DSN}"
-  DATABASE_URL: "postgres://postgres:postgres@articles-db:5432/wsf_scraping"
+  DATABASE_URL: "postgres://postgres:development@postgres:5432/wsf_scraping"
   RESOURCES_FILES: "/src/policytool/resources/"
 
 
 x-airflow-volumes: &airflow-volumes
-  - ./datalabs/airflow/airflow.cfg:/airflow/airflow.cfg
-  - ./datalabs/airflow/initdb.sh:/airflow/initdb.sh
-  - ./datalabs:/src/datalabs
+  - ./scraper/airflow/airflow.cfg:/airflow/airflow.cfg
+  - ./scraper/airflow/initdb.sh:/airflow/initdb.sh
+  - ./scraper:/src/policytool/scraper
+  - ./pdf_parser:/src/policytool/pdf_parser/
+  - ./build/airflow.db:/airflow/db
 
 # Restart airflow several times in case the DB wasn't present.
 # (Yes, we could netcat, but postgres can accept TCP conns before
@@ -56,16 +58,6 @@ x-airflow-restart: &airflow-restart
 
 
 services:
-  articles-db:
-    container_name: articles-db
-    build:
-      context: ./db
-      dockerfile: Dockerfile
-    ports:
-      - 5436:5432
-    environment:
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
 
   postgres:
     image: postgres:11.2-alpine
@@ -75,7 +67,7 @@ services:
       POSTGRES_PASSWORD: development
     volumes:
       - ./build/airflow.db:/var/lib/postgresql/data
-      - ./datalabs/airflow/initdb:/docker-entrypoint-initdb.d
+      - ./scraper/airflow/initdb:/docker-entrypoint-initdb.d
 
   redis:
     image: redis:5.0.3-alpine
@@ -94,7 +86,7 @@ services:
       <<: *airflow-env
       POSTGRES_DSN: "postgresql://postgres:development@postgres:5432/airflow?connect_timeout=20"
     command:
-      - /src/datalabs/pg_isready.py
+      - /src/policytool/scraper/pg_isready.py
       - sh
       - "-cx"
       - "/airflow/initdb.sh && exec airflow scheduler"
@@ -114,8 +106,8 @@ services:
       # in place.
       # Thus pg_isready.py, and with a longer success-secs than
       # airflow-scheduler.
-      - /src/datalabs/pg_isready.py
-      - "--success-secs=8"  # allow extra time for initdb to get started
+      - /src/policytool/scraper/pg_isready.py
+      - "--success-secs=30"  # allow extra time for initdb to get started
       - airflow
       - webserver
       - "-p"
@@ -131,20 +123,3 @@ services:
       - worker
     volumes: *airflow-volumes
     depends_on: ["postgres", "redis"]
-
-
-
-
-    command:
-      - sh
-      - "-c"
-      # https://github.com/puckel/docker-airflow/blob/master/script/entrypoint.sh
-      # says the scheduler needs to run in the same container when using
-      # LocalExecutor. But only run it if initdb succeeds.
-      - "/src/policytool/scraper/airflow/initdb.sh && (airflow scheduler & airflow webserver -p 8080)"
-    volumes:
-      - ./scraper/airflow/airflow.cfg:/airflow/airflow.cfg
-      - ./scraper:/src/policytool/scraper/
-      - ./pdf_parser:/src/policytool/pdf_parser/
-      - ./resources:/src/policytool/resources/
-      - ./build/airflow.db:/airflow/db
