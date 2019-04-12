@@ -1,3 +1,9 @@
+CREATE DATABASE airflow;
+CREATE DATABASE airflow_celery_results;
+
+CREATE DATABASE wsf_scraping;
+CREATE DATABASE wsf_scraping_test;
+
 CREATE TABLE IF NOT EXISTS section
 (
     id SERIAL PRIMARY KEY,
