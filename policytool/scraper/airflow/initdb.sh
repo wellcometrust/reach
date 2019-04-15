@@ -12,7 +12,7 @@ initdb() {
 
 if echo $AIRFLOW__CORE__SQL_ALCHEMY_CONN | grep -q postgres
 then
-    if ! /src/datalabs/pg_exists.py dag; then
+    if ! /src/policytool/scraper/pg_exists.py dag; then
         initdb
     fi
 else
