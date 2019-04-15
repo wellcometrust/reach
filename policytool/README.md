@@ -4,6 +4,19 @@
 
 A web scraper tool to get data for evaluating Wellcome impact.
 
+## What do we scrape
+
+
+ | Organisation | What is scraped                                                                     | Years       |
+ |--------------|-------------------------------------------------------------------------------------|-------------|
+ | WHO          | Everything on apps.who.int/iris                                                     | 2012 - 2019 |
+ | NICE         | All the Guidances and evidences                                                     | 2000 - 2019 |
+ | MSF          | All the reports and activity reports                                                | 2007 - 2019 |
+ | GOV          | Everything from gov.uk/government/publications                                      | 1945 - 2019 |
+ | UNICEF       | Everything from data.unicef.org/resources/resource-type/[publications and guidance] | 2010 - 2019 |
+ | Parliament   | Everything from search-material.parliament.uk                                       | 1984 - 2019 |
+
+
 ## Development
 
 To bring up the development environment using docker:
