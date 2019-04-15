@@ -61,6 +61,12 @@ if __name__ == '__main__':
     else:
         logging.getLogger().setLevel(logging.INFO)
 
+    if args.success_secs > args.timeout:
+        logging.error(
+            'pg_isready: timeout time is lower than success secs. Failing'
+        )
+        sys.exit(2)
+
     if 'POSTGRES_DSN' not in os.environ:
         logging.error('Error: POSTGRES_DSN not set')
         sys.exit(2)
