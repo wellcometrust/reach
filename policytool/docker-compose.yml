@@ -36,7 +36,7 @@ x-airflow_env: &airflow-env
   DATALABS_AIRFLOW_VERSION: "localdev"
 
   SENTRY_DSN: "${SENTRY_DSN}"
-  DATABASE_URL: "postgres://postgres:development@postgres:5432/wsf_scraping"
+  DATABASE_URL: "postgresql://postgres:development@postgres:5432/wsf_scraping"
   RESOURCES_FILES: "/src/policytool/resources/"
 
 
@@ -44,7 +44,7 @@ x-airflow-volumes: &airflow-volumes
   - ./scraper/airflow/airflow.cfg:/airflow/airflow.cfg
   - ./scraper/airflow/initdb.sh:/airflow/initdb.sh
   - ./scraper:/src/policytool/scraper
-  - ./pdf_parser:/src/policytool/pdf_parser/
+  - ./pdf_parser:/src/policytool/pdf_parser
   - ./build/airflow.db:/airflow/db
 
 # Restart airflow several times in case the DB wasn't present.
@@ -58,11 +58,10 @@ x-airflow-restart: &airflow-restart
 
 
 services:
-
   postgres:
     image: postgres:11.2-alpine
     ports:
-      - 5432:5432
+      - 127.0.0.1:5432:5432
     environment:
       POSTGRES_PASSWORD: development
     volumes:
@@ -72,7 +71,7 @@ services:
   redis:
     image: redis:5.0.3-alpine
     ports:
-      - 6379:6379
+      - 127.0.0.1:6379:6379
     command:
       - redis-server
       - --appendonly
@@ -96,7 +95,7 @@ services:
   airflow-web:
     image: *airflow-image
     ports:
-      - 8080:8080
+      - 127.0.0.1:8080:8080
     environment:
       <<: *airflow-env
       POSTGRES_DSN: "postgresql://postgres:development@postgres:5432/airflow?connect_timeout=20"
@@ -107,7 +106,8 @@ services:
       # Thus pg_isready.py, and with a longer success-secs than
       # airflow-scheduler.
       - /src/policytool/scraper/pg_isready.py
-      - "--success-secs=30"  # allow extra time for initdb to get started
+      - "--timeout=30"
+      - "--success-secs=8"  # allow extra time for initdb to get started
       - airflow
       - webserver
       - "-p"
@@ -117,7 +117,9 @@ services:
 
   airflow-worker:
     image: *airflow-image
-    environment: *airflow-env
+    environment:
+      <<: *airflow-env
+      POSTGRES_DSN: "postgresql://postgres:development@postgres:5432/airflow?connect_timeout=20"
     command:
       - airflow
       - worker
