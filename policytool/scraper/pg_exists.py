@@ -8,11 +8,10 @@ import argparse
 import logging
 import os
 import sys
-import time
 
 import psycopg2
 
-CONNECT_TIMEOUT=1
+CONNECT_TIMEOUT = 1
 
 parser = argparse.ArgumentParser(description=__doc__.strip())
 parser.add_argument('tablename')
