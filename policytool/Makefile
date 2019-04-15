@@ -58,5 +58,23 @@ docker-test: docker-build
 	docker-compose run --rm -w /src/policytool/scraper airflow sh -c "python -m unittest"
 
 
+#
+# Tooling for updating requirements.txt, b/c $(VIRTUALENV) also has test
+# dependencies in it.
+#
+.PHONY: update-requirements-txt
+update-requirements-txt: VIRTUALENV := /tmp/update-requirements-txt
+update-requirements-txt:
+	if ! [ -d $(VIRTUALENV) ]; then \
+		mkdir -p $(VIRTUALENV) && \
+		virtualenv --python python3.6 $(VIRTUALENV) && \
+		AIRFLOW_GPL_UNIDECODE=yes $(VIRTUALENV)/bin/pip3 install -r requirements.txt ; \
+	fi
+	echo "# Created by 'make update-requirements-txt'. DO NOT EDIT!" > requirements.txt
+	$(VIRTUALENV)/bin/pip freeze | grep -v pkg-resources==0.0.0 | \
+		sed 's/airflow/airflow[celery]/' >> requirements.txt
+
+
+
 .PHONY: all
 all: base_image docker-build
