@@ -20,3 +20,4 @@ scraper/crawl
 policytool/crawls*
 policytool/results*
 policytool/build*
+policytool/.cache/*
