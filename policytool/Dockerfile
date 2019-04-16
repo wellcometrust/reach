@@ -17,7 +17,10 @@ RUN /bin/sh -c 'cd /src/policytool && python3 setup.py develop --no-deps'
 
 # COPY datalabs/airflow/airflow.cfg /airflow/
 # COPY datalabs/airflow/initdb.sh /airflow/
-RUN mkdir -p /airflow/db
-RUN ln -s /src/policytool/scraper/airflow/dags /airflow/dags
+RUN mkdir -p /airflow/db && \
+    ln -s /src/policytool/scraper/airflow/dags /airflow/dags && \
+    chown -R www-data: /airflow
+
+USER www-data
 
 CMD ["/entrypoint.sh"]

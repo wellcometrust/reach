@@ -1,24 +1,22 @@
 #!/bin/sh -e
-# NB: this file is not volume'd in, so you must build the image
-# after editing it.
 
-if echo $AIRFLOW__CORE__SQLALCHEMY_CONN | grep -q sqlite
+initdb() {
+    airflow initdb
+    # delete default connections created by initdb; we don't use them
+    CONNECTIONS=$(airflow connections  -l | grep -vE '^\[' | grep -v 'Conn Id' | \
+      awk '{print $2}' | tr -d "'" )
+    if [ -n "$CONNECTIONS" ]; then
+      echo $CONNECTIONS | xargs -n1 airflow connections -d --conn_id
+    fi
+}
+
+if echo $AIRFLOW__CORE__SQL_ALCHEMY_CONN | grep -q postgres
 then
-    sqlite_path=$(
-        echo $AIRFLOW__CORE__SQLALCHEMY_CONN | sed -e 's+^sqlite://++'
-    )
-    echo $sqlite_path
-    if ! [ -f $sqlite_path ]
-    then
-        airflow initdb
-        # delete default connections not for AWS
-        airflow connections  -l | \
-          awk '{print $2}' | tr -d "'" | \
-          xargs -n1 airflow connections -d --conn_id
+    if ! /src/policytool/scraper/pg_exists.py dag; then
+        initdb
     fi
 else
-    echo "Unsupported DSN!" >&2
+    echo $AIRFLOW__CORE__SQL_ALCHEMY_CONN
+    echo "initdb.sh: Unsupported DSN!" >&2
     exit 1
 fi
-
-
