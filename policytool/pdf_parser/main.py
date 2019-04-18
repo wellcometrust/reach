@@ -9,7 +9,7 @@ import logging
 import tempfile
 import json
 
-from scraper.wsf_scraping.file_system import S3FileSystem, LocalFileSystem
+from scraper.scraper.file_system import S3FileSystem, LocalFileSystem
 from pdf_parser.pdf_parse import parse_pdf_document, grab_section
 
 logger = logging.getLogger(__name__)

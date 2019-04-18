@@ -1,9 +1,9 @@
 import unittest
 from scrapy.http import Response, Request, HtmlResponse
 from scrapy.utils.project import get_project_settings
-from wsf_scraping.spiders.msf_spider import MsfSpider
+from scraper.wsf_scraping.spiders.msf_spider import MsfSpider
 
-TEST_PDF = 'tests/pdfs/test_pdf.pdf'
+from .common import get_path, TEST_PDF
 
 
 class Crawler:
@@ -61,7 +61,7 @@ class TestMsfSpider(unittest.TestCase):
         parse_article function.
         """
 
-        with open('./tests/mock_sites/msf/1.html', 'rb') as html_site:
+        with open(get_path('mock_sites/msf/1.html'), 'rb') as html_site:
             request = Request('http://foo.bar')
             response = HtmlResponse(
                 'http://foo.bar',
