@@ -2,14 +2,14 @@ import unittest
 from pdf_parser.tools.extraction import _find_elements
 from pdf_parser.pdf_parse import parse_pdf_document
 
-TEST_PDF = 'tests/pdfs/test_pdf.pdf'
+from scraper.tests.common import TEST_PDF
 
 
 class TestTools(unittest.TestCase):
 
     def setUp(self):
         self.test_file = open(TEST_PDF, 'rb')
-        self.pdf_file_object = parse_pdf_document(self.test_file)
+        self.pdf_file_object, _ = parse_pdf_document(self.test_file)
 
     def tearDown(self):
         self.test_file.close()

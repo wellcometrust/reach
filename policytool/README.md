@@ -1,4 +1,14 @@
-# wsf-web-scraper
+# policytool
+
+Ultimately, all code will go in this directory, and this README will be superseded
+by the toplevel README.
+
+Meanwhile, this includes data on all code in this directory, including:
+
+- airflow
+- the scrapers run within airflow
+- the policy tool API
+- the policy tool website
 
 ![genericSpider](https://user-images.githubusercontent.com/235073/38735019-72dbd1f6-3f1f-11e8-9cb4-fa6f3d270dda.png)
 

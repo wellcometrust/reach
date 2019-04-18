@@ -1,10 +1,13 @@
+import os.path
 import unittest
+
 from scrapy.http import Response, Request, HtmlResponse, TextResponse
 from scrapy.utils.project import get_project_settings
-from wsf_scraping.spiders.nice_spider import NiceSpider
+from scraper.wsf_scraping.spiders.nice_spider import NiceSpider
 
-TEST_PDF = 'tests/pdfs/test_pdf.pdf'
+from .common import get_path, TEST_PDF
 
+NICE_2_HTML = get_path('mock_sites/nice/2.html')
 
 class Crawler:
 
@@ -61,7 +64,7 @@ class TestNiceSpider(unittest.TestCase):
         its history and a request to its evidences.
         """
 
-        with open('./tests/mock_sites/nice/1.html', 'r') as html_site:
+        with open(get_path('mock_sites/nice/1.html'), 'r') as html_site:
             request = Request('http://foo.bar')
             response = TextResponse(
                 'http://foo.bar',
@@ -81,7 +84,7 @@ class TestNiceSpider(unittest.TestCase):
         the spider yields a request to a publication.
         """
 
-        with open('./tests/mock_sites/nice/2.html', 'rb') as html_site:
+        with open(NICE_2_HTML, 'rb') as html_site:
             request = Request('http://foo.bar')
             response = HtmlResponse(
                 'http://foo.bar',
@@ -104,7 +107,7 @@ class TestNiceSpider(unittest.TestCase):
         the spider yields a request to a publication.
         """
 
-        with open('./tests/mock_sites/nice/2.html', 'rb') as html_site:
+        with open(NICE_2_HTML, 'rb') as html_site:
             request = Request('http://foo.bar')
             response = HtmlResponse(
                 'http://foo.bar',

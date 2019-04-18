@@ -13,7 +13,7 @@ x-airflow_env: &airflow-env
 
   # S3 prefix for all datalabs operators.
   # (in `core` because we must be in an existing section of the cfg)
-  AIRFLOW__CORE__DATALABS_S3_PREFIX: "s3://datalabs-dev/airflow" # No trailing /!
+  AIRFLOW__CORE__DATALABS_S3_PREFIX: "s3://datalabs-dev/policytool-airflow" # No trailing /!
   # AIRFLOW__CORE__DATALABS_ALTERYX_PREFIX: "s3://datalabs-staging/alteryx" # No trailing /!
 
   # dev creds encryption key, cf.
@@ -141,3 +141,22 @@ services:
       - worker
     volumes: *airflow-volumes
     depends_on: ["postgres", "redis"]
+
+  web:
+    image: *airflow-image
+    ports:
+      - 127.0.0.1:8081:8081
+    environment:
+      AWS_ACCESS_KEY_ID: "${AWS_ACCESS_KEY_ID}"
+      AWS_SECRET_ACCESS_KEY: "${AWS_SECRET_ACCESS_KEY}"
+      SENTRY_DSN: "${SENTRY_DSN}"
+      # DATABASE_URL: "postgres://postgres:postgres@articles-db:5432/wsf_scraping"
+
+    command:
+      - gunicorn
+      - --bind=0.0.0.0:8081
+      - --reload
+      - web.api:api
+    volumes:
+      - ./web:/src/policytool/web/
+      - ./scraper:/src/policytool/scraper/

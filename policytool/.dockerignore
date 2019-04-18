@@ -6,3 +6,5 @@ Dockerfile
 scraper/var/*
 scraper/results/*
 scraper/data/*
+**/__pycache__/*
+**/*.pyc
