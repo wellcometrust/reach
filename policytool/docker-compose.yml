@@ -86,7 +86,7 @@ services:
       - bootstrap.memory_lock=true
       - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
     ports:
-      - 9200:9200
+      - 127.0.0.1:9200:9200
 
   kibana:
     image: docker.elastic.co/kibana/kibana:7.0.0
