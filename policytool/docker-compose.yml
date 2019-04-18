@@ -143,7 +143,6 @@ services:
     depends_on: ["postgres", "redis"]
 
   web:
-    # container_name: airflow-web
     image: *airflow-image
     ports:
       - 127.0.0.1:8081:8081
