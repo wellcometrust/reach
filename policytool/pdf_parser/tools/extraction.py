@@ -10,7 +10,7 @@ def _find_elements(pdf_file, keyword):
     titles_font_size = 0
     list_fonts = pdf_file.get_font_size_list()
     max_fonts_name = ''
-    regex = r''.join(['(^|[\W]+)', keyword, 's?(?=[\W]+|$)'])
+    regex = r''.join([r'(^|[\W]+)', keyword, r's?(?=[\W]+|$)'])
 
     if not list_fonts:
         return titles

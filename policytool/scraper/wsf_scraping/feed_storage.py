@@ -1,6 +1,6 @@
 import logging
 
-from scraper.wsf_scraping.file_system import S3FileSystem, LocalFileSystem
+from scraper.scraper.file_system import S3FileSystem, LocalFileSystem
 from six.moves.urllib.parse import urlparse
 from scrapy.extensions.feedexport import BlockingFeedStorage
 

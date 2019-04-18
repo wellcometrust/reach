@@ -4,7 +4,7 @@ VIRTUALENV := build/virtualenv
 
 IMAGE := uk.ac.wellcome/web-scraper
 ECR_IMAGE := 160358319781.dkr.ecr.eu-west-1.amazonaws.com/$(IMAGE)
-VERSION := 2019.1.1
+VERSION := latest
 
 
 # Tags to use when run within codebuild.
@@ -14,15 +14,13 @@ CODEBUILD_VERSION := codebuild-$(shell date +%Y%m%dT%H%M%SZ)-$(shell \
 	echo $$CODEBUILD_RESOLVED_SOURCE_VERSION | cut -c1-7)
 CODEBUILD_LATEST_TAG := codebuild-latest
 
-.PHONY: base_image
-base_image:
+.PHONY: base-image
+base-image:
 	docker build -t web-scraper.base -f Dockerfile.base .
 
 .PHONY: docker-build
-docker-build: base_image
+docker-build: base-image
 	docker build \
-		-t $(IMAGE):$(VERSION) \
-		-t $(IMAGE):latest \
 		-t $(ECR_IMAGE):$(VERSION) \
 		-t $(ECR_IMAGE):latest \
 		.
@@ -40,22 +38,28 @@ codebuild-docker-push: VERSION := $(CODEBUILD_VERSION)
 codebuild-docker-push: LATEST_TAG := $(CODEBUILD_LATEST_TAG)
 codebuild-docker-push: docker-push
 
-$(VIRTUALENV)/.installed: requirements.txt
+$(VIRTUALENV)/.installed: requirements.txt test_requirements.txt
 	@if [ -d $(VIRTUALENV) ]; then rm -rf $(VIRTUALENV); fi
 	@mkdir -p $(VIRTUALENV)
 	virtualenv --python python3 $(VIRTUALENV)
 	AIRFLOW_GPL_UNIDECODE=yes $(VIRTUALENV)/bin/pip3 install -r requirements.txt
+	$(VIRTUALENV)/bin/pip3 install -r test_requirements.txt
+	$(VIRTUALENV)/bin/python setup.py develop --no-deps
 	touch $@
 
 .PHONY: virtualenv
 virtualenv: $(VIRTUALENV)/.installed
 
+
+.PHONY: test
+test: virtualenv
+	$(VIRTUALENV)/bin/pytest ./
+
 .PHONY: docker-test
 docker-test: docker-build
-	# docker run -v $$(pwd)/requirements.txt:/requirements.txt \
-	#     --rm $(ECR_IMAGE):$(VERSION) \
-	# 	sh -c "cd /src/policytool/scraper && python3 -m unittest"
-	docker-compose run --rm -w /src/policytool/scraper airflow-web sh -c "python -m unittest"
+	docker run -u root -v $$(pwd)/test_requirements.txt:/test_requirements.txt \
+		--rm $(ECR_IMAGE):$(VERSION) \
+		sh -c "pip3 install -r /test_requirements.txt && pytest /src/policytool"
 
 
 #
@@ -77,4 +81,4 @@ update-requirements-txt:
 
 
 .PHONY: all
-all: base_image docker-build
+all: docker-test

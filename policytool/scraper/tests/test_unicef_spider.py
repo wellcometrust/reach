@@ -1,9 +1,9 @@
 import unittest
 from scrapy.http import Response, Request, HtmlResponse
 from scrapy.utils.project import get_project_settings
-from wsf_scraping.spiders.unicef_spider import UnicefSpider
+from scraper.wsf_scraping.spiders.unicef_spider import UnicefSpider
 
-TEST_PDF = 'tests/pdfs/test_pdf.pdf'
+from .common import get_path, TEST_PDF
 
 
 class Crawler:
@@ -61,7 +61,7 @@ class TestUnicefSpider(unittest.TestCase):
         parse_article function.
         """
 
-        with open('./tests/mock_sites/unicef/1.html', 'rb') as html_site:
+        with open(get_path('mock_sites/unicef/1.html'), 'rb') as html_site:
             request = Request('http://foo.bar')
             response = HtmlResponse(
                 'http://foo.bar',
@@ -82,7 +82,7 @@ class TestUnicefSpider(unittest.TestCase):
         parse_article function.
         """
 
-        with open('./tests/mock_sites/unicef/2.html', 'rb') as html_site:
+        with open(get_path('mock_sites/unicef/2.html'), 'rb') as html_site:
             request = Request('http://foo.bar')
             response = HtmlResponse(
                 'http://foo.bar',
