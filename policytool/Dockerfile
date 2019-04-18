@@ -7,9 +7,6 @@ COPY scraper/ /src/policytool/scraper/
 COPY pdf_parser/ /src/policytool/pdf_parser/
 COPY web/ /src/policytool/web/
 
-# No longer used?
-COPY ./entrypoint.sh /entrypoint.sh
-
 COPY ./scrapy.cfg /etc/scraper/scrapy.cfg
 
 # TODO: cd /src after we've moved setup.py up a dir
