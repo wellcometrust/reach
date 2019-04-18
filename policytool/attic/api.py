@@ -14,7 +14,7 @@ from tools import DatabaseConnector
 from flask import Flask, request, jsonify, send_file
 from scrapy.crawler import CrawlerRunner
 from scrapy.utils.project import get_project_settings
-from wsf_scraping.spiders import who_iris_spider, nice_spider
+from scraper.spiders import who_iris_spider, nice_spider
 from twisted.internet import reactor, endpoints
 from scrapy.utils.log import configure_logging
 from twisted.web import server, wsgi

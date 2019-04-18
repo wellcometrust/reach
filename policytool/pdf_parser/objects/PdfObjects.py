@@ -148,9 +148,9 @@ class PdfFile(object):
         """Return a list of lines containing (string)keyword."""
         lines_results = []
         pattern = re.compile(''.join([
-            '(^|\W)',
+            r'(^|\W)',
             keyword,
-            '(\W|$)'
+            r'(\W|$)'
         ]))
         if context > 0:
             for page in self.pages:
@@ -191,9 +191,9 @@ class PdfFile(object):
         for num, line in enumerate(lines):
             for index, value in ac_automaton.iter(line.text.lower()):
                 pattern = re.compile(''.join([
-                    '(^|\W)',
+                    r'(^|\W)',
                     value[1],
-                    '(\W|$)'
+                    r'(\W|$)'
                 ]), re.IGNORECASE)
                 if self._keyword_is_in_line(line.text, pattern):
                     first_line = max(0, num - context)

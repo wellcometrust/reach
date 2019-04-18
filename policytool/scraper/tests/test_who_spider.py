@@ -1,9 +1,11 @@
+import os.path
 import unittest
+
 from scrapy.http import Response, Request, HtmlResponse
 from scrapy.utils.project import get_project_settings
-from wsf_scraping.spiders.who_iris_spider import WhoIrisSpider
+from scraper.wsf_scraping.spiders.who_iris_spider import WhoIrisSpider
 
-TEST_PDF = 'tests/pdfs/test_pdf.pdf'
+from .common import get_path, TEST_PDF
 
 
 class Crawler:
@@ -61,7 +63,7 @@ class TestWhoIrisSpider(unittest.TestCase):
         parse_article function.
         """
 
-        with open('./tests/mock_sites/who/1.html', 'rb') as html_site:
+        with open(get_path('mock_sites/who/1.html'), 'rb') as html_site:
             request = Request('http://foo.bar')
             response = HtmlResponse(
                 'http://foo.bar',
@@ -89,7 +91,7 @@ class TestWhoIrisSpider(unittest.TestCase):
         save_pdf function.
         """
 
-        with open('./tests/mock_sites/who/2.html', 'rb') as html_site:
+        with open(get_path('mock_sites/who/2.html'), 'rb') as html_site:
             request = Request('http://foo.bar')
             response = HtmlResponse(
                 'http://foo.bar',

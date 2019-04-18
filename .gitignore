@@ -8,7 +8,7 @@ build*
 model_tests/results/*
 model_tests/data_test/*
 !model_tests/results/.gitkeep
-
+*.egg-info
 
 scraper/data
 scraper/results
