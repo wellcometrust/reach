@@ -79,6 +79,22 @@ services:
     volumes:
       - ./build/airflow.redis:/data
 
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:7.0.0
+    environment:
+      - discovery.type=single-node
+      - bootstrap.memory_lock=true
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+    ports:
+      - 127.0.0.1:9200:9200
+
+  kibana:
+    image: docker.elastic.co/kibana/kibana:7.0.0
+    ports:
+      - 127.0.0.1:5601:5601
+    environment:
+      ELASTICSEARCH_HOSTS: "http://elasticsearch:9200"
+
   airflow-scheduler:
     image: *airflow-image
     environment:
