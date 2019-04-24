@@ -12,11 +12,16 @@ import os.path
 import falcon
 import jinja2
 
-TEMPLATE_ROOT = os.path.join(os.path.dirname(__file__), 'templates')
+from urllib.parse import urlparse
+from elasticsearch import Elasticsearch
 
+from web import search
+
+TEMPLATE_ROOT = os.path.join(os.path.dirname(__file__), 'templates')
 STATIC_ROOT = os.environ.get('STATIC_ROOT')
 if not STATIC_ROOT or not os.path.isdir(STATIC_ROOT):
     raise Exception("No static directory found. STATIC_ROOT=%r" % STATIC_ROOT)
+
 
 def configure_logger(logger):
     """ Configures our logger w/same settings & handler as our webserver
@@ -33,7 +38,7 @@ def to_template_names(path):
 
     Args:
         path: path portion of HTTP GET request
-    
+
     Returns:
         Tuple of file paths that Jinja should search for.
     """
@@ -70,7 +75,9 @@ def to_template_names(path):
 
 def get_context(os_environ):
     return {
-        'POLICYTOOL_VERSION': os_environ.get('POLICYTOOL_VERSION', 'development')
+        'POLICYTOOL_VERSION': os_environ.get(
+            'POLICYTOOL_VERSION', 'development'
+        )
     }
 
 
@@ -106,11 +113,31 @@ class TemplateResource:
 logger = logging.getLogger()
 configure_logger(logger)
 
+# Elasticsearch stuff
+assert os.environ.get('ELASTICSEARCH_HOST'), 'No elasticsearch host'
+parsed_url = urlparse(os.environ['ELASTICSEARCH_HOST'])
+
+try:
+    logger.info('Trying to connect to {elastic_host}'.format(
+        elastic_host=os.environ['ELASTICSEARCH_HOST']
+    ))
+    es = Elasticsearch([{
+            'host': parsed_url.hostname,
+            'port': parsed_url.port
+        }],
+    )
+except Exception as e:
+    raise e
+
 
 # Routes (are LIFO)
 api = falcon.API()
 api.add_route(
     '/',
     TemplateResource(TEMPLATE_ROOT, get_context(os.environ))
+)
+api.add_route(
+    '/search',
+    search.Fulltext(es)
 )
 api.add_static_route('/static', STATIC_ROOT)
