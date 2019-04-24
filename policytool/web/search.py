@@ -16,7 +16,7 @@ class Fulltext(object):
     def __init__(self, es):
         self.es = es
 
-    def search_es(self, req_params):
+    def _search_es(self, req_params):
         """Run a search on the elasticsearch database.
 
         Args:
@@ -71,7 +71,7 @@ class Fulltext(object):
             resp: The reponse object to be returned
         """
         if req.params:
-            status, response = self.search_es(req.params)
+            status, response = self._search_es(req.params)
             if status:
                 resp.body = json.dumps(response)
             else:
@@ -79,8 +79,11 @@ class Fulltext(object):
                     'status': 'error',
                     'message': response
                 })
+
+                resp.status = falcon.HTTP_500
         else:
             resp.body = json.dumps({
-                'status': 'error'
+                'status': 'error',
+                'message': "The request doesn't contain any parameters"
             })
-            resp.status = falcon.HTTP_200
+            resp.status = falcon.HTTP_400
