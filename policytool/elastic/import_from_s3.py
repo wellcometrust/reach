@@ -5,6 +5,7 @@ import them into a running Elasticsearch database.
 import tempfile
 import csv
 import json
+import random
 
 import boto3
 from urllib.parse import urlparse
@@ -40,9 +41,15 @@ def write_to_es(es, line):
         line: a dict from a csv line. Should contain a file hash and the
               full text of a pdf
     """
+    # TODO: Use real pdf titles and orgs
+    # Select a random org for the time being
+    orgs = ['who', 'nice', 'msf']
+    org = random.choice(orgs)
     body = json.dumps({
         'hash': line['file_hash'],
-        'text': line['pdf_text']
+        'text': line['pdf_text'],
+        'title': line['pdf_name'],
+        'organisation': org,
     })
     es.index(
         index='datalabs-fulltexts',
