@@ -8,14 +8,13 @@ Entrypoint for web UI & API. Run with:
 import logging
 import os
 import os.path
+from urllib.parse import urlparse
 
 import falcon
 import jinja2
-
-from urllib.parse import urlparse
 from elasticsearch import Elasticsearch
 
-from web import search
+from . import search
 
 TEMPLATE_ROOT = os.path.join(os.path.dirname(__file__), 'templates')
 STATIC_ROOT = os.environ.get('STATIC_ROOT')
@@ -117,18 +116,14 @@ configure_logger(logger)
 assert os.environ.get('ELASTICSEARCH_HOST'), 'No elasticsearch host'
 parsed_url = urlparse(os.environ['ELASTICSEARCH_HOST'])
 
-try:
-    logger.info('Trying to connect to {elastic_host}'.format(
-        elastic_host=os.environ['ELASTICSEARCH_HOST']
-    ))
-    es = Elasticsearch([{
-            'host': parsed_url.hostname,
-            'port': parsed_url.port
-        }],
-    )
-except Exception as e:
-    raise e
-
+logger.info('Connecting to {elastic_host}'.format(
+    elastic_host=os.environ['ELASTICSEARCH_HOST']
+))
+es = Elasticsearch([{
+        'host': parsed_url.hostname,
+        'port': parsed_url.port
+    }],
+)
 
 # Routes (are LIFO)
 api = falcon.API()
