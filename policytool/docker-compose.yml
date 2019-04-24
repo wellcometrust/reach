@@ -87,6 +87,8 @@ services:
       - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
     ports:
       - 127.0.0.1:9200:9200
+    volumes:
+      - esdata:/usr/share/elasticsearch/data
 
   kibana:
     image: docker.elastic.co/kibana/kibana:7.0.0
@@ -150,8 +152,8 @@ services:
       AWS_ACCESS_KEY_ID: "${AWS_ACCESS_KEY_ID}"
       AWS_SECRET_ACCESS_KEY: "${AWS_SECRET_ACCESS_KEY}"
       SENTRY_DSN: "${SENTRY_DSN}"
-
       STATIC_ROOT: /src/policytool/web/build/static
+      ELASTICSEARCH_HOST: "http://elasticsearch:9200"
       # DATABASE_URL: "postgres://postgres:postgres@articles-db:5432/wsf_scraping"
 
     command:
@@ -177,3 +179,7 @@ services:
       - ./web/static:/src/static
     # Signal handling in gulp? Not so much...
     stop_signal: SIGKILL
+
+volumes:
+    esdata:
+        driver: local
