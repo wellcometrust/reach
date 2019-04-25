@@ -12,9 +12,11 @@ import os.path
 import falcon
 import jinja2
 
-TEMPLATE_DIR = os.path.join(os.path.dirname(__file__), 'templates')
-STATIC_DIR = os.path.join(os.path.dirname(__file__), 'static')
+TEMPLATE_ROOT = os.path.join(os.path.dirname(__file__), 'templates')
 
+STATIC_ROOT = os.environ.get('STATIC_ROOT')
+if not STATIC_ROOT or not os.path.isdir(STATIC_ROOT):
+    raise Exception("No static directory found. STATIC_ROOT=%r" % STATIC_ROOT)
 
 def configure_logger(logger):
     """ Configures our logger w/same settings & handler as our webserver
@@ -109,6 +111,6 @@ configure_logger(logger)
 api = falcon.API()
 api.add_route(
     '/',
-    TemplateResource(TEMPLATE_DIR, get_context(os.environ))
+    TemplateResource(TEMPLATE_ROOT, get_context(os.environ))
 )
-api.add_static_route('/static', STATIC_DIR)
+api.add_static_route('/static', STATIC_ROOT)
