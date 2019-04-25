@@ -6,6 +6,14 @@ IMAGE := uk.ac.wellcome/web-scraper
 ECR_IMAGE := 160358319781.dkr.ecr.eu-west-1.amazonaws.com/$(IMAGE)
 VERSION := latest
 
+WEB_BUILD_IMAGE := uk.ac.wellcome/policytool-web-build
+WEB_BUILD_SOURCES := \
+	web/static/style.css \
+	web/gulpfile.js
+
+WEB_BUILD_TARGETS := \
+	web/build/static/style.css
+
 
 # Tags to use when run within codebuild.
 #
@@ -18,8 +26,21 @@ CODEBUILD_LATEST_TAG := codebuild-latest
 base-image:
 	docker build -t web-scraper.base -f Dockerfile.base .
 
+.PHONY: web-build-image
+web-build-image:
+	docker build \
+		-t $(WEB_BUILD_IMAGE):latest \
+		-f web/Dockerfile.node \
+		web/
+
+# NB: our target will run every time b/c web-build-image is
+# a phony target. Not great but we don't need incremental builds
+# for static web sources.
+$(WEB_BUILD_TARGETS): web-build-image $(WEB_BUILD_SOURCES)
+	web/bin/docker_run.sh gulp default
+
 .PHONY: docker-build
-docker-build: base-image
+docker-build: base-image $(WEB_BUILD_TARGETS)
 	docker build \
 		-t $(ECR_IMAGE):$(VERSION) \
 		-t $(ECR_IMAGE):latest \
@@ -77,8 +98,6 @@ update-requirements-txt:
 	echo "# Created by 'make update-requirements-txt'. DO NOT EDIT!" > requirements.txt
 	$(VIRTUALENV)/bin/pip freeze | grep -v pkg-resources==0.0.0 | \
 		sed 's/airflow/airflow[celery]/' >> requirements.txt
-
-
 
 .PHONY: all
 all: docker-test

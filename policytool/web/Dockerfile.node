@@ -1,0 +1,22 @@
+FROM node:8.16.0-alpine
+
+# Rationale: install modules into /src/node_modules, which
+# we keep inside the docker image. Then, volume in whatever
+# grunt needs to run.
+WORKDIR /src
+RUN \
+    npm install -g gulp && \
+    npm install \
+        autoprefixer \
+        cssnano \
+        gulp \
+        gulp-postcss \
+        gulp-sourcemaps \
+        precss \
+        postcss \
+        postcss-import \
+        postcss-url
+
+VOLUME ["/src/build/static", "/src/gulpfile.js", "/src/static"]
+
+CMD ["gulp", "watch"]
