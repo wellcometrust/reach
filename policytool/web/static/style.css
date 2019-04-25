@@ -1,1 +1,166 @@
-/* wat */
+$spectre_version: 0.5.8;
+@import "vendor/spectre-$(spectre_version)/spectre.css";
+/* @import "vendor/spectre-$(spectre_version)/spectre-exp.css"; */
+
+/*
+ * Colors and typefaces
+ */
+
+$navColor: #002E45;         /* top nav, dark blue */
+$buttonColor: #006EDB;      /* buttons & hero banner, light blue */
+$textColor: #002E45;        /* lower contrast text :-) */
+$hoverBorderColor: #8BD1FF; /* border for buttons on hover */
+$footerColor: #F2F4F6;      /* light gray */
+
+@font-face {
+    font-family: Wellcome;
+    /* NB: this will be inlined by postcss-url */
+    src: url("./wellcome-bold-webfont.woff2") format("woff2");
+}
+
+/*
+ * Common spacings
+ */
+
+$sectionPadding: 1.5ex;
+
+
+/*
+ * Generic elements
+ */
+
+body {
+  /* Brand guidelines say Helvetica Neue or Arial, but
+   * we're using Spectre's default of:
+   *
+   *  -apple-system,
+   *  system-ui,
+   *  Segoe UI,
+   *  Roboto,
+   *  Ubuntu,
+   *  Cantarell,
+   *  Noto Sans,
+   *  sans-serif,
+   *  BlinkMacSystemFont,
+   *  Helvetica Neue
+   */
+  color: $textColor;
+}
+
+a {
+  text-decoration: underline;
+  color: $textColor;
+}
+
+.container {
+  padding: 0;
+}
+
+.btn-primary {
+  color: white;
+  /* padding: 1ex 0.8em; */
+}
+
+
+/*
+ * Page structures
+ */
+
+nav {
+  color: white;
+  background-color: $navColor;
+  margin: 0;
+  padding: 0 0 2px 0;
+  display: inline-block;
+  font-family: Wellcome;
+}
+
+nav h3 {
+  margin: 0;
+  padding: 0;
+}
+
+/*
+nav ul {
+  display: inline;
+}
+*/
+
+nav ul li {
+  list-style: none;
+  display: inline;
+  align-self: flex-end;
+}
+
+section#hero {
+  background-color: $buttonColor;
+  color: white;
+  padding: $sectionPadding 0;
+}
+
+section#hero h1 {
+  font-family: Wellcome;
+}
+
+section#hero .buttons {
+  display: flex;
+}
+
+section#hero .btn-primary {
+  background-color: $navColor;
+  border: 1px solid $navColor;
+  margin: 1ex 0.6em 1ex 0;
+  /* box-shadow: 0 12px 22px 0; */
+  /* border-radius: 2px; */
+}
+
+section#hero .btn.help {
+  width: 22px;
+  height: 22px;
+  padding: 0;
+  color: white;
+  font-size: 14px;
+  font-weight: bold;
+  border-radius: 50%;
+  line-height: 22px;
+  text-align: center;
+  background-color: $navColor;
+  margin-top: 2.7ex;
+}
+
+section#hero a.btn-primary:hover,
+section#hero .btn.help:hover {
+  border: 1px solid $hoverBorderColor;
+}
+
+
+section #hero .popover-container {
+  display: block;
+  opacity: 1;
+  transform: translate(-50%, -100%) scale(1);
+}
+
+section#hero .popover-container svg.arrow {
+  margin: -1em auto 0 auto;
+  width: 2em;
+  height: 1em;
+}
+
+section#hero .popover-container .card {
+  color: $textColor;
+}
+
+main {
+  padding: $sectionPadding 0;
+}
+
+footer {
+  padding: $sectionPadding 0;
+  background-color: $footerColor;
+}
+
+footer svg#wellcomelogo {
+  height: 1.6em;
+  width: 1.6em;
+  margin-bottom: -0.4em;
+}
