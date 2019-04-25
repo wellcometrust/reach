@@ -54,14 +54,14 @@ class Fulltext(object):
         except ConnectionError:
             message = 'Could not join the elasticsearch server'
             api.logger.error(message)
-            return False, message
+            raise falcon.HTTPServiceUnavailable(description=message)
 
         except NotFoundError:
             message = 'No results found.'
             return False, message
 
         except Exception as e:
-            return False, str(e)
+            raise falcon.HTTPError(description=str(e))
 
     def on_get(self, req, resp):
         """Returns the result of a search on the elasticsearch cluster.
@@ -73,14 +73,13 @@ class Fulltext(object):
         if req.params:
             status, response = self._search_es(req.params)
             if status:
+                response['status'] = 'success'
                 resp.body = json.dumps(response)
             else:
                 resp.body = json.dumps({
                     'status': 'error',
                     'message': response
                 })
-
-                resp.status = falcon.HTTP_500
         else:
             resp.body = json.dumps({
                 'status': 'error',
