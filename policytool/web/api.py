@@ -80,6 +80,14 @@ def get_context(os_environ):
     }
 
 
+class Configuration:
+    def __init__(self):
+        # Elasticsearch stuff
+        assert os.environ.get('ELASTICSEARCH_HOST'), 'No elasticsearch host'
+        self.es_host = os.environ['ELASTICSEARCH_HOST']
+        self.es_explain = os.environ.get('ELASTICSEARCH_EXPLAIN', False)
+
+
 class TemplateResource:
     """
     Serves HTML templates. Note that templates are read from the FS for
@@ -112,12 +120,11 @@ class TemplateResource:
 logger = logging.getLogger()
 configure_logger(logger)
 
-# Elasticsearch stuff
-assert os.environ.get('ELASTICSEARCH_HOST'), 'No elasticsearch host'
-parsed_url = urlparse(os.environ['ELASTICSEARCH_HOST'])
+conf = Configuration()
+parsed_url = urlparse(conf.es_host)
 
 logger.info('Connecting to {elastic_host}'.format(
-    elastic_host=os.environ['ELASTICSEARCH_HOST']
+    elastic_host=conf.es_host
 ))
 es = Elasticsearch([{
         'host': parsed_url.hostname,
@@ -133,6 +140,6 @@ api.add_route(
 )
 api.add_route(
     '/search',
-    search.Fulltext(es)
+    search.Fulltext(es, conf.es_explain)
 )
 api.add_static_route('/static', STATIC_ROOT)
