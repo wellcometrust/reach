@@ -13,8 +13,9 @@ class Fulltext(object):
         es: An elasticsearch connection
     """
 
-    def __init__(self, es):
+    def __init__(self, es, es_explain):
         self.es = es
+        self.es_explain = es_explain
 
     def _search_es(self, req_params):
         """Run a search on the elasticsearch database.
@@ -48,7 +49,7 @@ class Fulltext(object):
             return True, self.es.search(
                 index='datalabs-fulltexts',
                 body=json.dumps(es_body),
-                explain=True
+                explain=self.es_explain
             )
 
         except ConnectionError:
@@ -61,6 +62,7 @@ class Fulltext(object):
             return False, message
 
         except Exception as e:
+            api.logger.error(e)
             raise falcon.HTTPError(description=str(e))
 
     def on_get(self, req, resp):
