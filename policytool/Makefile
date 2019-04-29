@@ -37,6 +37,10 @@ web-build-image:
 # a phony target. Not great but we don't need incremental builds
 # for static web sources.
 $(WEB_BUILD_TARGETS): web-build-image $(WEB_BUILD_SOURCES)
+	@# CodePipeline (but not CodeBuild) code checkouts lose execution bits
+	@# (https://forums.aws.amazon.com/thread.jspa?threadID=235452).
+	@# So, fix this for CI builds.
+	@chmod +x web/bin/docker_run.sh
 	web/bin/docker_run.sh gulp default
 
 .PHONY: docker-build
