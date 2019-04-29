@@ -31,6 +31,11 @@ def configure_logger(logger):
     logger.setLevel(gunicorn_logger.level)
 
 
+# Logging
+logger = logging.getLogger()
+configure_logger(logger)
+
+
 def to_template_names(path):
     """
     Maps HTTP request paths to Jinja template paths.
@@ -80,14 +85,6 @@ def get_context(os_environ):
     }
 
 
-class Configuration:
-    def __init__(self):
-        # Elasticsearch stuff
-        assert os.environ.get('ELASTICSEARCH_HOST'), 'No elasticsearch host'
-        self.es_host = os.environ['ELASTICSEARCH_HOST']
-        self.es_explain = os.environ.get('ELASTICSEARCH_EXPLAIN', False)
-
-
 class TemplateResource:
     """
     Serves HTML templates. Note that templates are read from the FS for
@@ -116,30 +113,27 @@ class TemplateResource:
             return
 
 
-# Logging
-logger = logging.getLogger()
-configure_logger(logger)
+def create_api(conf):
+    parsed_url = urlparse(conf.es_host)
 
-conf = Configuration()
-parsed_url = urlparse(conf.es_host)
+    logger.info('Connecting to {elastic_host}'.format(
+        elastic_host=conf.es_host
+    ))
+    es = Elasticsearch([{
+            'host': parsed_url.hostname,
+            'port': parsed_url.port
+        }],
+    )
 
-logger.info('Connecting to {elastic_host}'.format(
-    elastic_host=conf.es_host
-))
-es = Elasticsearch([{
-        'host': parsed_url.hostname,
-        'port': parsed_url.port
-    }],
-)
-
-# Routes (are LIFO)
-api = falcon.API()
-api.add_route(
-    '/',
-    TemplateResource(TEMPLATE_ROOT, get_context(os.environ))
-)
-api.add_route(
-    '/search',
-    search.Fulltext(es, conf.es_explain)
-)
-api.add_static_route('/static', STATIC_ROOT)
+    # Routes (are LIFO)
+    api = falcon.API()
+    api.add_route(
+        '/',
+        TemplateResource(TEMPLATE_ROOT, get_context(os.environ))
+    )
+    api.add_route(
+        '/search',
+        search.Fulltext(es, conf.es_explain)
+    )
+    api.add_static_route('/static', STATIC_ROOT)
+    return api
