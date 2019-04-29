@@ -84,7 +84,7 @@ test: virtualenv
 docker-test: docker-build
 	docker run -u root -v $$(pwd)/test_requirements.txt:/test_requirements.txt \
 		--rm $(ECR_IMAGE):$(VERSION) \
-		sh -c "pip3 install -r /test_requirements.txt && pytest /src/policytool"
+		sh -c "pip3 install -r /test_requirements.txt && ELASTICSEARCH_HOST=http://elasticsearch:9200 pytest /src/policytool"
 
 
 #
