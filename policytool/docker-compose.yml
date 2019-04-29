@@ -150,6 +150,8 @@ services:
       AWS_ACCESS_KEY_ID: "${AWS_ACCESS_KEY_ID}"
       AWS_SECRET_ACCESS_KEY: "${AWS_SECRET_ACCESS_KEY}"
       SENTRY_DSN: "${SENTRY_DSN}"
+
+      STATIC_ROOT: /src/policytool/web/build/static
       # DATABASE_URL: "postgres://postgres:postgres@articles-db:5432/wsf_scraping"
 
     command:
@@ -160,3 +162,18 @@ services:
     volumes:
       - ./web:/src/policytool/web/
       - ./scraper:/src/policytool/scraper/
+
+  # TODO: run gulp watch with the right volumes in place
+  # and update the web image to serve static from build/static
+  # by either an env or complicated volumes
+  gulp-watch:
+    image: uk.ac.wellcome/policytool-web-build:latest
+    command:
+      - gulp
+      - watch
+    volumes:
+      - ./web/build/static:/src/build/static
+      - ./web/gulpfile.js:/src/gulpfile.js
+      - ./web/static:/src/static
+    # Signal handling in gulp? Not so much...
+    stop_signal: SIGKILL
