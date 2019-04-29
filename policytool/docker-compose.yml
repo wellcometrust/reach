@@ -160,7 +160,7 @@ services:
       - gunicorn
       - --bind=0.0.0.0:8081
       - --reload
-      - web.api:api
+      - web.wsgi:application
     volumes:
       - ./web:/src/policytool/web/
       - ./scraper:/src/policytool/scraper/
