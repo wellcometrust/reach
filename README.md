@@ -103,5 +103,13 @@ You can run the unittests for this project by running:
 
 This will test that your last changes didn't affect how the program works.
 
+## Testing each component of the algorithm
+
+We have devised some test data in order to test 7 steps of the model. The results can be found by first downloading the test data from [here](https://s3-eu-west-1.amazonaws.com/datalabs-data/policy_tool_tests), and then running
+```
+python test_algo.py --verbose True
+```
+(set the verbose argument to False if you want less information about the tests to be printed).
+
 ## Contributing
 See the [Contributing guidelines](./CONTRIBUTING.md)
