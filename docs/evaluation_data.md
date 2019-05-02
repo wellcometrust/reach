@@ -11,7 +11,7 @@ In this document we describe how we got each of the evaluation datasets uses in 
 
 ## Parse Evaluation
 
-"./algo_tests/data_test/.csv"
+"./algo_tests/data_test/actual_reference_structures_sample.csv"
 
 ## Match Evaluation
 
