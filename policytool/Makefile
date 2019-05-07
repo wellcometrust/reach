@@ -97,7 +97,7 @@ update-requirements-txt:
 	if ! [ -d $(VIRTUALENV) ]; then \
 		mkdir -p $(VIRTUALENV) && \
 		virtualenv --python python3.6 $(VIRTUALENV) && \
-		AIRFLOW_GPL_UNIDECODE=yes $(VIRTUALENV)/bin/pip3 install -r requirements.txt ; \
+		AIRFLOW_GPL_UNIDECODE=yes $(VIRTUALENV)/bin/pip3 install -r unpinned_requirements.txt ; \
 	fi
 	echo "# Created by 'make update-requirements-txt'. DO NOT EDIT!" > requirements.txt
 	$(VIRTUALENV)/bin/pip freeze | grep -v pkg-resources==0.0.0 | \

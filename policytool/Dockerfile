@@ -3,6 +3,7 @@ FROM web-scraper.base
 
 COPY setup.py /src/policytool/
 COPY README.md /src/policytool/
+COPY unpinned_requirements.txt /src/policytool/
 
 # Airflow deps
 COPY scraper/ /src/policytool/scraper/

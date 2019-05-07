@@ -1,0 +1,12 @@
+boto3
+# cryptography
+Click
+docutils
+numpy
+pandas
+psycopg2-binary
+scikit-learn
+scipy
+sklearn
+SQLAlchemy
+sentry-sdk
