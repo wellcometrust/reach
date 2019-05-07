@@ -5,8 +5,8 @@ from settings import BaseSettings
 class TestSettings(BaseSettings):
     DEBUG = True
 
-    FOLDER_PREFIX = "./algo_tests/data_test"
-    LOG_FILE_PREFIX = './algo_tests/results'
+    FOLDER_PREFIX = "./algo_evaluation/data_evaluate"
+    LOG_FILE_PREFIX = './algo_evaluation/results'
 
     SCRAPE_DATA_FILE_NAME = "scrape_test_data.csv"
 
