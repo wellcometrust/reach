@@ -20,8 +20,8 @@ def scrape_urls(scrape_test_data):
 
     references_text = []
 
-    for url in scrape_test_data['url']:
-        # data = scrape_function(url) #### NO IDEA HERE - SCRAPE THE URL GIVEN
+    for pdf in scrape_test_data['pdf']:
+        # data = scrape_function(pdf) #### NO IDEA HERE - SCRAPE THE PDF (file location to pdf/text of pdf) GIVEN
 
         data = {'References section' : 'This was the references text.'} # Place holder
         
