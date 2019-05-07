@@ -1,5 +1,5 @@
 
-def test_metric_scraped(actual, predicted):
+def evaluate_metric_scraped(actual, predicted):
     """
     False positive rate
     """
@@ -8,7 +8,7 @@ def test_metric_scraped(actual, predicted):
     return metric
 
 
-def test_metric_quality(actual, predicted):
+def evaluate_metric_quality(actual, predicted):
     """
     Text similarity
     """
@@ -34,13 +34,13 @@ def scrape_urls(scrape_test_data):
 
     return scrape_test_data
 
-def test_scrape(scrape_test_data):
+def evaluate_scrape(scrape_test_data):
 
     test1_2_info = scrape_urls(scrape_test_data)
 
-    test1_score = test_metric_scraped(test1_2_info['Has a references section?'], test1_2_info['References section text scraped'])
+    test1_score = evaluate_metric_scraped(test1_2_info['Has a references section?'], test1_2_info['References section text scraped'])
 
-    test2_score = test_metric_quality(test1_2_info['References section text'], test1_2_info['References section text scraped'])
+    test2_score = evaluate_metric_quality(test1_2_info['References section text'], test1_2_info['References section text scraped'])
 
     return test1_2_info, test1_score, test2_score
 

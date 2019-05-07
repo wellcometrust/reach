@@ -4,7 +4,7 @@ from collections import Counter
 
 from utils import FuzzyMatcher
 
-def test_metric(test_info):
+def evaluate_metric(test_info):
     """
     False positive rate or similar
     """
@@ -13,7 +13,7 @@ def test_metric(test_info):
 
     return metric
 
-def test_match_vectorised(match_publications, test_publications, match_threshold):
+def evaluate_match_vectorised(match_publications, test_publications, match_threshold):
 
     # Get the data into the same format as would be
     test_publications = test_publications.rename(columns={'Match title': 'Title', 'Match pub id': 'Reference id'})
@@ -35,6 +35,6 @@ def test_match_vectorised(match_publications, test_publications, match_threshold
         on='Reference id', how='left'
         )
 
-    test_score = test_metric(test_info)
+    test_score = evaluate_metric(test_info)
 
     return test_info, test_score
