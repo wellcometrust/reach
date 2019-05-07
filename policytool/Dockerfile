@@ -21,6 +21,7 @@ COPY scraper/airflow/airflow.cfg /airflow/
 COPY scraper/airflow/initdb.sh /airflow/
 RUN mkdir -p /airflow/db && \
     ln -s /src/policytool/scraper/airflow/dags /airflow/dags && \
+    chmod +x /airflow/initdb.sh && \
     chown -R www-data: /airflow
 
 
