@@ -2,7 +2,7 @@
 Created by Data Labs at Wellcome Trust
 
 
-![](https://paper-attachments.dropbox.com/s_80E0FAE63D8FEACBC2D84BC148149813EA5AB8AA2E1FDA99090E7199EBBFE5D9_1556632095254_00_Header2x.jpg)
+![](s_80E0FAE63D8FEACBC2D84BC148149813EA5AB8AA2E1FDA99090E7199EBBFE5D9_1556632095254_00_Header2x.jpg)
 
 
 
@@ -20,7 +20,7 @@ The present document provides a high level overview of the Policy Tool brand and
 The web colour palette is taken largely from the Wellcome brand book ([Data Viz section](https://company-57536.frontify.com/d/gFEfjydViLRJ/wellcome-brand-book#/visuals/dataviz-elements-and-rationale)) with certain additions to accommodate the web environment.
 
 
-![](https://paper-attachments.dropbox.com/s_80E0FAE63D8FEACBC2D84BC148149813EA5AB8AA2E1FDA99090E7199EBBFE5D9_1556639329062_1.1_Colour+palletex2.jpg)
+![](s_80E0FAE63D8FEACBC2D84BC148149813EA5AB8AA2E1FDA99090E7199EBBFE5D9_1556639329062_1.1_Colour+palletex2.jpg)
 
 
 
@@ -31,7 +31,7 @@ The web colour palette is taken largely from the Wellcome brand book ([Data Viz 
 Wellcome's brand fonts (Wellcome & Helvetica Neue) are used alternatively throughout the website with no exceptions. 
 
 
-![](https://paper-attachments.dropbox.com/s_80E0FAE63D8FEACBC2D84BC148149813EA5AB8AA2E1FDA99090E7199EBBFE5D9_1556633077597_1.2_Typography.jpg)
+![](s_80E0FAE63D8FEACBC2D84BC148149813EA5AB8AA2E1FDA99090E7199EBBFE5D9_1556633077597_1.2_Typography.jpg)
 
 
 
@@ -60,20 +60,20 @@ The grid system follows [Spectre CSS framework](https://picturepan2.github.io/sp
 ----------
 
 
-![](https://paper-attachments.dropbox.com/s_80E0FAE63D8FEACBC2D84BC148149813EA5AB8AA2E1FDA99090E7199EBBFE5D9_1556642898755_1.6_Buttons.jpg)
+![](s_80E0FAE63D8FEACBC2D84BC148149813EA5AB8AA2E1FDA99090E7199EBBFE5D9_1556642898755_1.6_Buttons.jpg)
 
 
 
 
 ## 1.5.2. Header
 ----------
-![](https://paper-attachments.dropbox.com/s_80E0FAE63D8FEACBC2D84BC148149813EA5AB8AA2E1FDA99090E7199EBBFE5D9_1556641277300_1.3_Header.jpg)
+![](s_80E0FAE63D8FEACBC2D84BC148149813EA5AB8AA2E1FDA99090E7199EBBFE5D9_1556641277300_1.3_Header.jpg)
 
 
 
 ## 1.5.3. Footer
 ----------
-![](https://paper-attachments.dropbox.com/s_80E0FAE63D8FEACBC2D84BC148149813EA5AB8AA2E1FDA99090E7199EBBFE5D9_1556641267412_1.4_Footer.jpg)
+![](s_80E0FAE63D8FEACBC2D84BC148149813EA5AB8AA2E1FDA99090E7199EBBFE5D9_1556641267412_1.4_Footer.jpg)
 
 
 
@@ -83,7 +83,7 @@ The grid system follows [Spectre CSS framework](https://picturepan2.github.io/sp
 In the breadcrumb trail, the breadcrumb corresponding to the current page **should not be a link**.
 
 
-![](https://paper-attachments.dropbox.com/s_80E0FAE63D8FEACBC2D84BC148149813EA5AB8AA2E1FDA99090E7199EBBFE5D9_1556641260288_1.5_Breadcrumbs_2+levels.jpg)
+![](s_80E0FAE63D8FEACBC2D84BC148149813EA5AB8AA2E1FDA99090E7199EBBFE5D9_1556641260288_1.5_Breadcrumbs_2+levels.jpg)
 
 
 
@@ -94,7 +94,7 @@ In the breadcrumb trail, the breadcrumb corresponding to the current page **shou
 The **search term is excluded from breadcrumbs** (to avoid long pages on mobile)
 
 
-![](https://paper-attachments.dropbox.com/s_80E0FAE63D8FEACBC2D84BC148149813EA5AB8AA2E1FDA99090E7199EBBFE5D9_1556641251273_1.5_Breadcrumbs_3+levels.jpg)
+![](s_80E0FAE63D8FEACBC2D84BC148149813EA5AB8AA2E1FDA99090E7199EBBFE5D9_1556641251273_1.5_Breadcrumbs_3+levels.jpg)
 
 
 
@@ -103,7 +103,7 @@ The **search term is excluded from breadcrumbs** (to avoid long pages on mobile)
 ----------
 
 
-![](https://paper-attachments.dropbox.com/s_80E0FAE63D8FEACBC2D84BC148149813EA5AB8AA2E1FDA99090E7199EBBFE5D9_1556641211609_1.7_Search.jpg)
+![](s_80E0FAE63D8FEACBC2D84BC148149813EA5AB8AA2E1FDA99090E7199EBBFE5D9_1556641211609_1.7_Search.jpg)
 
 
 
@@ -111,6 +111,6 @@ The **search term is excluded from breadcrumbs** (to avoid long pages on mobile)
 ----------
 
 
-![](https://paper-attachments.dropbox.com/s_80E0FAE63D8FEACBC2D84BC148149813EA5AB8AA2E1FDA99090E7199EBBFE5D9_1556805892800_1.8_Tables.jpg)
+![](s_80E0FAE63D8FEACBC2D84BC148149813EA5AB8AA2E1FDA99090E7199EBBFE5D9_1556805892800_1.8_Tables.jpg)
 
 
