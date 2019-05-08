@@ -1,5 +1,6 @@
 from . import api
 
+
 def test_to_template_names():
     cases = [
         ('/', ('index.html',)),
@@ -10,4 +11,3 @@ def test_to_template_names():
     ]
     for path, expected in cases:
         assert expected == api.to_template_names(path)
-
