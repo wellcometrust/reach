@@ -4,6 +4,11 @@ import setuptools
 with open("README.md", "r") as f:
     long_description = f.read()
 
+with open('unpinned_requirements.txt') as f:
+    unpinned_requirements = [
+        l.strip() for l in f
+        if not l.startswith('#')
+    ]
 
 setuptools.setup(
     name="wellcome-policytool",
@@ -36,18 +41,5 @@ setuptools.setup(
     tests_require=[
         'pytest',
     ],
-    install_requires=[
-        'apache-airflow',  # pulls in lxml for us
-        'apache-airflow[crypto]',
-        'boto3',
-        'cryptography',
-        'numpy',
-        'pandas',
-        'psycopg2-binary',
-        'PyJWT',
-        'requests',
-        'scipy',
-        'Scrapy',
-        'sentry-sdk',
-    ]
+    install_requires=unpinned_requirements,
 )
