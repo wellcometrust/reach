@@ -9,7 +9,6 @@ def evaluate_metric(actual, predicted):
 
 def evaluate_parse(parse_test_data, model):
 
-
     predicted_structure = []
     for reference in parse_test_data['Actual reference']:
 
@@ -19,7 +18,17 @@ def evaluate_parse(parse_test_data, model):
 
     parse_test_data['Predicted merged components'] = predicted_structure
 
+    merged_components = {
+    'Authors': parse_test_data['Authors'],
+    'Journal': parse_test_data['Journal'],
+    'Volume': parse_test_data['Volume'],
+    'Issue': parse_test_data['Issue'],
+    'Pagination': parse_test_data['Pagination'],
+    'Title': parse_test_data['Title'],
+    'PubYear': parse_test_data['PubYear']
+    }
+
     test_info = parse_test_data
-    test_score = evaluate_metric(parse_test_data['Title'], parse_test_data['Predicted merged components'])
+    test_score = evaluate_metric(merged_components, parse_test_data['Predicted merged components'])
 
     return test_info, test_score

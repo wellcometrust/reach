@@ -1,9 +1,9 @@
 import os
 from settings import BaseSettings
 
-
 class TestSettings(BaseSettings):
-    DEBUG = True
+
+    SPLIT_SECTION_SIMILARITY_THRESHOLD = 40
 
     FOLDER_PREFIX = "./algo_evaluation/data_evaluate"
     LOG_FILE_PREFIX = './algo_evaluation/results'
