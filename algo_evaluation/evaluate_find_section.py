@@ -34,7 +34,7 @@ def scrape_urls(scrape_test_data):
 
     return scrape_test_data
 
-def evaluate_scrape(scrape_test_data):
+def evaluate_find_section(scrape_test_data):
 
     test1_2_info = scrape_urls(scrape_test_data)
 
