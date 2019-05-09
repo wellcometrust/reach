@@ -7,8 +7,8 @@ import os
 from airflow import DAG
 import airflow.utils.dates
 
-from scraper.airflow.tasks.run_spiders_operator import RunSpiderOperator
-from scraper.airflow.tasks.parse_pdf_operator import ParsePdfOperator
+from policytool.airflow.tasks.run_spiders_operator import RunSpiderOperator
+from policytool.airflow.tasks.parse_pdf_operator import ParsePdfOperator
 
 ORGANISATIONS = [
     'who_iris',

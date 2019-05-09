@@ -1,12 +1,12 @@
 import json
 
+from elasticsearch import ConnectionError, NotFoundError
 import falcon
 
-from elasticsearch import ConnectionError, NotFoundError
-from web import api
+from . import api
 
 
-class Fulltext(object):
+class Fulltext:
     """Let you search for terms in publications fulltexts.
 
     Args:

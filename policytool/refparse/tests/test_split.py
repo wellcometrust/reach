@@ -1,7 +1,7 @@
 import unittest
 
-from utils import split_section
-from refparse import SectionedDocument
+from policytool.refparse.utils import split_section
+from policytool.refparse.refparse import SectionedDocument
 
 
 class TestSplit(unittest.TestCase):

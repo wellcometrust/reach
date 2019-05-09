@@ -1,19 +1,26 @@
 # Use a basic Python image
-FROM python:3.6.4-slim-stretch
+FROM policytool.base
 
-WORKDIR /reference_parser
+COPY setup.py /src/policytool/
+COPY README.md /src/policytool/
+COPY unpinned_requirements.txt /src/policytool/
+COPY policytool/ /src/policytool/policytool/
 
-COPY utils /reference_parser/utils
-COPY tests /reference_parser/tests
-COPY reference_parser_models /reference_parser/reference_parser_models
+# Airflow deps
+COPY policytool/scrapy.cfg /etc/scraper/scrapy.cfg
 
-COPY refparse.py /reference_parser/refparse.py
-COPY models.py /reference_parser/models.py
-COPY settings.py /reference_parser/settings.py
+COPY build/web/ /build/web/
+ENV STATIC_ROOT=/build/web/static
 
-COPY requirements.txt /reference_parser/requirements.txt
+# TODO: cd /src after we've moved setup.py up a dir
+RUN /bin/sh -c 'cd /src/policytool && python3 setup.py develop --no-deps'
 
-RUN pip install -U pip
-RUN pip install -r requirements.txt
+# Airflow
+COPY policytool/airflow/airflow.cfg /airflow/
+COPY policytool/airflow/initdb.sh /airflow/
+RUN mkdir -p /airflow/db && \
+    ln -s /src/policytool/policytool/airflow/dags /airflow/dags && \
+    chmod +x /airflow/initdb.sh && \
+    chown -R www-data: /airflow
 
-CMD ["python", "refparse.py"]
+USER www-data
