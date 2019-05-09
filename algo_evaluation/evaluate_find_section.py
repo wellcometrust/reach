@@ -3,20 +3,21 @@ def evaluate_metric_scraped(actual, predicted):
     """
     False positive rate
     """
-    metric = 50 # Place holder
+    # Place holder
+    test_scores = {'Score' : 50, 'More info' : "More information about this test"}
 
-    return metric
+    return test_scores
 
 
 def evaluate_metric_quality(actual, predicted):
     """
     Text similarity
     """
-    metric = 50 # Place holder
+    test_scores = {'Score' : 50, 'More info' : "More information about this test"}
 
-    return metric
+    return test_scores
 
-def scrape_urls(scrape_test_data):
+def scrape_pdfs(scrape_test_data):
 
     references_text = []
 
@@ -36,12 +37,12 @@ def scrape_urls(scrape_test_data):
 
 def evaluate_find_section(scrape_test_data):
 
-    test1_2_info = scrape_urls(scrape_test_data)
+    test1_2_info = scrape_pdfs(scrape_test_data)
 
-    test1_score = evaluate_metric_scraped(test1_2_info['Has a references section?'], test1_2_info['References section text scraped'])
+    test1_scores = evaluate_metric_scraped(test1_2_info['Has a references section?'], test1_2_info['References section text scraped'])
 
-    test2_score = evaluate_metric_quality(test1_2_info['References section text'], test1_2_info['References section text scraped'])
+    test2_scores = evaluate_metric_quality(test1_2_info['References section text'], test1_2_info['References section text scraped'])
 
-    return test1_2_info, test1_score, test2_score
+    return test1_scores, test2_scores
 
 

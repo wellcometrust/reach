@@ -3,9 +3,9 @@ from utils.parse import structure_reference
 
 def evaluate_metric(actual, predicted):
 
-    metric = 50 # Place holder
+    test_scores = {'Score' : 50, 'More info' : "More information about this test"}
 
-    return metric
+    return test_scores
 
 def evaluate_parse(parse_test_data, model):
 
@@ -29,6 +29,6 @@ def evaluate_parse(parse_test_data, model):
     }
 
     test_info = parse_test_data
-    test_score = evaluate_metric(merged_components, parse_test_data['Predicted merged components'])
+    test_scores = evaluate_metric(merged_components, parse_test_data['Predicted merged components'])
 
-    return test_info, test_score
+    return test_scores
