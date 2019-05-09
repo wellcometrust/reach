@@ -8,10 +8,9 @@ def evaluate_metric(actual, predicted):
     """
     False positive rate or similar
     """
+    test_scores = {'Score' : 50, 'More info' : "More information about this test"}
 
-    metric = 50 # Place holder
-
-    return metric
+    return test_scores
 
 def evaluate_match_references(match_publications, test_publications, match_threshold):
 
@@ -42,6 +41,6 @@ def evaluate_match_references(match_publications, test_publications, match_thres
             match_correct.append(1)
     test_publications['Matched correctly?'] = match_correct
 
-    test_score = evaluate_metric(test_publications['Type'], test_publications['Matched correctly?'])
+    test_scores = evaluate_metric(test_publications['Type'], test_publications['Matched correctly?'])
 
-    return test_publications, test_score
+    return test_scores

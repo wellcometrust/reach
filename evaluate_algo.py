@@ -113,27 +113,30 @@ if __name__ == '__main__':
     logger.info('\nStarting the tests...\n')
 
     logger.info('[+] Running tests 1 and 2')
-    test1_2_info, test1_score, test2_score = evaluate_find_section(scrape_test_data)
+    test1_scores, test2_scores = evaluate_find_section(scrape_test_data)
 
     logger.info('[+] Running test 3')
-    test3_info, test3_score = evaluate_split_section(
+    test3_scores = evaluate_split_section(
         split_section_test_data,
         settings.ORGANISATION_REGEX,
         settings.SPLIT_SECTION_SIMILARITY_THRESHOLD
         )
 
     logger.info('[+] Running test 4')
-    test4_info, test4_score = evaluate_parse(parse_test_data, model)
+    test4_scores = evaluate_parse(parse_test_data, model)
 
     logger.info('[+] Running test 5')
-    test5_info, test5_score = evaluate_match_references(match_publications, test_publications, settings.FUZZYMATCH_THRESHOLD)
+    test5_scores = evaluate_match_references(match_publications, test_publications, settings.FUZZYMATCH_THRESHOLD)
 
-
-    log_file.write('=====\nTest 1 results:\n=====\n')
+    test_scores_list = [test1_scores, test2_scores, test3_scores, test4_scores, test5_scores]
     if args.verbose == 'True':
-        log_file.write("Lots of information about test 1")
+        for i, tests in enumerate(test_scores_list):
+            log_file.write("\nInformation about test {}:\n".format(i))
+            log_file.write(tests)
     else:
-        log_file.write("Summary information about test 1")
+        for i, tests in enumerate(test_scores_list):
+            log_file.write("\nScore for test {}:\n".format(i))
+            log_file.write(str(tests['Score']))
 
     log_file.close()
 
