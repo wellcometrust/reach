@@ -20,19 +20,7 @@ setuptools.setup(
     long_description_content_type="text/markdown",
     url="https://github.com/wellcometrust/data-labs/common",
     packages=setuptools.find_packages(
-        # TODO: replace this when everything goes into policytool/
-        # and our setup.py moves from policytool/policytool/setup.py
-        # to policytool/setup.py. (in top level of repo)
-        #
-        # Until then, note well: the packages below are *not* within
-        # the policytool namespace. So, don't do:
-        #
-        # >>> import policytool.scraper
-        #
-        # Instead, for now, do:
-        #
-        # >>> import scraper
-        include=["pdf_parser.*", "scraper.*", "web.*"]
+        include=["policytool.*"],
     ),
     classifiers=[
         "Programming Language :: Python :: 3",

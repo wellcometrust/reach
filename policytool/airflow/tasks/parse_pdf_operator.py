@@ -7,7 +7,7 @@ import logging
 from airflow.models import BaseOperator
 from airflow.utils.decorators import apply_defaults
 
-from pdf_parser.main import parse_all_pdf
+from policytool.pdf_parser.main import parse_all_pdf
 
 
 logger = logging.getLogger(__name__)

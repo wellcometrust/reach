@@ -1,9 +1,9 @@
 import unittest
 import json
-from pdf_parser.pdf_parse import parse_pdf_document
-from pdf_parser.objects.PdfObjects import PdfFile
 
-from scraper.tests.common import TEST_PDF
+from policytool.pdf_parser.pdf_parse import parse_pdf_document
+from policytool.pdf_parser.objects.PdfObjects import PdfFile
+from policytool.scraper.tests.common import TEST_PDF
 
 """Test file content (html transcription):
 <h1>Test</h1>
