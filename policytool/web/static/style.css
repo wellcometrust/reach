@@ -33,6 +33,7 @@ body {
    */
   color: $textColor;
   font-size: $baseFontSize;
+  line-height: 2rem;
 }
 
 a, a:visited {
@@ -49,6 +50,10 @@ h1, h2, h3, h4, h5, h6 {
 
 h1 {
     font-size: $titleBigFontSize;
+}
+
+h3 {
+    font-size: $titleFontSize;
 }
 
 /*  Offsets the grid */
@@ -104,26 +109,24 @@ nav ul li {
 section#hero {
   background-color: $buttonColor;
   color: white;
-  padding: $sectionPadding 0;
+  padding: $heroPadding 0;
 }
 
 section#hero h1 {
   font-family: Wellcome;
 }
 
-section#hero .buttons {
+/* */ section#hero .buttons {
   display: flex;
 }
 
 section#hero .btn-primary {
   background-color: $navColor;
   border: 1px solid $navColor;
-  margin: 1ex 0.6em 1ex 0;
-  /* box-shadow: 0 12px 22px 0; */
-  /* border-radius: 2px; */
+  /* margin: 1ex 0.6em 1ex 0; */
 }
 
-.btn.help {
+.help {
   width: 22px;
   height: 22px;
   padding: 0;
@@ -142,7 +145,12 @@ section#hero .btn.help:hover {
   border: 1px solid $hoverBorderColor;
 }
 
-
+.hero-button {
+    height: 3.5rem;
+    line-height: 3.5rem;
+    font-size: $baseFontSize;
+    padding: 0 $smallPadding;
+}
 .popover-container {
   display: block;
   opacity: 1;
@@ -159,8 +167,9 @@ section#hero .btn.help:hover {
   color: $textColor;
 }
 
-main {
-  padding: $sectionPadding 0;
+#about-tool, #how, #about-us  {
+  padding: $heroPadding 0;
+  border-bottom: 1px solid $borderDark;
 }
 
 footer {
