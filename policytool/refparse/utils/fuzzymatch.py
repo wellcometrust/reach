@@ -16,6 +16,10 @@ class FuzzyMatcher:
         self.threshold = match_threshold
 
     def match_vectorised(self, predicted_publications):
+
+        if isinstance(predicted_publications, pd.Series):
+            predicted_publications = predicted_publications.to_frame().transpose()
+
         if predicted_publications.shape[0] == 0:
             return pd.DataFrame({
                 'Document id': [],
@@ -39,15 +43,27 @@ class FuzzyMatcher:
         title_similarities = cosine_similarity(
             title_vectors, self.tfidf_matrix
         )
-        above_threshold_indices = np.nonzero(
-            title_similarities > self.threshold
-        )
+
+        # Get indices of highest cosine similarity over threshold for each predicted publication row
+        # In form [(0, 77523), (1, 5258), (2, 66691) ..., (398, 94142)]]
+        above_threshold_indices_pairs = [
+                (i,np.argmax(row))\
+                for i,row in enumerate(title_similarities)\
+                if row[np.argmax(row)]>self.threshold
+               ]
+        # Restructure indices into 
+        # [array([0, 1, 2, ... , 398]), array([77523, 5258, 66691, ... 94142])]
+        above_threshold_indices = (
+            np.asarray([a for a, b in above_threshold_indices_pairs]),
+            np.asarray([b for a, b in above_threshold_indices_pairs])
+            )
+
         cosine_similarities = title_similarities[
             above_threshold_indices
         ]
 
         predicted_indices, real_indices = above_threshold_indices
-        
+
         match_data = pd.concat([
             predicted_publications.iloc[predicted_indices][[
                 'Document id',
@@ -66,14 +82,11 @@ class FuzzyMatcher:
         return match_data
 
     def fuzzy_match(self, predicted_publications):
-        # self.logger.info(
-        #     "Fuzzy matching for %s predicted publications ...",
-        #     len(predicted_publications)
-        # )
 
         all_match_data = self.match_vectorised(
             predicted_publications
         )
+
         all_match_data.rename(
             columns={
                 'title': 'WT_Ref_Title',
