@@ -20,8 +20,8 @@ $borderDark: #CCD8DD;       /* Darker grey for dividers and borders */
 }
 
 $titleBigFontSize: 1.75rem;
-$titleFontSize: 1rem;
-$baseFontSize: 0.75rem;
+$titleFontSize: 1.125rem;
+$baseFontSize: 1rem;
 
 @font-face {
     font-family: Wellcome;
@@ -33,4 +33,6 @@ $baseFontSize: 0.75rem;
  * Common spacings
  */
 
+$heroPadding: 2.5rem;
 $sectionPadding: 1.375rem;
+$smallPadding: 1rem;
