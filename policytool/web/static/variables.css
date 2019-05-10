@@ -1,0 +1,36 @@
+/*
+ * Colors and typefaces
+ */
+
+$navColor: #002E45;         /* top nav, dark blue */
+$buttonColor: #006EDB;      /* buttons & hero banner, light blue */
+$textColor: #002E45;        /* lower contrast text :-) */
+$hoverBorderColor: #8BD1FF; /* border for buttons on hover */
+$footerColor: #F2F4F6;      /* light gray */
+$linkBlue: #007AF5;         /* primary blue, for links */
+$linkBlueHover: #005DB9;         /* primary blue, for links */
+$borderDark: #CCD8DD;       /* Darker grey for dividers and borders */
+
+/*
+ * Fonts
+ */
+
+:root {
+    font-size: 16px;
+}
+
+$titleBigFontSize: 1.75rem;
+$titleFontSize: 1rem;
+$baseFontSize: 0.75rem;
+
+@font-face {
+    font-family: Wellcome;
+    /* NB: this will be inlined by postcss-url */
+    src: url("./wellcome-bold-webfont.woff2") format("woff2");
+}
+
+/*
+ * Common spacings
+ */
+
+$sectionPadding: 1.375rem;
