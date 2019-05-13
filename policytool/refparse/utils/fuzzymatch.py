@@ -46,13 +46,13 @@ class FuzzyMatcher:
 
         # Get indices of highest cosine similarity over threshold for each predicted publication row
         # In form [(0, 77523), (1, 5258), (2, 66691) ..., (398, 94142)]]
-        above_threshold_indices_pairs = [
+        max_above_threshold_indices_pairs = [
                 (i,np.argmax(row))\
                 for i,row in enumerate(title_similarities)\
                 if row[np.argmax(row)]>self.threshold
                ]
 
-        if above_threshold_indices_pairs == []:
+        if max_above_threshold_indices_pairs == []:
             return pd.DataFrame({
                 'Document id': [],
                 'Reference id': [],
@@ -65,16 +65,16 @@ class FuzzyMatcher:
 
         # Restructure indices into 
         # [array([0, 1, 2, ... , 398]), array([77523, 5258, 66691, ... 94142])]
-        above_threshold_indices = (
-            np.asarray([a for a, b in above_threshold_indices_pairs]),
-            np.asarray([b for a, b in above_threshold_indices_pairs])
+        max_above_threshold_indices = (
+            np.asarray([a for a, b in max_above_threshold_indices_pairs]),
+            np.asarray([b for a, b in max_above_threshold_indices_pairs])
             )
 
         cosine_similarities = title_similarities[
-            above_threshold_indices
+            max_above_threshold_indices
         ]
 
-        predicted_indices, real_indices = above_threshold_indices
+        predicted_indices, real_indices = max_above_threshold_indices
 
         match_data = pd.concat([
             predicted_publications.iloc[predicted_indices][[
