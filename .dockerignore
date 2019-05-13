@@ -6,8 +6,4 @@ CONTRIBUTING.md
 Dockerfile
 build/*
 !build/web/static
-data
 pull_request_template.md
-policytool/scraper/data/*
-policytool/scraper/results/*
-policytool/scraper/var/*

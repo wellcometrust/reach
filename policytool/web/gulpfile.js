@@ -22,7 +22,7 @@ exports.css = function() {
   return src('static/**/*.css')
     .pipe( sourcemaps.init() )
     .pipe( postcss(plugins) )
-    // sourcemaps get written to /web/build/static anyway
+    // sourcemaps are rooted in dest(), so '.' is what we want
     .pipe( sourcemaps.write('.') )
     .pipe( dest('/build/web/static') );
 };
