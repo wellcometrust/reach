@@ -1,12 +1,20 @@
+apache-airflow[crypto]
+beautifulsoup4
 boto3
-# cryptography
-Click
-docutils
+cryptography
+celery
+elasticsearch
+falcon
 numpy
 pandas
 psycopg2-binary
-scikit-learn
+pyahocorasick
+PyJWT
+redis
+requests
 scipy
-sklearn
-SQLAlchemy
+Scrapy
+scikit-learn
 sentry-sdk
+SQLAlchemy
+Unidecode

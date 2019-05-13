@@ -1,8 +1,8 @@
 import unittest
-from pdf_parser.tools.extraction import _find_elements
-from pdf_parser.pdf_parse import parse_pdf_document
 
-from scraper.tests.common import TEST_PDF
+from policytool.pdf_parser.tools.extraction import _find_elements
+from policytool.pdf_parser.pdf_parse import parse_pdf_document
+from policytool.scraper.tests.common import TEST_PDF
 
 
 class TestTools(unittest.TestCase):

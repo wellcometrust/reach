@@ -12,8 +12,8 @@ from urllib.parse import urlparse
 import os
 import boto3
 
-from refparse import parse_references, create_argparser
-from settings import settings
+from .refparse import parse_references, create_argparser
+from .settings import settings
 
 parser = ArgumentParser(description=__doc__.strip())
 

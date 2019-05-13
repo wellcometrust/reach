@@ -17,10 +17,6 @@ from elasticsearch import Elasticsearch
 from . import search
 
 TEMPLATE_ROOT = os.path.join(os.path.dirname(__file__), 'templates')
-STATIC_ROOT = os.environ.get('STATIC_ROOT')
-if not STATIC_ROOT or not os.path.isdir(STATIC_ROOT):
-    raise Exception("No static directory found. STATIC_ROOT=%r" % STATIC_ROOT)
-
 
 def configure_logger(logger):
     """ Configures our logger w/same settings & handler as our webserver
@@ -114,6 +110,13 @@ class TemplateResource:
 
 
 def create_api(conf):
+    """
+    Args:
+        Configuration object, as defined in policytool.web.wsgi
+
+    Returns:
+        WSGI application
+    """
     parsed_url = urlparse(conf.es_host)
 
     logger.info('Connecting to {elastic_host}'.format(
@@ -135,5 +138,5 @@ def create_api(conf):
         '/search',
         search.Fulltext(es, conf.es_explain)
     )
-    api.add_static_route('/static', STATIC_ROOT)
+    api.add_static_route('/static', conf.static_root)
     return api

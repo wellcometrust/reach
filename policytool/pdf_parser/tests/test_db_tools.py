@@ -1,7 +1,7 @@
 import unittest
 import os
 import logging
-from pdf_parser.tools.dbTools import DatabaseConnector
+from policytool.pdf_parser.tools.dbTools import DatabaseConnector
 
 
 class TestDBTools(unittest.TestCase):

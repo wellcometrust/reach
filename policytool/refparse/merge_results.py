@@ -11,7 +11,7 @@ import glob
 
 import pandas as pd
 
-from refparse import get_file
+from .refparse import get_file
 
 
 def get_csv_names(output_url, suffix):

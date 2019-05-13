@@ -1,10 +1,7 @@
 version: '3.4'
 
-
-
-
 x-airflow-image: &airflow-image
-  160358319781.dkr.ecr.eu-west-1.amazonaws.com/uk.ac.wellcome/web-scraper:latest
+  160358319781.dkr.ecr.eu-west-1.amazonaws.com/uk.ac.wellcome/policytool:latest
 
 x-airflow_env: &airflow-env
   AIRFLOW_HOME: /airflow
@@ -39,12 +36,10 @@ x-airflow_env: &airflow-env
   DATABASE_URL: "postgresql://postgres:development@postgres:5432/wsf_scraping"
   RESOURCES_FILES: "/src/policytool/resources/"
 
-
 x-airflow-volumes: &airflow-volumes
-  - ./scraper/airflow/airflow.cfg:/airflow/airflow.cfg
-  - ./scraper/airflow/initdb.sh:/airflow/initdb.sh
-  - ./scraper:/src/policytool/scraper
-  - ./pdf_parser:/src/policytool/pdf_parser
+  - ./policytool/airflow/airflow.cfg:/airflow/airflow.cfg
+  - ./policytool/airflow/initdb.sh:/airflow/initdb.sh
+  - ./policytool:/src/policytool/policytool
   - ./build/airflow.db:/airflow/db
 
 # Restart airflow several times in case the DB wasn't present.
@@ -66,7 +61,7 @@ services:
       POSTGRES_PASSWORD: development
     volumes:
       - ./build/airflow.db:/var/lib/postgresql/data
-      - ./scraper/airflow/initdb:/docker-entrypoint-initdb.d
+      - ./policytool/airflow/initdb:/docker-entrypoint-initdb.d
 
   redis:
     image: redis:5.0.3-alpine
@@ -103,7 +98,7 @@ services:
       <<: *airflow-env
       POSTGRES_DSN: "postgresql://postgres:development@postgres:5432/airflow?connect_timeout=20"
     command:
-      - /src/policytool/scraper/pg_isready.py
+      - /src/policytool/policytool/scraper/pg_isready.py
       - sh
       - "-cx"
       - "/airflow/initdb.sh && exec airflow scheduler"
@@ -123,7 +118,7 @@ services:
       # in place.
       # Thus pg_isready.py, and with a longer success-secs than
       # airflow-scheduler.
-      - /src/policytool/scraper/pg_isready.py
+      - /src/policytool/policytool/scraper/pg_isready.py
       - "--timeout=30"
       - "--success-secs=8"  # allow extra time for initdb to get started
       - airflow
@@ -152,7 +147,7 @@ services:
       AWS_ACCESS_KEY_ID: "${AWS_ACCESS_KEY_ID}"
       AWS_SECRET_ACCESS_KEY: "${AWS_SECRET_ACCESS_KEY}"
       SENTRY_DSN: "${SENTRY_DSN}"
-      STATIC_ROOT: /src/policytool/web/build/static
+      STATIC_ROOT: /build/web/static
       ELASTICSEARCH_HOST: "http://elasticsearch:9200"
       # DATABASE_URL: "postgres://postgres:postgres@articles-db:5432/wsf_scraping"
 
@@ -160,10 +155,11 @@ services:
       - gunicorn
       - --bind=0.0.0.0:8081
       - --reload
-      - web.wsgi:application
+      - policytool.web.wsgi:application
     volumes:
-      - ./web:/src/policytool/web/
-      - ./scraper:/src/policytool/scraper/
+      - ./policytool/web:/src/policytool/policytool/web/
+      - ./policytool/scraper:/src/policytool/policytool/scraper/
+      - ./build/web:/build/web
 
   # TODO: run gulp watch with the right volumes in place
   # and update the web image to serve static from build/static
@@ -174,9 +170,9 @@ services:
       - gulp
       - watch
     volumes:
-      - ./web/build/static:/src/build/static
-      - ./web/gulpfile.js:/src/gulpfile.js
-      - ./web/static:/src/static
+      - ./build/web/static:/src/build/static
+      - ./policytool/web/gulpfile.js:/src/gulpfile.js
+      - ./policytool/web/static:/src/static
     # Signal handling in gulp? Not so much...
     stop_signal: SIGKILL
 

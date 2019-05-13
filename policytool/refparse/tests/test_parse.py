@@ -2,7 +2,8 @@ import os.path
 import unittest
 import pickle
 
-from utils import predict_components, merge_components, split_reference
+from policytool.refparse.utils import \
+    predict_components, merge_components, split_reference
 
 MODELS_DIR = os.path.join(os.path.dirname(__file__), '..', 'reference_parser_models')
 
