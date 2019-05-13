@@ -3,8 +3,8 @@ import unittest
 from pandas.util.testing import assert_frame_equal
 import pandas as pd
 
-from utils import FuzzyMatcher
-from settings import settings
+from policytool.refparse.utils import FuzzyMatcher
+from policytool.refparse.settings import settings
 
 
 class TestFuzzyMatcherInit(unittest.TestCase):

@@ -9,13 +9,13 @@ from airflow.utils.decorators import apply_defaults
 from scrapy.crawler import CrawlerProcess
 from scrapy.utils.project import get_project_settings
 
-import scraper.wsf_scraping.settings
-from scraper.wsf_scraping.spiders.who_iris_spider import WhoIrisSpider
-from scraper.wsf_scraping.spiders.nice_spider import NiceSpider
-from scraper.wsf_scraping.spiders.gov_spider import GovSpider
-from scraper.wsf_scraping.spiders.msf_spider import MsfSpider
-from scraper.wsf_scraping.spiders.unicef_spider import UnicefSpider
-from scraper.wsf_scraping.spiders.parliament_spider import ParliamentSpider
+import policytool.scraper.wsf_scraping.settings
+from policytool.scraper.wsf_scraping.spiders.who_iris_spider import WhoIrisSpider
+from policytool.scraper.wsf_scraping.spiders.nice_spider import NiceSpider
+from policytool.scraper.wsf_scraping.spiders.gov_spider import GovSpider
+from policytool.scraper.wsf_scraping.spiders.msf_spider import MsfSpider
+from policytool.scraper.wsf_scraping.spiders.unicef_spider import UnicefSpider
+from policytool.scraper.wsf_scraping.spiders.parliament_spider import ParliamentSpider
 
 
 logger = logging.getLogger(__name__)
@@ -54,8 +54,8 @@ class DummySpidersOperator(BaseOperator):
 
         # So long as we don't re-load this module somewhere, these monkey
         # patches will stay.
-        scraper.wsf_scraping.settings.MAX_ARTICLE = 10
-        scraper.wsf_scraping.settings.WHO_IRIS_YEARS = [2018]
+        policytool.scraper.wsf_scraping.settings.MAX_ARTICLE = 10
+        policytool.scraper.wsf_scraping.settings.WHO_IRIS_YEARS = [2018]
 
         settings = get_project_settings()
         for key in sorted(settings):

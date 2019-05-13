@@ -3,7 +3,7 @@ import datetime
 from airflow import DAG
 import airflow.utils.dates
 
-from scraper.airflow.tasks.dummy_spiders_operator import DummySpidersOperator
+from policytool.airflow.tasks.dummy_spiders_operator import DummySpidersOperator
 
 
 ORGANISATIONS = [

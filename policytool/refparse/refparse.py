@@ -13,13 +13,13 @@ import time
 import sentry_sdk
 import pandas as pd
 
-from utils import (FileManager,
+from .utils import (FileManager,
                    FuzzyMatcher,
                    split_section,
                    structure_reference,
                    HardTextSearch)
-from models import DatabaseEngine
-from settings import settings
+from .models import DatabaseEngine
+from .settings import settings
 
 
 SectionedDocument = namedtuple(
