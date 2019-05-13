@@ -51,6 +51,18 @@ class FuzzyMatcher:
                 for i,row in enumerate(title_similarities)\
                 if row[np.argmax(row)]>self.threshold
                ]
+
+        if above_threshold_indices_pairs == []:
+            return pd.DataFrame({
+                'Document id': [],
+                'Reference id': [],
+                'Title': [],
+                'title': [],
+                'uber_id': [],
+                'Cosine_Similarity': [],
+                'Match_algorithm': "Fuzzy Matcher"
+            })
+
         # Restructure indices into 
         # [array([0, 1, 2, ... , 398]), array([77523, 5258, 66691, ... 94142])]
         above_threshold_indices = (
