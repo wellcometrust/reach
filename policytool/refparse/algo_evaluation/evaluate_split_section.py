@@ -19,43 +19,36 @@ def calc_num_metric(predicted_number, actual_number):
 
     return metric
 
-def evaluate_splitter_nums(number_predicted_references, number_actual_references, threshold):
-    """
-    Calculates the number of references test metric for each document.
-    Input:
-        number_predicted_references : A list of the predicted numbers
-                                        of references from a sample of documents
-        number_actual_references : A list of the actual numbers
-                                        of references from a sample of documents
-        threshold : a threshold for the percentage difference acceptable to be below
-    Output:
-        median_diff : the median percentage difference for a sample of documents
-        below_threshold : the percentage of documents with a test metric less than the threshold
-    """
-   
-    doc_metrics = [calc_num_metric(m,n) for m,n in zip(number_predicted_references, number_actual_references)]
+def calc_med_metric(metrics):
 
-    median_diff = round(np.median(doc_metrics), 1)
-    below_threshold = round(
-        100 * len([x for x in doc_metrics if x <= threshold]) / len(doc_metrics),
+    med_metric = round(np.median(metrics), 1)
+
+    return med_metric
+
+def calc_bel_metric(metrics, threshold):
+
+    bel_metric = round(
+        100 * len([x for x in metrics if x <= threshold]) / len(metrics),
         1
     )
 
-    return doc_metrics, median_diff, below_threshold
+    return bel_metric
 
-def evaluate_metric(actual, predicted, sources, threshold):
+def evaluate_metric(evaluation_info, threshold):
 
-    doc_metrics, median_diff, below_threshold = evaluate_splitter_nums(predicted, actual, threshold)
 
-    source_metric = pd.DataFrame(
-        [list(sources), doc_metrics]
-        ).transpose().rename(columns = {0 : "Source", 1 : "Metric"})
-
-    aggregations = {
-            'Median difference' : lambda x : round(np.median(x), 1),
-            'Percentage below threshold of {}'.format(threshold) : lambda x : round(100 * len([y for y in x if y <= threshold]) / len(x),1)
-    }
-    grouped_source_metrics = source_metric.groupby('Source')['Metric'].agg(aggregations)
+    evaluation_info['diff_metric'] = [
+                                        calc_num_metric(m,n) for m,n in zip(
+                                            evaluation_info["Predicted number of references"],
+                                            evaluation_info["Number of references scraped"]
+                                            )
+                                    ]
+    median_diff = calc_med_metric(evaluation_info['diff_metric'])
+    below_threshold = calc_bel_metric(evaluation_info['diff_metric'], threshold)
+    grouped_source_metrics = evaluation_info.groupby('Source')['diff_metric'].agg(
+        {'Median difference': lambda x: calc_med_metric(x),
+        'Percentage below threshold of {}'.format(threshold) : lambda x : calc_bel_metric(x, threshold)}
+        )
 
     test_scores = {
         'Score' : below_threshold,
@@ -83,6 +76,6 @@ def evaluate_split_section(split_section_test_data, regex, threshold):
             )
     evaluation_info = pd.concat([split_section_test_data, pd.DataFrame(evaluation_info)], axis = 1)
 
-    test_scores = evaluate_metric(evaluation_info["Number of references scraped"], evaluation_info["Predicted number of references"], evaluation_info["Source"], threshold)
+    test_scores = evaluate_metric(evaluation_info, threshold)
 
     return test_scores
