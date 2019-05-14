@@ -46,35 +46,23 @@ class FuzzyMatcher:
 
         # Get indices of highest cosine similarity over threshold for each predicted publication row
         # In form [(0, 77523), (1, 5258), (2, 66691) ..., (398, 94142)]]
-        max_above_threshold_indices_pairs = [
-                (i,np.argmax(row))\
+        max_above_threshold_indices_pairs = np.array([
+                # If there are multiple indices of the maximum value for this row then pick one randomly
+                (i, np.random.choice(np.argwhere(row==np.max(row)).flatten())) 
                 for i,row in enumerate(title_similarities)\
-                if row[np.argmax(row)]>self.threshold
-               ]
-
-        if max_above_threshold_indices_pairs == []:
-            return pd.DataFrame({
-                'Document id': [],
-                'Reference id': [],
-                'Title': [],
-                'title': [],
-                'uber_id': [],
-                'Cosine_Similarity': [],
-                'Match_algorithm': "Fuzzy Matcher"
-            })
-
-        # Restructure indices into 
-        # [array([0, 1, 2, ... , 398]), array([77523, 5258, 66691, ... 94142])]
-        max_above_threshold_indices = (
-            np.asarray([a for a, b in max_above_threshold_indices_pairs]),
-            np.asarray([b for a, b in max_above_threshold_indices_pairs])
-            )
-
-        cosine_similarities = title_similarities[
-            max_above_threshold_indices
-        ]
-
-        predicted_indices, real_indices = max_above_threshold_indices
+                if np.max(row)>self.threshold
+               ])
+        # Edge case where there are no matches over the threshold:
+        if max_above_threshold_indices_pairs.shape[0] == 0:
+            predicted_indices = np.array([])
+            real_indices = np.array([])
+            cosine_similarities = np.array([])
+        else:
+            predicted_indices = max_above_threshold_indices_pairs[:,0]
+            real_indices = max_above_threshold_indices_pairs[:,1]
+            cosine_similarities = title_similarities[
+                (predicted_indices, real_indices)
+            ]
 
         match_data = pd.concat([
             predicted_publications.iloc[predicted_indices][[
