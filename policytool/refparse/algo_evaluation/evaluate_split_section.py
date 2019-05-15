@@ -1,11 +1,64 @@
-import pandas as pd
+import pandas as pd 
+import numpy as np
 from utils.split import split_section
 
-def evaluate_metric(actual, predicted):
+def calc_num_metric(predicted_number, actual_number):
+    """
+    How similar are 2 numbers of references?
+    The difference between the predicted and actual numbers of references
+    as a percentage of the actual number
+    """
 
-    test_scores = {'Score' : 50, 'More info' : "More information about this test"}
+    # In the case of 0 references (some documents don't have references but do
+    # have a reference section), set actual_number to the closest integer, 1.
+    # This introduces some small error, but avoids the script throwing a math error
+    if actual_number == 0:
+        actual_number = 1
 
-    return test_scores
+    metric = abs(100*((predicted_number - actual_number) / actual_number))
+
+    return metric
+
+def calc_med_metric(metrics):
+
+    med_metric = round(np.median(metrics), 1)
+
+    return med_metric
+
+def calc_bel_metric(metrics, threshold):
+
+    bel_metric = round(
+        100 * len([x for x in metrics if x <= threshold]) / len(metrics),
+        1
+    )
+
+    return bel_metric
+
+def evaluate_metrics(actual_pred_num_references, threshold):
+
+
+    actual_pred_num_references['diff_metric'] = [
+        calc_num_metric(m,n) for m,n in zip(
+            actual_pred_num_references["Predicted number of references"],
+            actual_pred_num_references["Number of references scraped"]
+        )
+    ]
+
+    median_diff = calc_med_metric(actual_pred_num_references['diff_metric'])
+    below_threshold = calc_bel_metric(actual_pred_num_references['diff_metric'], threshold)
+    grouped_source_metrics = actual_pred_num_references.groupby('Source')['diff_metric'].agg({
+        'Median difference': lambda x: calc_med_metric(x),
+        'Percentage below threshold of {}'.format(threshold) : lambda x : calc_bel_metric(x, threshold)
+    })
+
+    metrics = {
+        'Score' : below_threshold,
+        'Percentage below threshold of {}'.format(threshold) : below_threshold,
+        'Median difference' : median_diff,
+        'Metrics grouped by source' : grouped_source_metrics
+        }
+
+    return metrics
 
 def evaluate_split_section(split_section_test_data, regex, threshold):
     """
@@ -13,19 +66,15 @@ def evaluate_split_section(split_section_test_data, regex, threshold):
     and compare the findings with the ground truth
     """
 
-    comparison = []
+    actual_pred_num_references = []
     for references_section in split_section_test_data['Reference section']:
         references = split_section(references_section, regex = regex)
-
-        comparison.append(
-            {
+        actual_pred_num_references.append({
             "Predicted references" : references,
             "Predicted number of references" : len(references)
-            }
-            )
-    comparison = pd.concat([split_section_test_data, pd.DataFrame(comparison)], axis = 1)
+        })
+    actual_pred_num_references = pd.concat([split_section_test_data, pd.DataFrame(actual_pred_num_references)], axis = 1)
 
-    test_info = comparison
-    test_scores = evaluate_metric(comparison["Number of references scraped"], comparison["Predicted number of references"])
+    metrics = evaluate_metrics(actual_pred_num_references, threshold)
 
-    return test_scores 
+    return metrics
