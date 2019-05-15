@@ -1,14 +1,18 @@
 import pandas as pd
 
-from collections import Counter
+from sklearn.metrics import classification_report, f1_score
 
 from utils import FuzzyMatcher
 
 def evaluate_metric(actual, predicted):
-    """
-    False positive rate or similar
-    """
-    test_scores = {'Score' : 50, 'More info' : "More information about this test"}
+
+    similarity = round(f1_score(actual, predicted, average='micro'), 3)
+
+    test_scores = {
+        'Score' : similarity,
+        'Micro average F1-score' : similarity,
+        'Classification report' : classification_report(actual, predicted) 
+        }
 
     return test_scores
 
@@ -24,23 +28,21 @@ def evaluate_match_references(match_publications, test_publications, match_thres
     test_publications['Document id'] = range(0, len(test_publications))
     test_publications['Document uri'] = None
 
-    fuzzy_matcher = FuzzyMatcher(match_publications, match_threshold)
+    # Take out the negative reference id's (so you shouldn't find them)
+    neg_test_pub_ids = test_publications.loc[test_publications['Type']==0]['Reference id']
+    match_publications_no_negs = match_publications.loc[~match_publications['uber_id'].isin(neg_test_pub_ids)]
+
+    fuzzy_matcher = FuzzyMatcher(match_publications_no_negs, match_threshold)
 
     match_data = fuzzy_matcher.match_vectorised(test_publications)
 
-    # Does each publication have the correct match (1) or not (0)
-    # There can be multiple matches found for each reference (WHICH EVENTUALLY SHOULD CHANGE)
-    # Correct match if at least one of the matches is correct
-    match_correct = []
-    for i, test_publication in test_publications.iterrows():
-        uberids = match_data.loc[match_data['Reference id'] == test_publication['Reference id']]['uber_id'].tolist()
-        if (not uberids) or (test_publication['Reference id'] not in uberids):
-            #  If there were no matches found for this reference or the id of the match was different
-            match_correct.append(0)
-        else:
-            match_correct.append(1)
-    test_publications['Matched correctly?'] = match_correct
+    # Does each publication have the correct match (True) or not (False)
+    # (There might not be matches found for all the test_publications)
+    merged_test_pred = pd.merge(test_publications, match_data, how="left", left_on='Reference id', right_on='Reference id')
+    match_correct = merged_test_pred['Reference id']==merged_test_pred['uber_id']
 
-    test_scores = evaluate_metric(test_publications['Type'], test_publications['Matched correctly?'])
+    merged_test_pred['Matched correctly?'] = match_correct
+
+    test_scores = evaluate_metric(merged_test_pred['Type'].astype(int), merged_test_pred['Matched correctly?'].astype(int))
 
     return test_scores
