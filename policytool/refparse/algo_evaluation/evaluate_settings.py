@@ -4,6 +4,7 @@ from settings import BaseSettings
 class TestSettings(BaseSettings):
 
     SPLIT_SECTION_SIMILARITY_THRESHOLD = 40
+    LEVENSHTEIN_DIST_THRESHOLD = 0.3
 
     FOLDER_PREFIX = "./algo_evaluation/data_evaluate"
     LOG_FILE_PREFIX = './algo_evaluation/results'
