@@ -30,7 +30,7 @@ def create_argparser():
     parser.add_argument(
         '--verbose',
         help='Whether you want to print detailed test information ("True") or not ("False")',
-        default = False
+        default = True
     )
 
     return parser
@@ -39,8 +39,6 @@ if __name__ == '__main__':
 
     parser = create_argparser()
     args = parser.parse_args()
-
-    verbose='FALSE'
 
     now = datetime.now()
     logger = settings.logger
@@ -129,10 +127,10 @@ if __name__ == '__main__':
     test5_scores = evaluate_match_references(match_publications, test_publications, settings.FUZZYMATCH_THRESHOLD)
 
     test_scores_list = [test1_scores, test2_scores, test3_scores, test4_scores, test5_scores]
-    if args.verbose == 'True':
+    if args.verbose:
         for i, tests in enumerate(test_scores_list):
-            log_file.write("\nInformation about test {}:\n".format(i))
-            log_file.write(tests)
+            log_file.write("\n-----Information about test {}:-----\n".format(i))
+            [log_file.write("\n"+k+"\n"+str(v)+"\n") for (k,v) in tests.items()]
     else:
         for i, tests in enumerate(test_scores_list):
             log_file.write("\nScore for test {}:\n".format(i))
