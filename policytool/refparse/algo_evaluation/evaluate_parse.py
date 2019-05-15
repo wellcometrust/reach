@@ -12,8 +12,13 @@ def get_levenshtein_df(df1, df2):
     output: a dataframe of the levenshtein distances between each element pair
     """
 
-    calc_lev_dist_column = lambda s1, s2: editdistance.eval(s1, s2)/max(len(s1), len(s2)) if (s1!='' or s2 !='') else 0
-    lev_dist = pd.DataFrame([df1[column].combine(df2[column], calc_lev_dist_column) for column in df1.columns]).T
+    calc_lev_dist_column = lambda s1, s2:\
+                            editdistance.eval(s1, s2)/max(len(s1), len(s2))\
+                            if (s1!='' or s2 !='')\
+                            else 0
+    lev_dist = pd.DataFrame(
+                [df1[column].combine(df2[column], calc_lev_dist_column) for column in df1.columns]
+                ).T
 
     return lev_dist
 
@@ -38,12 +43,20 @@ def evaluate_metric(actual_components_list, predicted_components_list, levenshte
 
     test_scores = {
             'Score' : proportion_equal,
-            'Proportion of components predicted correctly (macro)' : proportion_equal,
-            'Proportion of components predicted correctly (micro)' : proportion_equal_cat,
-            'Mean normalised Levenshtein distance (macro)' : lev_dist.mean().mean(),
-            'Mean normalised Levenshtein distance (micro)' : lev_dist.mean(),
-            'Proportion of components predicted almost correctly (normalised Levenshtein < {}) (macro)'.format(levenshtein_threshold) : proportion_quite_equal,
-            'Proportion of components predicted almost correctly (normalised Levenshtein < {}) (micro)'.format(levenshtein_threshold) : proportion_quite_equal_cat
+            'Proportion of components predicted correctly (macro)'\
+                                                    : proportion_equal,
+            'Proportion of components predicted correctly (micro)'\
+                                                    : proportion_equal_cat,
+            'Mean normalised Levenshtein distance (macro)'\
+                                                    : lev_dist.mean().mean(),
+            'Mean normalised Levenshtein distance (micro)'\
+                                                    : lev_dist.mean(),
+            'Proportion of components predicted almost correctly\
+            (normalised Levenshtein < {}) (macro)'.format(levenshtein_threshold)\
+                                                    : proportion_quite_equal,
+            'Proportion of components predicted almost correctly\
+            (normalised Levenshtein < {}) (micro)'.format(levenshtein_threshold)\
+                                                    : proportion_quite_equal_cat
             }
 
     return test_scores
@@ -65,6 +78,10 @@ def evaluate_parse(parse_test_data, model, levenshtein_threshold):
             a.update({component_name : reference_test_data[component_name]})
         actual_components_list.append(a)
 
-    test_scores = evaluate_metric(actual_components_list, parse_test_data['Predicted merged components'].tolist(), levenshtein_threshold)
+    test_scores = evaluate_metric(
+                    actual_components_list,
+                    parse_test_data['Predicted merged components'].tolist(),
+                    levenshtein_threshold
+                    )
 
     return test_scores
