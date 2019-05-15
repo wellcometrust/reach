@@ -16,6 +16,10 @@ class FuzzyMatcher:
         self.threshold = match_threshold
 
     def match_vectorised(self, predicted_publications):
+
+        if isinstance(predicted_publications, pd.Series):
+            predicted_publications = predicted_publications.to_frame().transpose()
+
         if predicted_publications.shape[0] == 0:
             return pd.DataFrame({
                 'Document id': [],
@@ -39,15 +43,27 @@ class FuzzyMatcher:
         title_similarities = cosine_similarity(
             title_vectors, self.tfidf_matrix
         )
-        above_threshold_indices = np.nonzero(
-            title_similarities > self.threshold
-        )
-        cosine_similarities = title_similarities[
-            above_threshold_indices
-        ]
 
-        predicted_indices, real_indices = above_threshold_indices
-        
+        # Get indices of highest cosine similarity over threshold for each predicted publication row
+        # In form [(0, 77523), (1, 5258), (2, 66691) ..., (398, 94142)]]
+        max_above_threshold_indices_pairs = np.array([
+                # If there are multiple indices of the maximum value for this row then pick one randomly
+                (i, np.random.choice(np.argwhere(row==np.max(row)).flatten())) 
+                for i,row in enumerate(title_similarities)\
+                if np.max(row)>self.threshold
+               ])
+        # Edge case where there are no matches over the threshold:
+        if max_above_threshold_indices_pairs.shape[0] == 0:
+            predicted_indices = np.array([])
+            real_indices = np.array([])
+            cosine_similarities = np.array([])
+        else:
+            predicted_indices = max_above_threshold_indices_pairs[:,0]
+            real_indices = max_above_threshold_indices_pairs[:,1]
+            cosine_similarities = title_similarities[
+                (predicted_indices, real_indices)
+            ]
+
         match_data = pd.concat([
             predicted_publications.iloc[predicted_indices][[
                 'Document id',
@@ -66,14 +82,11 @@ class FuzzyMatcher:
         return match_data
 
     def fuzzy_match(self, predicted_publications):
-        # self.logger.info(
-        #     "Fuzzy matching for %s predicted publications ...",
-        #     len(predicted_publications)
-        # )
 
         all_match_data = self.match_vectorised(
             predicted_publications
         )
+
         all_match_data.rename(
             columns={
                 'title': 'WT_Ref_Title',
