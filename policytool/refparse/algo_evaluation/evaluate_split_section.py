@@ -34,30 +34,31 @@ def calc_bel_metric(metrics, threshold):
 
     return bel_metric
 
-def evaluate_metric(evaluation_info, threshold):
+def evaluate_metrics(actual_pred_num_references, threshold):
 
 
-    evaluation_info['diff_metric'] = [
-                                        calc_num_metric(m,n) for m,n in zip(
-                                            evaluation_info["Predicted number of references"],
-                                            evaluation_info["Number of references scraped"]
-                                            )
-                                    ]
-    median_diff = calc_med_metric(evaluation_info['diff_metric'])
-    below_threshold = calc_bel_metric(evaluation_info['diff_metric'], threshold)
-    grouped_source_metrics = evaluation_info.groupby('Source')['diff_metric'].agg(
-        {'Median difference': lambda x: calc_med_metric(x),
-        'Percentage below threshold of {}'.format(threshold) : lambda x : calc_bel_metric(x, threshold)}
+    actual_pred_num_references['diff_metric'] = [
+        calc_num_metric(m,n) for m,n in zip(
+            actual_pred_num_references["Predicted number of references"],
+            actual_pred_num_references["Number of references scraped"]
         )
+    ]
 
-    test_scores = {
+    median_diff = calc_med_metric(actual_pred_num_references['diff_metric'])
+    below_threshold = calc_bel_metric(actual_pred_num_references['diff_metric'], threshold)
+    grouped_source_metrics = actual_pred_num_references.groupby('Source')['diff_metric'].agg({
+        'Median difference': lambda x: calc_med_metric(x),
+        'Percentage below threshold of {}'.format(threshold) : lambda x : calc_bel_metric(x, threshold)
+    })
+
+    metrics = {
         'Score' : below_threshold,
         'Percentage below threshold of {}'.format(threshold) : below_threshold,
         'Median difference' : median_diff,
         'Metrics grouped by source' : grouped_source_metrics
         }
 
-    return test_scores
+    return metrics
 
 def evaluate_split_section(split_section_test_data, regex, threshold):
     """
@@ -65,17 +66,15 @@ def evaluate_split_section(split_section_test_data, regex, threshold):
     and compare the findings with the ground truth
     """
 
-    evaluation_info = []
+    actual_pred_num_references = []
     for references_section in split_section_test_data['Reference section']:
         references = split_section(references_section, regex = regex)
-        evaluation_info.append(
-            {
+        actual_pred_num_references.append({
             "Predicted references" : references,
             "Predicted number of references" : len(references)
-            }
-            )
-    evaluation_info = pd.concat([split_section_test_data, pd.DataFrame(evaluation_info)], axis = 1)
+        })
+    actual_pred_num_references = pd.concat([split_section_test_data, pd.DataFrame(actual_pred_num_references)], axis = 1)
 
-    test_scores = evaluate_metric(evaluation_info, threshold)
+    metrics = evaluate_metrics(actual_pred_num_references, threshold)
 
-    return test_scores
+    return metrics
