@@ -38,12 +38,12 @@ def evaluate_metric(actual_components_list, predicted_components_list, levenshte
 
     test_scores = {
             'Score' : proportion_equal,
-            'Proportion of components predicted correctly' : proportion_equal,
-            'Proportion of components predicted correctly by category' : proportion_equal_cat,
-            'Mean Levenshtein distance' : lev_dist.mean().mean(),
-            'Mean Levenshtein distance by category' : lev_dist.mean(),
-            'Proportion of components predicted almost correctly (Levenshtein < {})'.format(levenshtein_threshold) : proportion_quite_equal,
-            'Proportion of components predicted almost correctly (Levenshtein < {}) by category'.format(levenshtein_threshold) : proportion_quite_equal_cat
+            'Proportion of components predicted correctly (macro)' : proportion_equal,
+            'Proportion of components predicted correctly (micro)' : proportion_equal_cat,
+            'Mean normalised Levenshtein distance (macro)' : lev_dist.mean().mean(),
+            'Mean normalised Levenshtein distance (micro)' : lev_dist.mean(),
+            'Proportion of components predicted almost correctly (normalised Levenshtein < {}) (macro)'.format(levenshtein_threshold) : proportion_quite_equal,
+            'Proportion of components predicted almost correctly (normalised Levenshtein < {}) (micro)'.format(levenshtein_threshold) : proportion_quite_equal_cat
             }
 
     return test_scores
