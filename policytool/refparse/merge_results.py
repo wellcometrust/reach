@@ -43,7 +43,6 @@ def concat_match_csvs(match_csv_names):
         try:
             match_data = pd.read_csv(match_csv_name)
         except:
-            print(match_csv_name)
             continue
         if not match_data.empty:
             all_matches.append(match_data)
