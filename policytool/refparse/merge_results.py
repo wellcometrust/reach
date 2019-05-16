@@ -40,7 +40,11 @@ def concat_match_csvs(match_csv_names):
     """
     all_matches = []
     for match_csv_name in match_csv_names:
-        match_data = pd.read_csv(match_csv_name)
+        try:
+            match_data = pd.read_csv(match_csv_name)
+        except:
+            print(match_csv_name)
+            continue
         if not match_data.empty:
             all_matches.append(match_data)
 
@@ -60,6 +64,7 @@ def concat_predicted_csvs(predicted_csv_names):
     Output:
         all_url - a dataframe containing document id and document url
     """
+    all_predicted_references = []
     all_url = []
     for predicted_csv_name in predicted_csv_names:
         # Some (4) of the files don't read in without errors
@@ -68,13 +73,14 @@ def concat_predicted_csvs(predicted_csv_names):
         except:
             print('Read csv issue for file {}'.format(predicted_csv_name))
         if not pred_data.empty:
+            all_predicted_references.append(pred_data)
             # Each row has the same doc id and doc url, so only need to use first row
             all_url.append({'Document id' : pred_data.iloc[0]['Document id'],
                 'Document uri' : pred_data.iloc[0]['Document uri']})
 
     all_url = pd.DataFrame.from_dict(all_url)
-
-    return all_url
+    all_predicted_references = pd.concat(all_predicted_references)
+    return all_url, all_predicted_references
 
 def create_argparser(description):
     parser = ArgumentParser(description)
@@ -102,7 +108,7 @@ if __name__ == '__main__':
     predicted_csv_names = get_csv_names(output_url, '_predicted_reference_structures')
 
     all_match = concat_match_csvs(match_csv_names)
-    all_url = concat_predicted_csvs(predicted_csv_names)
+    all_url, all_predicted_references = concat_predicted_csvs(predicted_csv_names)
 
     all_matches_url = all_match.join(
         all_url.set_index('Document id'),
@@ -118,3 +124,4 @@ if __name__ == '__main__':
             os.makedirs('{}/{}'.format(output_url, output_folder_name))
 
     all_matches_refs.to_csv('{}/{}/merged_all_matches.csv'.format(output_url, output_folder_name))
+    all_predicted_references.to_csv('{}/{}/merged_all_predicted_reference_structures.csv'.format(output_url, output_folder_name))
