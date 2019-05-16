@@ -64,7 +64,6 @@ def concat_predicted_csvs(predicted_csv_names):
         all_url - a dataframe containing document id and document url
     """
     all_predicted_references = []
-    all_url = []
     for predicted_csv_name in predicted_csv_names:
         # Some (4) of the files don't read in without errors
         try:
@@ -73,11 +72,10 @@ def concat_predicted_csvs(predicted_csv_names):
             print('Read csv issue for file {}'.format(predicted_csv_name))
         if not pred_data.empty:
             all_predicted_references.append(pred_data)
-            # Each row has the same doc id and doc url, so only need to use first row
-            all_url.append({'Document id' : pred_data.iloc[0]['Document id'],
-                'Document uri' : pred_data.iloc[0]['Document uri']})
 
-    all_url = pd.DataFrame.from_dict(all_url)
+    all_url = all_predicted_references[
+        ['Document id', 'Document uri']
+    ].drop_duplicates()
     all_predicted_references = pd.concat(all_predicted_references)
     return all_url, all_predicted_references
 
