@@ -1,46 +1,53 @@
 import pandas as pd
 
-from collections import Counter
+from sklearn.metrics import classification_report, f1_score
 
 from utils import FuzzyMatcher
 
 def evaluate_metric(actual, predicted):
-    """
-    False positive rate or similar
-    """
-    test_scores = {'Score' : 50, 'More info' : "More information about this test"}
+
+    actual_binary = actual.astype(int)
+    # predicted is True, False and "No match found",
+    # convert to 1 (True) or 0 (False or "No match found")
+    predicted_binary = [1 if pred_type==True else 0 for pred_type in predicted]
+
+    similarity = round(f1_score(actual_binary, predicted_binary, average='micro'), 3)
+
+    test_scores = {
+        'Score' : similarity,
+        'Micro average F1-score' : similarity,
+        'Classification report' : classification_report(actual_binary, predicted_binary),
+        'Frequency table of match types' : pd.crosstab(index=actual, columns=predicted) 
+        }
 
     return test_scores
 
-def evaluate_match_references(match_publications, test_publications, match_threshold):
+def evaluate_match_references(publications, evaluation_references, match_threshold):
+    """
+    Try to match the evaluation_references with references in 'publications'
+    """
 
     # Get the data into the same format as would be
-    test_publications = test_publications.rename(columns={'Match title': 'Title', 'Match pub id': 'Reference id'})
-    test_publications['Journal'] = None
-    test_publications['PubYear'] = None
-    test_publications['Authors'] = None
-    test_publications['Issue'] = None
-    test_publications['Volume'] = None
-    test_publications['Document id'] = range(0, len(test_publications))
-    test_publications['Document uri'] = None
+    evaluation_references = evaluation_references.rename(columns={'Match title': 'Title', 'Match pub id': 'Reference id'})
+    evaluation_references['Document id'] = range(0, len(evaluation_references))
 
-    fuzzy_matcher = FuzzyMatcher(match_publications, match_threshold)
+    # Take out the negative reference id's (so you shouldn't find them)
+    neg_test_pub_ids = evaluation_references.loc[evaluation_references['Do we expect a match?']==0]['Reference id']
+    publications_no_negs = publications.loc[~publications['uber_id'].isin(neg_test_pub_ids)]
 
-    match_data = fuzzy_matcher.match_vectorised(test_publications)
+    fuzzy_matcher = FuzzyMatcher(publications_no_negs, match_threshold)
 
-    # Does each publication have the correct match (1) or not (0)
-    # There can be multiple matches found for each reference (WHICH EVENTUALLY SHOULD CHANGE)
-    # Correct match if at least one of the matches is correct
-    match_correct = []
-    for i, test_publication in test_publications.iterrows():
-        uberids = match_data.loc[match_data['Reference id'] == test_publication['Reference id']]['uber_id'].tolist()
-        if (not uberids) or (test_publication['Reference id'] not in uberids):
-            #  If there were no matches found for this reference or the id of the match was different
-            match_correct.append(0)
-        else:
-            match_correct.append(1)
-    test_publications['Matched correctly?'] = match_correct
+    matched_publications = fuzzy_matcher.match_vectorised(evaluation_references)
 
-    test_scores = evaluate_metric(test_publications['Type'], test_publications['Matched correctly?'])
+    evaluation_matches = pd.merge(evaluation_references, matched_publications, how="left", left_on='Reference id', right_on='Reference id')
+
+    # Does each publication have the correct match (true), an incorrect match (false) or no match
+    evaluation_matches['Matched correctly?'] = [
+        matches['Reference id']==matches['uber_id'] if not pd.isnull(matches['uber_id'])\
+        else "No match found"\
+        for _, matches in evaluation_matches.iterrows()
+        ]
+
+    test_scores = evaluate_metric(evaluation_matches['Do we expect a match?'], evaluation_matches['Matched correctly?'])
 
     return test_scores

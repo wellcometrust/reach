@@ -91,7 +91,7 @@ if __name__ == '__main__':
 
     # Load data to test matching for test 5:
     logger.info('[+] Reading {}'.format(settings.TEST_PUB_DATA_FILE_NAME))
-    test_publications = fm.get_file(
+    evaluation_references = fm.get_file(
         settings.TEST_PUB_DATA_FILE_NAME,
         settings.FOLDER_PREFIX,
         'csv'
@@ -99,7 +99,7 @@ if __name__ == '__main__':
 
     # Load WT publications to match references against
     logger.info('[+] Reading {}'.format(settings.MATCH_PUB_DATA_FILE_NAME))
-    match_publications = fm.get_file(
+    publications = fm.get_file(
         settings.MATCH_PUB_DATA_FILE_NAME,
         settings.FOLDER_PREFIX,
         'csv'
@@ -124,7 +124,7 @@ if __name__ == '__main__':
     test4_scores = evaluate_parse(parse_test_data, model)
 
     logger.info('[+] Running test 5')
-    test5_scores = evaluate_match_references(match_publications, test_publications, settings.FUZZYMATCH_THRESHOLD)
+    test5_scores = evaluate_match_references(publications, evaluation_references, settings.FUZZYMATCH_THRESHOLD)
 
     test_scores_list = [test1_scores, test2_scores, test3_scores, test4_scores, test5_scores]
     if args.verbose:
