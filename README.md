@@ -30,8 +30,33 @@ are made accessible to external users. All issues and pull requests
 are welcome. Contributing guidelines can be found in
 [CONTRIBUTING.md](./CONTRIBUTING.md).
 
+### Dependencies
+To develop for this project, you will need:
+1. Python 3.5 or higher and `virtualenv`
+1. Docker and docker-compose
+1. AWS credentials
+1. A clean json file containing reference sections
+1. A clean csv file containing all your references
 
-## wsf-web-scraper/
+Once you have everything installed, run:
+  * `make virtualenv`
+  * `source build/virtualenv/bin/activate`
+
+### Starting docker-compose given you have Wellcome creds
+
+```
+eval $(./export_env.py)
+docker-compose up -d
+```
+
+### Running a task
+
+```
+
+```
+
+
+## airflow
 
 See [wsf-web-scraper/README.md](wsf-web-scraper/README.md).
 
@@ -41,17 +66,6 @@ The top-level files in this repo currently hold Policy Tool's reference
 parser, which uses a home trained model to identify components from a
 set of scraped reference sections and to find those directly related to
 Wellcome.
-
-### Dependencies
-To develop for this project, you will need:
-1. Python 3.5 or higher and `virtualenv`
-2. PostgreSQL 9 or higher
-3. A clean json file containing reference sections
-4. A clean csv file containing all your references
-
-Once you have everything installed, run:
-  * `make virtualenv`
-  * `source build/virtualenv/bin/activate`
 
 ## How to use it
 

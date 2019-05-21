@@ -37,7 +37,7 @@ To bring up the development environment using docker:
    ```
 2. Build the base image
    ```
-   make base_image
+   make base-image
    ```
 
 Then, to run a scraper from your local repo, run:
