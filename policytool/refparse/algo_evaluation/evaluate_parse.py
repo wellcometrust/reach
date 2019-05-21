@@ -6,19 +6,21 @@ import pandas as pd
 
 from policytool.refparse.utils.parse import structure_reference
 
+def calc_lev_distance(s1, s2):
+
+    if s1=='' or s2 =='':
+        return 0
+
+    return editdistance.eval(s1, s2) / max(len(s1), len(s2))
+
 def get_levenshtein_df(df1, df2):
     """
     Input: two equally sized dataframes
     output: a dataframe of the levenshtein distances between each element pair
     """
 
-    calc_lev_dist_column = lambda s1, s2:\
-                        editdistance.eval(s1, s2)/max(len(s1), len(s2))\
-                        if (s1!='' or s2 !='')\
-                        else 0
-
     lev_list = [
-        calc_lev_dist_column(a,p) for (a,p) in zip(df1.stack(), df2.stack())
+        calc_lev_distance(a,p) for (a,p) in zip(df1.stack(), df2.stack())
     ]
     lev_dist = pd.DataFrame(
         np.reshape(lev_list, df1.shape),
