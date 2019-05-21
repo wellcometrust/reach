@@ -2,7 +2,11 @@ In this document we describe how we got each of the evaluation datasets uses in 
 
 ## Scrape Evaluation
 
-"./algo_evaluation/data_evaluate/scrape_test_data.csv"
+- We generated a random list of policy documents we currently scrape from various policy organisations.
+- We went through this list until we found X which had a section that contain references and X that didn't.
+- The pdfs for these were saved in "./algo_evaluation/data_evaluate/pdfs", named with a unique identifier for this pdf.
+- We looked for the text from sections Reach currently looks for in the pdfs ('reference' and 'bibliograph')
+- The text was copied and pasted from the pdf into a markdown file and saved as a .txt file in the relevant sections folder (e.g. "./algo_evaluation/data_evaluate/pdf_sections/reference") and saved with the same unique name as the pdf was.
 
 ## Split Section Evaluation
 
