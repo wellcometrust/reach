@@ -1,14 +1,4 @@
-# policytool
-
-Ultimately, all code will go in this directory, and this README will be superseded
-by the toplevel README.
-
-Meanwhile, this includes data on all code in this directory, including:
-
-- airflow
-- the scrapers run within airflow
-- the policy tool API
-- the policy tool website
+# scraper
 
 ![genericSpider](https://user-images.githubusercontent.com/235073/38735019-72dbd1f6-3f1f-11e8-9cb4-fa6f3d270dda.png)
 
@@ -27,52 +17,6 @@ A web scraper tool to get data for evaluating Wellcome impact.
  | Parliament   | Everything from search-material.parliament.uk                                       | 1984 - 2019 |
 
 
-## Development
-
-To bring up the development environment using docker:
-
-1. Start a clean postgres DB:
-   ```
-   docker-compose up -d
-   ```
-2. Build the base image
-   ```
-   make base_image
-   ```
-
-Then, to run a scraper from your local repo, run:
-
-```
-./docker_run.sh ./entrypoint.sh SPIDER_TO_RUN
-```
-
-where `SPIDER_TO_RUN` is one of:
-  * `who_iris`
-  * `gov_uk`
-  * `nice`
-  * `unicef`
-  * `msf`
-  * `parliament`
-
-If you need to run outside docker, Dockerfile.base and entrypoint.sh
-should point you in the right direction.
-
-## Testing
-
-To run tests, first bring up the development environment as above.
-
-Then, run:
-
-```
-./docker_run.sh python -m unittest discover -s /pwd/tests
-```
-
-## Usage
-
-To deploy this scraper yourself, see the wiki:
-https://github.com/wellcometrust/wsf-web-scraper/wiki
-
-This scraper can also be deployed more easily using Docker.
 
 ## Output Formatting
 

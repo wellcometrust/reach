@@ -18,6 +18,7 @@ import json
 import subprocess
 import sys
 import os
+import os.path
 import configparser
 
 parser = ArgumentParser(description=__doc__.strip())
@@ -46,7 +47,7 @@ def decrypt_env():
 def aws_creds_to_env():
     env = 'export '
     conf = configparser.ConfigParser()
-    conf.read('/Users/depardieus/.aws/credentials')
+    conf.read(os.path.expanduser('~/.aws/credentials'))
     for i in conf['default']:
         if i.startswith('aws'):
             env += '{}={} '.format(i.upper(), conf['default'][i])
