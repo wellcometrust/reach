@@ -121,7 +121,7 @@ if __name__ == '__main__':
         )
 
     logger.info('[+] Running test 4')
-    test4_scores = evaluate_parse(parse_test_data, model)
+    test4_scores = evaluate_parse(parse_test_data, model, settings.LEVENSHTEIN_DIST_THRESHOLD)
 
     logger.info('[+] Running test 5')
     test5_scores = evaluate_match_references(publications, evaluation_references, settings.FUZZYMATCH_THRESHOLD)
