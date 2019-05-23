@@ -40,8 +40,8 @@ def yield_section_data(scrape_pdf_location, sections_location):
         if not filename.startswith('.'):
             pdf_hash, _ = os.path.splitext(filename)
             for section_name in sections_names:
-                section_path = os.path.join(sections_location, section_name)
-                section_text = get_text(section_path)
+                section_path = os.path.join(sections_location, section_name, pdf_hash)
+                section_text = get_text('{}.txt'.format(section_path))
                 yield pdf_hash, section_name, section_text
 
 def create_argparser():
@@ -154,7 +154,6 @@ if __name__ == '__main__':
     logger.info('\nStarting the tests...\n')
 
     logger.info('[+] Running tests 1 and 2')                     
-
     test1_scores, test2_scores = evaluate_find_section(
         evaluate_find_section_data,
         scrape_pdf_location,
@@ -169,18 +168,31 @@ if __name__ == '__main__':
         )
 
     logger.info('[+] Running test 4')
-
-    test4_scores = evaluate_parse(parse_test_data, model, settings.LEVENSHTEIN_DIST_THRESHOLD)
+    test4_scores = evaluate_parse(
+        evaluate_parse_data,
+        model,
+        settings.LEVENSHTEIN_DIST_PARSE_THRESHOLD
+        )
 
     logger.info('[+] Running test 5')
-    test5_scores = evaluate_match_references(publications, evaluation_references, settings.FUZZYMATCH_THRESHOLD)
+    test5_scores = evaluate_match_references(
+        publications,
+        evaluation_references,
+        settings.FUZZYMATCH_THRESHOLD
+        )
 
-    test_scores_list = [test1_scores, test2_scores, test3_scores, test4_scores, test5_scores]
+    test_scores_list = [
+        test1_scores,
+        test2_scores,
+        test3_scores,
+        test4_scores,
+        test5_scores
+        ]
 
-    if args.verbose:
+    if eval(args.verbose):
         for i, tests in enumerate(test_scores_list):
             log_file.write(
-                "\n-----Information about test {}:-----\n".format(i)
+                "\n-----Information about test {}:-----\n".format(i+1)
             )
             [
                 log_file.write(
@@ -189,8 +201,8 @@ if __name__ == '__main__':
             ]
     else:
         for i, tests in enumerate(test_scores_list):
-            log_file.write("\nScore for test {}:\n".format(i))
-            log_file.write(str(tests['Score']))
+            log_file.write("\nScore for test {}:\n".format(i+1))
+            log_file.write("{}\n".format(round(tests['Score'],2)))
 
     log_file.close()
 
