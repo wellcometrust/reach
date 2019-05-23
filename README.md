@@ -119,7 +119,11 @@ This will test that your last changes didn't affect how the program works.
 
 ## Evaluating each component of the algorithm
 
-We have devised some evaluation data in order to evaluate 5 steps of the model. The results can be found by first downloading the evaluation data from [here](https://s3-eu-west-1.amazonaws.com/datalabs-data/policy_tool_tests), and then running
+We have devised some evaluation data in order to evaluate 5 steps of the model. The results can be calculated by first installing poppler
+```
+brew install poppler
+```
+and then downloading the evaluation data from [here](https://s3-eu-west-1.amazonaws.com/datalabs-data/policy_tool_tests), and then running
 ```
 python evaluate_algo.py --verbose True
 ```
