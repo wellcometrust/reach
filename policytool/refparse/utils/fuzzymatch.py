@@ -1,6 +1,6 @@
 import numpy as np
 import pandas as pd
-from settings import settings
+from ..settings import settings
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
 
