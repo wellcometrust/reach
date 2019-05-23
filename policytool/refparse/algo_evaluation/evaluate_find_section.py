@@ -34,20 +34,23 @@ def evaluate_metric_scraped(actual, predicted, sections):
 
     test_scores = {
         'Score' : similarity,
-        'Micro average F1-score' : similarity,
+        'F1-score' : similarity,
         'Classification report' : classification_report(actual, predicted),
         'Confusion matrix' : pretty_confusion_matrix(
                 actual, predicted, [True, False]
             )
         }
 
+    sections_texts = pd.DataFrame(
+        {'Section': sections, 'Actual': actual, 'Predicted': predicted}
+        )
+
     for section_name in set(sections):
-        actual_section = [
-            a for (s,a) in zip(sections, actual) if s == section_name
-        ]
-        predicted_section = [
-            p for (s,p) in zip(sections, predicted) if s == section_name
-        ]
+        section_text = sections_texts[sections_texts['Section']==section_name]
+
+        actual_section = section_text['Actual']
+        predicted_section = section_text['Predicted']
+
         test_scores["Classification report for the {} section".format(
             section_name
             )] = classification_report(actual_section, predicted_section)
