@@ -115,18 +115,17 @@ def remove_dups_and_concat(fuzzy_matches, text_matches):
     return all_matches
 
 
-def run_predict(scraper_file, references_file,
-                model_file, pool_map, output_url, logger):
+def yield_structured_references(scraper_file,
+                model_file, pool_map, logger):
     """
     Parsers references using a (potentially parallelized) map()
-    implementation.
+    implementation, yielding back one dataframe for each document
+    in scraper_file.
 
     Args:
         scraper_file: path / S3 url to scraper results file
-        references_file: path/S3 url to references CSV file
         model_file: path/S3 url to model pickle file (three formats FTW!)
         pool_map: (possibly parallel) implementation of map() builtin
-        output_url: file/S3 url for output files
         logger: logging configuration name
     """
 
@@ -134,22 +133,9 @@ def run_predict(scraper_file, references_file,
 
     # Loading the scraper results
     scraper_file = get_file(scraper_file, "", get_scraped=True)
-
-    # Loading the references file
-    ref_file = get_file(references_file, 'csv')
-    check_references_file(ref_file, references_file)
     
     # Loading the pipeline
     model = get_file(model_file, 'pickle')
-
-    fuzzy_matcher = FuzzyMatcher(
-        ref_file,
-        settings.FUZZYMATCH_THRESHOLD
-    )
-
-    text_matcher = HardTextSearch(
-        ref_file
-    )
 
     sectioned_documents = transform_scraper_file(scraper_file)
 
@@ -180,52 +166,21 @@ def run_predict(scraper_file, references_file,
             doc.id,
             doc.uri
         )
+        yield doc.id, structured_references
 
-        matched_references_parser = fuzzy_matcher.fuzzy_match(
-            structured_references
-        )
-
-        matched_references_hard_text = text_matcher.hard_text_search(
-            doc
-        )
-
-        matched_references = remove_dups_and_concat(matched_references_parser, matched_references_hard_text)
-
-        if output_url.startswith('file://'):
-            # use everything after first two slashes; this handles
-            # absolute and relative urls equally well
-            output_dir = output_url[7:]
-            structured_references.to_csv(
-                os.path.join(
-                    output_dir,
-                    f"{doc.id}_{settings.PREF_REFS_FILENAME}"
-                    )
-                )
-            matched_references.to_csv(
-                os.path.join(
-                    output_dir,
-                    f"{doc.id}_{settings.MATCHES_FILENAME}"
-                    )
-                )
-        else:
-            database = DatabaseEngine(output_url)
-            database.save_to_database(
-                structured_references,
-                matched_references,
-            )
         nb_references += len(splitted_references)
 
     t1 = time.time()
     total = t1-t0
 
     logger.info(
-        "Time taken to predict and match for %s is %s",
+        "Time taken to predict for %s is %s",
         str(nb_references),
         str(total)
     )
 
 
-def parse_references(scraper_file, references_file, model_file,
+def parse_references(scraper_file, model_file,
                      output_url, num_workers, logger):
 
     """
@@ -233,9 +188,7 @@ def parse_references(scraper_file, references_file, model_file,
 
     Args:
         scraper_file: path / S3 url to scraper results file
-        references_file: path/S3 url to references CSV file
         model_file: path/S3 url to model pickle file (three formats FTW!)
-        output_url: file/S3 url for output files
         num_workers: number of workers to use, or None for multiprocessing's
             default (number of cores).
         logger: logging configuration name
@@ -247,16 +200,74 @@ def parse_references(scraper_file, references_file, model_file,
         pool = Pool(num_workers)
         pool_map = pool.map
 
-    run_predict(scraper_file, references_file,
-                model_file, pool_map, output_url, logger)
+    yield from yield_structured_references(
+        scraper_file, model_file, pool_map, logger)
 
     if pool is not None:
         pool.terminate()
         pool.join()
 
 
-def parse_references_profile(scraper_file, references_file,
-                             model_file, output_url):
+def run_match(structured_references, fuzzy_matcher, text_matcher):
+    matched_references_parser = fuzzy_matcher.fuzzy_match(
+        structured_references
+    )
+    matched_references_hard_text = text_matcher.hard_text_search(
+        doc
+    )
+    matched_references = remove_dups_and_concat(matched_references_parser, matched_references_hard_text)
+    return matched_references
+
+
+
+def match_references(scraper_file, references_file, model_file,
+                     output_url, num_workers, logger):
+
+    # Loading the references file
+    ref_file = get_file(references_file, 'csv')
+    check_references_file(ref_file, references_file)
+
+    fuzzy_matcher = FuzzyMatcher(
+        ref_file,
+        settings.FUZZYMATCH_THRESHOLD
+    )
+    text_matcher = HardTextSearch(ref_file)
+
+    refs = parse_references(
+        scraper_file, model_file, num_workers, logger)
+    for doc_id, structured_references in refs:
+        matched_references = run_match(
+            structured_references,
+            fuzzy_matcher,
+            text_matcher)
+
+        if output_url.startswith('file://'):
+            # use everything after first two slashes; this handles
+            # absolute and relative urls equally well
+            output_dir = output_url[7:]
+            structured_references.to_csv(
+                os.path.join(
+                    output_dir,
+                    f"{doc_id}_{settings.PREF_REFS_FILENAME}"
+                    )
+                )
+            matched_references.to_csv(
+                os.path.join(
+                    output_dir,
+                    f"{doc_id}_{settings.MATCHES_FILENAME}"
+                    )
+                )
+        else:
+            database = DatabaseEngine(output_url)
+            database.save_to_database(
+                structured_references,
+                matched_references,
+            )
+
+
+
+def match_references_profile(scraper_file, references_file,
+                             model_file, output_url, logger):
     """
     Entry point for reference parser, single worker, with profiling.
 
@@ -269,8 +280,8 @@ def parse_references_profile(scraper_file, references_file,
     import cProfile
     cProfile.run(
         ''.join([
-            'run_predict(scraper_file, references_file,',
-            'model_file, map, output_url)'
+            'match_references(scraper_file, references_file,',
+            'model_file, output_url, 1, logger)'
         ]),
         'stats_dumps'
     )
@@ -337,14 +348,15 @@ if __name__ == '__main__':
         if args.profile:
             assert args.num_workers is None or args.num_workers == 1
 
-            parse_references_profile(
+            match_references_profile(
                 args.scraper_file,
                 args.references_file,
                 args.model_file,
-                args.output_url
+                args.output_url,
+                logger
             )
         else:
-            parse_references(
+            match_references(
                 args.scraper_file,
                 args.references_file,
                 args.model_file,
