@@ -1,7 +1,7 @@
 import datetime
 import re
 
-from settings import settings
+from ..settings import settings
 
 
 VALID_YEARS = (1800, datetime.date.today().year + 1)

@@ -1,5 +1,5 @@
 import boto3
-from settings import settings
+from ..settings import settings
 from botocore.exceptions import ClientError
 
 
