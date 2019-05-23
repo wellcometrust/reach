@@ -119,7 +119,7 @@ This will test that your last changes didn't affect how the program works.
 
 ## Evaluating each component of the algorithm
 
-We have devised some evaluation data in order to evaluate 5 steps of the model. The results can be found by first installing poppler
+We have devised some evaluation data in order to evaluate 5 steps of the model. The results can be calculated by first installing poppler
 ```
 brew install poppler
 ```

@@ -7,6 +7,7 @@ import os
 from os import listdir 
 from datetime import datetime
 from urllib.parse import urlparse
+from collections import defaultdict
 
 from utils import FileManager
 from algo_evaluation.evaluate_settings import settings
@@ -16,54 +17,32 @@ from algo_evaluation.evaluate_parse import evaluate_parse
 from algo_evaluation.evaluate_match_references import evaluate_match_references
 
 
-def get_text(filename, foldername):
-
+def get_text(filepath):
     try:
-        references_section = open(
-            "{}/{}.txt".format(foldername, filename)
-        ).read()
+        references_section = open(filepath).read()
     except:
         references_section = ""
 
     return references_section
 
-def get_pdf_sections(
-        pdf_name, sections_folder_names, sections_location
-        ):
+def yield_section_data(scrape_pdf_location, sections_location):
     """
-    For a pdf name in the evaluation data, 
-    get all the text from any relevant txt files in the locations given
-    
-    Input:
-    pdf_name : A pdf name in the evaluation data 
-                e.g pdf_name1
-    sections_folder_names : 
-                A list of the folder names for each
-                section we have evaluation data for
-                e.g. ['reference', 'bibliograph']
-    sections_location : 
-                The file location where each of the
-                section folders are kept
-                e.g './algo_evaluation/data_evaluate/pdf_sections'
-
-    Output:
-    sections_dict : 
-                A dictionary of all the sections text
-                for this pdf,
-                in form {reference : 'text', bibliograph : 'text', ... }
+    sections_location and scrape_pdf_location both contain
+    '.DS_Store' files, so I make sure to not include any
+    hidden files (start with .)
     """
-    sections = {}
-    for section_folder in sections_folder_names:
-        section_text = get_text(
-            pdf_name,
-            '{}/{}'.format(
-                sections_location,
-                section_folder
-                )
-            )
-        sections.update({section_folder : section_text})
-    
-    return sections
+    sections_names = [
+        section_name
+        for section_name in listdir(sections_location)
+        if not section_name.startswith('.')
+    ]
+    for filename in listdir(scrape_pdf_location):
+        if not filename.startswith('.'):
+            pdf_hash, _ = os.path.splitext(filename)
+            for section_name in sections_names:
+                section_path = os.path.join(sections_location, section_name)
+                section_text = get_text(section_path)
+                yield pdf_hash, section_name, section_text
 
 def create_argparser():
     parser = ArgumentParser()
@@ -106,32 +85,19 @@ if __name__ == '__main__':
         )
     )
 
-    scrape_pdf_location = '{}/{}'.format(
+    scrape_pdf_location = os.path.join(
         settings.FOLDER_PREFIX,
         settings.SCRAPE_DATA_PDF_FOLDER_NAME
     )
 
-    pdf_names = listdir(scrape_pdf_location)
-    pdf_names = [
-        os.path.splitext(pdf_name)[0] for pdf_name in pdf_names
-    ]
-    pdf_names.remove('.DS_Store')
-
-    sections_location = '{}/{}'.format(
+    sections_location = os.path.join(
         settings.FOLDER_PREFIX,
         settings.SCRAPE_DATA_REF_PDF_FOLDER_NAME
     )
 
-    sections_folder_names = [
-        name for name in os.listdir(sections_location) \
-        if os.path.isdir('{}/{}'.format(sections_location, name))
-    ]
-
-    evaluate_find_section_data = {
-        pdf_name : get_pdf_sections(
-            pdf_name, sections_folder_names, sections_location
-        ) for pdf_name in pdf_names
-    }
+    evaluate_find_section_data = defaultdict(lambda: defaultdict(str))
+    for pdf_hash, section_name, section_text in yield_section_data(scrape_pdf_location, sections_location):
+        evaluate_find_section_data[pdf_hash][section_name] = section_text
 
     # ==== Load data to test split sections for test 3: ====
     logger.info('[+] Reading {}'.format(settings.NUM_REFS_FILE_NAME))
@@ -143,10 +109,12 @@ if __name__ == '__main__':
 
     evaluate_split_section_data['Reference section'] = [
         get_text(
-            doc_hash,
-            '{}/{}'.format(
-                settings.FOLDER_PREFIX,
-                settings.NUM_REFS_TEXT_FOLDER_NAME
+            '{}.txt'.format(
+                os.path.join(
+                    settings.FOLDER_PREFIX,
+                    settings.NUM_REFS_TEXT_FOLDER_NAME,
+                    doc_hash
+                    )
                 )
             ) for doc_hash in evaluate_split_section_data['hash']
         ]
@@ -177,9 +145,9 @@ if __name__ == '__main__':
 
     # Load the latest parser model
     model = fm.get_file(
-        'reference_parser_pipeline.pkl',
-        './reference_parser_models/',
-        'pickle'
+        settings.MODEL_FILE_NAME,
+        settings.MODEL_FILE_PREFIX,
+        settings.MODEL_FILE_TYPE
     )
 
     # ==== Get the evaluation metrics ====
