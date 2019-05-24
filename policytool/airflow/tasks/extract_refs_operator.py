@@ -16,8 +16,6 @@ from policytool.airflow.hook.wellcome_s3_hook import WellcomeS3Hook
 
 logger = logging.getLogger(__name__)
 
-RESOURCE_FILES = '/src/policytool/resources/'
-
 
 class ExtractRefsOperator(BaseOperator):
     """
@@ -62,14 +60,10 @@ class ExtractRefsOperator(BaseOperator):
                     pool_map,
                     logger)
                 for doc_id, structured_references in refs:
-                    for row in structured_references.iterrows():
-                        print(row)
-                        d = {'docId': doc_id}
-                        for (col_name, value) in enumerate(row):
-                            d.update({col_name : value})
-                        print(d)
-                        # TODO: update d with attrs from row (d.update()?)
-                        dst_f.write(json.dumps(d).encode('utf-8'))
+                    for _, row in structured_references.iterrows():
+                        item = dict(row)
+                        item['doc_id'] = doc_id
+                        dst_f.write(json.dumps(item).encode('utf-8'))
                         dst_f.write(b'\n')
 
             dst_rawf.flush()
