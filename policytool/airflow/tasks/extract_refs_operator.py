@@ -59,10 +59,9 @@ class ExtractRefsOperator(BaseOperator):
                     model_path,
                     pool_map,
                     logger)
-                for doc_id, structured_references in refs:
+                for _, structured_references in refs:
                     for _, row in structured_references.iterrows():
                         item = dict(row)
-                        item['doc_id'] = doc_id
                         dst_f.write(json.dumps(item).encode('utf-8'))
                         dst_f.write(b'\n')
 
