@@ -13,14 +13,14 @@ def evaluate_metric(actual, predicted):
 
     similarity = round(f1_score(actual_binary, predicted_binary, average='micro'), 3)
 
-    test_scores = {
+    metrics = {
         'Score' : similarity,
         'Micro average F1-score' : similarity,
         'Classification report' : classification_report(actual_binary, predicted_binary),
         'Frequency table of match types' : pd.crosstab(index=actual, columns=predicted) 
         }
 
-    return test_scores
+    return metrics
 
 def evaluate_match_references(publications, evaluation_references, match_threshold):
     """
@@ -32,8 +32,8 @@ def evaluate_match_references(publications, evaluation_references, match_thresho
     evaluation_references['Document id'] = range(0, len(evaluation_references))
 
     # Take out the negative reference id's (so you shouldn't find them)
-    neg_test_pub_ids = evaluation_references.loc[evaluation_references['Do we expect a match?']==0]['Reference id']
-    publications_no_negs = publications.loc[~publications['uber_id'].isin(neg_test_pub_ids)]
+    neg_eval_pub_ids = evaluation_references.loc[evaluation_references['Do we expect a match?']==0]['Reference id']
+    publications_no_negs = publications.loc[~publications['uber_id'].isin(neg_eval_pub_ids)]
 
     fuzzy_matcher = FuzzyMatcher(publications_no_negs, match_threshold)
 
@@ -48,6 +48,6 @@ def evaluate_match_references(publications, evaluation_references, match_thresho
         for _, matches in evaluation_matches.iterrows()
         ]
 
-    test_scores = evaluate_metric(evaluation_matches['Do we expect a match?'], evaluation_matches['Matched correctly?'])
+    metrics = evaluate_metric(evaluation_matches['Do we expect a match?'], evaluation_matches['Matched correctly?'])
 
-    return test_scores
+    return metrics

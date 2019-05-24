@@ -24,7 +24,7 @@ class TestSettings(BaseSettings):
     PARSE_REFERENCE_FILE_NAME = "actual_reference_structures_sample.csv"
 
     # Variables for match evaluation data
-    TEST_PUB_DATA_FILE_NAME = "positive_and_negative_match_test_data.csv"
+    EVAL_PUB_DATA_FILE_NAME = "positive_and_negative_match_test_data.csv"
     MATCH_PUB_DATA_FILE_NAME = "uber_api_publications.csv"
 
 settings = TestSettings()
