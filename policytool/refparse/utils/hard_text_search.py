@@ -1,7 +1,7 @@
 import pandas as pd
 import re
 
-from ..settings import settings
+from policytool.refparse.settings import settings
 
 class HardTextSearch:
 	def __init__(self, ref_file):
