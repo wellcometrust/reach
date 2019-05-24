@@ -1,5 +1,5 @@
 """
-e.g. python test_algo.py --verbose True
+e.g. python evaluate_algo.py --verbose True
 """
 
 from argparse import ArgumentParser
@@ -48,9 +48,9 @@ def create_argparser():
     parser = ArgumentParser()
     parser.add_argument(
         '--verbose',
-        help='Whether you want to print detailed test \
+        help='Whether you want to print detailed evaluation \
             information ("True") or not ("False")',
-        default = True
+        default = 'True'
     )
 
     return parser
@@ -64,22 +64,22 @@ if __name__ == '__main__':
     logger = settings.logger
     logger.setLevel('INFO')
 
-    logger.info('Starting tests...')
+    logger.info('Starting evaluations...')
 
     log_file = open(
-        '{}/Test results - {:%Y-%m-%d-%H%M}'.format(
+        '{}/Evaluation results - {:%Y-%m-%d-%H%M}'.format(
             settings.LOG_FILE_PREFIX, now
         ), 'w'
     )
         
     log_file.write(
-        'Date of test = {:%Y-%m-%d-%H%M}\n'.format(now)
+        'Date of evaluation = {:%Y-%m-%d-%H%M}\n'.format(now)
     )
 
     logger.info('Reading files...')
     fm = FileManager()
 
-    # ==== Load data to test scraping for tests 1 and 2: ====
+    # ==== Load data to evaluate scraping for evaluations 1 and 2: ====
     logger.info('[+] Reading {}'.format(
         settings.SCRAPE_DATA_PDF_FOLDER_NAME
         )
@@ -99,7 +99,7 @@ if __name__ == '__main__':
     for pdf_hash, section_name, section_text in yield_section_data(scrape_pdf_location, sections_location):
         evaluate_find_section_data[pdf_hash][section_name] = section_text
 
-    # ==== Load data to test split sections for test 3: ====
+    # ==== Load data to evaluate split sections for evaluations 3: ====
     logger.info('[+] Reading {}'.format(settings.NUM_REFS_FILE_NAME))
     evaluate_split_section_data = fm.get_file(
         settings.NUM_REFS_FILE_NAME,
@@ -119,7 +119,7 @@ if __name__ == '__main__':
             ) for doc_hash in evaluate_split_section_data['hash']
         ]
 
-    # ==== Load data to test parse for test 4: ====
+    # ==== Load data to evaluate parse for evaluations 4: ====
     logger.info('[+] Reading {}'.format(settings.PARSE_REFERENCE_FILE_NAME))
     evaluate_parse_data = fm.get_file(
         settings.PARSE_REFERENCE_FILE_NAME,
@@ -127,10 +127,10 @@ if __name__ == '__main__':
         'csv'
     )
 
-    # ==== Load data to test matching for test 5: ====
-    logger.info('[+] Reading {}'.format(settings.TEST_PUB_DATA_FILE_NAME))
+    # ==== Load data to evaluate matching for evaluations 5: ====
+    logger.info('[+] Reading {}'.format(settings.EVAL_PUB_DATA_FILE_NAME))
     evaluation_references = fm.get_file(
-        settings.TEST_PUB_DATA_FILE_NAME,
+        settings.EVAL_PUB_DATA_FILE_NAME,
         settings.FOLDER_PREFIX,
         'csv'
     )
@@ -151,58 +151,58 @@ if __name__ == '__main__':
     )
 
     # ==== Get the evaluation metrics ====
-    logger.info('\nStarting the tests...\n')
+    logger.info('\nStarting the evaluations...\n')
 
-    logger.info('[+] Running tests 1 and 2')                     
-    test1_scores, test2_scores = evaluate_find_section(
+    logger.info('[+] Running evaluations 1 and 2')                     
+    eval1_scores, eval2_scores = evaluate_find_section(
         evaluate_find_section_data,
         scrape_pdf_location,
         settings.LEVENSHTEIN_DIST_SCRAPER_THRESHOLD
     )
 
-    logger.info('[+] Running test 3')
-    test3_scores = evaluate_split_section(
+    logger.info('[+] Running evaluation 3')
+    eval3_scores = evaluate_split_section(
         evaluate_split_section_data,
         settings.ORGANISATION_REGEX,
         settings.SPLIT_SECTION_SIMILARITY_THRESHOLD
         )
 
-    logger.info('[+] Running test 4')
-    test4_scores = evaluate_parse(
+    logger.info('[+] Running evaluation 4')
+    eval4_scores = evaluate_parse(
         evaluate_parse_data,
         model,
         settings.LEVENSHTEIN_DIST_PARSE_THRESHOLD
         )
 
-    logger.info('[+] Running test 5')
-    test5_scores = evaluate_match_references(
+    logger.info('[+] Running evaluation 5')
+    eval5_scores = evaluate_match_references(
         publications,
         evaluation_references,
         settings.FUZZYMATCH_THRESHOLD
         )
 
-    test_scores_list = [
-        test1_scores,
-        test2_scores,
-        test3_scores,
-        test4_scores,
-        test5_scores
+    eval_scores_list = [
+        eval1_scores,
+        eval2_scores,
+        eval3_scores,
+        eval4_scores,
+        eval5_scores
         ]
 
     if eval(args.verbose):
-        for i, tests in enumerate(test_scores_list):
+        for i, evals in enumerate(eval_scores_list):
             log_file.write(
-                "\n-----Information about test {}:-----\n".format(i+1)
+                "\n-----Information about evaluation {}:-----\n".format(i+1)
             )
             [
                 log_file.write(
                     "\n"+k+"\n"+str(v)+"\n"
-                ) for (k,v) in tests.items()
+                ) for (k,v) in evals.items()
             ]
     else:
-        for i, tests in enumerate(test_scores_list):
-            log_file.write("\nScore for test {}:\n".format(i+1))
-            log_file.write("{}\n".format(round(tests['Score'],2)))
+        for i, evals in enumerate(eval_scores_list):
+            log_file.write("\nScore for evaluation {}:\n".format(i+1))
+            log_file.write("{}\n".format(round(evals['Score'],2)))
 
     log_file.close()
 
