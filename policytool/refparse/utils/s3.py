@@ -1,5 +1,5 @@
 import boto3
-from ..settings import settings
+from policytool.refparse.settings import settings
 from botocore.exceptions import ClientError
 
 
