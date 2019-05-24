@@ -129,5 +129,7 @@ python evaluate_algo.py --verbose True
 ```
 (set the verbose argument to False if you want less information about the evaluation to be printed).
 
+You can read more about how we got the evaluation data and what the evaluation results mean [here](docs/evaluation_data.md).
+
 ## Contributing
 See the [Contributing guidelines](./CONTRIBUTING.md)
