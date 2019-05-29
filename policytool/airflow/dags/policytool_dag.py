@@ -9,6 +9,7 @@ import airflow.utils.dates
 
 from policytool.airflow.tasks.run_spiders_operator import RunSpiderOperator
 from policytool.airflow.tasks.parse_pdf_operator import ParsePdfOperator
+from policytool.airflow.tasks.extract_refs_operator import ExtractRefsOperator
 
 ORGANISATIONS = [
     'who_iris',
@@ -66,3 +67,30 @@ for organisation in ORGANISATIONS:
         dag=dag,
     )
     pdfParsing.set_upstream(run_spider)
+
+    parsed_pdf_file = os.path.join(
+        parsing_path,
+        'policytool-parse--parser-{organisation}.json'.format(
+            organisation=organisation
+        )
+    )
+
+    extracted_refs_path = os.path.join(
+        'datalabs-data',
+        'airflow',
+        'output',
+        'policytool-extract',
+        'test-extract-refs-{organisation}.json.gz'.format(
+            organisation=organisation
+        )
+    )
+
+    extract_refs = ExtractRefsOperator(
+        task_id='extract_refs',
+        model_path=parser_model,
+        src_s3_key=parsed_pdf_file,
+        dst_s3_key=extracted_refs_path,
+        dag=dag)
+
+    extract_refs.set_upstream(pdfParsing)
+
