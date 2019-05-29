@@ -4,7 +4,7 @@ import pickle
 import tempfile
 import json
 from .s3 import S3
-from settings import settings
+from policytool.refparse.settings import settings
 
 
 SCRAPING_COLUMNS = ('title', 'hash', 'sections', 'uri')
