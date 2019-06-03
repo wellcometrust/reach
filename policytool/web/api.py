@@ -136,6 +136,10 @@ def create_api(conf):
     )
     api.add_route(
         '/search',
+        TemplateResource(TEMPLATE_ROOT, get_context(os.environ))
+    )
+    api.add_route(
+        '/api/search',
         search.Fulltext(es, conf.es_explain)
     )
     api.add_static_route('/static', conf.static_root)
