@@ -1,0 +1,53 @@
+{% macro uparrow() -%}
+<svg class="arrow" xmlns="http://www.w3.org/2000/svg" version="1.1" class="svg-triangle"
+viewbox="0 0 100 100" preserveAspectRatio="none">
+  <polygon points="0,100 50,0 100,100" fill="#fff"/>
+</svg>
+{%- endmacro %}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <title>Wellcome Data Labs Policy Tool</title>
+  <link rel="stylesheet" href="/static/style.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+
+{% block scripts %}{% endblock %}
+</head>
+<body>
+
+{#- NB: we could be using spectre's navbar class instead...oh well #}
+<header>
+    <nav class="container">
+      <ul class="columns">
+        <h3 class="column col-6 col-md-12">Policy Tool</h3>
+        <div class="column col-1 col-md-12"></div>
+
+        <li class="column col-3 col-md-12">How the algorithm works</li>
+        <li class="column col-1 col-md-12">API docs</li>
+        <li class="column col-1 col-md-12">Github</li>
+      </ul>
+    </nav>
+</header>
+
+{% block main %}
+{% endblock %}
+
+<footer>
+  <div class="container">
+    <div class="columns">
+      <div class="column col-12">
+        {#- from static/w-avatar-pitch-1.svg, minified by https://jakearchibald.github.io/svgomg/
+            Originally from the EPS in the Team Drive, from Chloe, SVG by Inkscape
+         #}
+        <svg id="wellcomelogo" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 241.893 241.893" height="241.893" width="241.893"><path d="M178.141 190.981s-15.257-4.55-28.557-8.461c-9.835-2.893-15.49-8.372-17.836-16.977-1.57-5.759-5.585-20.415-10.829-40.352l-17.298 65.79s-20.242-6.026-30.074-8.697c-9.505-2.579-14.49-8.94-16.977-18.345-3.888-14.696-25.159-95.68-25.159-95.68l38.727-4.502 17.267 65.607 17.267-65.607h.083s7.385.012 17.598.012c9.432 0 15.83 4.615 18.462 14.222 1.021 3.72 7.048 26.316 13.622 51.32l17.255-65.554 38.788 4.264zM0 .004v241.89h241.89V.003H0" fill="#231f20"/></svg>
+        Created by <a href="#">Data Labs</a> at <a href="https://www.wellcome.ac.uk">Wellcome</a>
+      </div>
+    </div>
+  </div>
+</footer>
+
+</body>
+</html>
