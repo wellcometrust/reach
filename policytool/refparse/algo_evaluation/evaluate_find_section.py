@@ -19,7 +19,7 @@ def pretty_confusion_matrix(actual_data, predict_data, labels):
         )
     return pretty_conf
 
-def evaluate_metric_scraped(actual, predicted, sections):
+def evaluate_metric_scraped(actual, predicted, sections, files):
     """
     Input:
         actual : a boolean list of whether section text was in the pdf
@@ -35,6 +35,7 @@ def evaluate_metric_scraped(actual, predicted, sections):
     metrics = {
         'Score' : similarity,
         'F1-score' : similarity,
+        'Number of unique pdfs' : len(set(files)),
         'Classification report' : classification_report(actual, predicted),
         'Confusion matrix' : pretty_confusion_matrix(
                 actual, predicted, [True, False]
@@ -50,6 +51,13 @@ def evaluate_metric_scraped(actual, predicted, sections):
 
         actual_section = section_text['Actual']
         predicted_section = section_text['Predicted']
+
+        metric["Number of unique pdfs with a {} section (actual)".format(
+            section_name
+            )] = len(set(
+                [file for i,file in enumerate(files) if
+                ((sections[i] == section_name) and (actual[i]))]
+                ))
 
         metrics["Classification report for the {} section".format(
             section_name
@@ -168,7 +176,8 @@ def evaluate_find_section(
     eval1_scores = evaluate_metric_scraped(
         [pred_section['Actual text']!='' for pred_section in scrape_data],
         [pred_section['Predicted text']!='' for pred_section in scrape_data],
-        [pred_section['Section'] for pred_section in scrape_data]
+        [pred_section['Section'] for pred_section in scrape_data],
+        [pred_section['File'] for pred_section in scrape_data]
         )
 
     eval2_scores = evaluate_metric_quality(
