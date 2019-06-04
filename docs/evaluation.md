@@ -3,11 +3,12 @@ In this document we describe how we got each of the evaluation datasets uses in 
 
 ## Find Sections Evaluation
 ### Data
-- We generated a random list of policy documents we currently scrape from various policy organisations.
-- We went through this list until we found X which had a section that contain references and X that didn't.
+- We generated a random list of policy documents from each provider currently scraped (using the Postico publication database).
+- We went through this list until we found at least 5 which had a section that contain references and 5 that didn't.
+- We ignored documents which had multiple references sections.
 - The pdfs for these were saved in "./algo_evaluation/data_evaluate/pdfs", named with a unique identifier for this pdf.
 - We looked for the text from sections Reach currently looks for in the pdfs ('reference' and 'bibliograph'), stored [here](policytool/resources/section_keywords.txt).
-- The text was copied and pasted from the pdf into a markdown file and saved as a .txt file in the relevant sections folder (e.g. "./algo_evaluation/data_evaluate/pdf_sections/reference") and saved with the same unique name as the pdf was.
+- The text was copied and pasted from the pdf (starting from the section name to the last character of the section) into a text editor and saved as a .txt file in the relevant sections folder (e.g. "./algo_evaluation/data_evaluate/pdf_sections/reference") and saved with the same unique name as the pdf was.
 
 
 ### Evaluation Scores 1 and 2
@@ -54,7 +55,7 @@ abs(100*((predicted number - actual number) / actual number))
 - We randomly selected 200 references from a list of Wellcome Trust publications from Uber Dimensions ("uber_api_publications.csv").
 - With this list (the 'positive' list) we used the fuzzy match algorithm to find a list (the 'negative' list) of the second most similar references to them (i.e. the best match would be the reference in question, and the second would be quite similar).
 - The positive list was reduced to 199 since one reference didn't have a second strong match, and the negative list gave 202 references since for some references there were multiple references with the same cosine similarity competing for second place.
-- We take the titles and publication IDs from these and combine them in "positive_and_negative_match_test_data.csv" where we record a 1 or 0 for the positive and negative lists respectively in 'Do we expect a match?'.
+- We take the titles and publication IDs from these and combine them in "positive_and_negative_match_test_data.csv", and in this create a 'Do we expect a match?' column where we record a '1' if this reference was from the positive list and a '0' if it was from the negative list.
 
 ### Evaluation Score 5
 - We remove the references with 'Do we expect a match?' = 0 from "uber_api_publications.csv", this is our 'publication set'.
