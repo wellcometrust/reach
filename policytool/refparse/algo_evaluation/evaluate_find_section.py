@@ -52,7 +52,7 @@ def evaluate_metric_scraped(actual, predicted, sections, files):
         actual_section = section_text['Actual']
         predicted_section = section_text['Predicted']
 
-        metric["Number of unique pdfs with a {} section (actual)".format(
+        metrics["Number of unique pdfs with a {} section (actual)".format(
             section_name
             )] = len(set(
                 [file for i,file in enumerate(files) if
