@@ -125,7 +125,7 @@ brew install poppler
 ```
 and then downloading the evaluation data from [here](https://s3-eu-west-1.amazonaws.com/datalabs-data/policy_tool_tests) and storing it in `algo_evaluation/data_evaluate/`, which can be done in the command line by running
 ```
-aws s3 cp --recursive s3://datalabs-data/policy_tool_tests/pdf_sections algo_evaluation/data_evaluate/
+aws s3 cp --recursive s3://datalabs-data/policy_tool_tests algo_evaluation/data_evaluate/
 ```
 and then running
 ```
