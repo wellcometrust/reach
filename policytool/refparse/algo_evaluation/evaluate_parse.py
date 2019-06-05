@@ -43,7 +43,7 @@ def evaluate_metric(
     accuracy_quite_equal_cat = quite_equal.mean()
     accuracy_quite_equal = quite_equal.values.mean()
 
-    test_scores = {
+    metrics = {
         'Score' : accuracy,
         'Strict accuracy (micro)': accuracy,
         'Strict accuracy (per category)': accuracy_cat,
@@ -59,12 +59,12 @@ def evaluate_metric(
             lev_dist.mean()
     }
 
-    return test_scores
+    return metrics
 
-def evaluate_parse(parse_test_data, model, levenshtein_threshold):
+def evaluate_parse(evaluate_parse_data, model, levenshtein_threshold):
 
     predicted_structure = []
-    for reference in parse_test_data['Actual reference']:
+    for reference in evaluate_parse_data['Actual reference']:
         structured_reference = structure_reference(model, reference)
         predicted_structure.append(structured_reference)
 
@@ -73,14 +73,14 @@ def evaluate_parse(parse_test_data, model, levenshtein_threshold):
     # Get category names from the predicted categories
     # Important so the actual and predicted are in the same order
     category_names = predicted_categories.columns
-    actual_categories = parse_test_data[category_names].replace(np.nan,'').astype(str)
+    actual_categories = evaluate_parse_data[category_names].replace(np.nan,'').astype(str)
 
     actual_categories['PubYear'] = [d[0:4] if d!='' else d for d in actual_categories['PubYear']]
 
-    test_scores = evaluate_metric(
+    metrics = evaluate_metric(
                     actual_categories,
                     predicted_categories,
                     levenshtein_threshold
                     )
 
-    return test_scores
+    return metrics

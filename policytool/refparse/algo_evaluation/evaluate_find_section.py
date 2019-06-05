@@ -19,7 +19,7 @@ def pretty_confusion_matrix(actual_data, predict_data, labels):
         )
     return pretty_conf
 
-def evaluate_metric_scraped(actual, predicted, sections):
+def evaluate_metric_scraped(actual, predicted, sections, files):
     """
     Input:
         actual : a boolean list of whether section text was in the pdf
@@ -32,9 +32,10 @@ def evaluate_metric_scraped(actual, predicted, sections):
 
     similarity = round(f1_score(actual, predicted, average='micro'), 3)
 
-    test_scores = {
+    metrics = {
         'Score' : similarity,
         'F1-score' : similarity,
+        'Number of unique pdfs' : len(set(files)),
         'Classification report' : classification_report(actual, predicted),
         'Confusion matrix' : pretty_confusion_matrix(
                 actual, predicted, [True, False]
@@ -51,16 +52,23 @@ def evaluate_metric_scraped(actual, predicted, sections):
         actual_section = section_text['Actual']
         predicted_section = section_text['Predicted']
 
-        test_scores["Classification report for the {} section".format(
+        metrics["Number of unique pdfs with a {} section (actual)".format(
+            section_name
+            )] = len(set(
+                [file for i,file in enumerate(files) if
+                ((sections[i] == section_name) and (actual[i]))]
+                ))
+
+        metrics["Classification report for the {} section".format(
             section_name
             )] = classification_report(actual_section, predicted_section)
-        test_scores["Confusion matrix for the {} section".format(
+        metrics["Confusion matrix for the {} section".format(
             section_name
             )] = pretty_confusion_matrix(
                     actual_section, predicted_section, [True, False]
                 )
 
-    return test_scores
+    return metrics
 
 
 def evaluate_metric_quality(scrape_data, levenshtein_threshold):
@@ -92,7 +100,7 @@ def evaluate_metric_quality(scrape_data, levenshtein_threshold):
         lev_distance<levenshtein_threshold  for lev_distance in lev_distances
     ]
 
-    test_scores = {
+    metrics = {
         'Score' : np.mean(equal),
         'Mean normalised Levenshtein distance' : np.mean(lev_distances),
         'Strict accuracy (micro)' : np.mean(equal),
@@ -113,19 +121,19 @@ def evaluate_metric_quality(scrape_data, levenshtein_threshold):
         strict_acc_section = np.mean(equal_section)
         lenient_acc_section = np.mean(quite_equal_section)
 
-        test_scores[
+        metrics[
             'Mean normalised Levenshtein distance for the {} section'.format(
                 section_name
                 )
             ] = np.mean(lev_distances_section)
-        test_scores[
+        metrics[
             'Strict accuracy for the {} section'.format(section_name)
             ] = strict_acc_section
-        test_scores[
+        metrics[
             'Lenient accuracy for the {} section'.format(section_name)
             ] = lenient_acc_section
     
-    return test_scores
+    return metrics
 
 def scrape_process_pdf(
         section_names, pdf_name, scrape_pdf_location, actual_texts
@@ -165,15 +173,16 @@ def evaluate_find_section(
             scrape_process_pdf(section_names, pdf_name, scrape_pdf_location, actual_texts)
             ) 
 
-    test1_scores = evaluate_metric_scraped(
+    eval1_scores = evaluate_metric_scraped(
         [pred_section['Actual text']!='' for pred_section in scrape_data],
         [pred_section['Predicted text']!='' for pred_section in scrape_data],
-        [pred_section['Section'] for pred_section in scrape_data]
+        [pred_section['Section'] for pred_section in scrape_data],
+        [pred_section['File'] for pred_section in scrape_data]
         )
 
-    test2_scores = evaluate_metric_quality(
+    eval2_scores = evaluate_metric_quality(
         scrape_data,
         levenshtein_threshold)
 
-    return test1_scores, test2_scores
+    return eval1_scores, eval2_scores
 
