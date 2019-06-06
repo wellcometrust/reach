@@ -19,12 +19,53 @@ def pretty_confusion_matrix(actual_data, predict_data, labels):
         )
     return pretty_conf
 
-def evaluate_metric_scraped(actual, predicted, sections, files):
+def metrics_by_provider(combined_data, all_providers): 
+
+    func_num_pdfs = lambda x: len(x["Files"].unique())
+    func_num_pdfs_text = lambda x: len(x[x["Actual"]==True]["Files"].unique())
+    func_prop_text = lambda x: round(sum(x["Actual"]==True) / len(x), 3)
+    func_f1 = lambda x: round(f1_score(list(x["Actual"]), list(x["Predicted"]), average='micro'), 3)
+    
+    grouped_provider = combined_data.groupby("Provider")
+
+    prov_n = grouped_provider.apply(func_num_pdfs)
+    prov_n_text = grouped_provider.apply(func_num_pdfs_text)
+    prov_prop_text = round(prov_n_text/prov_n, 3)
+    prov_f1 = grouped_provider.apply(func_f1)
+
+    grouped_provider_section = combined_data.groupby(["Provider","Section"])
+
+    sect_n_text = grouped_provider_section.apply(func_num_pdfs_text)
+    sect_prop_text = grouped_provider_section.apply(func_prop_text)
+    sect_f1 = grouped_provider_section.apply(func_f1)
+
+    prov_metrics = pd.concat([prov_n, prov_n_text, prov_prop_text, prov_f1], axis = 1)
+    prov_metrics.columns = [
+        "Number of pdfs included",
+        "Number of pdfs with sections text",
+        "Proportion of pdfs with sections text",
+        "F1 score for all sections included"
+        ]
+
+    trans_sect_n_text = pd.DataFrame([sect_n_text[provider] for provider in all_providers], index = all_providers)
+    trans_sect_n_text.columns = ['Number of pdfs with a {} section'.format(b) for b in trans_sect_n_text.columns]
+    trans_sect_prop_text = pd.DataFrame([sect_prop_text[provider] for provider in all_providers], index = all_providers)
+    trans_sect_prop_text.columns = ['Proportion with a {} section'.format(b) for b in trans_sect_prop_text.columns]
+    trans_sect_f1 = pd.DataFrame([sect_f1[provider] for provider in all_providers], index = all_providers)
+    trans_sect_f1.columns = ['F1 score for the {} section'.format(b) for b in trans_sect_f1.columns]
+
+    provider_metrics = pd.concat([prov_metrics, trans_sect_n_text, trans_sect_prop_text, trans_sect_f1], axis = 1)
+
+    return provider_metrics
+
+def evaluate_metric_scraped(actual, predicted, sections, files, providers):
     """
     Input:
         actual : a boolean list of whether section text was in the pdf
         predicted : a boolean list of whether section text was scraped
         sections : a list of the section names for each actual/predicted pair
+        files : a list of the pdf names
+        providers : a list of the providers where each pdf came from
     Output:
         Various metrics for how accurately the scraper scraped a
         section or not, no comment on how good the scrape was though
@@ -32,10 +73,17 @@ def evaluate_metric_scraped(actual, predicted, sections, files):
 
     similarity = round(f1_score(actual, predicted, average='micro'), 3)
 
+    combined_data = pd.DataFrame([actual, predicted, sections, files, providers]).T
+    combined_data.columns = ["Actual", "Predicted", "Section", "Files", "Provider"]
+
+    provider_metrics = metrics_by_provider(combined_data, list(set(providers)))
+
     metrics = {
         'Score' : similarity,
         'F1-score' : similarity,
+        'Metrics by provider' : (provider_metrics.T).to_string(),
         'Number of unique pdfs' : len(set(files)),
+        'Number of pdfs with a section text' : len(set([f for (f,a) in zip(files, actual) if actual])),
         'Classification report' : classification_report(actual, predicted),
         'Confusion matrix' : pretty_confusion_matrix(
                 actual, predicted, [True, False]
@@ -160,7 +208,7 @@ def scrape_process_pdf(
 
 
 def evaluate_find_section(
-        evaluate_find_section_data, scrape_pdf_location, levenshtein_threshold
+        evaluate_find_section_data, provider_names, scrape_pdf_location, levenshtein_threshold
         ):
 
     # Get the predicted text for each of the pdf sections for each pdf
@@ -171,13 +219,14 @@ def evaluate_find_section(
     for pdf_name, actual_texts in evaluate_find_section_data.items():
         scrape_data.extend(
             scrape_process_pdf(section_names, pdf_name, scrape_pdf_location, actual_texts)
-            ) 
+            )
 
     eval1_scores = evaluate_metric_scraped(
         [pred_section['Actual text']!='' for pred_section in scrape_data],
         [pred_section['Predicted text']!='' for pred_section in scrape_data],
         [pred_section['Section'] for pred_section in scrape_data],
-        [pred_section['File'] for pred_section in scrape_data]
+        [pred_section['File'] for pred_section in scrape_data],
+        [provider_names[pred_section['File']] for pred_section in scrape_data]
         )
 
     eval2_scores = evaluate_metric_quality(
