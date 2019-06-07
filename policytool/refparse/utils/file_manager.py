@@ -1,11 +1,11 @@
 import pandas as pd
 import os
 import pickle
+import dill
 import tempfile
 import json
 from .s3 import S3
 from policytool.refparse.settings import settings
-
 
 SCRAPING_COLUMNS = ('title', 'hash', 'sections', 'uri')
 
@@ -22,6 +22,7 @@ class FileManager():
             'csv': self.load_csv_file,
             'json': self.load_json_file,
             'pickle': self.load_pickle_file,
+            'dill': self.load_dill_file
         }
 
     def to_row(self, line, lineno):
@@ -106,3 +107,10 @@ class FileManager():
         """
         unpickled_file = pickle.loads(file_content.read())
         return unpickled_file
+
+    def load_dill_file(self, file_content):
+        """Load a dill file from a given path and file name and returns the
+        unpickled file.
+        """
+        loaded_dill_file = dill.load(file_content)
+        return loaded_dill_file
