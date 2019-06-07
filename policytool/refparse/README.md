@@ -1,6 +1,6 @@
 # Wellcome Reference Parser
 
-Wellcome Reach's reference parser uses a home trained model to identify
+Wellcome Reach's reference parser uses home trained models to identify
 components from a set of scraped reference sections.
 
 ## How to use it
@@ -15,10 +15,11 @@ python ./refparse.py \
     --scraper-file "s3://datalabs-data/scraper-results/msf/20190117.json" \
     --references-file "file://./references_folder/references_file.csv" \
     --model-file "s3://datalabs-data/reference_parser_models/reference_parser_pipeline.pkl" \
+    --splitter-model-file "s3://datalabs-data/reference_splitter_models/line_iobe_pipeline_20190502.dll" \
     --output-url "file://./tmp/parser-output/output_folder_name"
 ```
 
-If the `scraper_file`, `references_file`, `model_file`, arguments are to
+If the `scraper_file`, `references_file`, `model_file` and `splitter_model_file`, arguments are to
 S3 locations then make sure these start with `s3://`, otherwise file
 names are assumed to be locally stored. If the `output_url` argument is
 to a local location, then make sure it begins with `file://`, otherwise
@@ -54,6 +55,7 @@ otherwise default values will be given:
 python ./parse_latest.py msf \
     --references-file "s3://datalabs-data/wellcome_publications/uber_api_publications.csv" \
     --model-file "s3://datalabs-data/reference_parser_models/reference_parser_pipeline.pkl" \
+    --splitter-model-file "s3://datalabs-data/reference_splitter_models/line_iobe_pipeline_20190502.dll" \
     --output-url "file://./tmp/parser-output/output_folder_name"
 ```
 
