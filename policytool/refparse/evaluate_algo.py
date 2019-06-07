@@ -9,6 +9,8 @@ from datetime import datetime
 from urllib.parse import urlparse
 from collections import defaultdict
 
+import numpy as np # Need for model pipelines
+
 from utils import FileManager
 from algo_evaluation.evaluate_settings import settings
 from algo_evaluation.evaluate_find_section import evaluate_find_section
@@ -150,6 +152,13 @@ if __name__ == '__main__':
         settings.MODEL_FILE_TYPE
     )
 
+    # Load the latest splitter model
+    splitter_model = fm.get_file(
+        settings.SPLIT_MODEL_FILE_NAME,
+        settings.SPLIT_MODEL_FILE_PREFIX,
+        settings.SPLIT_MODEL_FILE_TYPE
+    )
+
     # ==== Get the evaluation metrics ====
     logger.info('\nStarting the evaluations...\n')
 
@@ -163,7 +172,7 @@ if __name__ == '__main__':
     logger.info('[+] Running evaluation 3')
     eval3_scores = evaluate_split_section(
         evaluate_split_section_data,
-        settings.ORGANISATION_REGEX,
+        splitter_model,
         settings.SPLIT_SECTION_SIMILARITY_THRESHOLD
         )
 
