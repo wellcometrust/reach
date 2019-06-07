@@ -12,6 +12,7 @@ import time
 
 import sentry_sdk
 import pandas as pd
+import numpy as np # Need for loading splitter model pipelines
 
 from .utils import (FileManager,
                    FuzzyMatcher,
@@ -116,7 +117,7 @@ def remove_dups_and_concat(fuzzy_matches, text_matches):
 
 
 def yield_structured_references(scraper_file,
-                model_file, pool_map, logger):
+                model_file, splitter_model_file, pool_map, logger):
     """
     Parsers references using a (potentially parallelized) map()
     implementation, yielding back one dataframe for each document
@@ -125,6 +126,7 @@ def yield_structured_references(scraper_file,
     Args:
         scraper_file: path / S3 url to scraper results file
         model_file: path/S3 url to model pickle file (three formats FTW!)
+        splitter_model_file: path/S3 url to model dill file
         pool_map: (possibly parallel) implementation of map() builtin
         logger: logging configuration name
     """
@@ -137,6 +139,8 @@ def yield_structured_references(scraper_file,
     # Loading the pipeline
     model = get_file(model_file, 'pickle')
 
+    splitter_model = get_file(splitter_model_file, 'dill')
+
     sectioned_documents = transform_scraper_file(scraper_file)
 
     t0 = time.time()
@@ -148,7 +152,7 @@ def yield_structured_references(scraper_file,
 
         splitted_references = split_section(
             doc.section,
-            settings.ORGANISATION_REGEX
+            splitter_model
         )
 
         # For some weird reason not using pool map 
@@ -180,7 +184,7 @@ def yield_structured_references(scraper_file,
     )
 
 
-def parse_references(scraper_file, model_file,
+def parse_references(scraper_file, model_file, splitter_model_file,
                      output_url, num_workers, logger):
 
     """
@@ -189,6 +193,7 @@ def parse_references(scraper_file, model_file,
     Args:
         scraper_file: path / S3 url to scraper results file
         model_file: path/S3 url to model pickle file (three formats FTW!)
+        spitter_model_file: path/S3 url to splitter model dill file
         num_workers: number of workers to use, or None for multiprocessing's
             default (number of cores).
         logger: logging configuration name
@@ -201,7 +206,7 @@ def parse_references(scraper_file, model_file,
         pool_map = pool.map
 
     yield from yield_structured_references(
-        scraper_file, model_file, pool_map, logger)
+        scraper_file, model_file, splitter_model_file, pool_map, logger)
 
     if pool is not None:
         pool.terminate()
@@ -221,7 +226,7 @@ def run_match(structured_references, fuzzy_matcher, text_matcher):
 
 
 def match_references(scraper_file, references_file, model_file,
-                     output_url, num_workers, logger):
+            splitter_model_file, output_url, num_workers, logger):
 
     # Loading the references file
     ref_file = get_file(references_file, 'csv')
@@ -234,7 +239,7 @@ def match_references(scraper_file, references_file, model_file,
     text_matcher = HardTextSearch(ref_file)
 
     refs = parse_references(
-        scraper_file, model_file, num_workers, logger)
+        scraper_file, model_file, splitter_model_file, output_url, num_workers, logger)
     for doc_id, structured_references in refs:
         matched_references = run_match(
             structured_references,
@@ -267,7 +272,8 @@ def match_references(scraper_file, references_file, model_file,
 
 
 def match_references_profile(scraper_file, references_file,
-                             model_file, output_url, logger):
+                             model_file, splitter_model_file,
+                             output_url, logger):
     """
     Entry point for reference parser, single worker, with profiling.
 
@@ -275,13 +281,14 @@ def match_references_profile(scraper_file, references_file,
         scraper_file: path / S3 url to scraper results file
         references_file: path/S3 url to references CSV file
         model_file: path/S3 url to model pickle file (three formats FTW!)
+        splitter_model_file: path/S3 url to splitter model dill file
         output_url: file/S3 url for output files
     """
     import cProfile
     cProfile.run(
         ''.join([
             'match_references(scraper_file, references_file,',
-            'model_file, output_url, 1, logger)'
+            'model_file, splitter_model_file, output_url, 1, logger)'
         ]),
         'stats_dumps'
     )
@@ -300,6 +307,15 @@ def create_argparser(description):
         default=os.path.join(
             settings.MODEL_DIR,
             settings.CLASSIFIER_FILENAME
+            )
+    )
+
+    parser.add_argument(
+        '--splitter-model-file',
+        help='Path or S3 URL to splitter model dill file',
+        default=os.path.join(
+            settings.SPLIT_MODEL_DIR,
+            settings.SPLITTER_FILENAME
             )
     )
 
@@ -352,6 +368,7 @@ if __name__ == '__main__':
                 args.scraper_file,
                 args.references_file,
                 args.model_file,
+                args.splitter_model_file,
                 args.output_url,
                 logger
             )
@@ -360,6 +377,7 @@ if __name__ == '__main__':
                 args.scraper_file,
                 args.references_file,
                 args.model_file,
+                args.splitter_model_file,
                 args.output_url,
                 args.num_workers,
                 logger
