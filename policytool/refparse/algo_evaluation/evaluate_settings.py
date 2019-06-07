@@ -15,6 +15,9 @@ class TestSettings(BaseSettings):
     SPLIT_SECTION_SIMILARITY_THRESHOLD = 40
     NUM_REFS_FILE_NAME = "split_section_test_data.csv"
     NUM_REFS_TEXT_FOLDER_NAME = "scraped_references_sections"
+    SPLIT_MODEL_FILE_TYPE = 'dill'
+    SPLIT_MODEL_FILE_PREFIX = './reference_splitter_models/'
+    SPLIT_MODEL_FILE_NAME = 'line_iobe_pipeline_20190502.dll'
 
     # Variables for parse evaluation data
     LEVENSHTEIN_DIST_PARSE_THRESHOLD = 0.3

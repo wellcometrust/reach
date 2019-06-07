@@ -25,7 +25,8 @@ class BaseSettings:
     MODEL_DIR = "s3://{}/reference_parser_models".format(BUCKET)
     CLASSIFIER_FILENAME = "reference_parser_pipeline.pkl"
 
-    ORGANISATION_REGEX = "\\n[\d\.\s\\n]+(?=[A-Z])"
+    SPLIT_MODEL_DIR = "s3://{}/reference_splitter_models".format(BUCKET)
+    SPLITTER_FILENAME = "line_iobe_pipeline_20190502.dll"
 
     MIN_CHAR_LIMIT = 20
     HARD_TEXT_MIN_CHAR_LIMIT = 40
@@ -68,6 +69,7 @@ class LocalSettings(BaseSettings):
     SCRAPER_RESULTS_DIR = "scraper-results"
 
     MODEL_DIR = "reference_parser_models"
+    SPLIT_MODEL_DIR = "reference_splitter_models"
 
     OUTPUT_URL = "postgresql+psycopg2://{user}:{passw}@{host}:{port}/{db}".format(
           user=RDS_USERNAME,
