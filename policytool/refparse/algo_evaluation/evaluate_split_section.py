@@ -60,7 +60,7 @@ def evaluate_metrics(actual_pred_num_references, threshold):
 
     return metrics
 
-def evaluate_split_section(evaluate_split_section_data, regex, threshold):
+def evaluate_split_section(evaluate_split_section_data, model, threshold):
     """
     Split the references sections with split_section
     and compare the findings with the ground truth
@@ -68,7 +68,7 @@ def evaluate_split_section(evaluate_split_section_data, regex, threshold):
 
     actual_pred_num_references = []
     for references_section in evaluate_split_section_data['Reference section']:
-        references = split_section(references_section, regex = regex)
+        references = split_section(references_section, model)
         actual_pred_num_references.append({
             "Predicted references" : references,
             "Predicted number of references" : len(references)
