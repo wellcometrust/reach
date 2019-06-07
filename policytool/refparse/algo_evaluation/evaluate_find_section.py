@@ -83,7 +83,7 @@ def evaluate_metric_scraped(actual, predicted, sections, files, providers):
         'F1-score' : similarity,
         'Metrics by provider' : (provider_metrics.T).to_string(),
         'Number of unique pdfs' : len(set(files)),
-        'Number of pdfs with a section text' : len(set([f for (f,a) in zip(files, actual) if actual])),
+        'Number of pdfs with a section text' : len(set([f for (f,a) in zip(files, actual) if a])),
         'Classification report' : classification_report(actual, predicted),
         'Confusion matrix' : pretty_confusion_matrix(
                 actual, predicted, [True, False]
