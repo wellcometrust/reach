@@ -52,15 +52,34 @@ abs(100*((predicted number - actual number) / actual number))
 ## Match Evaluation
 
 ### Data
-- We randomly selected 200 references from a list of Wellcome Trust publications from Uber Dimensions ("uber_api_publications.csv").
-- With this list (the 'positive' list) we used the fuzzy match algorithm to find a list (the 'negative' list) of the second most similar references to them (i.e. the best match would be the reference in question, and the second would be quite similar).
-- The positive list was reduced to 199 since one reference didn't have a second strong match, and the negative list gave 202 references since for some references there were multiple references with the same cosine similarity competing for second place.
-- We take the titles and publication IDs from these and combine them in "positive_and_negative_match_test_data.csv", and in this create a 'Do we expect a match?' column where we record a '1' if this reference was from the positive list and a '0' if it was from the negative list.
+- We selected the first 100,000 references from a list of EPMC publications ("epmc-metadata.json").
+- We randomly selected a sample 10,000 from these.
+- Each of the references from this sample were matched (using `FuzzyMatcher` from `policytool/refparse/utils`) against both the original 100,000 references, and against the original list with the sample list removed (i.e. 90,000 references). No thresholds were used in these matches. We record the title length and the cosine similarity during these matchings.
+- Thus we have a list of 20,000 reference matches, 10,000 where they should match exactly (actual = 'Positive'), and 10,000 where the second most similar reference should be matched (actual = 'Negative').
 
 ### Evaluation Score 5
-- We remove the references with 'Do we expect a match?' = 0 from "uber_api_publications.csv", this is our 'publication set'.
-- We use `FuzzyMatcher` from `policytool/refparse/utils` to predict whether the reference titles in the evaluation data are matched with any of those from the publication set.
-- We compare 'Do we expect a match?' with whether we found a true match or not, returning the F1 score.
-- We also return a classification report and the frequency table of match types (the reference was matched to the same reference in the publication set (True), the reference was matched to a different reference in the publication set (False), or there was no match found).
+- We predict whether a match was found (predicted = 'Positive') or not (predicted = 'Negative') by asking was the cosine similarity over a threshold and was the title length over a threshold for each of the 20,000 matches.
+- We find the F1 score of these actual and predicted lists.
+- We also record whether the match found was correct or not, which can be found by comparing the uber ids of the reference and it's match. Thus we also return a classification report and the frequency table of match types.
+
+### Evaluation Thresholds
+For this evaluation we also considered the thresholds to use when predicting whether a match should be taken forward or not. For this we plotted all the cosine similarities found from the actual = "Negative" set (i.e. the second best matches). We also investigated the relationship between cosine similarity and title length.
+
+![](policytool/policytool/refparse/algo_evaluation/exploratory/negative_cosines_hist_2019-06-19-1001.png)
+
+![](policytool/policytool/refparse/algo_evaluation/exploratory/negative_cosines_len_scatter_2019-06-19-1001.png)
+
+From these we can see that generally the cosine similarity is quite low, but when it is high (>0.8) the title length tends to be quite short. Thus we saw that if we set the match and title length thresholds to be relatively high then we'd reduce the number of false positives. The 95th percentile of the cosine similarities is 0.6 and the 5th percentile of the title length is 33.
+
+We also looked at the distribution of title lengths in the actual = "Positive" set (i.e. where they should match exactly, hence all the matches have a cosine similarity of 1). Since we can also have incorrect matches in this set - which is where a reference has the same title as another one, we plot both the correct and incorrectly matched references from the positive set. The 5th percentile of the title length is 35.
+
+![](policytool/policytool/refparse/algo_evaluation/exploratory/title_lengths_2019-06-19-1001.png)
+
+From this we see that the incorrect matches occur when the title lengths are quite low. Thus, we can set the title length threshold to be high enough to remove some false negatives, but this is at the expense of removing some true positives.
+
+We varied these two thresholds and recorded some metrics. In our algorithm it's important that if we say there is a match then we are confident it is a true match (high precision). We picked the default match threshold to be 0.8 and the length threshold to be 50 based on all of these plots.
+
+!["F1 Scores (micro)"](policytool/policytool/refparse/algo_evaluation/exploratory/thresholds_F1 Score_negative_heatmap_2019-06-19-1335_micro.png) !["Recall Scores (binary negative)"](policytool/policytool/refparse/algo_evaluation/exploratory/thresholds_Recall_negative_heatmap_2019-06-19-1335_binaryneg.png) !["Precision Scores (binary positive)"](policytool/policytool/refparse/algo_evaluation/exploratory/thresholds_Precision_negative_heatmap_2019-06-19-1335_binarypos.png)
+
 
 
