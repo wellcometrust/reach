@@ -143,9 +143,9 @@ aws s3 cp --recursive s3://datalabs-data/policy_tool_tests algo_evaluation/data_
 ```
 and then running
 ```
-python evaluate_algo.py --verbose True
+python evaluate_algo.py
 ```
-(or set the verbose argument to False if you want less information about the evaluation to be printed).
+(or set the verbose argument to False (`python evaluate_algo.py --verbose False`) if you want less information about the evaluation to be printed).
 
 You can read more about how we got the evaluation data and what the evaluation results mean [here](docs/evaluation_data.md).
 
