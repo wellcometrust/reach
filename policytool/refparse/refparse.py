@@ -9,6 +9,7 @@ from urllib.parse import urlparse
 from functools import partial
 import os
 import time
+import json
 
 import sentry_sdk
 import pandas as pd
@@ -17,7 +18,7 @@ from .utils import (FileManager,
                    FuzzyMatcher,
                    split_section,
                    structure_reference,
-                   HardTextSearch)
+                   ExactMatcher)
 from .models import DatabaseEngine
 from .settings import settings
 
@@ -28,15 +29,16 @@ SectionedDocument = namedtuple(
 )
 
 
-def check_references_file(ref_file, references_file):
-    assert 'title' in ref_file, (
-        "ref_file.title not defined in " +
-        references_file +
+def check_publications_file(publications, publications_file):
+    publications_df = pd.DataFrame(publications)
+    assert 'title' in publications_df, (
+        "title not defined in " +
+        publications_file +
         " consider renaming current title column name 'title'"
     )
-    assert 'uber_id' in ref_file, (
-        "ref_file.uber_id not defined in " +
-        references_file +
+    assert 'uber_id' in publications_df, (
+        "uber_id not defined in " +
+        publications_file +
         " consider renaming current uber id column name to 'uber_id'"
     )
 
@@ -58,19 +60,14 @@ def transform_scraper_file(scraper_data):
 def transform_structured_references(
         splitted_references, structured_references,
         document_id, document_uri):
-    # DataFrame is pushed here because
-    # - fuzzy matcher needs a dataframe
-    # - to_csv needs a dataframe
-    # so instead of init the dataframe twice we do it here for now
-    structured_references = pd.DataFrame(structured_references)
-    structured_references['Document id'] = document_id
-    structured_references['Document uri'] = document_uri
+    transformed_structured_references = []
+    for structured_reference, splitted_reference in zip(structured_references, splitted_references):
+        structured_reference['Document id'] = document_id
+        structured_reference['Document uri'] = document_uri
+        structured_reference['Reference id'] = hash(splitted_reference)
+        transformed_structured_references.append(structured_reference)
 
-    structured_references['Reference id'] = [
-        hash(reference)
-        for reference in splitted_references
-    ]
-    return structured_references
+    return transformed_structured_references
 
 
 def get_file(file_str, file_type, get_scraped=False):
@@ -93,26 +90,6 @@ def get_file(file_str, file_type, get_scraped=False):
             file_dir,
             file_type)
     return file
-
-
-def remove_dups_and_concat(fuzzy_matches, text_matches):
-    #Remove duplicate columns and short matches in the fuzzy matches
-    fuzzy_matches = fuzzy_matches.loc[:,~fuzzy_matches.columns.duplicated()]
-
-    if not fuzzy_matches.empty:
-        fuzzy_matches = fuzzy_matches.loc[fuzzy_matches['WT_Ref_Title'].str.len() >= settings.MIN_CHAR_LIMIT]
-
-    if text_matches.empty:
-        return fuzzy_matches
-
-    duplicate_ref_ids = fuzzy_matches['WT_Ref_Id'][fuzzy_matches['WT_Ref_Id'].isin(text_matches['WT_Ref_Id'])]
-
-    #For duplicate matches: remove from text_matches, and renames 'Match_algorithm' in fuzzy_matches
-    text_matches = text_matches[~text_matches['WT_Ref_Id'].isin(duplicate_ref_ids)]
-    fuzzy_matches.at[fuzzy_matches['WT_Ref_Id'].isin(duplicate_ref_ids), 'Match_algorithm'] = "Fuzzy and Text Searches"
-
-    all_matches = pd.concat([fuzzy_matches, text_matches])
-    return all_matches
 
 
 def yield_structured_references(scraper_file,
@@ -166,7 +143,7 @@ def yield_structured_references(scraper_file,
             doc.id,
             doc.uri
         )
-        yield doc.id, structured_references
+        yield structured_references
 
         nb_references += len(splitted_references)
 
@@ -181,7 +158,7 @@ def yield_structured_references(scraper_file,
 
 
 def parse_references(scraper_file, model_file,
-                     output_url, num_workers, logger):
+                     num_workers, logger):
 
     """
     Entry point for reference parser.
@@ -207,66 +184,94 @@ def parse_references(scraper_file, model_file,
         pool.terminate()
         pool.join()
 
+#
+# Module entry points
+#
 
-def run_match(structured_references, fuzzy_matcher, text_matcher):
-    matched_references_parser = fuzzy_matcher.fuzzy_match(
-        structured_references
-    )
-    matched_references_hard_text = text_matcher.hard_text_search(
-        doc
-    )
-    matched_references = remove_dups_and_concat(matched_references_parser, matched_references_hard_text)
-    return matched_references
+def fuzzy_match_reference(fuzzy_matcher, reference):
+    """
+    Args:
+        fuzzy_matcher: instance of FuzzyMatcher, with index of publications in place.
+        reference: reference
 
+    Returns:
+        matched reference (citations), including publication & doc id.
+    """
+    return fuzzy_matcher.match(reference)
 
+def exact_match_publication(exact_matcher, publication):
+    """
+    Args:
+        exact_matcher_matcher: instance of HardTextMatcher, with index of documents in place.
+        publication: publication
 
-def match_references(scraper_file, references_file, model_file,
-                     output_url, num_workers, logger):
+    Returns:
+        matched reference (citations), including publication & doc id.
+    """
+    return exact_matcher.match(publication)
+
+#
+# CLI functions
+#
+
+def run_match(scraper_file, publications_file, model_file,
+              output_url, num_workers, logger):
 
     # Loading the references file
-    ref_file = get_file(references_file, 'csv')
-    check_references_file(ref_file, references_file)
+    publications_df = get_file(publications_file, 'csv')
+    publications = publications_df.to_dict('records')
+    check_publications_file(publications, publications_file)
+
+    assert output_url.startswith('file://')
+    output_dir = output_url[7:]
+
+    structured_references_filepath = os.path.join(
+        output_dir,
+        f"{settings.STRUCTURED_REFS_FILENAME}"
+    )
+    fuzzy_matched_references_filepath = os.path.join(
+        output_dir,
+        f"fuzzy_{settings.MATCHED_REFS_FILENAME}"
+    )
+    exact_matched_reference_filepath = os.path.join(
+        output_dir,
+        f"exact_{settings.MATCHED_REFS_FILENAME}"
+    )
 
     fuzzy_matcher = FuzzyMatcher(
-        ref_file,
-        settings.FUZZYMATCH_THRESHOLD
+        publications,
+        settings.FUZZYMATCH_SIMILARITY_THRESHOLD
     )
-    text_matcher = HardTextSearch(ref_file)
 
-    refs = parse_references(
-        scraper_file, model_file, num_workers, logger)
-    for doc_id, structured_references in refs:
-        matched_references = run_match(
-            structured_references,
-            fuzzy_matcher,
-            text_matcher)
+    with open(structured_references_filepath, 'w') as srefs_f:
+        with open(fuzzy_matched_references_filepath, 'w') as fmrefs_f:
 
-        if output_url.startswith('file://'):
-            # use everything after first two slashes; this handles
-            # absolute and relative urls equally well
-            output_dir = output_url[7:]
-            structured_references.to_csv(
-                os.path.join(
-                    output_dir,
-                    f"{doc_id}_{settings.PREF_REFS_FILENAME}"
+            refs = parse_references(
+                scraper_file, model_file, num_workers, logger)
+            for structured_references in refs:
+                for structured_reference in structured_references:
+
+                    fuzzy_matched_reference = fuzzy_match_reference(
+                        fuzzy_matcher,
+                        structured_reference
                     )
-                )
-            matched_references.to_csv(
-                os.path.join(
-                    output_dir,
-                    f"{doc_id}_{settings.MATCHES_FILENAME}"
-                    )
-                )
-        else:
-            database = DatabaseEngine(output_url)
-            database.save_to_database(
-                structured_references,
-                matched_references,
-            )
+                    if fuzzy_matched_reference:
+                        fmrefs_f.write(json.dumps(fuzzy_matched_reference)+'\n')
+                    if structured_reference:
+                        srefs_f.write(json.dumps(structured_reference)+'\n')
+
+    scraper_file = get_file(scraper_file, "", get_scraped=True)
+    sectioned_documents = transform_scraper_file(scraper_file)
+    exact_matcher = ExactMatcher(sectioned_documents, settings.MATCH_TITLE_LENGTH_THRESHOLD)
+    with open(exact_matched_reference_filepath, 'w') as emrefs_f: 
+        for publication in publications:
+            exact_matched_references = exact_match_publication(exact_matcher, publication)
+            for exact_matched_reference in exact_matched_references:
+                if exact_matched_reference:
+                    emrefs_f.write(json.dumps(exact_matched_reference)+'\n')
 
 
-
-def match_references_profile(scraper_file, references_file,
+def run_match_profile(scraper_file, references_file,
                              model_file, output_url, logger):
     """
     Entry point for reference parser, single worker, with profiling.
@@ -280,7 +285,7 @@ def match_references_profile(scraper_file, references_file,
     import cProfile
     cProfile.run(
         ''.join([
-            'match_references(scraper_file, references_file,',
+            'run_match(scraper_file, references_file,',
             'model_file, output_url, 1, logger)'
         ]),
         'stats_dumps'
@@ -348,7 +353,7 @@ if __name__ == '__main__':
         if args.profile:
             assert args.num_workers is None or args.num_workers == 1
 
-            match_references_profile(
+            run_match_profile(
                 args.scraper_file,
                 args.references_file,
                 args.model_file,
@@ -356,7 +361,7 @@ if __name__ == '__main__':
                 logger
             )
         else:
-            match_references(
+            run_match(
                 args.scraper_file,
                 args.references_file,
                 args.model_file,
