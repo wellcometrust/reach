@@ -24,7 +24,10 @@ class TestSettings(BaseSettings):
     PARSE_REFERENCE_FILE_NAME = "actual_reference_structures_sample.csv"
 
     # Variables for match evaluation data
-    EVAL_PUB_DATA_FILE_NAME = "positive_and_negative_match_test_data.csv"
-    MATCH_PUB_DATA_FILE_NAME = "uber_api_publications.csv"
+    EVAL_PUB_DATA_FILE_NAME = "epmc-metadata.json"
+    EVAL_MATCH_NUMBER = 100000
+    EVAL_SAMPLE_MATCH_NUMBER = 10000
+    LENGTH_THRESHOLD = 50
+    MATCH_THRESHOLD = 0.8
 
 settings = TestSettings()
