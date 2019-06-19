@@ -4,6 +4,8 @@ e.g. python evaluate_algo.py --verbose True
 
 from argparse import ArgumentParser
 import os
+import json
+import pandas as pd
 from os import listdir 
 from datetime import datetime
 from urllib.parse import urlparse
@@ -128,20 +130,24 @@ if __name__ == '__main__':
     )
 
     # ==== Load data to evaluate matching for evaluations 5: ====
-    logger.info('[+] Reading {}'.format(settings.EVAL_PUB_DATA_FILE_NAME))
-    evaluation_references = fm.get_file(
-        settings.EVAL_PUB_DATA_FILE_NAME,
-        settings.FOLDER_PREFIX,
-        'csv'
-    )
 
-    # Load WT publications to match references against
-    logger.info('[+] Reading {}'.format(settings.MATCH_PUB_DATA_FILE_NAME))
-    publications = fm.get_file(
-        settings.MATCH_PUB_DATA_FILE_NAME,
-        settings.FOLDER_PREFIX,
-        'csv'
-    )
+    logger.info('[+] Reading the first {} lines of {}'.format(settings.EVAL_MATCH_NUMBER, settings.EVAL_PUB_DATA_FILE_NAME))
+    output_cols = ['title', 'pmid', 'pmcid']
+    with open(
+        os.path.join(settings.FOLDER_PREFIX, settings.EVAL_PUB_DATA_FILE_NAME),
+        "r"
+        ) as file:
+        references = []
+        for line in range(settings.EVAL_MATCH_NUMBER):
+            reference = json.loads(next(file))
+            if all([output_col in reference for output_col in output_cols]):
+                references.append({x:reference[x] for x in output_cols})
+
+    # The references need to be in a certain format for the matching
+    evaluation_references = pd.DataFrame(references)
+    evaluation_references['Document id'] = range(0, len(evaluation_references))
+    evaluation_references['Reference id'] = evaluation_references['pmid']
+    evaluation_references.rename(index=str, columns={'pmid': "uber_id"}, inplace = True)
 
     # Load the latest parser model
     model = fm.get_file(
@@ -176,9 +182,10 @@ if __name__ == '__main__':
 
     logger.info('[+] Running evaluation 5')
     eval5_scores = evaluate_match_references(
-        publications,
         evaluation_references,
-        settings.FUZZYMATCH_THRESHOLD
+        settings.MATCH_THRESHOLD,
+        settings.LENGTH_THRESHOLD,
+        settings.EVAL_SAMPLE_MATCH_NUMBER
         )
 
     eval_scores_list = [
