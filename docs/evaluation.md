@@ -65,21 +65,21 @@ abs(100*((predicted number - actual number) / actual number))
 ### Evaluation Thresholds
 For this evaluation we also considered the thresholds to use when predicting whether a match should be taken forward or not. For this we plotted all the cosine similarities found from the actual = "Negative" set (i.e. the second best matches). We also investigated the relationship between cosine similarity and title length.
 
-![](policytool/refparse/algo_evaluation/exploratory/negative_cosines_hist_2019-06-19-1335.png)
+![](./policytool/refparse/algo_evaluation/exploratory/negative_cosines_hist_2019-06-19-1335.png)
 
-![](policytool/refparse/algo_evaluation/exploratory/negative_cosines_len_scatter_2019-06-19-1335.png)
+![](./policytool/refparse/algo_evaluation/exploratory/negative_cosines_len_scatter_2019-06-19-1335.png)
 
 From these we can see that generally the cosine similarity is quite low, but when it is high (>0.8) the title length tends to be quite short. Thus we saw that if we set the match and title length thresholds to be relatively high then we'd reduce the number of false positives. The 95th percentile of the cosine similarities is 0.6 and the 5th percentile of the title length is 33.
 
 We also looked at the distribution of title lengths in the actual = "Positive" set (i.e. where they should match exactly, hence all the matches have a cosine similarity of 1). Since we can also have incorrect matches in this set - which is where a reference has the same title as another one, we plot both the correct and incorrectly matched references from the positive set. The 5th percentile of the title length is 35.
 
-![](policytool/refparse/algo_evaluation/exploratory/title_lengths_2019-06-19-1335.png)
+![](./policytool/refparse/algo_evaluation/exploratory/title_lengths_2019-06-19-1335.png)
 
 From this we see that the incorrect matches occur when the title lengths are quite low. Thus, we can set the title length threshold to be high enough to remove some false negatives, but this is at the expense of removing some true positives.
 
 We varied these two thresholds and recorded some metrics. In our algorithm it's important that if we say there is a match then we are confident it is a true match (high precision). We picked the default match threshold to be 0.8 and the length threshold to be 50 based on all of these plots.
 
-![F1 Scores (micro)](policytool/refparse/algo_evaluation/exploratory/thresholds_F1 Score_negative_heatmap_2019-06-19-1335_micro.png) ![Recall Scores (binary negative)](policytool/refparse/algo_evaluation/exploratory/thresholds_Recall_negative_heatmap_2019-06-19-1335_binaryneg.png) ![Precision Scores (binary positive)](policytool/refparse/algo_evaluation/exploratory/thresholds_Precision_negative_heatmap_2019-06-19-1335_binarypos.png)
+![F1 Scores (micro)](./policytool/refparse/algo_evaluation/exploratory/thresholds_F1-Score_negative_heatmap_2019-06-19-1335_micro.png) ![Recall Scores (binary negative)](./policytool/refparse/algo_evaluation/exploratory/thresholds_Recall_negative_heatmap_2019-06-19-1335_binaryneg.png) ![Precision Scores (binary positive)](./policytool/refparse/algo_evaluation/exploratory/thresholds_Precision_negative_heatmap_2019-06-19-1335_binarypos.png)
 
 
 
