@@ -67,7 +67,7 @@ if __name__ == '__main__':
     logger.info('Starting evaluations...')
 
     log_file = open(
-        '{}/Evaluation results - {:%Y-%m-%d-%H%M}'.format(
+        '{}/Evaluation results - {:%Y-%m-%d-%H%M}.txt'.format(
             settings.LOG_FILE_PREFIX, now
         ), 'w'
     )
