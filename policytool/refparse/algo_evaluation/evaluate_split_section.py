@@ -1,6 +1,6 @@
 import pandas as pd 
 import numpy as np
-from utils.split import split_section
+from policytool.refparse.utils.split import split_section
 
 def calc_num_metric(predicted_number, actual_number):
     """
