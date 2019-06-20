@@ -1,5 +1,5 @@
 import os
-from settings import BaseSettings
+from policytool.refparse.settings import BaseSettings
 
 class TestSettings(BaseSettings):
 

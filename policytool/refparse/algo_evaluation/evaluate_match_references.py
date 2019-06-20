@@ -2,7 +2,7 @@ import pandas as pd
 
 from sklearn.metrics import classification_report, f1_score, recall_score, precision_score
 
-from utils import FuzzyMatcher
+from policytool.refparse.utils import FuzzyMatcher
 
 
 def get_match_data(evaluation_references, length_threshold, sample_N):

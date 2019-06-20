@@ -6,8 +6,7 @@ import numpy as np
 import os.path
 import sys
 
-sys.path.append("..")
-from pdf_parser.pdf_parse import parse_pdf_document, grab_section
+from policytool.pdf_parser.pdf_parse import parse_pdf_document, grab_section
 
 
 def pretty_confusion_matrix(actual_data, predict_data, labels):

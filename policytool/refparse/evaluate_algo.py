@@ -11,12 +11,12 @@ from datetime import datetime
 from urllib.parse import urlparse
 from collections import defaultdict
 
-from utils import FileManager
-from algo_evaluation.evaluate_settings import settings
-from algo_evaluation.evaluate_find_section import evaluate_find_section
-from algo_evaluation.evaluate_split_section import evaluate_split_section
-from algo_evaluation.evaluate_parse import evaluate_parse
-from algo_evaluation.evaluate_match_references import evaluate_match_references
+from policytool.refparse.utils import FileManager
+from policytool.refparse.algo_evaluation.evaluate_settings import settings
+from policytool.refparse.algo_evaluation.evaluate_find_section import evaluate_find_section
+from policytool.refparse.algo_evaluation.evaluate_split_section import evaluate_split_section
+from policytool.refparse.algo_evaluation.evaluate_parse import evaluate_parse
+from policytool.refparse.algo_evaluation.evaluate_match_references import evaluate_match_references
 
 
 def get_text(filepath):
@@ -45,6 +45,33 @@ def yield_section_data(scrape_pdf_location, sections_location):
                 section_path = os.path.join(sections_location, section_name, pdf_hash)
                 section_text = get_text('{}.txt'.format(section_path))
                 yield pdf_hash, section_name, section_text
+
+def load_pubs_json(pubs_file, total_N):
+
+    # ==== Load data to evaluate matching: ====
+
+    output_cols = ['title', 'pmid', 'pmcid']
+    with open(pubs_file, "r") as file:
+        references = []
+        for line in range(total_N):
+            reference = json.loads(next(file))
+            if all([output_col in reference for output_col in output_cols]):
+                references.append({x:reference[x] for x in output_cols})
+
+    # The references need to be in a certain format for the matching
+    evaluation_references = pd.DataFrame(references)
+    evaluation_references['Document id'] = range(
+        0,
+        len(evaluation_references)
+    )
+    evaluation_references['Reference id'] = evaluation_references['pmid']
+    evaluation_references.rename(
+        index=str,
+        columns={'pmid': "uber_id"},
+        inplace = True
+    )
+
+    return evaluation_references
 
 def create_argparser():
     parser = ArgumentParser()
@@ -98,7 +125,8 @@ if __name__ == '__main__':
     )
 
     evaluate_find_section_data = defaultdict(lambda: defaultdict(str))
-    for pdf_hash, section_name, section_text in yield_section_data(scrape_pdf_location, sections_location):
+    for pdf_hash, section_name, section_text in yield_section_data(
+        scrape_pdf_location, sections_location):
         evaluate_find_section_data[pdf_hash][section_name] = section_text
 
     # ==== Load data to evaluate split sections for evaluations 3: ====
@@ -131,24 +159,19 @@ if __name__ == '__main__':
 
     # ==== Load data to evaluate matching for evaluations 5: ====
 
-    logger.info('[+] Reading the first {} lines of {}'.format(settings.EVAL_MATCH_NUMBER, settings.EVAL_PUB_DATA_FILE_NAME))
-    output_cols = ['title', 'pmid', 'pmcid']
-    with open(
-        os.path.join(settings.FOLDER_PREFIX, settings.EVAL_PUB_DATA_FILE_NAME),
-        "r"
-        ) as file:
-        references = []
-        for line in range(settings.EVAL_MATCH_NUMBER):
-            reference = json.loads(next(file))
-            if all([output_col in reference for output_col in output_cols]):
-                references.append({x:reference[x] for x in output_cols})
-
-    # The references need to be in a certain format for the matching
-    evaluation_references = pd.DataFrame(references)
-    evaluation_references['Document id'] = range(0, len(evaluation_references))
-    evaluation_references['Reference id'] = evaluation_references['pmid']
-    evaluation_references.rename(index=str, columns={'pmid': "uber_id"}, inplace = True)
-
+    logger.info('[+] Reading the first {} lines of {}'.format(
+        settings.EVAL_MATCH_NUMBER,
+        settings.EVAL_PUB_DATA_FILE_NAME
+        ))
+    pubs_file = os.path.join(
+        settings.FOLDER_PREFIX,
+        settings.EVAL_PUB_DATA_FILE_NAME
+        )
+    evaluation_references = load_pubs_json(
+        pubs_file,
+        settings.EVAL_MATCH_NUMBER
+        )
+    
     # Load the latest parser model
     model = fm.get_file(
         settings.MODEL_FILE_NAME,
