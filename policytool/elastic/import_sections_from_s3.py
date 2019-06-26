@@ -121,4 +121,5 @@ if __name__ == '__main__':
     if args.clean:
         clean_es(es)
 
-    import_data(args.file_url, es, args.size)
+    size = args.size * 1024 * 1000 ** 2
+    import_data(args.file_url, es, size)
