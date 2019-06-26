@@ -89,11 +89,12 @@ class FuzzyMatchRefsOperator(BaseOperator):
 
     @apply_defaults
     def __init__(self, es_host, structured_references_path, fuzzy_matched_references_path,
-                 score_threshold, aws_conn_id='aws_default', *args, **kwargs):
+                 score_threshold, should_match_threshold, aws_conn_id='aws_default', *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.structured_references_path = structured_references_path
-        self.fuzzy_matched_references_path = fuzzy_matched_references_path,
+        self.fuzzy_matched_references_path = fuzzy_matched_references_path
         self.score_threshold = score_threshold
+        self.should_match_threshold = should_match_threshold
  
         self.es_host = es_host
         self.es = Elasticsearch([self.es_host])
@@ -110,7 +111,8 @@ class FuzzyMatchRefsOperator(BaseOperator):
     
         fuzzy_matcher = ElasticsearchFuzzyMatcher(
             self.es,
-            score_threshold
+            self.score_threshold,
+            self.should_match_threshold
         )
 
         with tempfile.NamedTemporaryFile(mode='wb') as output_raw_f:
