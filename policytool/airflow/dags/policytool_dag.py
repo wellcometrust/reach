@@ -24,6 +24,8 @@ ORGANISATIONS = [
 ]
 
 MIN_TITLE_LENGTH = 40
+SHOULD_MATCH_THRESHOLD = 80 
+SCORE_THRESHOLD = 50
 
 args = {
     'depends_on_past': False,
@@ -104,8 +106,10 @@ for organisation in ORGANISATIONS:
     fmMatching = FuzzyMatchRefsOperator(
         task_id='fuzzy_match_refs',
         es_host='http://elasticsearch:9200',
-        structured_references_path=output_path,
+        structured_references_path=extracted_refs_path,
         fuzzy_matched_references_path=fm_references_path,
+        score_threshold=SCORE_THRESHOLD,
+        should_match_threshold=SHOULD_MATCH_THRESHOLD,
         dag=dag
     )
     fmMatching.set_upstream(extractRefs)
@@ -129,8 +133,8 @@ for organisation in ORGANISATIONS:
             task_id='hard_match_refs',
             es_host='http://elasticsearch:9200',
             publications_path=publications_path,
-            hard_text_matched_references_path=em_references_path,
-            min_title_length=MIN_TITLE_LENGTH,
+            exact_matched_references_path=em_references_path,
+            title_length_threshold=MIN_TITLE_LENGTH,
             dag=dag
         )
         emMatching.set_upstream(pdfParsing)
