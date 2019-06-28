@@ -59,7 +59,7 @@ def clean_es(es):
         es: a living connection to elasticsearch
 
     """
-    print('Cleaning te database..')
+    print('Cleaning the database..')
     body = json.dumps({
         'query': {
             'match_all': {}

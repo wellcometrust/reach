@@ -23,7 +23,7 @@ ORGANISATIONS = [
     'msf',
 ]
 
-MIN_TITLE_LEGTH = 40
+MIN_TITLE_LENGTH = 40
 
 args = {
     'depends_on_past': False,
@@ -101,7 +101,7 @@ for organisation in ORGANISATIONS:
         'policytool-extract',
         'fuzzy-match-refs-{organisation}.json.gz'.format(organisation=organisation)
     )
-    fmMatching = FuzztMatchRefsOperator(
+    fmMatching = FuzzyMatchRefsOperator(
         task_id='fuzzy_match_refs',
         es_host='http://elasticsearch:9200',
         structured_references_path=output_path,
