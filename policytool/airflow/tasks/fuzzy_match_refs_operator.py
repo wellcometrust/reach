@@ -75,8 +75,6 @@ class ElasticsearchFuzzyMatcher:
                 'Similarity': best_score,
                 'Match algorithm': 'Fuzzy match'
             }
-
-        return
   
 
 class FuzzyMatchRefsOperator(BaseOperator):

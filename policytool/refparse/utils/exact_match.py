@@ -1,7 +1,5 @@
-import pandas as pd
 import re
 
-from policytool.refparse.settings import settings
 
 class ExactMatcher:
 	def __init__(self, sectioned_documents, title_length_threshold):

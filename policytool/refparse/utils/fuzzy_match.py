@@ -1,14 +1,16 @@
 import numpy as np
+import logging
+
 import pandas as pd
 from policytool.refparse.settings import settings
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
 
 
+logger = logging.getLogger(__name__)
 
 class FuzzyMatcher:
     def __init__(self, publications, similarity_threshold, title_length_threshold=0):
-        self.logger = settings.logger
         self.publications = pd.DataFrame(publications)
         self.vectorizer = TfidfVectorizer(lowercase=True, ngram_range=(1, 1))
         self.tfidf_matrix = self.vectorizer.fit_transform(
@@ -47,5 +49,3 @@ class FuzzyMatcher:
                 'Similarity': best_similarity,
                 'Match algorithm': 'Fuzzy match'
             }
-
-        return
