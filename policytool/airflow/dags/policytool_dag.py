@@ -10,6 +10,9 @@ import airflow.utils.dates
 from policytool.airflow.tasks.run_spiders_operator import RunSpiderOperator
 from policytool.airflow.tasks.parse_pdf_operator import ParsePdfOperator
 from policytool.airflow.tasks.extract_refs_operator import ExtractRefsOperator
+from policytool.airflow.tasks.fuzzy_match_refs_operator import FuzzyMatchRefsOperator
+from policytool.airflow.tasks.hard_text_match_refs_operator import ExactMatchRefsOperator
+
 
 ORGANISATIONS = [
     'who_iris',
@@ -19,6 +22,10 @@ ORGANISATIONS = [
     'parliament',
     'msf',
 ]
+
+MIN_TITLE_LENGTH = 40
+SHOULD_MATCH_THRESHOLD = 80 
+SCORE_THRESHOLD = 50
 
 args = {
     'depends_on_past': False,
@@ -34,10 +41,13 @@ dag = DAG(
 )
 
 for organisation in ORGANISATIONS:
-    scraping_path = os.path.join(
+    output_path = os.path.join(
         'datalabs-data',
         'airflow',
-        'output',
+        'output'
+    )
+    scraping_path = os.path.join(
+        output_path,
         'policytool-scrape',
         'scraper-{organisation}'.format(
             organisation=organisation
@@ -51,9 +61,7 @@ for organisation in ORGANISATIONS:
     )
 
     parsing_path = os.path.join(
-        'datalabs-data',
-        'airflow',
-        'output',
+        output_path,
         'policytool-parse',
         'parser-{organisation}'.format(
             organisation=organisation
@@ -74,23 +82,59 @@ for organisation in ORGANISATIONS:
             organisation=organisation
         )
     )
-
     extracted_refs_path = os.path.join(
-        'datalabs-data',
-        'airflow',
-        'output',
+        output_path,
         'policytool-extract',
         'test-extract-refs-{organisation}.json.gz'.format(
             organisation=organisation
         )
     )
-
-    extract_refs = ExtractRefsOperator(
+    extractRefs = ExtractRefsOperator(
         task_id='extract_refs',
         model_path=parser_model,
         src_s3_key=parsed_pdf_file,
         dst_s3_key=extracted_refs_path,
-        dag=dag)
-
+        dag=dag
+    )
     extract_refs.set_upstream(pdfParsing)
 
+    fm_references_path = os.path.join(
+        output_path
+        'policytool-extract',
+        'fuzzy-match-refs-{organisation}.json.gz'.format(organisation=organisation)
+    )
+    fmMatching = FuzzyMatchRefsOperator(
+        task_id='fuzzy_match_refs',
+        es_host='http://elasticsearch:9200',
+        structured_references_path=extracted_refs_path,
+        fuzzy_matched_references_path=fm_references_path,
+        score_threshold=SCORE_THRESHOLD,
+        should_match_threshold=SHOULD_MATCH_THRESHOLD,
+        dag=dag
+    )
+    fmMatching.set_upstream(extractRefs)
+    for year in range(2000,2019):
+        em_references_path = os.path.join(
+            output_path
+            'policytool-extract',
+            'exact-match-refs-{organisation}-{year}.json.gz'.format(
+                organisation=organisation,
+                year=year
+            )
+        )
+        publications_path = os.path.join(
+            output_path,
+            'open-research',
+            'dimensions',
+            'publications'
+            'dimensions-publications-{year}.json.gz'.format(year=year)
+        )
+        emMatching = ExactMatchRefsOperator(
+            task_id='hard_match_refs',
+            es_host='http://elasticsearch:9200',
+            publications_path=publications_path,
+            exact_matched_references_path=em_references_path,
+            title_length_threshold=MIN_TITLE_LENGTH,
+            dag=dag
+        )
+        emMatching.set_upstream(pdfParsing)

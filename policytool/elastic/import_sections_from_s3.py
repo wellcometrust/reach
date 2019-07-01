@@ -13,7 +13,7 @@ from argparse import ArgumentParser
 from elasticsearch import Elasticsearch
 
 parser = ArgumentParser()
-parser.add_argument('s3_url')
+parser.add_argument('file_url')
 
 parser.add_argument('-s', '--size',
                     default=1024,
@@ -33,30 +33,28 @@ parser.add_argument('-C', '--clean', dest='clean', action='store_true',
                     help='Clean the elasticsearch database before import')
 
 
-def write_to_es(es, line):
+def write_to_es(es, item):
     """ Writes the given csv line to elasticsearch.
 
     Args:
         es: a living connection to elacticsearch
-        line: a dict from a csv line. Should contain a file hash and the
-              full text of a pdf
+        item: an dict from a json line. 
     """
-    # TODO: Use real pdf titles and orgs
-    # Select a random org for the time being
-    orgs = ['who', 'nice', 'msf']
-    org = random.choice(orgs)
-    body = json.dumps({
-        'hash': line['file_hash'],
-        'text': line['pdf_text'],
-        'title': line['pdf_name'],
-        'organisation': org,
-    })
-    es.index(
-        index='datalabs-fulltexts',
-        ignore=400,
-        body=body,
-        doc_type='pdf_fulltext'
-    )
+    if item["sections"]:
+        print(item['hash'])
+
+        section = item['sections']['Reference']
+        body = json.dumps({
+            'section': section,
+            'uri': item['uri'],
+            'hash': item['hash']
+        })  
+        es.index(
+            index='datalabs-sections',
+            ignore=400,
+            body=body,
+            doc_type='section'
+        )
 
 
 def clean_es(es):
@@ -73,54 +71,55 @@ def clean_es(es):
         }
     })
     es.delete_by_query(
-        index='datalabs-fulltexts',
+        index='datalabs-sections',
         body=body,
     )
 
 
-def import_data(s3_file, es, size):
+def import_data(file_url, es, size):
     """ Import data from a given file in elasticsearch.
 
     Args:
-        s3_file: a file object from boto3's s3
+        file_url: a file url
         es: a living connection to elasticsearch
         size: the size of the data to pull in bytes
 
     """
-    with tempfile.TemporaryFile(mode='r+b') as tf:
-        rows = s3_file.get(Range='bytes=0-%d' % size)
-        for data in rows['Body']:
-            tf.write(data)
+    def yield_from_s3(s3_url, size):
+        s3 = boto3.resource('s3')
+        parsed_url = urlparse(s3_url)
+        print('Getting %s from %s bucket' % (parsed_url.path, parsed_url.netloc))
+        s3_file = s3.Object(bucket_name=parsed_url.netloc, key=parsed_url.path[1:])
+        
+        with tempfile.TemporaryFile(mode='r+b') as tf:
+            rows = s3_file.get(Range='bytes=0-%d' % size)
+            for data in rows['Body']:
+                tf.write(data)
 
-        print('Got the fileobj')
-        tf.seek(0)
-        with open(tf.fileno(), mode='r', closefd=False) as csv_file:
-            for line in csv.DictReader(csv_file):
-                print(line['file_hash'])
-                write_to_es(es, line)
+            print('Got the fileobj')
+            tf.seek(0)
+            with open(tf.fileno(), mode='r', closefd=False) as json_file:
+                for line in json_file:
+                    yield line
+
+    def yield_from_local(file_url, size):
+        with open(file_url) as f:
+            for line in f:
+                yield line
+
+    yield_lines = yield_from_s3 if file_url.startswith('s3://') else yield_from_local
+    for line in yield_lines(file_url, size):
+        item = json.loads(line)
+        write_to_es(es, item)
 
 
 if __name__ == '__main__':
     args = parser.parse_args()
 
-    assert args.s3_url.startswith('s3://'), (
-            "You must provide a valid s3:// link"
-        )
-
     es = Elasticsearch([{'host': args.host, 'port': args.port}])
-    s3 = boto3.resource('s3')
-
-    parsed_url = urlparse(args.s3_url)
-    print('Getting %s from %s bucket' % (parsed_url.path, parsed_url.netloc))
-    s3_file = s3.Object(bucket_name=parsed_url.netloc, key=parsed_url.path[1:])
-
-    # This is a big file. The size should be in megabytes, not in bytes
-    size = args.size * 1000 ** 2
-
-    # Full texts are big, so get rid of python limitation for csv field size
-    csv.field_size_limit(1000000)
 
     if args.clean:
         clean_es(es)
 
-    import_data(s3_file, es, size)
+    size = args.size * 1024 * 1000 ** 2
+    import_data(args.file_url, es, size)
