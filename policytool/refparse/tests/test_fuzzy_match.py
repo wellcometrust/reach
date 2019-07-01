@@ -37,10 +37,10 @@ class TestFuzzyMatcherInit(unittest.TestCase):
 		threshold = 0
 		fuzzy_matcher = FuzzyMatcher(real_publications, threshold)
 		assert_frame_equal(
-			fuzzy_matcher.real_publications, real_publications
+			fuzzy_matcher.publications, real_publications
 		)
 		self.assertEqual(
-			fuzzy_matcher.threshold, threshold
+			fuzzy_matcher.similarity_threshold, threshold
 		)
 		self.assertTrue(
 			fuzzy_matcher.tfidf_matrix.size != 0
@@ -52,54 +52,49 @@ class TestFuzzyMatch(unittest.TestCase):
 			'title': ['Malaria', 'Zika'],
 			'uber_id': [1, 2]
 		})
-		threshold = settings.FUZZYMATCH_THRESHOLD
+		threshold = settings.FUZZYMATCH_SIMILARITY_THRESHOLD
 		fuzzy_matcher = FuzzyMatcher(real_publications, threshold)
 		return fuzzy_matcher
 
-	def test_empty_predicted_publications(self):
+	def test_empty_reference(self):
 		fuzzy_matcher = self.init_fuzzy_matcher()
-		predicted_publications = pd.DataFrame({
-			'Document id': [],
-            'Reference id': [],
-            'Title': []			
-		})
+		reference = {}
 		self.assertTrue(
-			fuzzy_matcher.fuzzy_match(predicted_publications).size == 0
+			fuzzy_matcher.match(reference) is None
 		) 
 
 	def test_no_match(self):
 		fuzzy_matcher = self.init_fuzzy_matcher()
-		predicted_publications = pd.DataFrame({
-			'Document id': [1],
-            'Reference id': [1],
-            'Title': ['Ebola']			
-		})
+		reference = {
+			'Document id': 1,
+            'Reference id': 1,
+            'Title': 'Ebola'			
+		}
 		self.assertTrue(
-			fuzzy_matcher.fuzzy_match(predicted_publications).size == 0
+			fuzzy_matcher.match(reference) is None 
 		) 
 
 	def test_one_match(self):
 		fuzzy_matcher = self.init_fuzzy_matcher()
-		predicted_publications = pd.DataFrame({
-			'Document id': [10],
-            'Reference id': [11],
-            'Title': ['Malaria']			
-		})
-		match_data = fuzzy_matcher.fuzzy_match(predicted_publications)
-		self.assertEqual(match_data.shape[0], 1)
-		self.assertEqual(match_data.iloc[0]['Document id'], 10)
+		reference = {
+			'Document id': 10,
+            'Reference id': 11,
+            'Title': 'Malaria'			
+		}
+		matched_publication = fuzzy_matcher.match(reference)
+		self.assertEqual(matched_publication['Document id'], 10)
 
 	def test_close_match(self):
 		real_publications = pd.DataFrame({
 			'title': ['Malaria is caused by mosquitoes'],
 			'uber_id': [1]
 		})
-		threshold = settings.FUZZYMATCH_THRESHOLD
+		threshold = settings.FUZZYMATCH_SIMILARITY_THRESHOLD
 		fuzzy_matcher = FuzzyMatcher(real_publications, threshold)
-		predicted_publications = pd.DataFrame({
-			'Document id': [10],
-            'Reference id': [11],
-            'Title': ['Malaria']			
-		})
-		match_data = fuzzy_matcher.fuzzy_match(predicted_publications)
-		self.assertEqual(match_data.shape[0], 0) 
+		reference = {
+			'Document id': 10,
+            'Reference id': 11,
+            'Title': 'Malaria'			
+		}
+		matched_publication = fuzzy_matcher.match(reference)
+		self.assertEqual(matched_publication, None) 
