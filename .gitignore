@@ -5,3 +5,7 @@
 build/*
 *.egg-info
 **/.cache/*
+*.csv
+*.json
+*.pdf
+*.txt

@@ -38,24 +38,17 @@ def write_to_es(es, line):
 
     Args:
         es: a living connection to elacticsearch
-        line: a dict from a csv line. Should contain a file hash and the
-              full text of a pdf
+        line: a dict from a csv line. 
     """
-    # TODO: Use real pdf titles and orgs
-    # Select a random org for the time being
-    orgs = ['who', 'nice', 'msf']
-    org = random.choice(orgs)
+
     body = json.dumps({
-        'hash': line['file_hash'],
-        'text': line['pdf_text'],
-        'title': line['pdf_name'],
-        'organisation': org,
+        'title': line['title']
     })
     es.index(
-        index='datalabs-fulltexts',
+        index='datalabs-references',
         ignore=400,
         body=body,
-        doc_type='pdf_fulltext'
+        doc_type='reference'
     )
 
 
@@ -73,7 +66,7 @@ def clean_es(es):
         }
     })
     es.delete_by_query(
-        index='datalabs-fulltexts',
+        index='datalabs-references',
         body=body,
     )
 
@@ -96,7 +89,7 @@ def import_data(s3_file, es, size):
         tf.seek(0)
         with open(tf.fileno(), mode='r', closefd=False) as csv_file:
             for line in csv.DictReader(csv_file):
-                print(line['file_hash'])
+                print(line['uber_id'])
                 write_to_es(es, line)
 
 
