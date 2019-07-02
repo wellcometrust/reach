@@ -6,6 +6,7 @@ celery
 editdistance
 elasticsearch
 falcon
+matplotlib
 numpy
 pandas
 psycopg2-binary
