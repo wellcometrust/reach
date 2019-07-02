@@ -146,6 +146,9 @@ def scrape_process_pdf(
         scrape_data : a list of dicts with the predicted and actual texts for
             each of the sections we looked for in the pdf
     """
+    if os.path.splitext(pdf_name)[1] == ".pdf":
+        pdf_name = os.path.splitext(pdf_name)[0]
+
     with open('{}/{}.pdf'.format(scrape_pdf_location, pdf_name), 'r') as f:
         pdf_file, full_text = parse_pdf_document(f)
         scrape_data = []
