@@ -50,28 +50,20 @@ def load_pubs_json(pubs_file, total_N):
 
     # ==== Load data to evaluate matching: ====
 
-    output_cols = ['title', 'pmid', 'pmcid']
-    with open(pubs_file, "r") as file:
+    output_cols = ['title', 'pmid']
+    with open(pubs_file, "r") as f:
         references = []
-        for line in range(total_N):
-            reference = json.loads(next(file))
+        for i, line in enumerate(f):
+            if i >= total_N:
+                break
+            reference = json.loads(line)
             if all([output_col in reference for output_col in output_cols]):
-                references.append({x:reference[x] for x in output_cols})
-
-    # The references need to be in a certain format for the matching
-    evaluation_references = pd.DataFrame(references)
-    evaluation_references['Document id'] = range(
-        0,
-        len(evaluation_references)
-    )
-    evaluation_references['Reference id'] = evaluation_references['pmid']
-    evaluation_references.rename(
-        index=str,
-        columns={'pmid': "uber_id"},
-        inplace = True
-    )
-
-    return evaluation_references
+                yield {
+                'Document id': i,
+                'title': reference['title'],
+                'Reference id':  reference['pmid'],
+                'uber_id':  reference['pmid']
+                }
 
 def create_argparser():
     parser = ArgumentParser()
@@ -105,13 +97,12 @@ if __name__ == '__main__':
         'Date of evaluation = {:%Y-%m-%d-%H%M}\n'.format(now)
     )
 
-    logger.info('Reading files...')
+    logger.info('main: Reading files...')
     fm = FileManager()
 
     # ==== Load data to evaluate scraping for evaluations 1 and 2: ====
-    logger.info('[+] Reading {}'.format(
+    logger.info('main: Reading %s',
         settings.SCRAPE_DATA_PDF_FOLDER_NAME
-        )
     )
 
     scrape_pdf_location = os.path.join(
@@ -130,7 +121,7 @@ if __name__ == '__main__':
         evaluate_find_section_data[pdf_hash][section_name] = section_text
 
     # ==== Load data to evaluate split sections for evaluations 3: ====
-    logger.info('[+] Reading {}'.format(settings.NUM_REFS_FILE_NAME))
+    logger.info('main: Reading %s', settings.NUM_REFS_FILE_NAME)
     evaluate_split_section_data = fm.get_file(
         settings.NUM_REFS_FILE_NAME,
         settings.FOLDER_PREFIX,
@@ -150,7 +141,7 @@ if __name__ == '__main__':
         ]
 
     # ==== Load data to evaluate parse for evaluations 4: ====
-    logger.info('[+] Reading {}'.format(settings.PARSE_REFERENCE_FILE_NAME))
+    logger.info('main: Reading %s', settings.PARSE_REFERENCE_FILE_NAME)
     evaluate_parse_data = fm.get_file(
         settings.PARSE_REFERENCE_FILE_NAME,
         settings.FOLDER_PREFIX,
@@ -159,10 +150,10 @@ if __name__ == '__main__':
 
     # ==== Load data to evaluate matching for evaluations 5: ====
 
-    logger.info('[+] Reading the first {} lines of {}'.format(
+    logger.info('main: Reading the first %d lines of %s',
         settings.EVAL_MATCH_NUMBER,
         settings.EVAL_PUB_DATA_FILE_NAME
-        ))
+        )
     pubs_file = os.path.join(
         settings.FOLDER_PREFIX,
         settings.EVAL_PUB_DATA_FILE_NAME
@@ -171,6 +162,7 @@ if __name__ == '__main__':
         pubs_file,
         settings.EVAL_MATCH_NUMBER
         )
+    evaluation_references = pd.DataFrame(evaluation_references)
     
     # Load the latest parser model
     model = fm.get_file(
@@ -179,31 +171,31 @@ if __name__ == '__main__':
         settings.MODEL_FILE_TYPE
     )
 
-    # ==== Get the evaluation metrics ====
+    # # ==== Get the evaluation metrics ====
     logger.info('\nStarting the evaluations...\n')
 
-    logger.info('[+] Running evaluations 1 and 2')                     
+    logger.info('main: Running evaluations 1 and 2')                     
     eval1_scores, eval2_scores = evaluate_find_section(
         evaluate_find_section_data,
         scrape_pdf_location,
         settings.LEVENSHTEIN_DIST_SCRAPER_THRESHOLD
     )
 
-    logger.info('[+] Running evaluation 3')
+    logger.info('main: Running evaluation 3')
     eval3_scores = evaluate_split_section(
         evaluate_split_section_data,
         settings.ORGANISATION_REGEX,
         settings.SPLIT_SECTION_SIMILARITY_THRESHOLD
         )
 
-    logger.info('[+] Running evaluation 4')
+    logger.info('main: Running evaluation 4')
     eval4_scores = evaluate_parse(
         evaluate_parse_data,
         model,
         settings.LEVENSHTEIN_DIST_PARSE_THRESHOLD
         )
 
-    logger.info('[+] Running evaluation 5')
+    logger.info('main: Running evaluation 5')
     eval5_scores = evaluate_match_references(
         evaluation_references,
         settings.MATCH_THRESHOLD,

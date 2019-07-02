@@ -71,8 +71,7 @@ aws s3 cp --recursive s3://datalabs-data/policy_tool_tests algo_evaluation/data_
 ```
 and
 ```
-aws s3 cp s3://datalabs-staging/airflow/output/open-research/epmc-metadata/epmc-metadata.json.gz .
-download: s3://datalabs-staging/airflow/output/open-research/epmc-metadata/epmc-metadata.json.gz to algo_evaluation/data_evaluate/epmc-metadata.json.gz
+aws s3 cp s3://datalabs-staging/airflow/output/open-research/epmc-metadata/epmc-metadata.json.gz algo_evaluation/data_evaluate/epmc-metadata.json.gz
 gunzip epmc-metadata.json.gz
 ```
 and finally running

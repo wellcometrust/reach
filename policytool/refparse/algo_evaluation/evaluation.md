@@ -63,6 +63,11 @@ abs(100*((predicted number - actual number) / actual number))
 - We also record whether the match found was correct or not, which can be found by comparing the uber ids of the reference and it's match. Thus we also return a classification report and the frequency table of match types.
 
 ### Evaluation Thresholds
+
+Summary: Filtering out 'matches' where the cosine similarity is less than 0.6 and the title length is less than 33 will remove lots of false positives. However, this comes at the expensive of filtering out some true positives.
+
+Considerations: Do we want to be confident that the matches are correct but we also have some false negatives? Or do we want to be confident that we haven’t got any false positives at the expense of missing some true positives?
+
 For this evaluation we also considered the thresholds to use when predicting whether a match should be taken forward or not. For this we plotted all the cosine similarities found from the actual = "Negative" set (i.e. the second best matches). We also investigated the relationship between cosine similarity and title length.
 
 <p float="left">
