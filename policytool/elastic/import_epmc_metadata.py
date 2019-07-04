@@ -71,7 +71,7 @@ def import_into_elasticsearch(s3_file, es, max_publication=10):
     for index, publication in enumerate(
         yield_publications_metadata(s3_file.get()['Body'])
     ):
-        if max_publication > 0 and index >= max_publication:
+        if max_publication and index >= max_publication:
             break
         write_to_es(es, publication)
 

@@ -11,12 +11,16 @@ from airflow.utils.decorators import apply_defaults
 from scrapy.crawler import CrawlerProcess
 from scrapy.utils.project import get_project_settings
 
-from policytool.scraper.wsf_scraping.spiders.who_iris_spider import WhoIrisSpider
 from policytool.scraper.wsf_scraping.spiders.nice_spider import NiceSpider
 from policytool.scraper.wsf_scraping.spiders.gov_spider import GovSpider
 from policytool.scraper.wsf_scraping.spiders.msf_spider import MsfSpider
 from policytool.scraper.wsf_scraping.spiders.unicef_spider import UnicefSpider
-from policytool.scraper.wsf_scraping.spiders.parliament_spider import ParliamentSpider
+from policytool.scraper.wsf_scraping.spiders.who_iris_spider import (
+    WhoIrisSpider
+)
+from policytool.scraper.wsf_scraping.spiders.parliament_spider import (
+    ParliamentSpider
+)
 
 
 logger = logging.getLogger(__name__)
@@ -50,9 +54,10 @@ class RunSpiderOperator(BaseOperator):
             'SCRAPY_SETTINGS_MODULE',
             'scraper.wsf_scraping.settings'
         )
-        policytool.scraper.wsf_scraping.settings.FEED_URI = 'manifests3://{path}'.format(
-            path=self.path
-        )
+        policytool.scraper.wsf_scraping.settings.FEED_URI = \
+            'manifests3://{path}'.format(
+                path=self.path
+            )
 
         settings = get_project_settings()
 
