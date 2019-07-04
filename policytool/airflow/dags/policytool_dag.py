@@ -11,8 +11,12 @@ from policytool.airflow.tasks.run_spiders_operator import RunSpiderOperator
 from policytool.airflow.tasks.parse_pdf_operator import ParsePdfOperator
 from policytool.airflow.tasks.fetch_epmc_metadata import FetchEPMCMetadata
 from policytool.airflow.tasks.extract_refs_operator import ExtractRefsOperator
-from policytool.airflow.tasks.fuzzy_match_refs_operator import FuzzyMatchRefsOperator
-from policytool.airflow.tasks.exact_match_refs_operator import ExactMatchRefsOperator
+from policytool.airflow.tasks.fuzzy_match_refs_operator import (
+    FuzzyMatchRefsOperator
+)
+from policytool.airflow.tasks.exact_match_refs_operator import (
+    ExactMatchRefsOperator
+)
 
 
 ORGANISATIONS = [
@@ -62,9 +66,9 @@ epmc_metadata_key = to_s3_key(
 )
 
 fetch_epmc_task = FetchEPMCMetadata(
+    task_id=FetchEPMCMetadata.__name__,
     src_s3_key=epmc_metadata_key,
     es_host='elasticsearch',
-    es_port='9200',
     dag=dag
 )
 
@@ -129,7 +133,9 @@ for organisation in ORGANISATIONS:
     fm_references_path = os.path.join(
         output_path,
         'policytool-extract',
-        'fuzzy-match-refs-{organisation}.json.gz'.format(organisation=organisation)
+        'fuzzy-match-refs-{organisation}.json.gz'.format(
+            organisation=organisation
+        )
     )
     fmMatching = FuzzyMatchRefsOperator(
         task_id='fuzzy_match_refs',
@@ -141,7 +147,8 @@ for organisation in ORGANISATIONS:
         dag=dag
     )
     fmMatching.set_upstream(extract_refs)
-    for year in range(2000,2019):
+
+    for year in range(2000, 2019):
         em_references_path = os.path.join(
             output_path,
             'policytool-extract',

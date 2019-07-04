@@ -1,14 +1,16 @@
+import os
 import datetime
-from airflow import DAG
+
 import airflow.utils.dates
-# from policytool.airflow.tasks.fuzzy_match_refs_operator import (
-#     FuzzyMatchRefsOperator
-# )
+from airflow import DAG
+
+from policytool.airflow.tasks.fetch_epmc_metadata import FetchEPMCMetadata
 from policytool.airflow.tasks.exact_match_refs_operator import (
     ExactMatchRefsOperator
 )
-from policytool.airflow.tasks.fetch_epmc_metadata import FetchEPMCMetadata
-
+# from policytool.airflow.tasks.fuzzy_match_refs_operator import (
+#     FuzzyMatchRefsOperator
+# )
 
 MIN_TITLE_LENGTH = 40
 SHOULD_MATCH_THRESHOLD = 80
@@ -48,18 +50,35 @@ epmc_metadata_key = to_s3_key(
 )
 
 fetch_epmc_task = FetchEPMCMetadata(
+    task_id=FetchEPMCMetadata.__name__,
     src_s3_key=epmc_metadata_key,
     es_host='elasticsearch',
-    es_port='9200',
     max_epmc_metadata=500,
     dag=dag
 )
 
+
+# structured_references_path = os.path.join(
+#     'datalabs-data',
+#     'airflow',
+#     'output',
+#     'policytool-extract',
+#     'test-extract-refs-msf.json.gz',
+# )
+#
+# fuzzy_references_path = os.path.join(
+#     'datalabs-data',
+#     'airflow',
+#     'output',
+#     'policytool-extract',
+#     'test-fuzzy-match-refs-msf.json.gz',
+# )
+#
 # fuzzy_match_refs = FuzzyMatchRefsOperator(
 #    task_id='match_refs',
 #    es_host='http://elasticsearch:9200',
-#    structured_references_path='datalabs-data/airflow/output/policytool-extract/test-extract-refs-msf.json.gz',
-#    fuzzy_matched_references_path='datalabs-data/airflow/output/policytool-extract/test-fuzzy-match-refs-msf.json.gz',
+#    structured_references_path=structured_references_path,
+#    fuzzy_matched_references_path=fuzzy_references_path,
 #    score_threshold=SCORE_THRESHOLD,
 #    should_match_threshold=SHOULD_MATCH_THRESHOLD,
 #    dag=dag
@@ -68,14 +87,29 @@ fetch_epmc_task = FetchEPMCMetadata(
 
 pub_path = os.path.join(
     'datalabs-staging',
+    'airflow',
+    'output',
+    'open-research',
+    'dimensions',
+    'publications',
+    'dimensions-publications-2015.json.gz',
+)
 
+references_path = os.path.join(
+    'datalabs-data',
+    'airflow',
+    'output',
+    'policytool-extract',
+    'test-hard-text-match-refs-msf.json.gz',
 )
 
 exact_match_refs = ExactMatchRefsOperator(
     task_id='match_refs',
     es_host='http://elasticsearch:9200',
-    publications_path='/airflow/output/open-research/dimensions/publications/dimensions-publications-2015.json.gz',
-    exact_matched_references_path='datalabs-data/airflow/output/policytool-extract/test-hard-text-match-refs-msf.json.gz',
+    publications_path=pub_path,
+    exact_matched_references_path=references_path,
     title_length_threshold=MIN_TITLE_LENGTH,
     dag=dag
 )
+
+exact_match_refs.set_upstream(fetch_epmc_task)

@@ -1,10 +1,6 @@
 """
-Operator to run the web scraper on every organisation.
+Operator to run the get the latest EPMC metadata from AWS S3.
 """
-import os
-import logging
-
-from urllib.parse import urlparse
 
 from policytool.airflow.hook.wellcome_s3_hook import WellcomeS3Hook
 from airflow.models import BaseOperator
@@ -25,12 +21,15 @@ class FetchEPMCMetadata(BaseOperator):
     )
 
     @apply_defaults
-    def __init__(self, src_s3_key, es_host, es_port, max_epmc_metadata=None,
-                 aws_conn_id='aws_default', *args, **kwargs):
+    def __init__(self, src_s3_key, es_host, es_port=9200,
+                 max_epmc_metadata=None, aws_conn_id='aws_default',
+                 *args, **kwargs):
         """
         Args:
             src_s3_key: S3 URL for the json.gz output file.
-            max_epmc_metadata: Maximum number of EPMC pubs. to process.
+            es_host: the hostname of elasticsearch database.
+            es_port: the port of elasticsearch database. Default to 9200.
+            max_epmc_metadata: Maximum number of EPMC pubs to process.
             aws_conn_id: Aws connection name.
         """
 
@@ -56,4 +55,4 @@ class FetchEPMCMetadata(BaseOperator):
         print('Getting %s from bucket' % (self.src_s3_key))
         s3_file = s3.get_key(self.src_s3_key)
 
-        import_into_elasticsearch(s3_file, es)
+        import_into_elasticsearch(s3_file, es, self.max_publications)
