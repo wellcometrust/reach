@@ -60,7 +60,7 @@ def write_to_es(es, line):
     )
 
 
-def import_into_elasticsearch(s3_file, es):
+def import_into_elasticsearch(s3_file, es, max_publication=10):
     """ Read publications from the given s3 file and write them to the
     elasticsearch database.
 
@@ -71,7 +71,7 @@ def import_into_elasticsearch(s3_file, es):
     for index, publication in enumerate(
         yield_publications_metadata(s3_file.get()['Body'])
     ):
-        if args.publication_number > 0 and index >= args.publication_number:
+        if max_publication > 0 and index >= max_publication:
             break
         write_to_es(es, publication)
 

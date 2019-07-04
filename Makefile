@@ -51,18 +51,19 @@ CODEBUILD_VERSION := codebuild-$(shell date +%Y%m%dT%H%M%SZ)-$(shell \
 	echo $$CODEBUILD_RESOLVED_SOURCE_VERSION | cut -c1-7)
 CODEBUILD_LATEST_TAG := codebuild-latest
 
-.PHONY: base-image
-base-image:
-	docker build \
-		-t policytool.base \
-		-f Dockerfile.base \
-		.
+# .PHONY: base-image
+# base-image:
+# 	docker build \
+# 		-t policytool.base \
+# 		-f Dockerfile.base \
+# 		.
 
 .PHONY: docker-build
-docker-build: base-image $(WEB_BUILD_TARGETS)
+docker-build:
 	docker build \
 		-t $(ECR_IMAGE):$(VERSION) \
 		-t $(ECR_IMAGE):latest \
+		-f Dockerfile.policytool \
 		.
 
 .PHONY: docker-push

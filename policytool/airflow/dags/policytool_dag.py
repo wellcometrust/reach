@@ -9,9 +9,10 @@ import airflow.utils.dates
 
 from policytool.airflow.tasks.run_spiders_operator import RunSpiderOperator
 from policytool.airflow.tasks.parse_pdf_operator import ParsePdfOperator
+from policytool.airflow.tasks.fetch_epmc_metadata import FetchEPMCMetadata
 from policytool.airflow.tasks.extract_refs_operator import ExtractRefsOperator
 from policytool.airflow.tasks.fuzzy_match_refs_operator import FuzzyMatchRefsOperator
-from policytool.airflow.tasks.hard_text_match_refs_operator import ExactMatchRefsOperator
+from policytool.airflow.tasks.exact_match_refs_operator import ExactMatchRefsOperator
 
 
 ORGANISATIONS = [
@@ -24,8 +25,21 @@ ORGANISATIONS = [
 ]
 
 MIN_TITLE_LENGTH = 40
-SHOULD_MATCH_THRESHOLD = 80 
+SHOULD_MATCH_THRESHOLD = 80
 SCORE_THRESHOLD = 50
+
+
+def to_s3_key(dag, prefix, *args):
+    """ Returns the S3 URL for any output of the DAG, from the prefix key
+    (policytool or datalabs). """
+    components, suffix = args[:-1], args[-1]
+    path = '/'.join(components)
+    slug = '-'.join(components)
+    return (
+        '{{ conf.get("core", "%s_s3_prefix") }}'
+        '/output/%s/%s/%s%s'
+    ) % (dag.dag_id, prefix, path, slug, suffix)
+
 
 args = {
     'depends_on_past': False,
@@ -35,9 +49,23 @@ args = {
 }
 
 dag = DAG(
-    dag_id='policytool_dag',
+    dag_id='policytool',
     default_args=args,
     schedule_interval='0 0 * * 0'
+)
+
+epmc_metadata_key = to_s3_key(
+    dag,
+    'datalabs'
+    'epmc-metadata',
+    '.json.gz'
+)
+
+fetch_epmc_task = FetchEPMCMetadata(
+    src_s3_key=epmc_metadata_key,
+    es_host='elasticsearch',
+    es_port='9200',
+    dag=dag
 )
 
 for organisation in ORGANISATIONS:
@@ -89,9 +117,9 @@ for organisation in ORGANISATIONS:
             organisation=organisation
         )
     )
-    extractRefs = ExtractRefsOperator(
+    extract_refs = ExtractRefsOperator(
         task_id='extract_refs',
-        model_path=parser_model,
+        model_path='{{ conf.get("core", "datalabs_s3_prefix") }}',
         src_s3_key=parsed_pdf_file,
         dst_s3_key=extracted_refs_path,
         dag=dag
@@ -99,7 +127,7 @@ for organisation in ORGANISATIONS:
     extract_refs.set_upstream(pdfParsing)
 
     fm_references_path = os.path.join(
-        output_path
+        output_path,
         'policytool-extract',
         'fuzzy-match-refs-{organisation}.json.gz'.format(organisation=organisation)
     )
@@ -112,10 +140,10 @@ for organisation in ORGANISATIONS:
         should_match_threshold=SHOULD_MATCH_THRESHOLD,
         dag=dag
     )
-    fmMatching.set_upstream(extractRefs)
+    fmMatching.set_upstream(extract_refs)
     for year in range(2000,2019):
         em_references_path = os.path.join(
-            output_path
+            output_path,
             'policytool-extract',
             'exact-match-refs-{organisation}-{year}.json.gz'.format(
                 organisation=organisation,

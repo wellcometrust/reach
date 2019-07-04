@@ -3,7 +3,7 @@ Operator to run the web scraper on every organisation.
 """
 import os
 import logging
-import scraper.wsf_scraping.settings
+import policytool.scraper.wsf_scraping.settings
 
 from airflow.models import BaseOperator
 from airflow.utils.decorators import apply_defaults
@@ -50,7 +50,7 @@ class RunSpiderOperator(BaseOperator):
             'SCRAPY_SETTINGS_MODULE',
             'scraper.wsf_scraping.settings'
         )
-        scraper.wsf_scraping.settings.FEED_URI = 'manifests3://{path}'.format(
+        policytool.scraper.wsf_scraping.settings.FEED_URI = 'manifests3://{path}'.format(
             path=self.path
         )
 
