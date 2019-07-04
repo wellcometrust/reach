@@ -5,11 +5,12 @@ e.g. python evaluate_algo.py --verbose True
 from argparse import ArgumentParser
 import os
 import json
-import pandas as pd
 from os import listdir 
 from datetime import datetime
 from urllib.parse import urlparse
 from collections import defaultdict
+
+import pandas as pd
 
 from policytool.refparse.utils import FileManager
 from policytool.refparse.algo_evaluation.evaluate_settings import settings
@@ -46,7 +47,7 @@ def yield_section_data(scrape_pdf_location, sections_location):
                 section_text = get_text('{}.txt'.format(section_path))
                 yield pdf_hash, section_name, section_text
 
-def load_pubs_json(pubs_file, total_N):
+def yield_pubs_json(pubs_file, total_N):
 
     # ==== Load data to evaluate matching: ====
 
@@ -158,10 +159,10 @@ if __name__ == '__main__':
         settings.FOLDER_PREFIX,
         settings.EVAL_PUB_DATA_FILE_NAME
         )
-    evaluation_references = load_pubs_json(
-        pubs_file,
-        settings.EVAL_MATCH_NUMBER
+    evaluation_references = [p for p in yield_pubs_json(
+        pubs_file, settings.EVAL_MATCH_NUMBER
         )
+    ]
     evaluation_references = pd.DataFrame(evaluation_references)
     
     # Load the latest parser model

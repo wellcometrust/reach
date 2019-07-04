@@ -10,30 +10,31 @@ from sklearn.metrics import (
     f1_score, recall_score, precision_score
     )
 
-from policytool.refparse.evaluate_algo import load_pubs_json
-
+from policytool.refparse.evaluate_algo import yield_pubs_json
 from policytool.refparse.utils import FuzzyMatcher
 
 def get_matches(evaluation_references, sample_N):
 
     # Take a random sample of the evaluation references to find matches for
-    match_data = evaluation_references.sample(n = sample_N, random_state = 0)
+    match_data = evaluation_references.sample(n = sample_N*2, random_state = 0).reset_index() 
     match_data['Title'] = match_data['title']
 
-    evaluation_references_negative = evaluation_references.loc[
-        ~evaluation_references['uber_id'].isin(match_data['uber_id'])
+    match_data_positive = match_data.iloc[0:sample_N]
+    match_data_negative = match_data.iloc[sample_N:]
+
+    evaluation_references_without_negative = evaluation_references.loc[
+        ~evaluation_references['uber_id'].isin(match_data_negative['uber_id'])
         ]
-    
-    fuzzy_matcher_positive = FuzzyMatcher(evaluation_references, -1)
-    fuzzy_matcher_negative = FuzzyMatcher(evaluation_references_negative, -1)
 
-    matched_publications_positive = fuzzy_matcher_positive.match_vectorised(match_data)
-    matched_publications_negative = fuzzy_matcher_negative.match_vectorised(match_data)
+    fuzzy_matcher = FuzzyMatcher(evaluation_references_without_negative, -1)
 
-    matched_publications_positive['Match Type'] = ["Positive"]*sample_N
-    matched_publications_negative['Match Type'] = ["Negative"]*sample_N
-    eval_references = pd.concat([matched_publications_positive, matched_publications_negative])
+    match_data_pos_neg = pd.concat([match_data_positive, match_data_negative])
+    eval_references = pd.DataFrame()
+    for i, ref in match_data_pos_neg.iterrows():
+        eval_references = pd.concat([eval_references, fuzzy_matcher.match_vectorised(ref)])
+
     eval_references["Title Length"] = [len(title) for title in eval_references["Title"]]
+    eval_references["Match Type"] = ["Positive"]*sample_N + ["Negative"]*sample_N
 
     return eval_references
 
@@ -187,7 +188,10 @@ if __name__ == '__main__':
         "and getting match evaluation data for",
         "a random {} of these =====".format(sample_N)
         )
-    evaluation_references = load_pubs_json(empc_file, total_N)
+    evaluation_references = [p for p in yield_pubs_json(
+        empc_file, total_N
+        )
+    ]
     evaluation_references = pd.DataFrame(evaluation_references)
 
     eval_references = get_matches(evaluation_references, sample_N)
