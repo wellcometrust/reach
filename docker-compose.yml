@@ -6,12 +6,13 @@ x-airflow-image: &airflow-image
 x-airflow_env: &airflow-env
   AIRFLOW_HOME: /airflow
 
-  # AIRFLOW_CONN_DIMENSIONS_DEFAULT: "https://${DIMENSIONS_USERNAME}:${DIMENSIONS_PASSWORD}@app.dimensions.ai/api/"
+
 
   # S3 prefix for all datalabs operators.
   # (in `core` because we must be in an existing section of the cfg)
-  AIRFLOW__CORE__DATALABS_S3_PREFIX: "s3://datalabs-dev/policytool-airflow" # No trailing /!
-  # AIRFLOW__CORE__DATALABS_ALTERYX_PREFIX: "s3://datalabs-staging/alteryx" # No trailing /!
+  AIRFLOW__CORE__POLICYTOOL_S3_PREFIX: "s3://datalabs-dev/policytool-airflow" # No trailing /!
+  AIRFLOW__CORE__DATALABS_S3_PREFIX: "s3://datalabs-dev/airflow" # No trailing /!
+
 
   # dev creds encryption key, cf.
   # https://airflow.readthedocs.io/en/stable/howto/secure-connections.html
@@ -26,20 +27,16 @@ x-airflow_env: &airflow-env
   AWS_ACCESS_KEY_ID: "${AWS_ACCESS_KEY_ID}"
   AWS_SECRET_ACCESS_KEY: "${AWS_SECRET_ACCESS_KEY}"
 
-  # For local dev, also send task logs to stderr.
-  # no longer needed once we're on current airflow
-  # AIRFLOW__CORE__LOGGING_CONFIG_CLASS: "scraper.airflow.logging_config.CONSOLE_LOGGING_CONFIG"
-
   DATALABS_AIRFLOW_VERSION: "localdev"
-
   SENTRY_DSN: "${SENTRY_DSN}"
+
   DATABASE_URL: "postgresql://postgres:development@postgres:5432/wsf_scraping"
   RESOURCES_FILES: "/src/policytool/resources/"
 
 x-airflow-volumes: &airflow-volumes
   - ./policytool/airflow/airflow.cfg:/airflow/airflow.cfg
   - ./policytool/airflow/initdb.sh:/airflow/initdb.sh
-  - ./policytool:/src/policytool/policytool
+  - ./policytool:/src/policytool
   - ./build/airflow.db:/airflow/db
 
 # Restart airflow several times in case the DB wasn't present.
@@ -85,12 +82,12 @@ services:
     volumes:
       - esdata:/usr/share/elasticsearch/data
 
-  kibana:
-    image: docker.elastic.co/kibana/kibana:7.0.0
-    ports:
-      - 127.0.0.1:5601:5601
-    environment:
-      ELASTICSEARCH_HOSTS: "http://elasticsearch:9200"
+  # kibana:
+  #   image: docker.elastic.co/kibana/kibana:7.0.0
+  #   ports:
+  #     - 127.0.0.1:5601:5601
+  #   environment:
+  #     ELASTICSEARCH_HOSTS: "http://elasticsearch:9200"
 
   airflow-scheduler:
     image: *airflow-image
@@ -98,7 +95,7 @@ services:
       <<: *airflow-env
       POSTGRES_DSN: "postgresql://postgres:development@postgres:5432/airflow?connect_timeout=20"
     command:
-      - /src/policytool/policytool/scraper/pg_isready.py
+      - /src/policytool/scraper/pg_isready.py
       - sh
       - "-cx"
       - "/airflow/initdb.sh && exec airflow scheduler"
@@ -118,7 +115,7 @@ services:
       # in place.
       # Thus pg_isready.py, and with a longer success-secs than
       # airflow-scheduler.
-      - /src/policytool/policytool/scraper/pg_isready.py
+      - /src/policytool/scraper/pg_isready.py
       - "--timeout=30"
       - "--success-secs=8"  # allow extra time for initdb to get started
       - airflow
@@ -157,8 +154,8 @@ services:
       - --reload
       - policytool.web.wsgi:application
     volumes:
-      - ./policytool/web:/src/policytool/policytool/web/
-      - ./policytool/scraper:/src/policytool/policytool/scraper/
+      - ./policytool/web:/src/policytool/web/
+      - ./policytool/scraper:/src/policytool/scraper/
       - ./build/web:/build/web
 
   # TODO: run gulp watch with the right volumes in place

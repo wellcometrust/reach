@@ -9,3 +9,6 @@ build/*
 *.json
 *.pdf
 *.txt
+policytool/build
+policytool/crawls
+policytool/results/*
