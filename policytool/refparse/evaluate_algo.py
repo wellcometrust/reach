@@ -222,10 +222,18 @@ if __name__ == '__main__':
         eval5_scores
         ]
 
+    eval_names = [
+        "How well the scraper predicted a references section to exist",
+        "How well the scraper predicted the references text",
+        "How well the splitter predicted how many references there were",
+        "How well the parser predicted reference component texts",
+        "How well the matcher matched references"
+    ]
+
     if eval(args.verbose):
         for i, evals in enumerate(eval_scores_list):
             log_file.write(
-                "\n-----Information about evaluation {}:-----\n".format(i+1)
+                "\n-----{}:-----\n".format(eval_names[i])
             )
             [
                 log_file.write(
@@ -234,7 +242,7 @@ if __name__ == '__main__':
             ]
     else:
         for i, evals in enumerate(eval_scores_list):
-            log_file.write("\nScore for evaluation {}:\n".format(i+1))
+            log_file.write("\n{} - Score:\n".format(eval_names[i]))
             log_file.write("{}\n".format(round(evals['Score'],2)))
 
     log_file.close()

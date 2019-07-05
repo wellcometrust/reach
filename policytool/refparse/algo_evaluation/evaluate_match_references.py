@@ -80,6 +80,7 @@ def evaluate_metric(actual, predicted):
 
     metrics = {
         'Score' : f1,
+        'Number of references in sample' : len(actual),
         'Micro average F1-score' : f1,
         'Micro average recall' : recall,
         'Micro average precision' : precision,

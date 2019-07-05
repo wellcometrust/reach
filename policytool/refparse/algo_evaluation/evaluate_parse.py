@@ -43,16 +43,24 @@ def evaluate_metric(
     accuracy_quite_equal_cat = quite_equal.mean()
     accuracy_quite_equal = quite_equal.values.mean()
 
+    number_sample = (actual_categories!="").sum()
     metrics = {
         'Score' : accuracy,
+        'Number of references in sample' : len(actual_categories),
+        'Number of non-blank reference components' :\
+            number_sample.sum(),
+        'Number of non-blank reference components for each category' :\
+            number_sample,
         'Strict accuracy (micro)': accuracy,
         'Strict accuracy (per category)': accuracy_cat,
-        'Lenient accuracy (micro)\
-        (normalised Levenshtein < {})'.format(levenshtein_threshold) :\
-            accuracy_quite_equal,
-        'Lenient accuracy (per category)\
-        (normalised Levenshtein < {}) ()'.format(levenshtein_threshold) :\
-            accuracy_quite_equal_cat,
+        'Lenient accuracy (micro)'+
+        '(normalised Levenshtein < {})'.format(
+            levenshtein_threshold
+            ) : accuracy_quite_equal,
+        'Lenient accuracy (per category)'+
+        '(normalised Levenshtein < {})'.format(
+            levenshtein_threshold
+            ) : accuracy_quite_equal_cat,
         'Mean normalised Levenshtein distance (all categories)' :\
             lev_dist.mean().mean(),
         'Mean normalised Levenshtein distance (per category)' :\

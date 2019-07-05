@@ -185,6 +185,7 @@ def evaluate_metric_quality(scrape_data, levenshtein_threshold):
 
     metrics = {
         'Score' : np.mean(equal),
+        'Number of documents in sample' : len(scrape_data),
         'Mean normalised Levenshtein distance' : np.mean(lev_distances),
         'Strict accuracy (micro)' : np.mean(equal),
         'Lenient accuracy (micro)' : np.mean(quite_equal)}

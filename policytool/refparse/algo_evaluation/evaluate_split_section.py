@@ -47,15 +47,17 @@ def evaluate_metrics(actual_pred_num_references, threshold):
     median_diff = calc_med_metric(actual_pred_num_references['diff_metric'])
     below_threshold = calc_bel_metric(actual_pred_num_references['diff_metric'], threshold)
     grouped_source_metrics = actual_pred_num_references.groupby('Source')['diff_metric'].agg({
+        'Number of reference sections in sample': lambda x: len(x),
         'Median difference': lambda x: calc_med_metric(x),
         'Percentage below threshold of {}'.format(threshold) : lambda x : calc_bel_metric(x, threshold)
     })
 
     metrics = {
         'Score' : below_threshold,
+        'Number of reference sections in sample' : len(actual_pred_num_references),
         'Percentage below threshold of {}'.format(threshold) : below_threshold,
         'Median difference' : median_diff,
-        'Metrics grouped by source' : grouped_source_metrics
+        'Metrics grouped by source' : grouped_source_metrics.T
         }
 
     return metrics
