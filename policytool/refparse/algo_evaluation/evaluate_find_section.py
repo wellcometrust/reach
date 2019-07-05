@@ -18,12 +18,14 @@ def pretty_confusion_matrix(actual_data, predict_data, labels):
         )
     return pretty_conf
 
-def evaluate_metric_scraped(actual, predicted, sections, files):
+def evaluate_metric_scraped(actual, predicted, sections, files, providers):
     """
     Input:
         actual : a boolean list of whether section text was in the pdf
         predicted : a boolean list of whether section text was scraped
         sections : a list of the section names for each actual/predicted pair
+        files : a list of the pdf names
+        providers : a list of the providers where each pdf came from
     Output:
         Various metrics for how accurately the scraper scraped a
         section or not, no comment on how good the scrape was though
@@ -31,10 +33,92 @@ def evaluate_metric_scraped(actual, predicted, sections, files):
 
     similarity = round(f1_score(actual, predicted, average='micro'), 3)
 
+    combined_data = pd.DataFrame({
+        'Actual' : actual,
+        'Predicted' : predicted,
+        'Section' : sections,
+        'Files' : files, 
+        'Provider' : providers
+        })
+
+    all_providers = list(set(providers))
+
+    get_num_pdfs = lambda x: len(x["Files"].unique())
+    get_num_pdfs_text = lambda x: len(x[x["Actual"]==True]["Files"].unique())
+    get_prop_text = lambda x: round(sum(x["Actual"]==True) / len(x), 3)
+    get_f1 = lambda x: round(
+        f1_score(
+            list(x["Actual"]),
+            list(x["Predicted"]),
+            average='micro'
+            ),
+        3
+        )
+    
+    grouped_provider = combined_data.groupby("Provider")
+
+    n_by_prov = grouped_provider.apply(get_num_pdfs)
+    n_text_by_prov = grouped_provider.apply(get_num_pdfs_text)
+    prop_text_by_prov = round(n_text_by_prov/n_by_prov, 3)
+    f1_by_prov = grouped_provider.apply(get_f1)
+
+    grouped_provider_section = combined_data.groupby(["Provider","Section"])
+
+    n_text_by_sect = grouped_provider_section.apply(get_num_pdfs_text)
+    prop_text_by_sect = grouped_provider_section.apply(get_prop_text)
+    f1_by_sect = grouped_provider_section.apply(get_f1)
+
+    metrics_by_prov = pd.concat(
+        [n_by_prov, n_text_by_prov, prop_text_by_prov, f1_by_prov],
+        axis = 1
+        )
+    metrics_by_prov.columns = [
+        "Number of pdfs included",
+        "Number of pdfs with sections text",
+        "Proportion of pdfs with sections text",
+        "F1 score for all sections included"
+        ]
+
+    trans_n_text_by_sect = pd.DataFrame(
+        [n_text_by_sect[provider] for provider in all_providers],
+        index = all_providers
+        )
+    trans_n_text_by_sect.columns = [
+        'Number of pdfs with a {} section'.format(b)\
+        for b in trans_n_text_by_sect.columns
+        ]
+    trans_prop_text_by_sect = pd.DataFrame(
+        [prop_text_by_sect[provider] for provider in all_providers],
+        index = all_providers
+        )
+    trans_prop_text_by_sect.columns = [
+        'Proportion with a {} section'.format(b)\
+        for b in trans_prop_text_by_sect.columns
+        ]
+    trans_f1_by_sect = pd.DataFrame(
+        [f1_by_sect[provider] for provider in all_providers],
+        index = all_providers
+        )
+    trans_f1_by_sect.columns = [
+        'F1 score for the {} section'.format(b)\
+        for b in trans_f1_by_sect.columns
+        ]
+
+    provider_metrics = pd.concat(
+        [metrics_by_prov, trans_n_text_by_sect,
+        trans_prop_text_by_sect, trans_f1_by_sect],
+        axis = 1
+        )
+    provider_metrics = (provider_metrics.T).to_string()
+
     metrics = {
         'Score' : similarity,
         'F1-score' : similarity,
+        'Metrics by provider' : provider_metrics,
         'Number of unique pdfs' : len(set(files)),
+        'Number of pdfs with a section text' : len(
+            set([f for (f,a) in zip(files, actual) if a])
+            ),
         'Classification report' : classification_report(actual, predicted),
         'Confusion matrix' : pretty_confusion_matrix(
                 actual, predicted, [True, False]
@@ -162,7 +246,8 @@ def scrape_process_pdf(
 
 
 def evaluate_find_section(
-        evaluate_find_section_data, scrape_pdf_location, levenshtein_threshold
+        evaluate_find_section_data, provider_names,
+        scrape_pdf_location, levenshtein_threshold
         ):
 
     # Get the predicted text for each of the pdf sections for each pdf
@@ -172,14 +257,17 @@ def evaluate_find_section(
     scrape_data = []
     for pdf_name, actual_texts in evaluate_find_section_data.items():
         scrape_data.extend(
-            scrape_process_pdf(section_names, pdf_name, scrape_pdf_location, actual_texts)
-            ) 
+            scrape_process_pdf(
+                section_names, pdf_name, scrape_pdf_location, actual_texts
+                )
+            )
 
     eval1_scores = evaluate_metric_scraped(
         [pred_section['Actual text']!='' for pred_section in scrape_data],
         [pred_section['Predicted text']!='' for pred_section in scrape_data],
         [pred_section['Section'] for pred_section in scrape_data],
-        [pred_section['File'] for pred_section in scrape_data]
+        [pred_section['File'] for pred_section in scrape_data],
+        [provider_names[pred_section['File']] for pred_section in scrape_data]
         )
 
     eval2_scores = evaluate_metric_quality(

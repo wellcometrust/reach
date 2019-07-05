@@ -1,121 +1,135 @@
-# Wellcome Policy Tool
+# Wellcome Reach
 
-Policy Tool is an open source service for discovering how research
+Wellcome Reach is an open source service for discovering how research
 publications are being cited in global policy documents, including those
 produced by policy organizations such as the WHO, MSF, and the UK
 government. Key parts of it include:
 
-1. Web scrapers for pulling PDF documents from policy organizations,
+1. Web scrapers for pulling PDF "policy documents" from policy
+   organizations,
 1. A reference parser for extracting references from these documents,
-1. A task for sourcing publications from EuropePMC,
-1. A task for matching references to publications, and
-1. An Airflow installation for automating web scraping, reference
-   parsing, publication sourcing, and reference matching.
+1. A task for sourcing publications from Europe PMC (EPMC),
+1. A task for matching policy document references to EPMC publications,
+1. An Airflow installation for automating the above tasks, and
+1. A web application for searching and retrieving data from the datasets
+   produced above.
 
-Work on a REST API and minimal search interface are forthcoming in early
-Q2 2019.
+Wellcome Reach is written in Python and developed using docker-compose.
 
-Policy Tool is written in Python and developed using docker-compose. Key
-dependencies are:
-
-- a Kubernetes cluster that supports persistent volumes
-- a PostgreSQL or MySQL database for Airflow to use
-- a distributed storage service such as S3
-- (soon) an ElasticSearch cluster for searching documents
-
-Although parts of the Policy Tool have been in use at Wellcome since
+Although parts of the Wellcome Reach have been in use at Wellcome since
 mid-2018, the project has only just gone open source starting in March
 2019. Given these early days, please be patient as various parts of it
 are made accessible to external users. All issues and pull requests
 are welcome. Contributing guidelines can be found in
 [CONTRIBUTING.md](./CONTRIBUTING.md).
 
+## Development
+
 ### Dependencies
+
 To develop for this project, you will need:
-1. Python 3.5 or higher and `virtualenv`
+
+1. Python 3.6+, plus `pip` and `virtualenv`
 1. Docker and docker-compose
-1. AWS credentials
-1. A clean json file containing reference sections
-1. A clean csv file containing all your references
+1. AWS credentials with read/write S3 permissions.
+1. A clean json file containing reference sections (TODO: remove this by
+   pulling from a public S3 bucket by default)
+1. A clean csv file containing all your references (TODO: remove this by
+   pulling from a public S3 bucket by default)
 
-Once you have everything installed, run:
-  * `make virtualenv`
-  * `source build/virtualenv/bin/activate`
+### docker-compose
 
-### Starting docker-compose given you have Wellcome creds
+To bring up the development environment using docker:
 
-```
-eval $(./export_env.py)
-docker-compose up -d
-```
+1. Set your AWS credentials into your environment. (`AWS_ACCESS_KEY_ID` and `AWS_SECRET_ACCESS_KEY`)
+1. If you don't have Wellcome IAM creds, run: (TODO: remove this step)
+    ```
+    export 
+        DIMENSIONS_USERNAME="" \
+        DIMENSIONS_PASSWORD="" \
+        AIRFLOW_FERNET_KEY=""
+    ```
+1. If you do, simply run:
+    ```
+    eval $(./export_env.py)
+    ```
+1. Build and start the env with:
+    ```
+    make docker-build
+    docker-compose up -d
+    ```
+1. Verify came up with:
+    ```
+    docker-compose ps
+    ```
 
-### Running a task
+Once up, you'll be able to access:
 
-```
+- airflow on http://localhost:8080/
+- Elasticsearch on http://localhost:9200/
+- the website on http://localhost:8081/
 
-```
 
+### virtualenv
 
-## airflow
-
-See [wsf-web-scraper/README.md](wsf-web-scraper/README.md).
-
-## Wellcome Reference Parser
-
-The top-level files in this repo currently hold Policy Tool's reference
-parser, which uses a home trained model to identify components from a
-set of scraped reference sections and to find those directly related to
-Wellcome.
-
-## How to use it
-
-Make an output folder `output_folder_name` and run `refparse.py` with arguments of your file locations, e.g. for msf in the terminal run:
-
-```
-mkdir -p ./tmp/parser-output/output_folder_name
-
-python ./refparse.py \
-    --scraper-file "s3://datalabs-data/scraper-results/msf/20190117.json" \
-    --references-file "file://./references_folder/references_file.csv" \
-    --model-file "s3://datalabs-data/reference_parser_models/reference_parser_pipeline.pkl" \
-    --output-url "file://./tmp/parser-output/output_folder_name"
-```
-
-If the `scraper_file`, `references_file`, `model_file`, arguments are to S3 locations then make sure these start with `s3://`, otherwise file names are assumed to be locally stored. If the `output_url` argument is to a local location, then make sure it begins with `file://`, otherwise it is assumed to be from a database.
-
-### Merging results
-The parsed and matched references from each documents are saved in a separate file in the output folder. You can merge all of them together by running
-```
-python merge_results.py \
-    --references-file "file://./references_folder/references_file.csv" \
-    --output-url  "./tmp/parser-output/output_folder_name"
-```
-
-### Wellcome only
-
-If you would like to run the parser for the latest scraped files and to save the output locally, then run the following:
-```
-python parse_latest.py msf \
-    --references-file "s3://datalabs-data/wellcome_publications/uber_api_publications.csv" \
-    --output-url "file://./tmp/parser-output"
-```
-
-If you want to specify the arguments for the other inputs then you can, otherwise default values will be given:
+For local development outside of airflow or other services, just use the
+project's virtualenv:
 
 ```
-python ./parse_latest.py msf \
-    --references-file "s3://datalabs-data/wellcome_publications/uber_api_publications.csv" \
-    --model-file "s3://datalabs-data/reference_parser_models/reference_parser_pipeline.pkl" \
-    --output-url "file://./tmp/parser-output/output_folder_name"
+make virtualenv
+source build/virtualenv/bin/activate
 ```
 
-Warning that this could take some time.
 
-## Unit testing
-You can run the unittests for this project by running:
-`make docker-test`
+### Testing
 
-This will test that your last changes didn't affect how the program works.
+To run all tests for the project using the official Python version and
+other dependencies, run:
+
+```
+make docker-test
+```
+
+You can also run tests locally using the project's virtualenv, with
+
+```
+make test
+```
+
+or using the appropriate pytest command, as documented in `Makefile`.
+
+
+### Airflow
+
+Wellcome Reach uses Apache Airflow to automate running its data
+pipelines. Specifically, we've broken down the batch pipeline into a
+series of dependent steps, all part of a Directed Acyclic Graph (DAG).
+
+
+#### Running a task in airflow
+
+It's quite common to want to run a single task in Airflow without having
+to click through in the UI, not least because all logging messages are
+then on the console. To do this, from top of the project directory:
+
+1. Bring up the stack with `docker-compose` as shown above, and
+1. Run the following command, substituting for `DAG_NAME`, `TASK_NAME`, and
+   `JSON_PARAMS`:
+    ```
+    ./docker_exec.sh airflow test \
+        ${DAG_NAME} ${TASK_NAME} \
+	    2018-11-02 -tp '${JSON_PARAMS}'
+    ```
+
+## Deployment
+
+For production, a typical deployment uses:
+
+- a Kubernetes cluster that supports persistent volumes
+- a PostgreSQL or MySQL database for Airflow to use
+- a distributed storage service such as S3
+- an ElasticSearch cluster for searching documents
+
 
 ## Evaluating each component of the algorithm
 
@@ -129,11 +143,17 @@ aws s3 cp --recursive s3://datalabs-data/policy_tool_tests algo_evaluation/data_
 ```
 and then running
 ```
-python evaluate_algo.py --verbose True
+python evaluate_algo.py
 ```
-(or set the verbose argument to False if you want less information about the evaluation to be printed).
+(or set the verbose argument to False (`python evaluate_algo.py --verbose False`) if you want less information about the evaluation to be printed).
 
 You can read more about how we got the evaluation data and what the evaluation results mean [here](docs/evaluation_data.md).
+
+## Further reading
+
+- [docs/README.md](docs/README.md)
+- [policytool/scraper/README.md](policytool/scraper/README.md)
+- [policytool/refparse/README.md](policytool/refparse/README.md)
 
 ## Contributing
 See the [Contributing guidelines](./CONTRIBUTING.md)

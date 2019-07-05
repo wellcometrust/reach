@@ -89,7 +89,7 @@ if __name__ == '__main__':
     logger.info('Starting evaluations...')
 
     log_file = open(
-        '{}/Evaluation results - {:%Y-%m-%d-%H%M}'.format(
+        '{}/Evaluation results - {:%Y-%m-%d-%H%M}.txt'.format(
             settings.LOG_FILE_PREFIX, now
         ), 'w'
     )
@@ -116,9 +116,19 @@ if __name__ == '__main__':
         settings.SCRAPE_DATA_REF_PDF_FOLDER_NAME
     )
 
+    provider_names = fm.get_file(
+        settings.SCRAPE_DATA_PROVIDERS_FILE_NAME,
+        settings.FOLDER_PREFIX,
+        'csv'
+    )
+    # Convert to dictionary for ease of use
+    provider_names = provider_names.set_index('file_hash')['name'].to_dict()
+
     evaluate_find_section_data = defaultdict(lambda: defaultdict(str))
     for pdf_hash, section_name, section_text in yield_section_data(
-        scrape_pdf_location, sections_location):
+            scrape_pdf_location, sections_location
+        ):
+
         evaluate_find_section_data[pdf_hash][section_name] = section_text
 
     # ==== Load data to evaluate split sections for evaluations 3: ====
@@ -178,6 +188,7 @@ if __name__ == '__main__':
     logger.info('main: Running evaluations 1 and 2')                     
     eval1_scores, eval2_scores = evaluate_find_section(
         evaluate_find_section_data,
+        provider_names,
         scrape_pdf_location,
         settings.LEVENSHTEIN_DIST_SCRAPER_THRESHOLD
     )
