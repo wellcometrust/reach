@@ -6,8 +6,7 @@ import numpy as np
 import os.path
 import sys
 
-sys.path.append("..")
-from pdf_parser.pdf_parse import parse_pdf_document, grab_section
+from policytool.pdf_parser.pdf_parse import parse_pdf_document, grab_section
 
 
 def pretty_confusion_matrix(actual_data, predict_data, labels):
@@ -231,6 +230,9 @@ def scrape_process_pdf(
         scrape_data : a list of dicts with the predicted and actual texts for
             each of the sections we looked for in the pdf
     """
+    if os.path.splitext(pdf_name)[1] == ".pdf":
+        pdf_name = os.path.splitext(pdf_name)[0]
+
     with open('{}/{}.pdf'.format(scrape_pdf_location, pdf_name), 'r') as f:
         pdf_file, full_text = parse_pdf_document(f)
         scrape_data = []

@@ -59,3 +59,25 @@ python ./parse_latest.py msf \
 
 Warning that this could take some time.
 
+## Evaluating each component of the algorithm
+
+We have devised some evaluation data in order to evaluate 5 steps of the model. The results can be calculated by first installing poppler
+```
+brew install poppler
+```
+and then downloading the evaluation data from [here](https://s3-eu-west-1.amazonaws.com/datalabs-data/policy_tool_tests) and storing it in `algo_evaluation/data_evaluate/`, which can be done in the command line by running
+```
+aws s3 cp --recursive s3://datalabs-data/policy_tool_tests algo_evaluation/data_evaluate/
+```
+and
+```
+aws s3 cp s3://datalabs-staging/airflow/output/open-research/epmc-metadata/epmc-metadata.json.gz algo_evaluation/data_evaluate/epmc-metadata.json.gz
+gunzip epmc-metadata.json.gz
+```
+and finally running
+```
+python evaluate_algo.py --verbose True
+```
+(or set the verbose argument to False if you want less information about the evaluation to be printed).
+
+You can read more about how we got the evaluation data and what the evaluation results mean [here](algo_evaluate/evaluation_data.md).

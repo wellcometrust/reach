@@ -4,17 +4,20 @@ e.g. python evaluate_algo.py --verbose True
 
 from argparse import ArgumentParser
 import os
+import json
 from os import listdir 
 from datetime import datetime
 from urllib.parse import urlparse
 from collections import defaultdict
 
-from utils import FileManager
-from algo_evaluation.evaluate_settings import settings
-from algo_evaluation.evaluate_find_section import evaluate_find_section
-from algo_evaluation.evaluate_split_section import evaluate_split_section
-from algo_evaluation.evaluate_parse import evaluate_parse
-from algo_evaluation.evaluate_match_references import evaluate_match_references
+import pandas as pd
+
+from policytool.refparse.utils import FileManager
+from policytool.refparse.algo_evaluation.evaluate_settings import settings
+from policytool.refparse.algo_evaluation.evaluate_find_section import evaluate_find_section
+from policytool.refparse.algo_evaluation.evaluate_split_section import evaluate_split_section
+from policytool.refparse.algo_evaluation.evaluate_parse import evaluate_parse
+from policytool.refparse.algo_evaluation.evaluate_match_references import evaluate_match_references
 
 
 def get_text(filepath):
@@ -43,6 +46,25 @@ def yield_section_data(scrape_pdf_location, sections_location):
                 section_path = os.path.join(sections_location, section_name, pdf_hash)
                 section_text = get_text('{}.txt'.format(section_path))
                 yield pdf_hash, section_name, section_text
+
+def yield_pubs_json(pubs_file, total_N):
+
+    # ==== Load data to evaluate matching: ====
+
+    output_cols = ['title', 'pmid']
+    with open(pubs_file, "r") as f:
+        references = []
+        for i, line in enumerate(f):
+            if i >= total_N:
+                break
+            reference = json.loads(line)
+            if all([output_col in reference for output_col in output_cols]):
+                yield {
+                    'Document id': i,
+                    'title': reference['title'],
+                    'Reference id':  reference['pmid'],
+                    'uber_id':  reference['pmid']
+                }
 
 def create_argparser():
     parser = ArgumentParser()
@@ -76,13 +98,12 @@ if __name__ == '__main__':
         'Date of evaluation = {:%Y-%m-%d-%H%M}\n'.format(now)
     )
 
-    logger.info('Reading files...')
+    logger.info('main: Reading files...')
     fm = FileManager()
 
     # ==== Load data to evaluate scraping for evaluations 1 and 2: ====
-    logger.info('[+] Reading {}'.format(
+    logger.info('main: Reading %s',
         settings.SCRAPE_DATA_PDF_FOLDER_NAME
-        )
     )
 
     scrape_pdf_location = os.path.join(
@@ -107,10 +128,11 @@ if __name__ == '__main__':
     for pdf_hash, section_name, section_text in yield_section_data(
             scrape_pdf_location, sections_location
         ):
+
         evaluate_find_section_data[pdf_hash][section_name] = section_text
 
     # ==== Load data to evaluate split sections for evaluations 3: ====
-    logger.info('[+] Reading {}'.format(settings.NUM_REFS_FILE_NAME))
+    logger.info('main: Reading %s', settings.NUM_REFS_FILE_NAME)
     evaluate_split_section_data = fm.get_file(
         settings.NUM_REFS_FILE_NAME,
         settings.FOLDER_PREFIX,
@@ -130,7 +152,7 @@ if __name__ == '__main__':
         ]
 
     # ==== Load data to evaluate parse for evaluations 4: ====
-    logger.info('[+] Reading {}'.format(settings.PARSE_REFERENCE_FILE_NAME))
+    logger.info('main: Reading %s', settings.PARSE_REFERENCE_FILE_NAME)
     evaluate_parse_data = fm.get_file(
         settings.PARSE_REFERENCE_FILE_NAME,
         settings.FOLDER_PREFIX,
@@ -138,21 +160,21 @@ if __name__ == '__main__':
     )
 
     # ==== Load data to evaluate matching for evaluations 5: ====
-    logger.info('[+] Reading {}'.format(settings.EVAL_PUB_DATA_FILE_NAME))
-    evaluation_references = fm.get_file(
-        settings.EVAL_PUB_DATA_FILE_NAME,
-        settings.FOLDER_PREFIX,
-        'csv'
-    )
 
-    # Load WT publications to match references against
-    logger.info('[+] Reading {}'.format(settings.MATCH_PUB_DATA_FILE_NAME))
-    publications = fm.get_file(
-        settings.MATCH_PUB_DATA_FILE_NAME,
+    logger.info('main: Reading the first %d lines of %s',
+        settings.EVAL_MATCH_NUMBER,
+        settings.EVAL_PUB_DATA_FILE_NAME
+        )
+    pubs_file = os.path.join(
         settings.FOLDER_PREFIX,
-        'csv'
-    )
-
+        settings.EVAL_PUB_DATA_FILE_NAME
+        )
+    evaluation_references = [p for p in yield_pubs_json(
+        pubs_file, settings.EVAL_MATCH_NUMBER
+        )
+    ]
+    evaluation_references = pd.DataFrame(evaluation_references)
+    
     # Load the latest parser model
     model = fm.get_file(
         settings.MODEL_FILE_NAME,
@@ -160,10 +182,10 @@ if __name__ == '__main__':
         settings.MODEL_FILE_TYPE
     )
 
-    # ==== Get the evaluation metrics ====
+    # # ==== Get the evaluation metrics ====
     logger.info('\nStarting the evaluations...\n')
 
-    logger.info('[+] Running evaluations 1 and 2')                     
+    logger.info('main: Running evaluations 1 and 2')                     
     eval1_scores, eval2_scores = evaluate_find_section(
         evaluate_find_section_data,
         provider_names,
@@ -171,25 +193,26 @@ if __name__ == '__main__':
         settings.LEVENSHTEIN_DIST_SCRAPER_THRESHOLD
     )
 
-    logger.info('[+] Running evaluation 3')
+    logger.info('main: Running evaluation 3')
     eval3_scores = evaluate_split_section(
         evaluate_split_section_data,
         settings.ORGANISATION_REGEX,
         settings.SPLIT_SECTION_SIMILARITY_THRESHOLD
         )
 
-    logger.info('[+] Running evaluation 4')
+    logger.info('main: Running evaluation 4')
     eval4_scores = evaluate_parse(
         evaluate_parse_data,
         model,
         settings.LEVENSHTEIN_DIST_PARSE_THRESHOLD
         )
 
-    logger.info('[+] Running evaluation 5')
+    logger.info('main: Running evaluation 5')
     eval5_scores = evaluate_match_references(
-        publications,
         evaluation_references,
-        settings.FUZZYMATCH_THRESHOLD
+        settings.MATCH_THRESHOLD,
+        settings.LENGTH_THRESHOLD,
+        settings.EVAL_SAMPLE_MATCH_NUMBER
         )
 
     eval_scores_list = [
