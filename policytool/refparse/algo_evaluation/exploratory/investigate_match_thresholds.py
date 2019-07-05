@@ -29,11 +29,12 @@ def get_matches(evaluation_references, sample_N):
     fuzzy_matcher = FuzzyMatcher(evaluation_references_without_negative, -1)
 
     match_data_pos_neg = pd.concat([match_data_positive, match_data_negative])
-    eval_references = pd.DataFrame()
+    eval_references = []
     for i, ref in match_data_pos_neg.iterrows():
-        eval_references = pd.concat([eval_references, fuzzy_matcher.match_vectorised(ref)])
-
-    eval_references["Title Length"] = [len(title) for title in eval_references["Title"]]
+        match_ref = fuzzy_matcher.match(ref)
+        eval_references.append(match_ref)
+    eval_references = pd.DataFrame(eval_references)
+    eval_references["Title Length"] = [len(title) for title in eval_references["Extracted title"]]
     eval_references["Match Type"] = ["Positive"]*sample_N + ["Negative"]*sample_N
 
     return eval_references
@@ -55,11 +56,11 @@ def make_neg_pos_plots(eval_references, now):
     ]
     true_positive_matches = eval_references[
         (eval_references['Match Type']=="Positive") &
-        (eval_references['uber_id']==eval_references['Reference id'])
+        (eval_references['Matched publication id']==eval_references['Reference id'])
     ]
     false_positive_matches = eval_references[
         (eval_references['Match Type']=="Positive") &
-        (eval_references['uber_id']!=eval_references['Reference id'])    
+        (eval_references['Matched publication id']!=eval_references['Reference id'])    
     ]
 
     N = len(eval_references)/2
@@ -72,7 +73,7 @@ def make_neg_pos_plots(eval_references, now):
         {}".format(len(negative_matches)))
 
     print_percentiles(
-        negative_matches['Cosine_Similarity'], 95,
+        negative_matches['Similarity'], 95,
         "cosine similarities of the negative set"
     ) # Get rid of most of the TN
 
@@ -83,7 +84,7 @@ def make_neg_pos_plots(eval_references, now):
 
 
     print_percentiles(
-        negative_matches['Cosine_Similarity'], 99,
+        negative_matches['Similarity'], 99,
         "cosine similarities of the negative set"
     ) # Get rid of most of the TN
 
@@ -99,7 +100,7 @@ def make_neg_pos_plots(eval_references, now):
     ax1.set_ylabel('Frequency')
     ax1.set_xlim([0,1])
     plt.hist(
-        negative_matches['Cosine_Similarity'].to_list(),
+        negative_matches['Similarity'].to_list(),
         density=True, bins = 50, color = "r", alpha = 0.75
     )
     plt.savefig(figure_path) 
@@ -111,9 +112,8 @@ def make_neg_pos_plots(eval_references, now):
         of negative matches')
     ax1.set_xlabel('Title length')
     ax1.set_ylabel('Cosine Similarity')
-    plt.scatter(
-        [len(title) for title in negative_matches['Title']],
-        negative_matches['Cosine_Similarity'].to_list(),
+    plt.scatter(negative_matches['Title Length'],
+        negative_matches['Similarity'].to_list(),
         color = "r", alpha =0.5
     )
     plt.savefig(figure_path) 
@@ -123,12 +123,10 @@ def make_neg_pos_plots(eval_references, now):
     ax1.set_title('Title lengths true and false positives')
     ax1.set_xlabel('Title length')
     ax1.set_ylabel('Frequency')
-    plt.hist(
-        [len(title) for title in true_positive_matches['Title']],
+    plt.hist(true_positive_matches["Title Length"],
         density=True, bins = 50, color = "g", alpha = 0.75
     )
-    plt.hist(
-        [len(title) for title in false_positive_matches['Title']],
+    plt.hist(false_positive_matches["Title Length"],
         density=True, bins = 20, color = "m", alpha = 0.75
     )
     plt.legend(
@@ -143,7 +141,7 @@ def make_neg_pos_plots(eval_references, now):
 def get_predict_result(match, cosine_threshold, length_threshold):
 
     if (
-        match['Cosine_Similarity'] > cosine_threshold and 
+        match['Similarity'] > cosine_threshold and 
         match['Title Length'] > length_threshold
     ):
         prediction = "Positive"
@@ -182,7 +180,7 @@ if __name__ == '__main__':
         FOLDER_PREFIX, EVAL_PUB_DATA_FILE_NAME
         )
     total_N = 100000
-    sample_N = 10000
+    sample_N = 1000
 
     print("===== Loading {} lines of the EMPC data".format(total_N),
         "and getting match evaluation data for",
