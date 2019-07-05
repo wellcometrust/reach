@@ -8,6 +8,26 @@ from sklearn.metrics import classification_report, f1_score, recall_score, preci
 from policytool.refparse.utils import FuzzyMatcher
 
 def predict_match_data(matcher, match_data):
+    """
+    Input: 
+        matcher: A matcher object initialised
+                on a corpus of references (e.g. all of EPMC)
+        match_data: A pandas dataframe with the
+                references you want to find title matches for
+                in the corpus (e.g. references found in policy documents).
+                This must have a column called 'Title'
+                and two unique identifier columns 'Document id'
+                and 'Reference id'.
+    Output:
+        predictions: A dataframe of the reference matches found using
+                the matcher function. Each line will have 'Reference id'
+                from the match_data references, and if it matched a 
+                reference from the corpus references then the 'uber_id'
+                of this reference will be given. If there was no match
+                the uber_id column will be None. The 'Cosine Similarity'
+                column gives the score of how similar the matched 
+                reference titles are.
+    """
 
     predictions = []
     for i, ref in match_data.iterrows():
@@ -17,9 +37,24 @@ def predict_match_data(matcher, match_data):
     return predictions
 
 def evaluate_metric(actual, predicted):
+    """
+    Input:
+        actual: A list of the reference ids expected to be matched to
+                when a list of references were passed through the
+                matcher function. If no match is expected then this is None.
+        predicted: A list of the reference ids found to be matched
+                when a list of references were passed through the
+                matcher function. This is set to None if none
+                were found.
 
-    predicted_bin = [a==p for (a,p) in zip(actual, predicted)]
+    Output:
+        metrics: Various metrics for how similar these lists are.
+    """
+
+    # Convert the reference id lists to binary - for the match to be correct the
+    # two ids need to be the same, which includes if they are both None.
     actual_bin = [True if a else False for a in actual]
+    predicted_bin = [a==p for (a,p) in zip(actual, predicted)]
 
     f1 = round(f1_score(actual_bin, predicted_bin, average='micro'), 3)
     recall = round(recall_score(actual_bin, predicted_bin, average='micro'), 3)
@@ -35,11 +70,11 @@ def evaluate_metric(actual, predicted):
                 predicted_types.append("Incorrect match found")
         else:
             predicted_types.append("No match found")
-
-    df_pairs = pd.DataFrame(
+    actual_predicted_pairs = pd.DataFrame(
         [actual_types, predicted_types],
         index=["What did we expect?", "What did we find?"]
         ).T
+
     metrics = {
         'Score' : f1,
         'Micro average F1-score' : f1,
@@ -50,8 +85,8 @@ def evaluate_metric(actual, predicted):
             predicted_bin
             ),
         'Frequency table of match types' : pd.crosstab(
-            df_pairs["What did we find?"],
-            df_pairs["What did we expect?"]
+            actual_predicted_pairs["What did we find?"],
+            actual_predicted_pairs["What did we expect?"]
             )
         }
 

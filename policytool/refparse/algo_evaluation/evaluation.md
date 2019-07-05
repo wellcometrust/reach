@@ -53,12 +53,12 @@ abs(100*((predicted number - actual number) / actual number))
 
 ### Data
 - We selected the first 100,000 references from a list of EPMC publications ("epmc-metadata.json").
-- We randomly selected a sample 10,000 from these.
-- Each of the references from this sample were matched (using `FuzzyMatcher` from `policytool/refparse/utils`) against both the original 100,000 references, and against the original list with the sample list removed (i.e. 90,000 references). No thresholds were used in these matches. We record the title length and the cosine similarity during these matchings.
-- Thus we have a list of 20,000 reference matches, 10,000 where they should match exactly (actual = 'Positive'), and 10,000 where the second most similar reference should be matched (actual = 'Negative').
+- We randomly selected a sample 20,000 from these. The second 10,000 of these were removed from the full list of 100,000 references, leaving 90,000 references.
+- The references in the first 10,000 from the sample were matched (using `FuzzyMatcher` from `policytool/refparse/utils`) against the 90,000 references, and the seconf 10,000 from the sample were matched against the 90,000 references.
+- Thus we have a list of 20,000 reference matches, 10,000 where they should match exactly to themselves (and thus the match id is their own reference id), and 10,000 where there should be no match found (match id is None).
 
 ### Evaluation Score 5
-- We predict whether a match was found (predicted = 'Positive') or not (predicted = 'Negative') by asking was the cosine similarity over a threshold and was the title length over a threshold for each of the 20,000 matches.
+- We predict the matches for each of the 20,000 references returning a list of the reference ids that the references was found to match to (or None if no match was found).
 - We find the F1 score of these actual and predicted lists.
 - We also record whether the match found was correct or not, which can be found by comparing the uber ids of the reference and it's match. Thus we also return a classification report and the frequency table of match types.
 

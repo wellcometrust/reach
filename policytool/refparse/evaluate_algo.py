@@ -60,10 +60,10 @@ def yield_pubs_json(pubs_file, total_N):
             reference = json.loads(line)
             if all([output_col in reference for output_col in output_cols]):
                 yield {
-                'Document id': i,
-                'title': reference['title'],
-                'Reference id':  reference['pmid'],
-                'uber_id':  reference['pmid']
+                    'Document id': i,
+                    'title': reference['title'],
+                    'Reference id':  reference['pmid'],
+                    'uber_id':  reference['pmid']
                 }
 
 def create_argparser():
