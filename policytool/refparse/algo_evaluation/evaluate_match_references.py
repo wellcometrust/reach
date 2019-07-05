@@ -22,17 +22,20 @@ def predict_match_data(matcher, match_data):
         predictions: A dataframe of the reference matches found using
                 the matcher function. Each line will have 'Reference id'
                 from the match_data references, and if it matched a 
-                reference from the corpus references then the 'uber_id'
+                reference from the corpus references then the 'Matched publication id'
                 of this reference will be given. If there was no match
-                the uber_id column will be None. The 'Cosine Similarity'
+                the Matched publication id column will be None. The 'Cosine Similarity'
                 column gives the score of how similar the matched 
                 reference titles are.
     """
 
     predictions = []
     for i, ref in match_data.iterrows():
-        matched_publications = matcher.match_vectorised(ref)
-        predictions.append(matched_publications['uber_id'][0])
+        matched_publications = matcher.match(ref)
+        if matched_publications:
+            predictions.append(matched_publications['Matched publication id'])
+        else:
+            predictions.append(None)
 
     return predictions
 
@@ -93,7 +96,7 @@ def evaluate_metric(actual, predicted):
     return metrics
 
 def evaluate_match_references(
-        evaluation_references, match_threshold, sample_N
+        evaluation_references, match_threshold, length_threshold, sample_N
     ):
 
     # Take a random sample of the evaluation references to find matches for
@@ -107,7 +110,7 @@ def evaluate_match_references(
         ~evaluation_references['uber_id'].isin(match_data_negative['uber_id'])
         ]
 
-    fuzzy_matcher = FuzzyMatcher(evaluation_references_without_negative, match_threshold)
+    fuzzy_matcher = FuzzyMatcher(evaluation_references_without_negative, match_threshold, length_threshold)
 
     predictions = predict_match_data(
         match_data=pd.concat([match_data_positive, match_data_negative]),
