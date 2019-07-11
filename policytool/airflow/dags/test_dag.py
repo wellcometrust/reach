@@ -17,18 +17,6 @@ SHOULD_MATCH_THRESHOLD = 80
 SCORE_THRESHOLD = 50
 
 
-def to_s3_key(dag, prefix, *args):
-    """ Returns the S3 URL for any output of the DAG, from the prefix key
-    (policytool or datalabs). """
-    components, suffix = args[:-1], args[-1]
-    path = '/'.join(components)
-    slug = '-'.join(components)
-    return (
-        '{{ conf.get("core", "%s_s3_prefix") }}'
-        '/output/%s/%s/%s%s'
-    ) % (dag.dag_id, prefix, path, slug, suffix)
-
-
 args = {
     'depends_on_past': False,
     'start_date': airflow.utils.dates.days_ago(2),
@@ -42,18 +30,17 @@ dag = DAG(
     schedule_interval='0 0 * * 0'
 )
 
-epmc_metadata_key = to_s3_key(
-    dag,
-    'datalabs'
-    'epmc-metadata',
-    '.json.gz'
-)
+
+epmc_metadata_key = '/'.join([
+    '{{ conf.get("core", "datalabs_s3_prefix") }}',
+    'output', 'open-research', 'epmc-metadata', 'epmc-metadata.json.gz'
+])
 
 fetch_epmc_task = FetchEPMCMetadata(
     task_id=FetchEPMCMetadata.__name__,
     src_s3_key=epmc_metadata_key,
     es_host='elasticsearch',
-    max_epmc_metadata=500,
+    max_epmc_metadata=1000,
     dag=dag
 )
 
