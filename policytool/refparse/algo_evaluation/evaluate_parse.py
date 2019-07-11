@@ -44,27 +44,37 @@ def evaluate_metric(
     accuracy_quite_equal = quite_equal.values.mean()
 
     number_sample = (actual_categories!="").sum()
+
+
+    per_cat_metrics = pd.concat([
+        number_sample,
+        accuracy_cat,
+        accuracy_quite_equal_cat,
+        lev_dist.mean()
+        ], axis = 1)
+    per_cat_metrics.columns = [
+        'Number of non-blank reference components',
+        'Strict accuracy',
+        'Lenient accuracy'+
+            '(normalised Levenshtein < {})'.format(
+                levenshtein_threshold
+                ),
+        'Mean normalised Levenshtein distance'
+        ]
+
     metrics = {
         'Score' : accuracy,
         'Number of references in sample' : len(actual_categories),
         'Number of non-blank reference components' :\
             number_sample.sum(),
-        'Number of non-blank reference components for each category' :\
-            number_sample,
         'Strict accuracy (micro)': accuracy,
-        'Strict accuracy (per category)': accuracy_cat,
         'Lenient accuracy (micro)'+
         '(normalised Levenshtein < {})'.format(
             levenshtein_threshold
             ) : accuracy_quite_equal,
-        'Lenient accuracy (per category)'+
-        '(normalised Levenshtein < {})'.format(
-            levenshtein_threshold
-            ) : accuracy_quite_equal_cat,
         'Mean normalised Levenshtein distance (all categories)' :\
             lev_dist.mean().mean(),
-        'Mean normalised Levenshtein distance (per category)' :\
-            lev_dist.mean()
+        'Metrics per category': per_cat_metrics.T
     }
 
     return metrics
