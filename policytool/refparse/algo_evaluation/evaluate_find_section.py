@@ -107,22 +107,27 @@ def evaluate_metric_scraped(actual, predicted, sections, files, providers):
     provider_metrics = pd.concat(
         [metrics_by_prov, trans_n_text_by_sect,
         trans_prop_text_by_sect, trans_f1_by_sect],
-        axis = 1
+        axis = 1,
+        sort=True
         )
-    provider_metrics = (provider_metrics.T).to_string()
+    provider_metrics.reset_index(inplace=True)
+    provider_metrics.rename(columns={'index ': 'Provider'})
 
-    metrics = {
-        'Score' : similarity,
-        'F1-score' : similarity,
-        'Metrics by provider' : provider_metrics,
-        'Number of unique pdfs' : len(set(files)),
-        'Number of pdfs with a section text' : len(
+    n = len(set(files))
+    n_text = len(
             set([f for (f,a) in zip(files, actual) if a])
-            ),
-        'Classification report' : classification_report(actual, predicted),
-        'Confusion matrix' : pretty_confusion_matrix(
-                actual, predicted, [True, False]
             )
+    all_provider_metrics = {
+        'Provider': 'all',
+        'Number of pdfs included': n,
+        'Number of pdfs with sections text': n_text,
+        'Proportion of pdfs with sections text': round(n_text/n, 3),
+        'F1 score for all sections included': round(
+            f1_score(
+                list(combined_data["Actual"]),
+                list(combined_data["Predicted"]),
+                average='micro'
+            ), 3)
         }
 
     sections_texts = pd.DataFrame(
@@ -131,25 +136,29 @@ def evaluate_metric_scraped(actual, predicted, sections, files, providers):
 
     for section_name in set(sections):
         section_text = sections_texts[sections_texts['Section']==section_name]
-
         actual_section = section_text['Actual']
         predicted_section = section_text['Predicted']
-
-        metrics["Number of unique pdfs with a {} section (actual)".format(
-            section_name
-            )] = len(set(
+        all_provider_metrics[
+            'Number of pdfs with a {} section'.format(section_name)
+            ] = len(set(
                 [file for i,file in enumerate(files) if
                 ((sections[i] == section_name) and (actual[i]))]
                 ))
+        all_provider_metrics[
+            'F1 score for the {} section'.format(section_name)
+            ] = f1_score(actual_section, predicted_section, average='micro')
 
-        metrics["Classification report for the {} section".format(
-            section_name
-            )] = classification_report(actual_section, predicted_section)
-        metrics["Confusion matrix for the {} section".format(
-            section_name
-            )] = pretty_confusion_matrix(
-                    actual_section, predicted_section, [True, False]
-                )
+    provider_metrics = provider_metrics.append(
+        all_provider_metrics,
+        ignore_index=True
+        )
+    provider_metrics = (provider_metrics.set_index('Provider').T)
+
+    metrics = {
+        'Score' : similarity,
+        'F1-score' : similarity,
+        'Metrics by provider' : provider_metrics,
+        }
 
     return metrics
 
