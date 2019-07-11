@@ -30,7 +30,7 @@ class TestSettings(BaseSettings):
     # Variables for match evaluation data
     EVAL_PUB_DATA_FILE_NAME = "epmc-metadata.json"
     EVAL_MATCH_NUMBER = 100000
-    EVAL_SAMPLE_MATCH_NUMBER = 10000
+    EVAL_SAMPLE_MATCH_NUMBER = 1000
     LENGTH_THRESHOLD = 50
     MATCH_THRESHOLD = 0.8
 
