@@ -211,7 +211,6 @@ if __name__ == '__main__':
     eval5_scores = evaluate_match_references(
         evaluation_references,
         settings.MATCH_THRESHOLD,
-        settings.LENGTH_THRESHOLD,
         settings.EVAL_SAMPLE_MATCH_NUMBER
         )
 
