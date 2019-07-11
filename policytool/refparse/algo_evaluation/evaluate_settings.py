@@ -3,14 +3,17 @@ from policytool.refparse.settings import BaseSettings
 
 class TestSettings(BaseSettings):
 
-    FOLDER_PREFIX = "./algo_evaluation/data_evaluate"
+    FOLDER_PREFIX = os.path.join(
+        os.path.dirname(__file__),
+        "../algo_evaluation/data_evaluate"
+    )
     LOG_FILE_PREFIX = './algo_evaluation/results'
 
     # Variables for find section evaluation data
     LEVENSHTEIN_DIST_SCRAPER_THRESHOLD = 0.3
     SCRAPE_DATA_PDF_FOLDER_NAME = "pdfs"
     SCRAPE_DATA_REF_PDF_FOLDER_NAME = "pdf_sections"
-    SCRAPE_DATA_PROVIDERS_FILE_NAME = "pdf_providers.csv"
+    SCRAPE_DATA_PROVIDERS_FILE_NAME = "pdfs_providers.csv"
 
     # Variables for split section evaluation data
     SPLIT_SECTION_SIMILARITY_THRESHOLD = 40
