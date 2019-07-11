@@ -9,6 +9,7 @@ from os import listdir
 from datetime import datetime
 from urllib.parse import urlparse
 from collections import defaultdict
+import time
 
 import pandas as pd
 
@@ -102,8 +103,12 @@ if __name__ == '__main__':
     fm = FileManager()
 
     # ==== Load data to evaluate scraping for evaluations 1 and 2: ====
+    start = time.time()
     logger.info('main: Reading %s',
-        settings.SCRAPE_DATA_PDF_FOLDER_NAME
+        os.path.join(
+            settings.FOLDER_PREFIX,
+            settings.SCRAPE_DATA_PDF_FOLDER_NAME
+        )
     )
 
     scrape_pdf_location = os.path.join(
@@ -131,7 +136,10 @@ if __name__ == '__main__':
 
         evaluate_find_section_data[pdf_hash][section_name] = section_text
 
+    logger.info('main: ---> Took %0.3f seconds', time.time() - start)
+
     # ==== Load data to evaluate split sections for evaluations 3: ====
+    start = time.time()
     logger.info('main: Reading %s', settings.NUM_REFS_FILE_NAME)
     evaluate_split_section_data = fm.get_file(
         settings.NUM_REFS_FILE_NAME,
@@ -150,17 +158,26 @@ if __name__ == '__main__':
                 )
             ) for doc_hash in evaluate_split_section_data['hash']
         ]
+    logger.info('main: ---> Took %0.3f seconds', time.time() - start)
 
     # ==== Load data to evaluate parse for evaluations 4: ====
+    start = time.time()
     logger.info('main: Reading %s', settings.PARSE_REFERENCE_FILE_NAME)
     evaluate_parse_data = fm.get_file(
         settings.PARSE_REFERENCE_FILE_NAME,
         settings.FOLDER_PREFIX,
         'csv'
     )
+    # Load the latest parser model
+    model = fm.get_file(
+        settings.MODEL_FILE_NAME,
+        settings.MODEL_FILE_PREFIX,
+        settings.MODEL_FILE_TYPE
+    )
+    logger.info('main: ---> Took %0.3f seconds', time.time() - start)
 
     # ==== Load data to evaluate matching for evaluations 5: ====
-
+    start = time.time()
     logger.info('main: Reading the first %d lines of %s',
         settings.EVAL_MATCH_NUMBER,
         settings.EVAL_PUB_DATA_FILE_NAME
@@ -174,45 +191,47 @@ if __name__ == '__main__':
         )
     ]
     evaluation_references = pd.DataFrame(evaluation_references)
-    
-    # Load the latest parser model
-    model = fm.get_file(
-        settings.MODEL_FILE_NAME,
-        settings.MODEL_FILE_PREFIX,
-        settings.MODEL_FILE_TYPE
-    )
+    logger.info('main: ---> Took %0.3f seconds', time.time() - start)
 
     # # ==== Get the evaluation metrics ====
     logger.info('\nStarting the evaluations...\n')
 
-    logger.info('main: Running evaluations 1 and 2')                     
+    start = time.time()
+    logger.info('main: Running scrape and quality of scrape evaluations')           
     eval1_scores, eval2_scores = evaluate_find_section(
         evaluate_find_section_data,
         provider_names,
         scrape_pdf_location,
         settings.LEVENSHTEIN_DIST_SCRAPER_THRESHOLD
     )
+    logger.info('main: ---> Took %0.3f seconds', time.time() - start)
 
-    logger.info('main: Running evaluation 3')
+    start = time.time()
+    logger.info('main: Running split section evaluation')
     eval3_scores = evaluate_split_section(
         evaluate_split_section_data,
         settings.ORGANISATION_REGEX,
         settings.SPLIT_SECTION_SIMILARITY_THRESHOLD
         )
+    logger.info('main: ---> Took %0.3f seconds', time.time() - start)
 
-    logger.info('main: Running evaluation 4')
+    start = time.time()
+    logger.info('main: Running parse references evaluation')
     eval4_scores = evaluate_parse(
         evaluate_parse_data,
         model,
         settings.LEVENSHTEIN_DIST_PARSE_THRESHOLD
         )
+    logger.info('main: ---> Took %0.3f seconds', time.time() - start)
 
-    logger.info('main: Running evaluation 5')
+    start = time.time()
+    logger.info('main: Running match references evaluation')
     eval5_scores = evaluate_match_references(
         evaluation_references,
         settings.MATCH_THRESHOLD,
         settings.EVAL_SAMPLE_MATCH_NUMBER
         )
+    logger.info('main: ---> Took %0.3f seconds', time.time() - start)
 
     eval_scores_list = [
         eval1_scores,
