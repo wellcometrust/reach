@@ -110,8 +110,8 @@ def evaluate_metric_scraped(actual, predicted, sections, files, providers):
         axis = 1,
         sort=True
         )
+    provider_metrics.index.name = 'Provider'
     provider_metrics.reset_index(inplace=True)
-    provider_metrics.rename(columns={'index ': 'Provider'})
 
     n = len(set(files))
     n_text = len(
@@ -197,7 +197,9 @@ def evaluate_metric_quality(scrape_data, levenshtein_threshold):
         'Number of documents in sample' : len(scrape_data),
         'Mean normalised Levenshtein distance' : np.mean(lev_distances),
         'Strict accuracy (micro)' : np.mean(equal),
-        'Lenient accuracy (micro)' : np.mean(quite_equal)}
+        'Lenient accuracy (micro) (normalised Levenshtein < {})'.format(
+            levenshtein_threshold
+            ) : np.mean(quite_equal)}
 
     for section_name in set(sections):
         # Get the Levenshtein distances for this sections actual-predicted pairs
@@ -223,10 +225,13 @@ def evaluate_metric_quality(scrape_data, levenshtein_threshold):
             'Strict accuracy for the {} section'.format(section_name)
             ] = strict_acc_section
         metrics[
-            'Lenient accuracy for the {} section'.format(section_name)
+            'Lenient accuracy (normalised Levenshtein'+
+            '< {}) for the {} section'.format(
+                levenshtein_threshold, section_name
+                )
             ] = lenient_acc_section
     
-    return metrics
+    return {k:round(v,3) for k,v in metrics.items()}
 
 def scrape_process_pdf(
         section_names, pdf_name, scrape_pdf_location, actual_texts

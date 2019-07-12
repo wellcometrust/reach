@@ -77,7 +77,7 @@ def evaluate_metric(
         'Metrics per category': per_cat_metrics.T
     }
 
-    return metrics
+    return {k:round(v,3) for k,v in metrics.items()}
 
 def evaluate_parse(evaluate_parse_data, model, levenshtein_threshold):
 
