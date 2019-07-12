@@ -57,7 +57,7 @@ def evaluate_metric(actual, predicted):
     # Convert the reference id lists to binary - for the match to be correct the
     # two ids need to be the same, which includes if they are both None.
     actual_bin = [True if a else False for a in actual]
-    predicted_bin = [a==p for (a,p) in zip(actual, predicted)]
+    predicted_bin = [((a and a==p) or (not a and a!=p)) for (a,p) in zip(actual, predicted)]
 
     f1 = round(f1_score(actual_bin, predicted_bin, average='micro'), 3)
     recall = round(recall_score(actual_bin, predicted_bin, average='micro'), 3)
