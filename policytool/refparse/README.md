@@ -80,4 +80,4 @@ python evaluate_algo.py --verbose True
 ```
 (or set the verbose argument to False if you want less information about the evaluation to be printed).
 
-You can read more about how we got the evaluation data and what the evaluation results mean [here](algo_evaluate/evaluation_data.md).
+You can read more about how we got the evaluation data and what the evaluation results mean [here](https://github.com/wellcometrust/policytool/blob/master/policytool/refparse/algo_evaluation/evaluation.md).
