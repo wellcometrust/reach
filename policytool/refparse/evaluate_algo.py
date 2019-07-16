@@ -102,7 +102,7 @@ if __name__ == '__main__':
     logger.info('main: Reading files...')
     fm = FileManager()
 
-    # ==== Load data to evaluate scraping for evaluations 1 and 2: ====
+    # ==== Load data to evaluate scraping: ====
     start = time.time()
     logger.info('main: Reading %s',
         os.path.join(
@@ -138,7 +138,7 @@ if __name__ == '__main__':
 
     logger.info('main: ---> Took %0.3f seconds', time.time() - start)
 
-    # ==== Load data to evaluate split sections for evaluations 3: ====
+    # ==== Load data to evaluate split sections: ====
     start = time.time()
     logger.info('main: Reading %s', settings.NUM_REFS_FILE_NAME)
     evaluate_split_section_data = fm.get_file(
@@ -160,7 +160,7 @@ if __name__ == '__main__':
         ]
     logger.info('main: ---> Took %0.3f seconds', time.time() - start)
 
-    # ==== Load data to evaluate parse for evaluations 4: ====
+    # ==== Load data to evaluate parse: ====
     start = time.time()
     logger.info('main: Reading %s', settings.PARSE_REFERENCE_FILE_NAME)
     evaluate_parse_data = fm.get_file(
@@ -176,7 +176,7 @@ if __name__ == '__main__':
     )
     logger.info('main: ---> Took %0.3f seconds', time.time() - start)
 
-    # ==== Load data to evaluate matching for evaluations 5: ====
+    # ==== Load data to evaluate matching: ====
     start = time.time()
     logger.info('main: Reading the first %d lines of %s',
         settings.EVAL_MATCH_NUMBER,
@@ -197,8 +197,8 @@ if __name__ == '__main__':
     logger.info('\nStarting the evaluations...\n')
 
     start = time.time()
-    logger.info('main: Running scrape and quality of scrape evaluations')           
-    eval1_scores, eval2_scores = evaluate_find_section(
+    logger.info('main: Running find references section evaluation')           
+    eval_scores_find = evaluate_find_section(
         evaluate_find_section_data,
         provider_names,
         scrape_pdf_location,
@@ -208,7 +208,7 @@ if __name__ == '__main__':
 
     start = time.time()
     logger.info('main: Running split section evaluation')
-    eval3_scores = evaluate_split_section(
+    eval_score_split = evaluate_split_section(
         evaluate_split_section_data,
         settings.ORGANISATION_REGEX,
         settings.SPLIT_SECTION_SIMILARITY_THRESHOLD
@@ -217,7 +217,7 @@ if __name__ == '__main__':
 
     start = time.time()
     logger.info('main: Running parse references evaluation')
-    eval4_scores = evaluate_parse(
+    eval_score_parse = evaluate_parse(
         evaluate_parse_data,
         model,
         settings.LEVENSHTEIN_DIST_PARSE_THRESHOLD
@@ -226,7 +226,7 @@ if __name__ == '__main__':
 
     start = time.time()
     logger.info('main: Running match references evaluation')
-    eval5_scores = evaluate_match_references(
+    eval_score_match = evaluate_match_references(
         evaluation_references,
         settings.MATCH_THRESHOLD,
         settings.LENGTH_THRESHOLD,
@@ -235,16 +235,14 @@ if __name__ == '__main__':
     logger.info('main: ---> Took %0.3f seconds', time.time() - start)
 
     eval_scores_list = [
-        eval1_scores,
-        eval2_scores,
-        eval3_scores,
-        eval4_scores,
-        eval5_scores
+        eval_scores_find,
+        eval_score_split,
+        eval_score_parse,
+        eval_score_match
         ]
 
     eval_names = [
-        "How well the scraper predicted a references section to exist",
-        "How well the scraper predicted the references text",
+        "How well the scraper finds the references section",
         "How well the splitter predicted how many references there were",
         "How well the parser predicted reference component texts",
         "How well the matcher matched references"
