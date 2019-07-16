@@ -31,8 +31,8 @@ separate file in the output folder. You can merge all of them together
 by running
 
 ```
-python merge_results.py \
-    --references-file "file://./references_folder/references_file.csv" \
+python -m policytool.refparse.merge_results \
+    --references-file "s3://datalabs-data/wellcome_publications/uber_api_publications.csv" \
     --output-url  "./tmp/parser-output/output_folder_name"
 ```
 
@@ -42,7 +42,7 @@ If you would like to run the parser for the latest scraped files and to
 save the output locally, then run the following:
 
 ```
-python parse_latest.py msf \
+python -m policytool.refparse.parse_latest msf \
     --references-file "s3://datalabs-data/wellcome_publications/uber_api_publications.csv" \
     --output-url "file://./tmp/parser-output"
 ```
@@ -51,7 +51,7 @@ If you want to specify the arguments for the other inputs then you can,
 otherwise default values will be given:
 
 ```
-python ./parse_latest.py msf \
+python -m policytool.refparse.parse_latest msf \
     --references-file "s3://datalabs-data/wellcome_publications/uber_api_publications.csv" \
     --model-file "s3://datalabs-data/reference_parser_models/reference_parser_pipeline.pkl" \
     --output-url "file://./tmp/parser-output/output_folder_name"
