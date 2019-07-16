@@ -5,15 +5,15 @@ components from a set of scraped reference sections.
 
 ## How to use it
 
-Make an output folder `output_folder_name` and run `refparse.py` with
-arguments of your file locations, e.g. for msf in the terminal run:
+Make an output folder `output_folder_name` and run `refparse` with
+arguments of your file locations. E.g., from the main `policytool` directory, run:
 
 ```
 mkdir -p ./tmp/parser-output/output_folder_name
 
-python ./refparse.py \
+python -m policytool.refparse.refparse \
     --scraper-file "s3://datalabs-data/scraper-results/msf/20190117.json" \
-    --references-file "file://./references_folder/references_file.csv" \
+    --references-file "s3://datalabs-data/wellcome_publications/uber_api_publications.csv" \
     --model-file "s3://datalabs-data/reference_parser_models/reference_parser_pipeline.pkl" \
     --output-url "file://./tmp/parser-output/output_folder_name"
 ```
@@ -22,7 +22,7 @@ If the `scraper_file`, `references_file`, `model_file`, arguments are to
 S3 locations then make sure these start with `s3://`, otherwise file
 names are assumed to be locally stored. If the `output_url` argument is
 to a local location, then make sure it begins with `file://`, otherwise
-it is assumed to be from a database.
+it is assumed to be from a database. For a complete list of arguments, check the [CLI commands docs](#CLI-Arguments).
 
 ### Merging results
 
@@ -81,3 +81,16 @@ python evaluate_algo.py --verbose True
 (or set the verbose argument to False if you want less information about the evaluation to be printed).
 
 You can read more about how we got the evaluation data and what the evaluation results mean [here](algo_evaluate/evaluation_data.md).
+
+
+## CLI Arguments
+
+
+| **Argument** | **Description** 
+| ------------|:---------:| 
+| --model-file | (string) Path or S3 URL to model pickle file |
+| --num-workers | (int) Number of workers to use for parallel processing      |
+| --output-url     | (string) URL (file://!) or DSN for output  |
+| --references-file | (string) Path or S3 to references CSV file to match against |
+| --scraper-file | (string) Path or S3 URL to scraper results file |
+| --profile | (string) Run parser, single worker, with cProfile for profiling | 
