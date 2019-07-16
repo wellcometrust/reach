@@ -13,7 +13,10 @@ from multiprocessing.dummy import Pool as ThreadPool
 import boto3
 from elasticsearch import Elasticsearch
 
-THREADPOOL_SIZE = 10
+logger = logging.getLogger(__name__)
+logger.setLevel(logging.INFO)
+
+THREADPOOL_SIZE = 6
 EPMC_METADATA_INDEX = 'epmc-metadata'
 CHUNCK_SIZE = 1000
 
@@ -81,6 +84,7 @@ def yield_metadata_chunk(s3_object, max_publication, chunk_size=500):
         pub_list.append(metadata)
         if max_publication and index + 1 >= max_publication:
             yield pub_list
+            pub_list = []
             break
 
         if len(pub_list) >= chunk_size:
@@ -153,8 +157,6 @@ if __name__ == '__main__':
 
     logging.getLogger('elasticsearch').setLevel(logging.WARNING)
     logging.basicConfig(format='%(levelname)s%(asctime)s:%(message)s')
-    logger = logging.getLogger(__name__)
-    logger.setLevel(logging.INFO)
 
     args = parser.parse_args()
 
