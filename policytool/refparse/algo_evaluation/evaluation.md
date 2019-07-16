@@ -1,7 +1,7 @@
 In this document we describe how we got each of the evaluation datasets uses in `evaluate_algo.py`. This data can be downloaded [here](https://s3-eu-west-1.amazonaws.com/datalabs-data/policy_tool_tests) and are stored in the repository [here](policytool/refparse/algo_evaluation/data_evaluate). We also describe the output when running `evaluate_algo`.
 
 
-## Find Sections Evaluation
+## Find Evaluation
 ### Data
 - We generated a random list of policy documents from each provider currently scraped (using the Postico publication database).
 - We went through this list until we found at least 5 which had a section that contain references and 5 that didn't.
@@ -11,14 +11,16 @@ In this document we describe how we got each of the evaluation datasets uses in 
 - The text was copied and pasted from the pdf (starting from the section name to the last character of the section) into a text editor and saved as a .txt file in the relevant sections folder (e.g. "./algo_evaluation/data_evaluate/pdf_sections/reference") and saved with the same unique name as the pdf was.
 
 
-### Evaluation Scores 1 and 2
+### Evaluation Scores
 - We use the functions `parse_pdf_document` and `grab_section` from `policytool/pdf_parser/pdf_parse.py` to predict the references sections from each of the pdfs in our evaluation.
 
-Using this data we return two scores, one to see how well we identify if there is a references section or not, and one to see how well we get the actual text of this section.
+Using this data we return two types of information. One shows how well we identify if there is a references section or not, and one to see how well we get the actual text of this section.
 1. Whether a pdf has or doesn't have a references section is compared to whether our functions predict there to be a references section or not, returning a F1 score. We also return a classification report and a confusion matrix for this comparison, and also give these scores broken down by each references section type (e.g. 'reference' and 'bibliograph').
 2. In the pdfs which do have a references section, we find the normalised Levenshtein distances for each of the actual and predicted references section texts. The proportion of pdfs with exactly the same actual and predicted texts is returned - the 'Strict accuracy', and we also return a more lenient score of the proportion where texts are closely similar (this is defined by a threshold parameter - `LEVENSHTEIN_DIST_SCRAPER_THRESHOLD`) - the 'Lenient accuracy'.
 
-## Split Section Evaluation
+Thus we have a strict score - the accuracy to which we predict the references section text exactly, and two lenient scores - the F1-score of if the reference section exists or not in a document, and the accuracy to which we predict the text roughly correctly.
+
+## Split Evaluation
 ### Data
 - Randomly sample policy documents with scraped references sections.
 - Made a decision about the quality of the scrape - if it was bad then we wouldn't include, but if the references text scraped included the whole references text we took it forward. We have 6 documents from MSF documents, 20 from NICE, 10 from UNICEF, and 17 from WHO documents.
@@ -26,8 +28,7 @@ Using this data we return two scores, one to see how well we identify if there i
 - Copy and paste the references section only into a txt file (with the document hash as the file name) stored in the "scraped_references_sections" folder.
 - Manually count the number of references from this document's pdf, record in "split_section_test_data.csv".
 
-
-### Evaluation Score 3
+### Evaluation Scores
 - We use the function `split_section` from `policytool/refparse/utils/split.py` to predict how many references there are from each of the references section texts.
 - We can see how well the section was split by looking at how similar the numbers of references are, using the difference metric:
 ```
@@ -43,7 +44,7 @@ abs(100*((predicted number - actual number) / actual number))
 - The text of the reference was copied and pasted from the pdf, and then we decided which parts of the reference were from each of the categories (setting to blank if there wasn't a particular category for this reference).
 - This data is stored in "actual_reference_structures_sample.csv"
 
-### Evaluation Score 4
+### Evaluation Score
 - Using the model found in `MODEL_FILE_PREFIX` given by the parameter `MODEL_FILE_NAME` we use the `structure_reference` function from `policytool/refparse/utils/parse.pdf` to predict all the reference categories for each of the evaluation references texts.
 - We calculate the Levenshtein distances for each reference category, and find the proportion of these categories which are predicted exactly (thus if there are 7 reference catgories for 205 references then we have (7x205) 1435 data points to compare) - the 'Strict accuracy'.
 - We also return the proportion which are quite similarly predicted (using the parameter `LEVENSHTEIN_DIST_PARSE_THRESHOLD`) - the 'Lenient accuracy', and break down the results by category.
@@ -57,7 +58,7 @@ abs(100*((predicted number - actual number) / actual number))
 - The references in the first 10,000 from the sample were matched (using `FuzzyMatcher` from `policytool/refparse/utils`) against the 90,000 references, and the seconf 10,000 from the sample were matched against the 90,000 references.
 - Thus we have a list of 20,000 reference matches, 10,000 where they should match exactly to themselves (and thus the match id is their own reference id), and 10,000 where there should be no match found (match id is None).
 
-### Evaluation Score 5
+### Evaluation Score
 - We predict the matches for each of the 20,000 references returning a list of the reference ids that the references was found to match to (or None if no match was found).
 - We find the F1 score of these actual and predicted lists.
 - We also record whether the match found was correct or not, which can be found by comparing the uber ids of the reference and it's match. Thus we also return a classification report and the frequency table of match types.

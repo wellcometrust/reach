@@ -76,7 +76,7 @@ def evaluate_metric_scraped(actual, predicted, sections, files, providers):
         "Number of pdfs included",
         "Number of pdfs with sections text",
         "Proportion of pdfs with sections text",
-        "F1 score for all sections included"
+        "Lenient F1 score for all sections included"
         ]
 
     trans_n_text_by_sect = pd.DataFrame(
@@ -100,7 +100,7 @@ def evaluate_metric_scraped(actual, predicted, sections, files, providers):
         index = all_providers
         )
     trans_f1_by_sect.columns = [
-        'F1 score for the {} section'.format(b)\
+        'Lenient F1 score for the {} section'.format(b)\
         for b in trans_f1_by_sect.columns
         ]
 
@@ -122,7 +122,7 @@ def evaluate_metric_scraped(actual, predicted, sections, files, providers):
         'Number of pdfs included': n,
         'Number of pdfs with sections text': n_text,
         'Proportion of pdfs with sections text': round(n_text/n, 3),
-        'F1 score for all sections included': round(
+        'Lenient F1 score for all sections included': round(
             f1_score(
                 list(combined_data["Actual"]),
                 list(combined_data["Predicted"]),
@@ -145,7 +145,7 @@ def evaluate_metric_scraped(actual, predicted, sections, files, providers):
                 ((sections[i] == section_name) and (actual[i]))]
                 ))
         all_provider_metrics[
-            'F1 score for the {} section'.format(section_name)
+            'Lenient F1 score for the {} section'.format(section_name)
             ] = f1_score(actual_section, predicted_section, average='micro')
 
     provider_metrics = provider_metrics.append(
@@ -156,7 +156,7 @@ def evaluate_metric_scraped(actual, predicted, sections, files, providers):
 
     metrics = {
         'Score' : similarity,
-        'F1-score' : similarity,
+        'Lenient F1-score (references section exists or not)' : similarity,
         'Metrics by provider' : provider_metrics,
         }
 
@@ -193,8 +193,7 @@ def evaluate_metric_quality(scrape_data, levenshtein_threshold):
     ]
 
     metrics = {
-        'Score' : np.mean(equal),
-        'Number of documents in sample' : len(scrape_data),
+        'Number of pdfs with sections text' : len(scrape_data),
         'Mean normalised Levenshtein distance' : np.mean(lev_distances),
         'Strict accuracy (micro)' : np.mean(equal),
         'Lenient accuracy (micro) (normalised Levenshtein < {})'.format(
@@ -289,5 +288,8 @@ def evaluate_find_section(
         scrape_data,
         levenshtein_threshold)
 
-    return eval1_scores, eval2_scores
+    eval_scores_find = dict(eval1_scores)
+    eval_scores_find.update(eval2_scores)
+
+    return eval_scores_find
 
