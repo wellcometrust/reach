@@ -7,8 +7,10 @@ from airflow.models import BaseOperator
 from airflow.utils.decorators import apply_defaults
 from elasticsearch import Elasticsearch
 
-
-from policytool.elastic.import_epmc_metadata import import_into_elasticsearch
+from policytool.elastic.import_epmc_metadata import (
+    import_into_elasticsearch,
+    clean_es,
+)
 
 
 class FetchEPMCMetadata(BaseOperator):
@@ -45,14 +47,28 @@ class FetchEPMCMetadata(BaseOperator):
         self.max_publications = max_epmc_metadata
 
     def execute(self, context):
-        assert self.src_s3_key.startswith('s3://'), (
-                "You must provide a valid s3:// link"
-            )
 
         es = Elasticsearch([{'host': self.es_host, 'port': self.es_port}])
         s3 = WellcomeS3Hook()
 
-        print('Getting %s from bucket' % (self.src_s3_key))
+        # TODO: implement skipping mechanism
+        # clean_es(es)
+
+        self.log.info(
+            'Getting %s pubs from %s',
+            self.max_publications if self.max_publications else 'all',
+            self.src_s3_key,
+        )
+
         s3_file = s3.get_key(self.src_s3_key)
 
-        import_into_elasticsearch(s3_file, es, self.max_publications)
+        line_count = import_into_elasticsearch(
+            s3_file,
+            es,
+            self.max_publications
+        )
+
+        self.log.info(
+            'imported %d lines into elasticsearch',
+            line_count['count'],
+        )
