@@ -66,13 +66,13 @@ def yield_publications_metadata(s3_object):
                 yield build_es_bulk(line.decode('utf-8'))
 
 
-def yield_metadata_chunk(s3_object, max_publication, chunk_size=500):
+def yield_metadata_chunk(s3_object, max_publications, chunk_size=500):
     """ Yield bulk insertion preformatted publication list of
     chunk_size length.
 
     Args:
         s3_object: An s3 file object from boto
-        max_publication: The maximum number of publications to be yielded
+        max_publications: The maximum number of publications to be yielded
         chunck_size: The size of the publication lists to be yielded
 
     Yield:
@@ -82,7 +82,7 @@ def yield_metadata_chunk(s3_object, max_publication, chunk_size=500):
     pub_list = []
     for index, metadata in enumerate(yield_publications_metadata(s3_object)):
         pub_list.append(metadata)
-        if max_publication and index + 1 >= max_publication:
+        if max_publications and index + 1 >= max_publications:
             yield pub_list
             pub_list = []
             break
@@ -101,7 +101,6 @@ def process_es_bulk(pub_list, es):
         es: a living connection to elacticsearch
         bulk_query: a formatted bulk query to submit to Elasticsearch.
     """
-    # logger.info('indexing a %d chunck', len(pub_list))
     es.bulk(
         body=''.join(pub_list),
         refresh='wait_for',
@@ -124,14 +123,14 @@ def clean_es(es):
     )
 
 
-def import_into_elasticsearch(s3_file, es, max_publication=1000):
+def import_into_elasticsearch(s3_file, es, max_publications=1000):
     """ Read publications from the given s3 file and write them to the
     elasticsearch database.
 
     Args:
         es: a living connection to elacticsearch
         s3_file: An open StreamingBody from s3
-        max_publication: The maximum publication number to be inserted
+        max_publications: The maximum publication number to be inserted
     """
 
     with ThreadPool(THREADPOOL_SIZE) as pool:
@@ -147,17 +146,13 @@ def import_into_elasticsearch(s3_file, es, max_publication=1000):
             yield_metadata_chunk(
                 s3_file,
                 chunk_size=CHUNCK_SIZE,
-                max_publication=max_publication,
+                max_publications=max_publications,
             )
         )
     return es.count(index=EPMC_METADATA_INDEX)
 
 
 if __name__ == '__main__':
-
-    logging.getLogger('elasticsearch').setLevel(logging.WARNING)
-    logging.basicConfig(format='%(levelname)s%(asctime)s:%(message)s')
-
     args = parser.parse_args()
 
     assert args.s3_url.startswith('s3://'), (
