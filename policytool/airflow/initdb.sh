@@ -1,19 +1,12 @@
 #!/bin/sh -e
 
-initdb() {
-    airflow initdb
-    # delete default connections created by initdb; we don't use them
-    CONNECTIONS=$(airflow connections  -l | grep -vE '^\[' | grep -v 'Conn Id' | \
-      awk '{print $2}' | tr -d "'" )
-    if [ -n "$CONNECTIONS" ]; then
-      echo $CONNECTIONS | xargs -n1 airflow connections -d --conn_id
-    fi
-}
-
 if echo $AIRFLOW__CORE__SQL_ALCHEMY_CONN | grep -q postgres
 then
     if ! /src/policytool/scraper/pg_exists.py dag; then
-        initdb
+        # airflow upgradedb gets us a working DB from empty, but without all
+        # the extra connections.
+        # cf. https://medium.com/datareply/airflow-lesser-known-tips-tricks-and-best-practises-cf4d4a90f8f
+        airflow upgradedb
     fi
 else
     echo $AIRFLOW__CORE__SQL_ALCHEMY_CONN
