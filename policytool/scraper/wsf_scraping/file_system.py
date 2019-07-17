@@ -85,6 +85,16 @@ class S3FileSystem(FileSystem):
         except ClientError as e:
             raise e
 
+    def save_fileobj(self, fileobj, path, filename):
+        key = os.path.join(self.prefix, path, filename)
+        self.logger.info('FileSystem.save_fileobj: s3://%s/%s',
+            self.bucket, key)
+        self.client.upload_fileobj(
+            Fileobj=fileobj,
+            Bucket=self.bucket,
+            Key=key,
+        )
+
     def get_manifest(self):
         key = os.path.join(
             self.prefix,
