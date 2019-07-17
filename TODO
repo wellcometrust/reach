@@ -1,0 +1,2 @@
+- fix scrapes so that JOBDIR writes to a directory that
+  we delete after completion of scrape (instead of /tmp/crawls)

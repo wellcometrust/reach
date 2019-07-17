@@ -1,13 +1,28 @@
-import scrapy
+import os.path
 import tempfile
+
 from scrapy.exceptions import CloseSpider
 from scrapy.spidermiddlewares.httperror import HttpError
+from scrapy.utils.project import get_project_settings
 from twisted.internet.error import DNSLookupError
 from twisted.internet.error import TimeoutError
+import scrapy
+
 from ..items import Article
 
 
 class BaseSpider(scrapy.Spider):
+
+    @staticmethod
+    def jobdir(scraper_name):
+        return os.path.join(
+            # NB: tried to use get_project_settings()['FEED_TEMPDIR']
+            # here, but it was inexplicably None. Anywhere in /tmp is
+            # fine though.
+            '/tmp',
+            'crawls',
+            scraper_name
+        )
 
     def __init__(self, *args, **kwargs):
         id = kwargs.get('uuid', '')
