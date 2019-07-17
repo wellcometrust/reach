@@ -7,7 +7,7 @@ class NiceSpider(BaseSpider):
     name = 'nice'
 
     custom_settings = {
-        'JOBDIR': 'crawls/nice'
+        'JOBDIR': BaseSpider.jobdir(name)
     }
 
     def start_requests(self):
