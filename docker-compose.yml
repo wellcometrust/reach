@@ -34,7 +34,6 @@ x-airflow_env: &airflow-env
 
   SENTRY_DSN: "${SENTRY_DSN}"
   DATABASE_URL: "postgresql://postgres:development@postgres:5432/wsf_scraping"
-  RESOURCES_FILES: "/src/policytool/resources/"
 
 x-airflow-volumes: &airflow-volumes
   - ./policytool/airflow/airflow.cfg:/airflow/airflow.cfg
