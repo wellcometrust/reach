@@ -1,2 +1,6 @@
 - fix scrapes so that JOBDIR writes to a directory that
   we delete after completion of scrape (instead of /tmp/crawls)
+- standardize on a single set of wrappers for writing files
+  to disk / S3, json.gz or not (or just always both).
+- add back URI to refparse by getting URI into the manifest
+  and having it flow through pdf parsing to it.
