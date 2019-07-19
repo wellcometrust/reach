@@ -155,7 +155,6 @@ def evaluate_metric_scraped(actual, predicted, sections, files, providers):
     provider_metrics = (provider_metrics.set_index('Provider').T)
 
     metrics = {
-        'Score' : similarity,
         'Lenient F1-score (references section exists or not)' : similarity,
         'Metrics by provider' : provider_metrics,
         }
@@ -288,7 +287,10 @@ def evaluate_find_section(
         scrape_data,
         levenshtein_threshold)
 
-    eval_scores_find = dict(eval1_scores)
+    eval_scores_find = {
+        "Score" : 1 - eval2_scores['Mean normalised Levenshtein distance']
+        }
+    eval_scores_find.update(eval1_scores)
     eval_scores_find.update(eval2_scores)
 
     return eval_scores_find

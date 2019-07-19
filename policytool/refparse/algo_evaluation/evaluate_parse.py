@@ -63,7 +63,7 @@ def evaluate_metric(
         ]
 
     metrics = {
-        'Score' : accuracy,
+        'Score' : 1 - lev_dist.mean().mean(),
         'Number of references in sample' : len(actual_categories),
         'Number of non-blank reference components' :\
             number_sample.sum(),
