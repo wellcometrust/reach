@@ -4,7 +4,7 @@ import datetime
 import airflow.utils.dates
 from airflow import DAG
 
-from policytool.airflow.tasks.fetch_epmc_metadata import FetchEPMCMetadata
+from policytool.airflow.tasks.es_index_publications import ESIndexPublications
 from policytool.airflow.tasks.exact_match_refs_operator import (
     ExactMatchRefsOperator
 )
@@ -36,8 +36,8 @@ epmc_metadata_key = '/'.join([
     'output', 'open-research', 'epmc-metadata', 'epmc-metadata.json.gz'
 ])
 
-fetch_epmc_task = FetchEPMCMetadata(
-    task_id=FetchEPMCMetadata.__name__,
+es_index_publications = ESIndexPublications(
+    task_id=ESIndexPublications.__name__,
     src_s3_key=epmc_metadata_key,
     es_host='elasticsearch',
     max_epmc_metadata=1000,

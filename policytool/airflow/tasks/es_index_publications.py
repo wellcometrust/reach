@@ -13,9 +13,9 @@ from policytool.elastic.import_epmc_metadata import (
 )
 
 
-class FetchEPMCMetadata(BaseOperator):
-    """ Bulk downloads all metadata XML from EPMC, writing results to
-    json.gz in S3.
+class ESIndexPublications(BaseOperator):
+    """ Download EPMC publication metadatas stored in S3 and index them with
+    Elasticsearch.
     """
 
     template_fields = (
@@ -44,7 +44,7 @@ class FetchEPMCMetadata(BaseOperator):
         self.es_host = es_host
         self.es_port = es_port
         self.aws_conn_id = aws_conn_id
-        self.max_publications = max_epmc_metadata
+        self.max_epmc_metadata = max_epmc_metadata
 
     def execute(self, context):
 
@@ -52,7 +52,7 @@ class FetchEPMCMetadata(BaseOperator):
         s3 = WellcomeS3Hook()
 
         # TODO: implement skipping mechanism
-        # clean_es(es)
+        clean_es(es)
 
         self.log.info(
             'Getting %s pubs from %s',
@@ -65,7 +65,7 @@ class FetchEPMCMetadata(BaseOperator):
         line_count = import_into_elasticsearch(
             s3_file,
             es,
-            self.max_publications
+            max_epmc_metadata=self.max_epmc_metadata
         )
 
         self.log.info(
