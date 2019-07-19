@@ -13,7 +13,7 @@ class TestSettings(BaseSettings):
     LEVENSHTEIN_DIST_SCRAPER_THRESHOLD = 0.3
     SCRAPE_DATA_PDF_FOLDER_NAME = "pdfs"
     SCRAPE_DATA_REF_PDF_FOLDER_NAME = "pdf_sections"
-    SCRAPE_DATA_PROVIDERS_FILE_NAME = "pdfs_providers.csv"
+    SCRAPE_DATA_PROVIDERS_FILE_NAME = "pdf_providers.csv"
 
     # Variables for split section evaluation data
     SPLIT_SECTION_SIMILARITY_THRESHOLD = 40
@@ -30,7 +30,7 @@ class TestSettings(BaseSettings):
     # Variables for match evaluation data
     EVAL_PUB_DATA_FILE_NAME = "epmc-metadata.json"
     EVAL_MATCH_NUMBER = 100000
-    EVAL_SAMPLE_MATCH_NUMBER = 10000
+    EVAL_SAMPLE_MATCH_NUMBER = 1000
     LENGTH_THRESHOLD = 50
     MATCH_THRESHOLD = 0.8
 

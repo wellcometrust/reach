@@ -76,7 +76,7 @@ def evaluate_metric_scraped(actual, predicted, sections, files, providers):
         "Number of pdfs included",
         "Number of pdfs with sections text",
         "Proportion of pdfs with sections text",
-        "F1 score for all sections included"
+        "Lenient F1 score for all sections included"
         ]
 
     trans_n_text_by_sect = pd.DataFrame(
@@ -100,29 +100,34 @@ def evaluate_metric_scraped(actual, predicted, sections, files, providers):
         index = all_providers
         )
     trans_f1_by_sect.columns = [
-        'F1 score for the {} section'.format(b)\
+        'Lenient F1 score for the {} section'.format(b)\
         for b in trans_f1_by_sect.columns
         ]
 
     provider_metrics = pd.concat(
         [metrics_by_prov, trans_n_text_by_sect,
         trans_prop_text_by_sect, trans_f1_by_sect],
-        axis = 1
+        axis = 1,
+        sort=True
         )
-    provider_metrics = (provider_metrics.T).to_string()
+    provider_metrics.index.name = 'Provider'
+    provider_metrics.reset_index(inplace=True)
 
-    metrics = {
-        'Score' : similarity,
-        'F1-score' : similarity,
-        'Metrics by provider' : provider_metrics,
-        'Number of unique pdfs' : len(set(files)),
-        'Number of pdfs with a section text' : len(
+    n = len(set(files))
+    n_text = len(
             set([f for (f,a) in zip(files, actual) if a])
-            ),
-        'Classification report' : classification_report(actual, predicted),
-        'Confusion matrix' : pretty_confusion_matrix(
-                actual, predicted, [True, False]
             )
+    all_provider_metrics = {
+        'Provider': 'all',
+        'Number of pdfs included': n,
+        'Number of pdfs with sections text': n_text,
+        'Proportion of pdfs with sections text': round(n_text/n, 3),
+        'Lenient F1 score for all sections included': round(
+            f1_score(
+                list(combined_data["Actual"]),
+                list(combined_data["Predicted"]),
+                average='micro'
+            ), 3)
         }
 
     sections_texts = pd.DataFrame(
@@ -131,25 +136,28 @@ def evaluate_metric_scraped(actual, predicted, sections, files, providers):
 
     for section_name in set(sections):
         section_text = sections_texts[sections_texts['Section']==section_name]
-
         actual_section = section_text['Actual']
         predicted_section = section_text['Predicted']
-
-        metrics["Number of unique pdfs with a {} section (actual)".format(
-            section_name
-            )] = len(set(
+        all_provider_metrics[
+            'Number of pdfs with a {} section'.format(section_name)
+            ] = len(set(
                 [file for i,file in enumerate(files) if
                 ((sections[i] == section_name) and (actual[i]))]
                 ))
+        all_provider_metrics[
+            'Lenient F1 score for the {} section'.format(section_name)
+            ] = f1_score(actual_section, predicted_section, average='micro')
 
-        metrics["Classification report for the {} section".format(
-            section_name
-            )] = classification_report(actual_section, predicted_section)
-        metrics["Confusion matrix for the {} section".format(
-            section_name
-            )] = pretty_confusion_matrix(
-                    actual_section, predicted_section, [True, False]
-                )
+    provider_metrics = provider_metrics.append(
+        all_provider_metrics,
+        ignore_index=True
+        )
+    provider_metrics = (provider_metrics.set_index('Provider').T)
+
+    metrics = {
+        'Lenient F1-score (references section exists or not)' : similarity,
+        'Metrics by provider' : provider_metrics,
+        }
 
     return metrics
 
@@ -184,10 +192,12 @@ def evaluate_metric_quality(scrape_data, levenshtein_threshold):
     ]
 
     metrics = {
-        'Score' : np.mean(equal),
+        'Number of pdfs with sections text' : len(scrape_data),
         'Mean normalised Levenshtein distance' : np.mean(lev_distances),
         'Strict accuracy (micro)' : np.mean(equal),
-        'Lenient accuracy (micro)' : np.mean(quite_equal)}
+        'Lenient accuracy (micro) (normalised Levenshtein < {})'.format(
+            levenshtein_threshold
+            ) : np.mean(quite_equal)}
 
     for section_name in set(sections):
         # Get the Levenshtein distances for this sections actual-predicted pairs
@@ -213,10 +223,13 @@ def evaluate_metric_quality(scrape_data, levenshtein_threshold):
             'Strict accuracy for the {} section'.format(section_name)
             ] = strict_acc_section
         metrics[
-            'Lenient accuracy for the {} section'.format(section_name)
+            'Lenient accuracy (normalised Levenshtein'+
+            '< {}) for the {} section'.format(
+                levenshtein_threshold, section_name
+                )
             ] = lenient_acc_section
     
-    return metrics
+    return {k:round(v,3) for k,v in metrics.items()}
 
 def scrape_process_pdf(
         section_names, pdf_name, scrape_pdf_location, actual_texts
@@ -274,5 +287,11 @@ def evaluate_find_section(
         scrape_data,
         levenshtein_threshold)
 
-    return eval1_scores, eval2_scores
+    eval_scores_find = {
+        "Score" : 1 - eval2_scores['Mean normalised Levenshtein distance']
+        }
+    eval_scores_find.update(eval1_scores)
+    eval_scores_find.update(eval2_scores)
+
+    return eval_scores_find
 
