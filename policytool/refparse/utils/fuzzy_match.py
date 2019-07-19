@@ -32,7 +32,7 @@ class FuzzyMatcher:
         return retrieved_publications[:nb_results]
 
     def match(self, reference):
-        if not reference:
+        if reference.empty:
             return
         if len(reference['Title']) < self.title_length_threshold:
             return
