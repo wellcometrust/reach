@@ -72,15 +72,14 @@ services:
       - ./build/airflow.redis:/data
 
   elasticsearch:
-    image: docker.elastic.co/elasticsearch/elasticsearch:7.0.0
+    image: docker.elastic.co/elasticsearch/elasticsearch:7.2.0
     environment:
       - discovery.type=single-node
-      - bootstrap.memory_lock=true
       - "ES_JAVA_OPTS=-Xms1g -Xmx1g"
     ports:
       - 127.0.0.1:9200:9200
     volumes:
-      - ./policytool/elastic/elastic/db:/usr/share/elasticsearch/data
+      - esdata:/usr/share/elasticsearch/data
 
   # kibana:
   #   image: docker.elastic.co/kibana/kibana:7.0.0
@@ -154,8 +153,8 @@ services:
       - --reload
       - policytool.web.wsgi:application
     volumes:
-      - ./policytool/web:/src/policytool/web/
-      - ./policytool/scraper:/src/policytool/scraper/
+      - ./policytool/web:/src/policytool/policytool/web/
+      - ./policytool/scraper:/src/policytool/policytool/scraper/
       - ./build/web:/build/web
 
   # TODO: run gulp watch with the right volumes in place
@@ -172,3 +171,7 @@ services:
       - ./policytool/web/static:/src/static
     # Signal handling in gulp? Not so much...
     stop_signal: SIGKILL
+
+volumes:
+  esdata:
+    driver: local
