@@ -9,7 +9,7 @@ import airflow.utils.dates
 
 from policytool.airflow.tasks.run_spiders_operator import RunSpiderOperator
 from policytool.airflow.tasks.parse_pdf_operator import ParsePdfOperator
-from policytool.airflow.tasks.fetch_epmc_metadata import FetchEPMCMetadata
+from policytool.airflow.tasks.es_index_publications import ESIndexPublications
 from policytool.airflow.tasks.extract_refs_operator import ExtractRefsOperator
 from policytool.airflow.tasks.fuzzy_match_refs_operator import (
     FuzzyMatchRefsOperator
@@ -51,8 +51,8 @@ epmc_metadata_key = '/'.join([
     'output', 'open-research', 'epmc-metadata', 'epmc-metadata.json.gz'
 ])
 
-fetch_epmc_task = FetchEPMCMetadata(
-    task_id=FetchEPMCMetadata.__name__,
+es_index_publications = ESIndexPublications(
+    task_id=ESIndexPublications.__name__,
     src_s3_key=epmc_metadata_key,
     es_host='elasticsearch',
     dag=dag

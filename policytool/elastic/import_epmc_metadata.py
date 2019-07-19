@@ -66,13 +66,13 @@ def yield_publications_metadata(s3_object):
                 yield build_es_bulk(line.decode('utf-8'))
 
 
-def yield_metadata_chunk(s3_object, max_publications, chunk_size=500):
+def yield_metadata_chunk(s3_object, max_epmc_metadata, chunk_size=500):
     """ Yield bulk insertion preformatted publication list of
     chunk_size length.
 
     Args:
         s3_object: An s3 file object from boto
-        max_publications: The maximum number of publications to be yielded
+        max_epmc_metadata: The maximum number of publications to be yielded
         chunck_size: The size of the publication lists to be yielded
 
     Yield:
@@ -82,10 +82,10 @@ def yield_metadata_chunk(s3_object, max_publications, chunk_size=500):
     pub_list = []
     for index, metadata in enumerate(yield_publications_metadata(s3_object)):
         pub_list.append(metadata)
-        if max_publications and index + 1 >= max_publications:
+        if max_epmc_metadata and index + 1 >= max_epmc_metadata:
             yield pub_list
             pub_list = []
-            break
+            return
 
         if len(pub_list) >= chunk_size:
             yield pub_list
@@ -123,14 +123,14 @@ def clean_es(es):
     )
 
 
-def import_into_elasticsearch(s3_file, es, max_publications=1000):
+def import_into_elasticsearch(s3_file, es, max_epmc_metadata=1000):
     """ Read publications from the given s3 file and write them to the
     elasticsearch database.
 
     Args:
         es: a living connection to elacticsearch
         s3_file: An open StreamingBody from s3
-        max_publications: The maximum publication number to be inserted
+        max_epmc_metadata: The maximum publication number to be inserted
     """
 
     with ThreadPool(THREADPOOL_SIZE) as pool:
@@ -146,7 +146,7 @@ def import_into_elasticsearch(s3_file, es, max_publications=1000):
             yield_metadata_chunk(
                 s3_file,
                 chunk_size=CHUNCK_SIZE,
-                max_publications=max_publications,
+                max_epmc_metadata=max_epmc_metadata,
             )
         )
     return es.count(index=EPMC_METADATA_INDEX)
@@ -159,7 +159,11 @@ if __name__ == '__main__':
             "You must provide a valid s3:// link"
         )
 
-    es = Elasticsearch([{'host': args.host, 'port': args.port}])
+    es = Elasticsearch(
+        [{'host': args.host, 'port': args.port}],
+        retry_on_timeout=True,
+        max_retry=10,
+    )
     s3 = boto3.resource('s3')
 
     if args.clean:
