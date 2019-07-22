@@ -9,3 +9,4 @@ build/*
 *.json
 *.pdf
 *.txt
+*.png
