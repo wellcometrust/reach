@@ -30,7 +30,7 @@ def predict_match_data(matcher, match_data):
     """
 
     predictions = []
-    for i, ref in match_data.iterrows():
+    for ref in match_data:
         matched_publications = matcher.match(ref)
         if matched_publications:
             predictions.append(matched_publications['Matched publication id'])
@@ -111,10 +111,13 @@ def evaluate_match_references(
         ~evaluation_references['uber_id'].isin(match_data_negative['uber_id'])
         ]
 
-    fuzzy_matcher = FuzzyMatcher(evaluation_references_without_negative, match_threshold, length_threshold)
+    fuzzy_matcher = FuzzyMatcher(
+        evaluation_references_without_negative, match_threshold, length_threshold)
 
     predictions = predict_match_data(
-        match_data=pd.concat([match_data_positive, match_data_negative]),
+        match_data=
+            match_data_positive.to_dict('records') +
+            match_data_negative.to_dict('records'),
         matcher=fuzzy_matcher
         )
     actual = match_data_positive['Reference id'].to_list()+[None]*sample_N
