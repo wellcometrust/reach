@@ -59,7 +59,7 @@ base-image:
 		.
 
 .PHONY: docker-build
-docker-build: base-image
+docker-build: base-image $(WEB_BUILD_TARGETS)
 	docker build \
 		-t $(ECR_IMAGE):$(VERSION) \
 		-t $(ECR_IMAGE):latest \
