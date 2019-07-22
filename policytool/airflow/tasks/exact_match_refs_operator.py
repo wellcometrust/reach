@@ -15,6 +15,7 @@ from airflow.utils.decorators import apply_defaults
 
 from policytool.airflow.hook.wellcome_s3_hook import WellcomeS3Hook
 from policytool.refparse.refparse import exact_match_publication
+from policytool.sentry import report_exception
 
 logger = logging.getLogger(__name__)
 
@@ -88,6 +89,7 @@ class ExactMatchRefsOperator(BaseOperator):
         self.es = Elasticsearch([self.es_host])
         self.aws_conn_id = aws_conn_id
 
+    @report_exception
     def execute(self, context):
         publications_path = 's3://{path}'.format(
             path=self.publications_path,

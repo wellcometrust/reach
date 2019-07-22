@@ -10,7 +10,7 @@ class WhoIrisSpider(BaseSpider):
     data = {}
 
     custom_settings = {
-        'JOBDIR': 'crawls/who_iris'
+        'JOBDIR': BaseSpider.jobdir(name)
     }
 
     def start_requests(self):

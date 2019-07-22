@@ -3,7 +3,6 @@ Operator to run the web scraper on every organisation.
 """
 import os
 import logging
-import scraper.wsf_scraping.settings
 
 from airflow.models import BaseOperator
 from airflow.utils.decorators import apply_defaults
@@ -17,6 +16,8 @@ from policytool.scraper.wsf_scraping.spiders.gov_spider import GovSpider
 from policytool.scraper.wsf_scraping.spiders.msf_spider import MsfSpider
 from policytool.scraper.wsf_scraping.spiders.unicef_spider import UnicefSpider
 from policytool.scraper.wsf_scraping.spiders.parliament_spider import ParliamentSpider
+from policytool.sentry import report_exception
+import policytool.scraper.wsf_scraping.settings
 
 
 logger = logging.getLogger(__name__)
@@ -39,20 +40,25 @@ class RunSpiderOperator(BaseOperator):
         organisation: The organisation to pull documents from.
     """
 
+    template_fields = ('dst_s3_dir',)
+
     @apply_defaults
-    def __init__(self, organisation, path, *args, **kwargs):
+    def __init__(self, organisation, dst_s3_dir, *args, **kwargs):
         super(RunSpiderOperator, self).__init__(*args, **kwargs)
         self.organisation = organisation
-        self.path = path
+        self.dst_s3_dir = dst_s3_dir
 
+    @report_exception
     def execute(self, context):
+        if not self.dst_s3_dir.startswith('s3://'):
+            raise ValueError('Invalid S3 url: %s' % self.dst_s3_dir)
+
         os.environ.setdefault(
             'SCRAPY_SETTINGS_MODULE',
-            'scraper.wsf_scraping.settings'
+            'policytool.scraper.wsf_scraping.settings'
         )
-        scraper.wsf_scraping.settings.FEED_URI = 'manifests3://{path}'.format(
-            path=self.path
-        )
+        policytool.scraper.wsf_scraping.settings.FEED_URI = \
+            'manifest' + self.dst_s3_dir
 
         settings = get_project_settings()
 

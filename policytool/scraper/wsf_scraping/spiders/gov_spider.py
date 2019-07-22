@@ -1,15 +1,16 @@
+from urllib.parse import urlencode
+import os.path
+
+from scrapy.http import Request
 import scrapy
 
 from .base_spider import BaseSpider
-
-from scrapy.http import Request
-from urllib.parse import urlencode
 
 
 class GovSpider(BaseSpider):
     name = 'gov_uk'
     custom_settings = {
-        'JOBDIR': 'crawls/gov_uk'
+        'JOBDIR': BaseSpider.jobdir(name)
     }
 
     def __init__(self, **kwargs):
