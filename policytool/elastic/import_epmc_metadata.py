@@ -106,6 +106,8 @@ def process_es_bulk(pub_list, es):
         refresh='wait_for',
         request_timeout=3600,
     )
+    # Half of the pub list is instructions
+    return len(pub_list) / 2
 
 
 def clean_es(es):
@@ -133,12 +135,13 @@ def import_into_elasticsearch(s3_file, es, max_epmc_metadata=1000):
         max_epmc_metadata: The maximum publication number to be inserted
     """
 
+    insert_sum = 0
     with ThreadPool(THREADPOOL_SIZE) as pool:
         if THREADPOOL_SIZE > 1:
-            pool_map = pool.map
+            pool_map = pool.imap
         else:
             pool_map = map
-        pool_map(
+        for line_count in pool_map(
             partial(
                 process_es_bulk,
                 es=es,
@@ -148,8 +151,9 @@ def import_into_elasticsearch(s3_file, es, max_epmc_metadata=1000):
                 chunk_size=CHUNCK_SIZE,
                 max_epmc_metadata=max_epmc_metadata,
             )
-        )
-    return es.count(index=EPMC_METADATA_INDEX)
+        ):
+            insert_sum += line_count
+    return es.count(index=EPMC_METADATA_INDEX), insert_sum
 
 
 if __name__ == '__main__':

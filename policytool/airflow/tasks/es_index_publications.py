@@ -62,13 +62,14 @@ class ESIndexPublications(BaseOperator):
 
         s3_file = s3.get_key(self.src_s3_key)
 
-        line_count = import_into_elasticsearch(
+        line_count, insert_sum = import_into_elasticsearch(
             s3_file,
             es,
             max_epmc_metadata=self.max_epmc_metadata
         )
 
         self.log.info(
-            'imported %d lines into elasticsearch',
+            'Elasticsearch has %d records (%d newly imported)',
             line_count['count'],
+            insert_sum,
         )
