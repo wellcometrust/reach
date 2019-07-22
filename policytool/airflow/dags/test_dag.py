@@ -99,4 +99,4 @@ exact_match_refs = ExactMatchRefsOperator(
     dag=dag
 )
 
-exact_match_refs.set_upstream(fetch_epmc_task)
+exact_match_refs.set_upstream(es_index_publications)
