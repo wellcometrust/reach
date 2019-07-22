@@ -108,7 +108,7 @@ def process_es_bulk(pub_list, es):
         refresh='wait_for',
         request_timeout=3600,
     )
-    logger.info(bulk_response)
+    logger.info(bulk_response.get('errors'))
     # Half of the pub list is instructions
     return len(pub_list) / 2
 
