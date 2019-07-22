@@ -14,6 +14,8 @@ import boto3
 from elasticsearch import Elasticsearch
 
 logger = logging.getLogger(__name__)
+es_logger = logging.getLogger('elasticsearch')
+es_logger.setLevel(logging.WARNING)
 logger.setLevel(logging.INFO)
 
 THREADPOOL_SIZE = 6
@@ -101,11 +103,12 @@ def process_es_bulk(pub_list, es):
         es: a living connection to elacticsearch
         bulk_query: a formatted bulk query to submit to Elasticsearch.
     """
-    es.bulk(
+    bulk_response = es.bulk(
         body=''.join(pub_list),
         refresh='wait_for',
         request_timeout=3600,
     )
+    logger.info(bulk_response)
     # Half of the pub list is instructions
     return len(pub_list) / 2
 
