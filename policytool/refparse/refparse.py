@@ -49,13 +49,17 @@ def transform_scraper_file(scraper_data):
     """
     for _, document in scraper_data.iterrows():
         if document["sections"]:
-
-            section = document['sections']['Reference']
-            yield SectionedDocument(
-                section,
-                document['uri'],
-                document['hash']
-            )
+            try:
+                sections = document['sections']['Reference']
+            except KeyError:
+                return
+            assert isinstance(sections, list)
+            for section in sections:
+                yield SectionedDocument(
+                    section,
+                    None, # TODO: use document['uri'] after fixing scrape
+                    document['file_hash']
+                )
 
 def transform_structured_references(
         splitted_references, structured_references,
@@ -96,8 +100,8 @@ def yield_structured_references(scraper_file,
                 model_file, pool_map, logger):
     """
     Parsers references using a (potentially parallelized) map()
-    implementation, yielding back one dataframe for each document
-    in scraper_file.
+    implementation, yielding back a list of reference dicts for each
+    document in scraper_file.
 
     Args:
         scraper_file: path / S3 url to scraper results file
