@@ -10,9 +10,8 @@ x-airflow_env: &airflow-env
 
   # S3 prefix for all datalabs operators.
   # (in `core` because we must be in an existing section of the cfg)
-  AIRFLOW__CORE__POLICYTOOL_S3_PREFIX: "s3://datalabs-dev/policytool-airflow" # No trailing /!
-  AIRFLOW__CORE__DATALABS_S3_PREFIX: "s3://datalabs-dev/airflow" # No trailing /!
-
+  AIRFLOW__CORE__REACH_S3_PREFIX: "s3://datalabs-dev/reach-airflow" # No trailing /!
+  # AIRFLOW__CORE__DATALABS_ALTERYX_PREFIX: "s3://datalabs-staging/alteryx" # No trailing /!
 
   # dev creds encryption key, cf.
   # https://airflow.readthedocs.io/en/stable/howto/secure-connections.html
@@ -31,7 +30,6 @@ x-airflow_env: &airflow-env
   SENTRY_DSN: "${SENTRY_DSN}"
 
   DATABASE_URL: "postgresql://postgres:development@postgres:5432/wsf_scraping"
-  RESOURCES_FILES: "/src/policytool/resources/"
 
 x-airflow-volumes: &airflow-volumes
   - ./policytool/airflow/airflow.cfg:/airflow/airflow.cfg
@@ -80,7 +78,8 @@ services:
       - 127.0.0.1:9200:9200
     volumes:
       - esdata:/usr/share/elasticsearch/data
-
+  # Uncomment if you want 100% CPU usage.
+  #
   # kibana:
   #   image: docker.elastic.co/kibana/kibana:7.0.0
   #   ports:

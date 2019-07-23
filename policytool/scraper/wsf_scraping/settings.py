@@ -7,23 +7,23 @@ from datetime import datetime
 FEED_CONFIG = os.environ.get('SCRAPY_FEED_CONFIG', 'DEBUG')
 BOT_NAME = 'wsf_scraper'
 
-SPIDER_MODULES = ['scraper.wsf_scraping.spiders']
-NEWSPIDER_MODULE = 'scraper.wsf_scraping.spiders'
+SPIDER_MODULES = ['policytool.scraper.wsf_scraping.spiders']
+NEWSPIDER_MODULE = 'policytool.scraper.wsf_scraping.spiders'
 
 # Custom contrats for spider testing
 SPIDER_CONTRACTS = {
-    'scraper.wsf_scraping.contracts.AjaxContract': 10,
+    'policytool.scraper.wsf_scraping.contracts.AjaxContract': 10,
 }
 ITEM_PIPELINES = {
-    'scraper.wsf_scraping.pipelines.WsfScrapingPipeline': 10,
+    'policytool.scraper.wsf_scraping.pipelines.WsfScrapingPipeline': 10,
 }
 FEED_STORAGES = {
-    'manifests3': 'scraper.wsf_scraping.feed_storage.ManifestFeedStorage',
-    'local': 'scraper.wsf_scraping.feed_storage.ManifestFeedStorage',
+    'manifests3': 'policytool.scraper.wsf_scraping.feed_storage.ManifestFeedStorage',
+    'local': 'policytool.scraper.wsf_scraping.feed_storage.ManifestFeedStorage',
 }
 
 LOG_LEVEL = 'INFO'
-LOG_FORMATTER = 'scraper.wsf_scraping.middlewares.PoliteLogFormatter'
+LOG_FORMATTER = 'policytool.scraper.wsf_scraping.middlewares.PoliteLogFormatter'
 
 # Set pdfminer log to WARNING
 logging.getLogger("pdfminer").setLevel(logging.WARNING)
@@ -87,21 +87,3 @@ FEED_TEMPDIR = '/tmp/'
 FEED_URI = os.environ.get('SCRAPY_FEED_URI', 'local:///tmp/%(name)s')
 
 DATABASE_URL = os.environ.get('DATABASE_URL')
-
-# Lists to look for (case insensitive)
-SECTIONS_KEYWORDS_FILE = os.path.join(
-    os.environ.get(
-        'RESOURCES_FILES',
-        './resources'
-    ),
-    'section_keywords.txt'
-)
-
-# Keywords to look for (case insensitive)
-KEYWORDS_FILE = os.path.join(
-    os.environ.get(
-        'RESOURCES_FILES',
-        './resources'
-    ),
-    'keywords.txt'
-)

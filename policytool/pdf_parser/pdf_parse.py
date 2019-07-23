@@ -3,6 +3,7 @@ import os
 import errno
 import subprocess
 import logging
+
 from bs4 import BeautifulSoup as bs
 from .objects.PdfObjects import PdfFile, PdfPage, PdfLine
 from .tools.extraction import _find_elements

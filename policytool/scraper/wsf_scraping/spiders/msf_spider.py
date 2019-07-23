@@ -6,7 +6,7 @@ class MsfSpider(BaseSpider):
     name = 'msf'
 
     custom_settings = {
-        'JOBDIR': 'crawls/msf'
+        'JOBDIR': BaseSpider.jobdir(name)
     }
 
     def start_requests(self):

@@ -7,7 +7,7 @@ class ParliamentSpider(BaseSpider):
     name = 'parliament'
 
     custom_settings = {
-        'JOBDIR': 'crawls/parliament',
+        'JOBDIR': BaseSpider.jobdir(name),
         'ROBOTSTXT_OBEY': False
     }
 

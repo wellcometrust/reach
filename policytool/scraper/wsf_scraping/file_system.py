@@ -61,6 +61,10 @@ class FileSystem(ABC):
 
 
 class S3FileSystem(FileSystem):
+    """
+    Complicated wrapper for writing things to S3. To be
+    removed/refactored.
+    """
     def __init__(self, path, organisation, bucket):
         self.logger = logging.getLogger(__name__)
         self.logger.setLevel(logging.INFO)
@@ -72,7 +76,6 @@ class S3FileSystem(FileSystem):
     def save(self, body, path, filename):
         key = os.path.join(self.prefix, path, filename)
         self.logger.debug('Writing {key} to S3'.format(key=key))
-
         try:
             self.client.put_object(
                 Bucket=self.bucket,
@@ -81,6 +84,16 @@ class S3FileSystem(FileSystem):
             )
         except ClientError as e:
             raise e
+
+    def save_fileobj(self, fileobj, path, filename):
+        key = os.path.join(self.prefix, path, filename)
+        self.logger.info('FileSystem.save_fileobj: s3://%s/%s',
+            self.bucket, key)
+        self.client.upload_fileobj(
+            Fileobj=fileobj,
+            Bucket=self.bucket,
+            Key=key,
+        )
 
     def get_manifest(self):
         key = os.path.join(
@@ -129,7 +142,8 @@ class S3FileSystem(FileSystem):
 
     def get(self, file_hash):
         try:
-            key = os.path.join(self.prefix, 'pdf', file_hash[:2], file_hash)
+            key = os.path.join(
+                self.prefix, 'pdf', file_hash[:2], file_hash + '.pdf')
             response = self.client.get_object(
                 Bucket=self.bucket,
                 Key=key,
