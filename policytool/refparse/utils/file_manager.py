@@ -1,4 +1,5 @@
 import pandas as pd
+import gzip
 import os
 import pickle
 import tempfile
@@ -7,7 +8,7 @@ from .s3 import S3
 from policytool.refparse.settings import settings
 
 
-SCRAPING_COLUMNS = ('title', 'hash', 'sections', 'uri')
+SCRAPING_COLUMNS = ('title', 'file_hash', 'sections', 'uri')
 
 
 class FileManager():
@@ -31,7 +32,9 @@ class FileManager():
                 if k in SCRAPING_COLUMNS
             }
         except Exception as e:
-            self.logger.error("Error on line %d: %s", lineno, e)
+            self.logger.error(
+                'Error on line %d: exception=%s line=%r',
+                lineno, e, line)
             raise
 
     def get_scraping_results(self, file_name, file_prefix):
@@ -56,10 +59,18 @@ class FileManager():
                     file_path = os.path.join(file_prefix, file_name)
                 self.s3.get(file_path, tf)
                 tf.seek(0)
-                rows = (
-                    self.to_row(line, lineno) for lineno, line in enumerate(tf)
-                )
-                return pd.DataFrame(rows)
+                if file_name.endswith('.gz'):
+                    with gzip.GzipFile(fileobj=tf, mode='r') as text_tf:
+                        rows = (
+                            self.to_row(line, lineno)
+                            for lineno, line in enumerate(text_tf)
+                        )
+                        return pd.DataFrame(rows)
+                else:
+                    rows = (
+                        self.to_row(line, lineno) for lineno, line in enumerate(tf)
+                    )
+                    return pd.DataFrame(rows)
 
         return self._get_from_local(file_prefix, file_name, 'json')
 
@@ -79,7 +90,11 @@ class FileManager():
         self.s3.get(file_path, tf)
         tf.seek(0)
         self.logger.info('Using %s file from S3', file_path)
-        return self.loaders[file_type](tf)
+        if file_name.endswith('.gz'):
+            with gzip.GzipFile(fileobj=tf) as text_tf:
+                return self.loaders[file_type](text_tf)
+        else:
+            return self.loaders[file_type](tf)
 
     def _get_from_local(self, file_prefix, file_name, file_type):
         file_path = os.path.join(file_prefix, file_name)

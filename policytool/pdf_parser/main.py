@@ -4,7 +4,9 @@ find some words with their context.
 """
 from urllib.parse import urlparse
 from argparse import ArgumentParser
+import gzip
 import os
+import os.path
 import logging
 import tempfile
 import json
@@ -13,10 +15,18 @@ from policytool.scraper.wsf_scraping.file_system import (
     S3FileSystem,
     LocalFileSystem
 )
-from policytool.pdf_parser.pdf_parse import parse_pdf_document, grab_section
+from .pdf_parser.pdf_parse import parse_pdf_document, grab_section
 
 logger = logging.getLogger(__name__)
 logger.setLevel('INFO')
+
+
+def default_resources_dir():
+    """ Returns path to resources/ within our repo. """
+    return os.path.join(
+        os.path.dirname(__file__),
+        '../resources'
+    )
 
 
 def write_to_file(output_url, items, organisation):
@@ -27,18 +37,40 @@ def write_to_file(output_url, items, organisation):
         item: A dictionnary containing the results of the parsing for a pdf.
     """
     parsed_url = urlparse(output_url)
+    dirname = os.path.dirname(parsed_url.path)
+    fname = os.path.basename(parsed_url.path)
     if parsed_url.scheme == 'manifests3':
         file_system = S3FileSystem(
-            parsed_url.path,
-            organisation,
-            parsed_url.netloc
+            dirname,
+            organisation,  # not used
+            parsed_url.netloc  # bucket
         )
+        if fname.endswith('.json.gz'):
+            with tempfile.TemporaryFile(mode='w+b') as raw_f:
+                with gzip.GzipFile(fileobj=raw_f, mode='w') as f:
+                    # No text mode GzipFile until Python 3.7 :-(
+                    for item in items:
+                        f.write(json.dumps(item).encode('utf-8'))
+                        f.write(b"\n")
+                raw_f.flush()
+                raw_f.seek(0)
+                file_system.save_fileobj(raw_f, '', fname)
+        # elif fname.endswith('.json'):
+        #     with tempfile.TemporaryFile() as f:
+        #         json.dump(items, f)
+        #         f.flush()
+        #         f.seek(0)
+        #         file_system.save_fileobj(f, dirname, fname)
+        else:
+            raise ValueError(
+                'Unsupported output_url: %s' % output_url)
+
     else:
         file_system = LocalFileSystem(
             parsed_url.path,
-            organisation)
-    key = 'policytool-parse--parser-{org}.json'.format(org=organisation)
-    file_system.save(json.dumps(items), '', key)
+            organisation,  # not used
+        )
+        file_system.save(json.dumps(items), '', parsed_url.path)
 
 
 def parse_pdf(pdf, words, titles, context, pdf_hash):
@@ -102,19 +134,12 @@ def parse_keywords_files(file_path):
     """
     logger.debug("Try to open keyword files")
     keywords_list = []
-    try:
-        with open(file_path, 'r', encoding='utf-8') as f:
-            logger.debug("Successfully opened %s", file_path)
-            for line in f:
-                line = line.replace('\n', '')
-                if line and line[0] != '#':
-                    keywords_list.append(line.lower())
-    except IOError:
-        logger.warning(
-            "Unable to open keywords file at location %s", file_path
-        )
-        keywords_list = []
-    finally:
+    with open(file_path, 'r', encoding='utf-8') as f:
+        logger.debug("Successfully opened %s", file_path)
+        for line in f:
+            line = line.replace('\n', '')
+            if line and line[0] != '#':
+                keywords_list.append(line.lower())
         return keywords_list
 
 
@@ -140,9 +165,9 @@ def create_argparser(description):
     )
 
     parser.add_argument(
-        '--resource-files',
-        help='Path to the keyword and section titles files',
-        default=os.environ['PDF_PARSER_resources']
+        '--resources-dir',
+        help='Path to dir containing keywords.txt & section_keywords.txt',
+        default=default_resources_dir()
     )
 
     parser.add_argument(
@@ -154,14 +179,15 @@ def create_argparser(description):
 
     parser.add_argument(
         '--organisation',
-        help='The orgnasition to scrape: [who_iris|nice|gov_uk|msf|unicef'
+        help='The organisation to scrape: [who_iris|nice|gov_uk|msf|unicef'
              '|parliament]',
     )
 
     return parser
 
 
-def parse_all_pdf(input_url, output_url, resource_file, organisation, context):
+def parse_all_pdf(input_url, output_url, organisation, context,
+                  resources_dir=None):
     """Parses all the pdfs from the manifest in the input url and export the
     result to the ouput url.
 
@@ -175,15 +201,18 @@ def parse_all_pdf(input_url, output_url, resource_file, organisation, context):
     Args:
         input_url: The location where the entry manifest file is located.
         output_url: The location to put the file containing the parsed items.
-        resource_file: The location to find the files containing the titles
-                       and words to look for.
-        orgnaisation: The organisation to parse the files from.
+        organisation: The organisation to parse the files from.
         context: The number of lines to save before and after finding a word
                  from the keywords list.
+        resources_dir: Path to directory containing keywords.txt and
+                       section_keywords.txt, used for finding titles and
+                       words to look for.
     """
     logger.info(output_url)
-    keywords_file = os.path.join(resource_file, 'keywords.txt')
-    sections_file = os.path.join(resource_file, 'section_keywords.txt')
+    if resources_dir is None:
+        resources_dir = default_resources_dir()
+    keywords_file = os.path.join(resources_dir, 'keywords.txt')
+    sections_file = os.path.join(resources_dir, 'section_keywords.txt')
 
     # Get the sections and keywords to look for.
     words = parse_keywords_files(keywords_file)
@@ -218,7 +247,7 @@ def parse_all_pdf(input_url, output_url, resource_file, organisation, context):
                 )
             parsed_items.append(item)
 
-    write_to_file(output_url, json.dumps(parsed_items), organisation)
+    write_to_file(output_url, parsed_items, organisation)
 
 
 if __name__ == '__main__':
@@ -229,7 +258,7 @@ if __name__ == '__main__':
     parse_all_pdf(
         args.input_url,
         args.output_url,
-        args.resource_file,
         args.organisation,
         args.keywords_search_context,
+        resources_dir=args.resources_dir,
     )

@@ -10,3 +10,4 @@ policytool/results
 policytool/crawls
 !build/web/static
 pull_request_template.md
+policytool/refparse/algo_evaluation/data_evaluate/*

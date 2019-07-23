@@ -8,11 +8,10 @@ from airflow.models import BaseOperator
 from airflow.utils.decorators import apply_defaults
 
 from policytool.pdf_parser.main import parse_all_pdf
+from policytool.sentry import report_exception
 
 
 logger = logging.getLogger(__name__)
-
-RESOURCE_FILES = '/src/policytool/resources/'
 
 
 class ParsePdfOperator(BaseOperator):
@@ -23,22 +22,29 @@ class ParsePdfOperator(BaseOperator):
         organisation: The organisation to pull documents from.
     """
 
+    template_fields = (
+        'dst_s3_key',
+        'src_s3_dir',
+    )
+
     @apply_defaults
-    def __init__(self, organisation, input_path, output_path, *args, **kwargs):
+    def __init__(self, organisation, src_s3_dir, dst_s3_key, *args, **kwargs):
         super(ParsePdfOperator, self).__init__(*args, **kwargs)
         self.organisation = organisation
-        self.input_path = input_path
-        self.output_path = output_path
+        self.src_s3_dir = src_s3_dir
+        self.dst_s3_key = dst_s3_key
 
+    @report_exception
     def execute(self, context):
         os.environ.setdefault(
             'SCRAPY_SETTINGS_MODULE',
             'scraper.wsf_scraping.settings'
         )
-        input = 'manifests3://{path}'.format(
-            path=self.input_path,
-        )
-        output = 'manifests3://{path}'.format(
-            path=self.output_path,
-        )
-        parse_all_pdf(input, output, RESOURCE_FILES, self.organisation, 2)
+        if not self.src_s3_dir.startswith('s3://'):
+            raise ValueError
+        if not self.dst_s3_key.startswith('s3://'):
+            raise ValueError
+
+        input_uri = 'manifest' + self.src_s3_dir
+        output_uri = 'manifest' + self.dst_s3_key
+        parse_all_pdf(input_uri, output_uri, self.organisation, 2)

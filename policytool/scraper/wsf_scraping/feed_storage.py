@@ -1,9 +1,9 @@
 import logging
 
-from scraper.scraper.file_system import S3FileSystem, LocalFileSystem
 from six.moves.urllib.parse import urlparse
 from scrapy.extensions.feedexport import BlockingFeedStorage
 
+from .file_system import S3FileSystem, LocalFileSystem
 
 class ManifestFeedStorage(BlockingFeedStorage):
     """This FeedStorage is given the informations about the pdf files scraped

@@ -1,6 +1,6 @@
 import pandas as pd 
 import numpy as np
-from utils.split import split_section
+from policytool.refparse.utils.split import split_section
 
 def calc_num_metric(predicted_number, actual_number):
     """
@@ -28,8 +28,8 @@ def calc_med_metric(metrics):
 def calc_bel_metric(metrics, threshold):
 
     bel_metric = round(
-        100 * len([x for x in metrics if x <= threshold]) / len(metrics),
-        1
+        len([x for x in metrics if x <= threshold]) / len(metrics),
+        3
     )
 
     return bel_metric
@@ -47,15 +47,17 @@ def evaluate_metrics(actual_pred_num_references, threshold):
     median_diff = calc_med_metric(actual_pred_num_references['diff_metric'])
     below_threshold = calc_bel_metric(actual_pred_num_references['diff_metric'], threshold)
     grouped_source_metrics = actual_pred_num_references.groupby('Source')['diff_metric'].agg({
+        'Number of reference sections in sample': lambda x: len(x),
         'Median difference': lambda x: calc_med_metric(x),
-        'Percentage below threshold of {}'.format(threshold) : lambda x : calc_bel_metric(x, threshold)
+        'Proportion below threshold of {}'.format(threshold) : lambda x : calc_bel_metric(x, threshold)
     })
 
     metrics = {
         'Score' : below_threshold,
-        'Percentage below threshold of {}'.format(threshold) : below_threshold,
+        'Number of reference sections in sample' : len(actual_pred_num_references),
+        'Proportion below threshold of {}'.format(threshold) : below_threshold,
         'Median difference' : median_diff,
-        'Metrics grouped by source' : grouped_source_metrics
+        'Metrics grouped by source' : grouped_source_metrics.T
         }
 
     return metrics

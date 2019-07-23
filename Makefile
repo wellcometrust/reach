@@ -4,6 +4,7 @@ VIRTUALENV := build/virtualenv
 
 IMAGE := uk.ac.wellcome/policytool
 ECR_IMAGE := 160358319781.dkr.ecr.eu-west-1.amazonaws.com/$(IMAGE)
+LATEST_TAG := latest
 VERSION := latest
 
 
@@ -62,15 +63,14 @@ base-image:
 docker-build: base-image $(WEB_BUILD_TARGETS)
 	docker build \
 		-t $(ECR_IMAGE):$(VERSION) \
-		-t $(ECR_IMAGE):latest \
-		-f Dockerfile \
+		-t $(ECR_IMAGE):$(LATEST_TAG) \
 		.
 
 .PHONY: docker-push
 docker-push: docker-test
 	$$(aws ecr get-login --no-include-email --region eu-west-1) && \
 	docker push $(ECR_IMAGE):$(VERSION) && \
-	docker push $(ECR_IMAGE):latest
+	docker push $(ECR_IMAGE):$(LATEST_TAG)
 
 #
 # build/virtualenv (for docker-less dev)

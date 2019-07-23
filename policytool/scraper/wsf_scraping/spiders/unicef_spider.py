@@ -7,7 +7,7 @@ class UnicefSpider(BaseSpider):
     name = 'unicef'
 
     custom_settings = {
-        'JOBDIR': 'crawls/unicef'
+        'JOBDIR': BaseSpider.jobdir(name)
     }
 
     def start_requests(self):
