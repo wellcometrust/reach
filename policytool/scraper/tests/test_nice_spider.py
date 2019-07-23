@@ -3,7 +3,7 @@ import unittest
 
 from scrapy.http import Response, Request, HtmlResponse, TextResponse
 from scrapy.utils.project import get_project_settings
-from scraper.wsf_scraping.spiders.nice_spider import NiceSpider
+from policytool.scraper.wsf_scraping.spiders.nice_spider import NiceSpider
 
 from .common import get_path, TEST_PDF
 

@@ -11,8 +11,11 @@ import logging
 import tempfile
 import json
 
-from policytool.scraper.wsf_scraping.file_system import S3FileSystem, LocalFileSystem
-from .pdf_parse import parse_pdf_document, grab_section
+from policytool.scraper.wsf_scraping.file_system import (
+    S3FileSystem,
+    LocalFileSystem
+)
+from .pdf_parser.pdf_parse import parse_pdf_document, grab_section
 
 logger = logging.getLogger(__name__)
 logger.setLevel('INFO')
@@ -24,7 +27,6 @@ def default_resources_dir():
         os.path.dirname(__file__),
         '../resources'
     )
-   
 
 
 def write_to_file(output_url, items, organisation):
@@ -165,7 +167,8 @@ def create_argparser(description):
     parser.add_argument(
         '--resources-dir',
         help='Path to dir containing keywords.txt & section_keywords.txt',
-        default=default_resources_dir()    )
+        default=default_resources_dir()
+    )
 
     parser.add_argument(
         '--keyword-search-context',
