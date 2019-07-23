@@ -43,6 +43,13 @@ parser.add_argument('-P', '--port',
                     help='Port of the Elasticsearch server')
 
 
+class IndexingErrorException(Exception):
+    """Exception to raise if any error happens during elasticsearch
+       bulk indexing.
+    """
+    pass
+
+
 def build_es_bulk(line):
     """ Returns a preformated line to add to an Elasticsearch bulk query. """
     action = '{"index": {"_index": "%s"}}' % EPMC_METADATA_INDEX
@@ -109,7 +116,9 @@ def process_es_bulk(pub_list, es):
         request_timeout=3600,
     )
     if bool(bulk_response.get('errors')):
-        logger.info(bulk_response)
+        logger.error('failed on bulk indexing:\n%s',
+                     bulk_response)
+        raise IndexingErrorException()
     # Half of the pub list is instructions
     return len(pub_list) / 2
 
