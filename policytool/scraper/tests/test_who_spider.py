@@ -3,7 +3,7 @@ import unittest
 
 from scrapy.http import Response, Request, HtmlResponse
 from scrapy.utils.project import get_project_settings
-from scraper.wsf_scraping.spiders.who_iris_spider import WhoIrisSpider
+from policytool.scraper.wsf_scraping.spiders.who_iris_spider import WhoIrisSpider
 
 from .common import get_path, TEST_PDF
 
