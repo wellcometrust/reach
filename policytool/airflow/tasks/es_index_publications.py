@@ -56,7 +56,7 @@ class ESIndexPublications(BaseOperator):
 
         self.log.info(
             'Getting %s pubs from %s',
-            self.max_publications if self.max_publications else 'all',
+            self.max_epmc_metadata if self.max_epmc_metadata else 'all',
             self.src_s3_key,
         )
 
