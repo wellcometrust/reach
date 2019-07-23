@@ -8,6 +8,8 @@ from policytool.airflow.tasks.dummy_spider_operator import DummySpiderOperator
 from policytool.airflow.tasks.run_spider_operator import RunSpiderOperator
 from policytool.airflow.tasks.extract_refs_operator import ExtractRefsOperator
 from policytool.airflow.tasks.parse_pdf_operator import ParsePdfOperator
+from policytool.airflow.tasks.es_index_publications import ESIndexPublications
+
 
 ORGANISATIONS = [
     'who_iris',
@@ -31,7 +33,9 @@ def verify_s3_prefix():
     assert reach_s3_prefix.startswith('s3://')
     assert not reach_s3_prefix.endswith('/')
 
+
 verify_s3_prefix()
+
 
 def to_s3_output(dag, *args):
     """ Returns the S3 URL for any output file for the DAG. """
@@ -54,7 +58,6 @@ def to_s3_output_dir(dag, *args):
     ) % (dag.dag_id, path, slug)
 
 
-
 def to_s3_model(*args):
     """ Returns the S3 URL for to a model, rooted under
     ${REACH_S3_PREFIX}/models/"""
@@ -62,7 +65,6 @@ def to_s3_model(*args):
         '{{ conf.get("core", "reach_s3_prefix") }}'
         '/models/%s'
     ) % '/'.join(args)
-
 
 
 def create_extract_pipeline(dag, organisation, spider_op_cls):
@@ -110,11 +112,28 @@ def create_dag(default_args, spider_op_cls):
         default_args=default_args,
         schedule_interval='0 0 * * 0'
     )
+
+    epmc_metadata_key = '/'.join([
+        '{{ conf.get("core", "datalabs_s3_prefix") }}',
+        'output', 'open-research', 'epmc-metadata', 'epmc-metadata.json.gz'
+    ])
+
+    es_index_publications = ESIndexPublications(
+        task_id=ESIndexPublications.__name__,
+        src_s3_key=epmc_metadata_key,
+        es_host='elasticsearch',
+        dag=dag
+    )
     for organisation in ORGANISATIONS:
-        create_extract_pipeline(dag, organisation, spider_op_cls)
+        extract_task = create_extract_pipeline(
+            dag,
+            organisation,
+            spider_op_cls
+        )
+
+        extract_task.set_upstream(es_index_publications)
 
     return dag
 
 
 test_dag = create_dag(DEFAULT_ARGS, DummySpiderOperator)
-

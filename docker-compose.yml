@@ -6,7 +6,7 @@ x-airflow-image: &airflow-image
 x-airflow_env: &airflow-env
   AIRFLOW_HOME: /airflow
 
-  # AIRFLOW_CONN_DIMENSIONS_DEFAULT: "https://${DIMENSIONS_USERNAME}:${DIMENSIONS_PASSWORD}@app.dimensions.ai/api/"
+
 
   # S3 prefix for all datalabs operators.
   # (in `core` because we must be in an existing section of the cfg)
@@ -26,13 +26,9 @@ x-airflow_env: &airflow-env
   AWS_ACCESS_KEY_ID: "${AWS_ACCESS_KEY_ID}"
   AWS_SECRET_ACCESS_KEY: "${AWS_SECRET_ACCESS_KEY}"
 
-  # For local dev, also send task logs to stderr.
-  # no longer needed once we're on current airflow
-  # AIRFLOW__CORE__LOGGING_CONFIG_CLASS: "scraper.airflow.logging_config.CONSOLE_LOGGING_CONFIG"
-
   DATALABS_AIRFLOW_VERSION: "localdev"
-
   SENTRY_DSN: "${SENTRY_DSN}"
+
   DATABASE_URL: "postgresql://postgres:development@postgres:5432/wsf_scraping"
 
 x-airflow-volumes: &airflow-volumes
@@ -74,16 +70,14 @@ services:
       - ./build/airflow.redis:/data
 
   elasticsearch:
-    image: docker.elastic.co/elasticsearch/elasticsearch:7.0.0
+    image: docker.elastic.co/elasticsearch/elasticsearch:7.2.0
     environment:
       - discovery.type=single-node
-      - bootstrap.memory_lock=true
-      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+      - "ES_JAVA_OPTS=-Xms2g -Xmx2g"
     ports:
       - 127.0.0.1:9200:9200
     volumes:
       - esdata:/usr/share/elasticsearch/data
-
   # Uncomment if you want 100% CPU usage.
   #
   # kibana:
@@ -178,5 +172,5 @@ services:
     stop_signal: SIGKILL
 
 volumes:
-    esdata:
-        driver: local
+  esdata:
+    driver: local
