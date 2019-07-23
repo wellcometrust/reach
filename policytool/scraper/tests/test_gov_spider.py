@@ -2,7 +2,7 @@ import unittest
 from scrapy.http import Response, Request, HtmlResponse
 
 from scrapy.utils.project import get_project_settings
-from scraper.wsf_scraping.spiders.gov_spider import GovSpider
+from policytool.scraper.wsf_scraping.spiders.gov_spider import GovSpider
 
 from .common import get_path, TEST_PDF
 
