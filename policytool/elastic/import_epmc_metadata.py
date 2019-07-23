@@ -115,7 +115,7 @@ def process_es_bulk(pub_list, es):
         refresh='wait_for',
         request_timeout=3600,
     )
-    if bool(bulk_response.get('errors')):
+    if bulk_response.get('errors') == "True":
         logger.error('failed on bulk indexing:\n%s',
                      bulk_response)
         raise IndexingErrorException()
