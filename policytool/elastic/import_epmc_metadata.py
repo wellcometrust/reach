@@ -120,7 +120,7 @@ def process_es_bulk(pub_list, es):
                      bulk_response)
         raise IndexingErrorException()
     # Half of the pub list is instructions
-    return len(pub_list) / 2
+    return len(pub_list)
 
 
 def clean_es(es):
