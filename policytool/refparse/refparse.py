@@ -50,16 +50,17 @@ def transform_scraper_file(scraper_data):
     for _, document in scraper_data.iterrows():
         if document["sections"]:
             try:
-                sections = document['sections']['Reference']
+                sections = document['sections']
             except KeyError:
                 return
-            assert isinstance(sections, list)
-            for section in sections:
-                yield SectionedDocument(
-                    section,
-                    None, # TODO: use document['uri'] after fixing scrape
-                    document['file_hash']
-                )
+            for section_list in sections.values():
+                assert isinstance(section_list, list)
+                for section in section_list:
+                    yield SectionedDocument(
+                        section,
+                        None, # TODO: use document['uri'] after fixing scrape
+                        document['file_hash']
+                    )
 
 def transform_structured_references(
         splitted_references, structured_references,

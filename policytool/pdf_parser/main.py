@@ -111,10 +111,10 @@ def parse_pdf(pdf, words, titles, context, pdf_hash):
             # Add references and PDF name to JSON returned file
             # If no section matchs, leave the attribute undefined
             if section:
-                if section_dict.get(title.title()):
-                    section_dict[title.title()].append(section)
+                if section_dict.get(title):
+                    section_dict[title].append(section)
                 else:
-                    section_dict[title.title()] = [section]
+                    section_dict[title] = [section]
 
     return {
         'file_hash': pdf_hash,
