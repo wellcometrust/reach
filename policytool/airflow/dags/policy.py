@@ -9,6 +9,7 @@ from policytool.airflow.tasks.run_spider_operator import RunSpiderOperator
 from policytool.airflow.tasks.extract_refs_operator import ExtractRefsOperator
 from policytool.airflow.tasks.parse_pdf_operator import ParsePdfOperator
 from policytool.airflow.tasks.es_index_publications import ESIndexPublications
+from policytool.airflow.tasks.es_index_fulltexts import ESIndexFulltexts
 
 
 ORGANISATIONS = [
@@ -75,13 +76,23 @@ def create_extract_pipeline(dag, organisation, spider_op_cls):
             dag, 'policy-scrape', organisation),
         dag=dag)
 
+    s3_parse_dst_key = to_s3_output(
+            dag, 'policy-parse', organisation, '.json.gz')
+
     parsePdfs = ParsePdfOperator(
         task_id='ParsePdf.%s' % organisation,
         organisation=organisation,
         src_s3_dir=spider.dst_s3_dir,
-        dst_s3_key=to_s3_output(
-            dag, 'policy-parse', organisation, '.json.gz'),
+        dst_s3_key=s3_parse_dst_key,
         dag=dag)
+
+    es_index_fulltexts = ESIndexFulltexts(
+        task_id=ESIndexPublications.__name__,
+        src_s3_key=s3_parse_dst_key,
+        organisation=organisation,
+        es_host='elasticsearch',
+        dag=dag
+    )
 
     parser_model = to_s3_model(
         'reference_parser_models',
@@ -94,6 +105,7 @@ def create_extract_pipeline(dag, organisation, spider_op_cls):
             dag, 'policy-extract', organisation, '.json.gz'),
         dag=dag)
 
+    es_index_fulltexts << parsePdfs
     spider >> parsePdfs >> extractRefs
     return extractRefs
 
