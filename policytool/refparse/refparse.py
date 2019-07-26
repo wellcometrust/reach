@@ -66,10 +66,12 @@ def transform_structured_references(
         document_id, document_uri):
     transformed_structured_references = []
     for structured_reference, splitted_reference in zip(structured_references, splitted_references):
-        structured_reference['Document id'] = document_id
-        structured_reference['Document uri'] = document_uri
-        structured_reference['Reference id'] = hash(splitted_reference)
-        transformed_structured_references.append(structured_reference)
+        # Don't return the structured references if no categories were found
+        if any([category_text for category_text in structured_reference.values()]):
+            structured_reference['Document id'] = document_id
+            structured_reference['Document uri'] = document_uri
+            structured_reference['Reference id'] = hash(splitted_reference)
+            transformed_structured_references.append(structured_reference)
 
     return transformed_structured_references
 
