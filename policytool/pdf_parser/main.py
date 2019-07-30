@@ -15,7 +15,7 @@ from policytool.scraper.wsf_scraping.file_system import (
     S3FileSystem,
     LocalFileSystem
 )
-from .pdf_parser.pdf_parse import parse_pdf_document, grab_section
+from .pdf_parse import parse_pdf_document, grab_section
 
 logger = logging.getLogger(__name__)
 logger.setLevel('INFO')
