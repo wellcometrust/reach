@@ -9,7 +9,7 @@ from policytool.airflow.tasks.run_spider_operator import RunSpiderOperator
 from policytool.airflow.tasks.extract_refs_operator import ExtractRefsOperator
 from policytool.airflow.tasks.parse_pdf_operator import ParsePdfOperator
 from policytool.airflow.tasks.es_index_publications import ESIndexPublications
-from policytool.airflow.tasks.es_index_fulltexts import ESIndexFulltexts
+from policytool.airflow.tasks.es_index_fulltext import ESIndexFulltexts
 
 
 ORGANISATIONS = [
@@ -68,7 +68,8 @@ def to_s3_model(*args):
     ) % '/'.join(args)
 
 
-def create_extract_pipeline(dag, organisation, spider_op_cls):
+def create_extract_pipeline(dag, organisation,
+                            spider_op_cls, es_index_publications):
     spider = spider_op_cls(
         task_id='Spider.%s' % organisation,
         organisation=organisation,
@@ -87,7 +88,7 @@ def create_extract_pipeline(dag, organisation, spider_op_cls):
         dag=dag)
 
     es_index_fulltexts = ESIndexFulltexts(
-        task_id=ESIndexPublications.__name__,
+        task_id="ESIndexFulltexts.%s" % organisation,
         src_s3_key=s3_parse_dst_key,
         organisation=organisation,
         es_host='elasticsearch',
@@ -97,6 +98,7 @@ def create_extract_pipeline(dag, organisation, spider_op_cls):
     parser_model = to_s3_model(
         'reference_parser_models',
         'reference_parser_pipeline.pkl')
+
     extractRefs = ExtractRefsOperator(
         task_id='ExtractRefs.%s' % organisation,
         model_path=parser_model,
@@ -106,7 +108,7 @@ def create_extract_pipeline(dag, organisation, spider_op_cls):
         dag=dag)
 
     es_index_fulltexts << parsePdfs
-    spider >> parsePdfs >> extractRefs
+    es_index_publications >> spider >> parsePdfs >> extractRefs
     return extractRefs
 
 
@@ -126,7 +128,7 @@ def create_dag(default_args, spider_op_cls):
     )
 
     epmc_metadata_key = '/'.join([
-        '{{ conf.get("core", "datalabs_s3_prefix") }}',
+        '{{ conf.get("core", "openresearch_s3_prefix") }}',
         'output', 'open-research', 'epmc-metadata', 'epmc-metadata.json.gz'
     ])
 
@@ -137,13 +139,12 @@ def create_dag(default_args, spider_op_cls):
         dag=dag
     )
     for organisation in ORGANISATIONS:
-        extract_task = create_extract_pipeline(
+        create_extract_pipeline(
             dag,
             organisation,
-            spider_op_cls
+            spider_op_cls,
+            es_index_publications
         )
-
-        extract_task.set_upstream(es_index_publications)
 
     return dag
 
