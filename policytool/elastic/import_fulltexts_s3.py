@@ -1,4 +1,4 @@
-""" Takes a given number of publications from a dataset in S3 and
+""" Takes a given number of publication fulltexts from a dataset in S3 and
 import them into a running Elasticsearch database.
 """
 
@@ -74,7 +74,7 @@ def yield_publications(s3_object, org):
         json_archive: An open gzip file as a streaming body from s3
 
     Yields:
-        publication: A dict describing a publication from EPMC
+        publication: A dict containing the fulltext of a scraped publication
     """
     with tempfile.NamedTemporaryFile() as tf:
         s3_object.download_fileobj(tf)
