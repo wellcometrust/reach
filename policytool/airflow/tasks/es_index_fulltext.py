@@ -79,6 +79,6 @@ class ESIndexFulltexts(BaseOperator):
 
         self.log.info(
             'Elasticsearch has %d records (%d newly imported)',
-            line_count['count'],
+            line_count,
             insert_sum,
         )
