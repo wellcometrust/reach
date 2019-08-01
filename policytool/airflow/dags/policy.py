@@ -69,7 +69,7 @@ def to_s3_model(*args):
 
 
 def create_extract_pipeline(dag, organisation,
-                            spider_op_cls, es_index_publications):
+                            spider_op_cls):
     spider = spider_op_cls(
         task_id='Spider.%s' % organisation,
         organisation=organisation,
@@ -107,8 +107,8 @@ def create_extract_pipeline(dag, organisation,
             dag, 'policy-extract', organisation, '.json.gz'),
         dag=dag)
 
-    es_index_fulltexts << parsePdfs
-    es_index_publications >> spider >> parsePdfs >> extractRefs
+    parsePdfs >> es_index_fulltexts
+    spider >> parsePdfs >> extractRefs
     return extractRefs
 
 
@@ -139,11 +139,10 @@ def create_dag(default_args, spider_op_cls):
         dag=dag
     )
     for organisation in ORGANISATIONS:
-        create_extract_pipeline(
+        extract_task = create_extract_pipeline(
             dag,
             organisation,
-            spider_op_cls,
-            es_index_publications
+            spider_op_cls
         )
 
     return dag

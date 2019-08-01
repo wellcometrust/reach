@@ -67,7 +67,7 @@ def build_es_bulk(line, org):
     return '\n'.join([action, data])
 
 
-def yield_publications(s3_object, org):
+def yield_publications(tf, org):
     """ Given a gzip streaming body, yield a publication as a dict.
 
     Args:
@@ -76,16 +76,13 @@ def yield_publications(s3_object, org):
     Yields:
         publication: A dict containing the fulltext of a scraped publication
     """
-    with tempfile.NamedTemporaryFile() as tf:
-        s3_object.download_fileobj(tf)
-        tf.seek(0)
-        logger.info('Start yielding...')
-        with gzip.GzipFile(fileobj=tf, mode='r') as json_file:
-            for index, line in enumerate(json_file):
-                yield build_es_bulk(line.decode('utf-8'), org)
+    logger.info('Start yielding...')
+    with gzip.GzipFile(fileobj=tf, mode='r') as json_file:
+        for index, line in enumerate(json_file):
+            yield build_es_bulk(line.decode('utf-8'), org)
 
 
-def yield_metadata_chunk(s3_object, max_publication_number,
+def yield_metadata_chunk(tf, max_publication_number,
                          org, chunk_size=500):
     """ Yield bulk insertion preformatted publication list of
     chunk_size length.
@@ -101,7 +98,7 @@ def yield_metadata_chunk(s3_object, max_publication_number,
                   Elasticsearch's bulk API
     """
     pub_list = []
-    for index, metadata in enumerate(yield_publications(s3_object, org)):
+    for index, metadata in enumerate(yield_publications(tf, org)):
         pub_list.append(metadata)
         if max_publication_number and index + 1 >= max_publication_number:
             yield pub_list
@@ -127,7 +124,7 @@ def process_es_bulk(pub_list, es):
         refresh='wait_for',
         request_timeout=3600,
     )
-    if bulk_response.get('errors') == "True":
+    if bulk_response.get('errors'):
         logger.error('failed on bulk indexing:\n%s',
                      bulk_response)
         raise IndexingErrorException()
@@ -139,7 +136,6 @@ def clean_es(es):
 
     Args:
         es: a living connection to elasticsearch
-
     """
     logger.info('Cleaning the database..')
     # Ignore if the index doesn't exist, as it'll be created by next queries
@@ -147,9 +143,12 @@ def clean_es(es):
         index=ES_INDEX,
         ignore=[404]
     )
+    es.indices.create(
+        index=ES_INDEX
+    )
 
 
-def import_into_elasticsearch(s3_file, es, org, max_publication_number=1000):
+def import_into_elasticsearch(tf, es, org, max_publication_number=1000):
     """ Read publications from the given s3 file and write them to the
     elasticsearch database.
 
@@ -171,7 +170,7 @@ def import_into_elasticsearch(s3_file, es, org, max_publication_number=1000):
                 es=es,
             ),
             yield_metadata_chunk(
-                s3_file,
+                tf,
                 org=org,
                 chunk_size=CHUNCK_SIZE,
                 max_publication_number=max_publication_number,
@@ -197,20 +196,24 @@ if __name__ == '__main__':
         parsed_url.path,
         parsed_url.netloc
     )
-    s3_file = s3.Object(
-        bucket_name=parsed_url.netloc,
-        key=parsed_url.path[1:]
-    )
 
     if args.clean:
         clean_es(es)
 
-    total, recent = import_into_elasticsearch(
-        s3_file,
-        es,
-        args.organisation,
-        args.publication_number
+    s3_object = s3.Object(
+        bucket_name=parsed_url.netloc,
+        key=parsed_url.path[1:]
     )
+    with tempfile.NamedTemporaryFile() as tf:
+        s3_object.download_fileobj(tf)
+        tf.seek(0)
+
+        total, recent = import_into_elasticsearch(
+            tf,
+            es,
+            args.organisation,
+            args.publication_number
+        )
     logger.info(
         'total index publications: %d (%d recent)',
         total,
