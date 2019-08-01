@@ -2,15 +2,15 @@
 Operator to run the get the latest EPMC metadata from AWS S3.
 """
 
-from policytool.airflow.hook.wellcome_s3_hook import WellcomeS3Hook
+import tempfile
+
 from airflow.models import BaseOperator
 from airflow.utils.decorators import apply_defaults
 from elasticsearch import Elasticsearch
 
-from policytool.elastic.import_epmc_metadata import (
-    import_into_elasticsearch,
-    clean_es,
-)
+from policytool.airflow.hook.wellcome_s3_hook import WellcomeS3Hook
+from policytool.elastic.import_epmc_metadata import import_into_elasticsearch,
+from policytool.elastic.import_epmc_metadata import clean_es
 
 
 class ESIndexPublications(BaseOperator):
@@ -60,13 +60,16 @@ class ESIndexPublications(BaseOperator):
             self.src_s3_key,
         )
 
-        s3_file = s3.get_key(self.src_s3_key)
+        s3_object = s3.get_key(self.src_s3_key)
+        with tempfile.NamedTemporaryFile() as tf:
+            s3_object.download_fileobj(tf)
+            tf.seek(0)
 
-        line_count, insert_sum = import_into_elasticsearch(
-            s3_file,
-            es,
-            max_epmc_metadata=self.max_epmc_metadata
-        )
+            line_count, insert_sum = import_into_elasticsearch(
+                tf,
+                es,
+                max_epmc_metadata=self.max_epmc_metadata
+            )
 
         self.log.info(
             'Elasticsearch has %d records (%d newly imported)',

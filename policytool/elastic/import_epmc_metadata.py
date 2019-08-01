@@ -57,7 +57,7 @@ def build_es_bulk(line):
     return '\n'.join([action, data])
 
 
-def yield_publications_metadata(s3_object):
+def yield_publications_metadata(tf):
     """ Given a gzip streaming body, yield a publication as a dict.
 
     Args:
@@ -66,16 +66,13 @@ def yield_publications_metadata(s3_object):
     Yields:
         publication: A dict describing a publication from EPMC
     """
-    with tempfile.NamedTemporaryFile() as tf:
-        s3_object.download_fileobj(tf)
-        tf.seek(0)
-        logger.info('Start yielding...')
-        with gzip.GzipFile(fileobj=tf, mode='r') as json_file:
-            for index, line in enumerate(json_file):
-                yield build_es_bulk(line.decode('utf-8'))
+    logger.info('Start yielding...')
+    with gzip.GzipFile(fileobj=tf, mode='r') as json_file:
+        for index, line in enumerate(json_file):
+            yield build_es_bulk(line.decode('utf-8'))
 
 
-def yield_metadata_chunk(s3_object, max_epmc_metadata, chunk_size=500):
+def yield_metadata_chunk(tf, max_epmc_metadata, chunk_size=500):
     """ Yield bulk insertion preformatted publication list of
     chunk_size length.
 
@@ -89,7 +86,7 @@ def yield_metadata_chunk(s3_object, max_epmc_metadata, chunk_size=500):
                   Elasticsearch's bulk API
     """
     pub_list = []
-    for index, metadata in enumerate(yield_publications_metadata(s3_object)):
+    for index, metadata in enumerate(yield_publications_metadata(tf)):
         pub_list.append(metadata)
         if max_epmc_metadata and index + 1 >= max_epmc_metadata:
             yield pub_list
@@ -115,11 +112,10 @@ def process_es_bulk(pub_list, es):
         refresh='wait_for',
         request_timeout=3600,
     )
-    if bulk_response.get('errors') == "True":
+    if bulk_response.get('errors'):
         logger.error('failed on bulk indexing:\n%s',
                      bulk_response)
         raise IndexingErrorException()
-    # Half of the pub list is instructions
     return len(pub_list)
 
 
@@ -136,9 +132,12 @@ def clean_es(es):
         index=EPMC_METADATA_INDEX,
         ignore=[404]
     )
+    es.indices.create(
+        index=EPMC_METADATA_INDEX
+    )
 
 
-def import_into_elasticsearch(s3_file, es, max_epmc_metadata=1000):
+def import_into_elasticsearch(tf, es, max_epmc_metadata=1000):
     """ Read publications from the given s3 file and write them to the
     elasticsearch database.
 
@@ -160,13 +159,13 @@ def import_into_elasticsearch(s3_file, es, max_epmc_metadata=1000):
                 es=es,
             ),
             yield_metadata_chunk(
-                s3_file,
+                tf,
                 chunk_size=CHUNCK_SIZE,
                 max_epmc_metadata=max_epmc_metadata,
             )
         ):
             insert_sum += line_count
-    return es.count(index=EPMC_METADATA_INDEX), insert_sum
+    return es.count(index=EPMC_METADATA_INDEX)['count'], insert_sum
 
 
 if __name__ == '__main__':
@@ -195,9 +194,14 @@ if __name__ == '__main__':
         bucket_name=parsed_url.netloc,
         key=parsed_url.path[1:]
     )
-    if args.publication_number < 0:
-        res = import_into_elasticsearch(s3_file, es, None)
-    else:
-        res = import_into_elasticsearch(s3_file, es, args.publication_number)
 
-    logger.info('Imported %d pubs into ES', res['count'])
+    with tempfile.NamedTemporaryFile() as tf:
+        s3_file.download_fileobj(tf)
+        tf.seek(0)
+        if args.publication_number < 0:
+            total, recent = import_into_elasticsearch(tf, es, None)
+        else:
+            total, recent = import_into_elasticsearch(tf, es,
+                                                      args.publication_number)
+
+    logger.info('Imported %d pubs into ES (%d this run)', total, recent)
