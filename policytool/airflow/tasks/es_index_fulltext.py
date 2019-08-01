@@ -1,16 +1,15 @@
 """
 Operator to run the get the latest scraped fulltexts from AWS S3.
 """
+import tempfile
 
-from policytool.airflow.hook.wellcome_s3_hook import WellcomeS3Hook
+from elasticsearch import Elasticsearch
 from airflow.models import BaseOperator
 from airflow.utils.decorators import apply_defaults
-from elasticsearch import Elasticsearch
 
-from policytool.elastic.import_fulltexts_s3 import (
-    import_into_elasticsearch,
-    clean_es,
-)
+from policytool.airflow.hook.wellcome_s3_hook import WellcomeS3Hook
+from policytool.elastic.import_fulltexts_s3 import import_into_elasticsearch
+from policytool.elastic.import_fulltexts_s3 import clean_es
 
 
 class ESIndexFulltexts(BaseOperator):
@@ -68,14 +67,17 @@ class ESIndexFulltexts(BaseOperator):
                 self.src_s3_key,
             )
 
-        s3_file = s3.get_key(self.src_s3_key)
+        s3_object = s3.get_key(self.src_s3_key)
+        with tempfile.NamedTemporaryFile() as tf:
+            s3_object.download_fileobj(tf)
+            tf.seek(0)
 
-        line_count, insert_sum = import_into_elasticsearch(
-            s3_file,
-            es,
-            self.organisation,
-            max_publication_number=self.max_publication_number
-        )
+            line_count, insert_sum = import_into_elasticsearch(
+                tf,
+                es,
+                self.organisation,
+                max_publication_number=self.max_publication_number
+            )
 
         self.log.info(
             'Elasticsearch has %d records (%d newly imported)',
