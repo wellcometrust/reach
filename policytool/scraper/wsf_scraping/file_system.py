@@ -62,8 +62,7 @@ class FileSystem(ABC):
 
 class S3FileSystem(FileSystem):
     """
-    Complicated wrapper for writing things to S3. To be
-    removed/refactored.
+    (Blocking!) wrapper for writing things to S3.
     """
     def __init__(self, path, organisation, bucket):
         self.logger = logging.getLogger(__name__)
