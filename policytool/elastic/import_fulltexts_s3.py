@@ -1,46 +1,49 @@
-""" Takes a given publication metadata number (default to 500) from a dataset
-in S3 and import them into a running Elasticsearch database.
+""" Takes a given number of publication fulltexts from a dataset in S3 and
+import them into a running Elasticsearch database.
 """
 
 import tempfile
-import logging
+import json
 import gzip
+import logging
+from multiprocessing.dummy import Pool as ThreadPool
 from functools import partial
 from urllib.parse import urlparse
 from argparse import ArgumentParser
-from multiprocessing.dummy import Pool as ThreadPool
 
 import boto3
 from elasticsearch import Elasticsearch
 
+logging.basicConfig()
 logger = logging.getLogger(__name__)
 es_logger = logging.getLogger('elasticsearch')
-es_logger.setLevel(logging.WARNING)
+es_logger.setLevel(logging.INFO)
 logger.setLevel(logging.INFO)
 
 THREADPOOL_SIZE = 6
-EPMC_METADATA_INDEX = 'epmc-metadata'
+ES_INDEX = 'datalabs-fulltext'
 CHUNCK_SIZE = 1000
 
 parser = ArgumentParser()
 parser.add_argument('s3_url')
+parser.add_argument('organisation')
 
 parser.add_argument('-n', '--publication-number',
                     default=500,
                     type=int,
-                    help=('The number of publicatios to pull. Defaults to 500.'
+                    help=('The megabytes to pull. Defaults to 100.'
                           'A negative value will pull the entire dataset'))
 
 parser.add_argument('-H', '--host',
                     default='127.0.0.1',
                     help='Address of the Elasticsearch server')
 
-parser.add_argument('-C', '--clean', dest='clean', action='store_true',
-                    help='Clean the elasticsearch database before import')
-
 parser.add_argument('-P', '--port',
                     default='9200',
                     help='Port of the Elasticsearch server')
+
+parser.add_argument('-C', '--clean', dest='clean', action='store_true',
+                    help='Clean the elasticsearch database before import')
 
 
 class IndexingErrorException(Exception):
@@ -50,35 +53,44 @@ class IndexingErrorException(Exception):
     pass
 
 
-def build_es_bulk(line):
+def build_es_bulk(line, org):
     """ Returns a preformated line to add to an Elasticsearch bulk query. """
-    action = '{"index": {"_index": "%s"}}' % EPMC_METADATA_INDEX
-    data = line + '\n'
+    action = '{"index": {"_index": "%s"}}' % ES_INDEX
+    line = json.loads(line)
+    body = json.dumps({
+        'hash': line['file_hash'],
+        'text': line['text'],
+        'organisation': org,
+    })
+
+    data = body + '\n'
     return '\n'.join([action, data])
 
 
-def yield_publications_metadata(tf):
+def yield_publications(tf, org):
     """ Given a gzip streaming body, yield a publication as a dict.
 
     Args:
         json_archive: An open gzip file as a streaming body from s3
 
     Yields:
-        publication: A dict describing a publication from EPMC
+        publication: A dict containing the fulltext of a scraped publication
     """
     logger.info('Start yielding...')
     with gzip.GzipFile(fileobj=tf, mode='r') as json_file:
         for index, line in enumerate(json_file):
-            yield build_es_bulk(line.decode('utf-8'))
+            yield build_es_bulk(line.decode('utf-8'), org)
 
 
-def yield_metadata_chunk(tf, max_epmc_metadata, chunk_size=500):
+def yield_metadata_chunk(tf, max_publication_number,
+                         org, chunk_size=500):
     """ Yield bulk insertion preformatted publication list of
     chunk_size length.
 
     Args:
         s3_object: An s3 file object from boto
-        max_epmc_metadata: The maximum number of publications to be yielded
+        max_publication_number: The maximum number of publications
+                                to be yielded
         chunck_size: The size of the publication lists to be yielded
 
     Yield:
@@ -86,9 +98,9 @@ def yield_metadata_chunk(tf, max_epmc_metadata, chunk_size=500):
                   Elasticsearch's bulk API
     """
     pub_list = []
-    for index, metadata in enumerate(yield_publications_metadata(tf)):
+    for index, metadata in enumerate(yield_publications(tf, org)):
         pub_list.append(metadata)
-        if max_epmc_metadata and index + 1 >= max_epmc_metadata:
+        if max_publication_number and index + 1 >= max_publication_number:
             yield pub_list
             pub_list = []
             return
@@ -124,27 +136,26 @@ def clean_es(es):
 
     Args:
         es: a living connection to elasticsearch
-
     """
     logger.info('Cleaning the database..')
     # Ignore if the index doesn't exist, as it'll be created by next queries
     es.indices.delete(
-        index=EPMC_METADATA_INDEX,
+        index=ES_INDEX,
         ignore=[404]
     )
     es.indices.create(
-        index=EPMC_METADATA_INDEX
+        index=ES_INDEX
     )
 
 
-def import_into_elasticsearch(tf, es, max_epmc_metadata=1000):
+def import_into_elasticsearch(tf, es, org, max_publication_number=1000):
     """ Read publications from the given s3 file and write them to the
     elasticsearch database.
 
     Args:
         es: a living connection to elacticsearch
         s3_file: An open StreamingBody from s3
-        max_epmc_metadata: The maximum publication number to be inserted
+        max_publication_number: The maximum publication number to be inserted
     """
 
     insert_sum = 0
@@ -160,12 +171,13 @@ def import_into_elasticsearch(tf, es, max_epmc_metadata=1000):
             ),
             yield_metadata_chunk(
                 tf,
+                org=org,
                 chunk_size=CHUNCK_SIZE,
-                max_epmc_metadata=max_epmc_metadata,
+                max_publication_number=max_publication_number,
             )
         ):
             insert_sum += line_count
-    return es.count(index=EPMC_METADATA_INDEX)['count'], insert_sum
+    return es.count(index=ES_INDEX)['count'], insert_sum
 
 
 if __name__ == '__main__':
@@ -175,33 +187,35 @@ if __name__ == '__main__':
             "You must provide a valid s3:// link"
         )
 
-    es = Elasticsearch(
-        [{'host': args.host, 'port': args.port}],
-        retry_on_timeout=True,
-        max_retry=10,
-    )
+    es = Elasticsearch([{'host': args.host, 'port': args.port}])
     s3 = boto3.resource('s3')
+
+    parsed_url = urlparse(args.s3_url)
+    logger.info(
+        'Getting %s from %s bucket',
+        parsed_url.path,
+        parsed_url.netloc
+    )
 
     if args.clean:
         clean_es(es)
 
-    parsed_url = urlparse(args.s3_url)
-    logger.info('Getting %s from %s bucket' % (
-        parsed_url.path,
-        parsed_url.netloc
-    ))
-    s3_file = s3.Object(
+    s3_object = s3.Object(
         bucket_name=parsed_url.netloc,
         key=parsed_url.path[1:]
     )
-
     with tempfile.NamedTemporaryFile() as tf:
-        s3_file.download_fileobj(tf)
+        s3_object.download_fileobj(tf)
         tf.seek(0)
-        if args.publication_number < 0:
-            total, recent = import_into_elasticsearch(tf, es, None)
-        else:
-            total, recent = import_into_elasticsearch(tf, es,
-                                                      args.publication_number)
 
-    logger.info('Imported %d pubs into ES (%d this run)', total, recent)
+        total, recent = import_into_elasticsearch(
+            tf,
+            es,
+            args.organisation,
+            args.publication_number
+        )
+    logger.info(
+        'total index publications: %d (%d recent)',
+        total,
+        recent,
+    )
