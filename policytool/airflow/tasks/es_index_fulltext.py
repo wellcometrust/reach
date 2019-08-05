@@ -1,21 +1,20 @@
 """
-Operator to run the get the latest EPMC metadata from AWS S3.
+Operator to run the get the latest scraped fulltexts from AWS S3.
 """
-
 import tempfile
 
+from elasticsearch import Elasticsearch
 from airflow.models import BaseOperator
 from airflow.utils.decorators import apply_defaults
-from elasticsearch import Elasticsearch
 
 from policytool.airflow.hook.wellcome_s3_hook import WellcomeS3Hook
-from policytool.elastic.import_epmc_metadata import import_into_elasticsearch,
-from policytool.elastic.import_epmc_metadata import clean_es
+from policytool.elastic.import_fulltexts_s3 import import_into_elasticsearch
+from policytool.elastic.import_fulltexts_s3 import clean_es
 
 
-class ESIndexPublications(BaseOperator):
-    """ Download EPMC publication metadatas stored in S3 and index them with
-    Elasticsearch.
+class ESIndexFulltexts(BaseOperator):
+    """ Download the latest scraped publications texts stored in S3 and index
+    them with Elasticsearch.
     """
 
     template_fields = (
@@ -23,15 +22,15 @@ class ESIndexPublications(BaseOperator):
     )
 
     @apply_defaults
-    def __init__(self, src_s3_key, es_host, es_port=9200,
-                 max_epmc_metadata=None, aws_conn_id='aws_default',
+    def __init__(self, src_s3_key, es_host, organisation, es_port=9200,
+                 max_publication_number=None, aws_conn_id='aws_default',
                  *args, **kwargs):
         """
         Args:
             src_s3_key: S3 URL for the json.gz output file.
             es_host: the hostname of elasticsearch database.
             es_port: the port of elasticsearch database. Default to 9200.
-            max_epmc_metadata: Maximum number of EPMC pubs to process.
+            max_publication_number: Maximum number of fulltexts to process.
             aws_conn_id: Aws connection name.
         """
 
@@ -43,8 +42,9 @@ class ESIndexPublications(BaseOperator):
         self.src_s3_key = src_s3_key
         self.es_host = es_host
         self.es_port = es_port
+        self.organisation = organisation
         self.aws_conn_id = aws_conn_id
-        self.max_epmc_metadata = max_epmc_metadata
+        self.max_publication_number = max_publication_number
 
     def execute(self, context):
 
@@ -54,11 +54,18 @@ class ESIndexPublications(BaseOperator):
         # TODO: implement skipping mechanism
         clean_es(es)
 
-        self.log.info(
-            'Getting %s pubs from %s',
-            self.max_epmc_metadata if self.max_epmc_metadata else 'all',
-            self.src_s3_key,
-        )
+        if self.max_publication_number:
+            self.log.info(
+                'Getting %s pubs from %s',
+                self.max_publication_number,
+                self.src_s3_key,
+            )
+        else:
+            self.log.info(
+                'Getting %s pubs from %s',
+                'all',
+                self.src_s3_key,
+            )
 
         s3_object = s3.get_key(self.src_s3_key)
         with tempfile.NamedTemporaryFile() as tf:
@@ -68,11 +75,12 @@ class ESIndexPublications(BaseOperator):
             line_count, insert_sum = import_into_elasticsearch(
                 tf,
                 es,
-                max_epmc_metadata=self.max_epmc_metadata
+                self.organisation,
+                max_publication_number=self.max_publication_number
             )
 
         self.log.info(
             'Elasticsearch has %d records (%d newly imported)',
-            line_count['count'],
+            line_count,
             insert_sum,
         )
