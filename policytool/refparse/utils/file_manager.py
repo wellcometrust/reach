@@ -1,9 +1,11 @@
 import pandas as pd
 import gzip
+import logging
 import os
 import pickle
 import tempfile
 import json
+
 from .s3 import S3
 from policytool.refparse.settings import settings
 
@@ -15,7 +17,7 @@ class FileManager():
     def __init__(self, mode='LOCAL', bucket=settings.BUCKET):
         self.mode = mode
         self.logger = settings.logger
-        self.logger.setLevel('INFO')
+        self.logger.setLevel(logging.INFO)
         if self.mode == 'S3':
             self.s3 = S3(bucket)
 
