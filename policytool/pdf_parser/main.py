@@ -18,7 +18,7 @@ from policytool.scraper.wsf_scraping.file_system import (
 from .pdf_parse import parse_pdf_document, grab_section
 
 logger = logging.getLogger(__name__)
-logger.setLevel('INFO')
+logger.setLevel(logging.INFO)
 
 
 def default_resources_dir():

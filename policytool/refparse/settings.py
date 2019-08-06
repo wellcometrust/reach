@@ -1,9 +1,6 @@
 import os
 import logging
 
-logging.basicConfig(format='[%(asctime)s]:%(levelname)s - %(message)s')
-
-
 class BaseSettings:
     logger = logging.getLogger(__name__)
 
