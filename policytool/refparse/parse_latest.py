@@ -10,6 +10,8 @@ with the uber wellcome publications stored in S3
 from argparse import ArgumentParser
 from urllib.parse import urlparse
 import os
+import logging
+
 import boto3
 
 from .refparse import parse_references, create_argparser
@@ -28,7 +30,7 @@ ORG_NAMES = (
 
 if __name__ == "__main__":
     logger = settings.logger
-    logger.setLevel('INFO')
+    logger.setLevel(logging.INFO)
 
     parser = create_argparser(__doc__.strip())
     parser.add_argument('org_name', choices=ORG_NAMES)

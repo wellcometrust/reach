@@ -331,6 +331,8 @@ def create_argparser(description):
 
 
 if __name__ == '__main__':
+    import logging
+    logging.basicConfig(format='[%(asctime)s]:%(levelname)s - %(message)s')
     logger = settings.logger
     logger.setLevel('INFO')
 

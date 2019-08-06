@@ -3,12 +3,13 @@ e.g. python evaluate_algo.py --verbose True
 """
 
 from argparse import ArgumentParser
-import os
-import json
-from os import listdir 
-from datetime import datetime
-from urllib.parse import urlparse
 from collections import defaultdict
+from datetime import datetime
+from os import listdir 
+from urllib.parse import urlparse
+import json
+import logging
+import os
 import time
 
 import pandas as pd
@@ -85,7 +86,7 @@ if __name__ == '__main__':
 
     now = datetime.now()
     logger = settings.logger
-    logger.setLevel('INFO')
+    logger.setLevel(logging.INFO)
 
     logger.info('Starting evaluations...')
 
