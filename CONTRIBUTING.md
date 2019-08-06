@@ -17,6 +17,14 @@ Please note we have a code of conduct, please follow it in all your interactions
    and follow the PEP8 (https://www.python.org/dev/peps/pep-0008/) rules. You should enforce this
    behaviour and also use Pyflakes to check your code for unused libraries.
 
+## Style
+
+The following style guides are recommended:
+
+- [Google JSON Style Guide](https://google.github.io/styleguide/jsoncstyleguide.xml)
+- [Google Python Style Guide](https://google.github.io/styleguide/pyguide.html)
+
+
 ## Code of Conduct
 
 ### Our Pledge
