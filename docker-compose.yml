@@ -162,7 +162,7 @@ services:
   # and update the web image to serve static from build/static
   # by either an env or complicated volumes
   gulp-watch:
-    image: uk.ac.wellcome/policytool-web-build:latest
+    image: policytool-web-build:latest
     command:
       - gulp
       - watch

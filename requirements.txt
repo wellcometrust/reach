@@ -47,7 +47,7 @@ idna==2.8
 incremental==17.5.0
 iso8601==0.1.12
 itsdangerous==1.1.0
-Jinja2==2.10
+Jinja2==2.10.1
 jmespath==0.9.4
 joblib==0.13.2
 json-merge-patch==0.2

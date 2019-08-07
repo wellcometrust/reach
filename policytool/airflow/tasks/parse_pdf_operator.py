@@ -7,7 +7,7 @@ import logging
 from airflow.models import BaseOperator
 from airflow.utils.decorators import apply_defaults
 
-from policytool.pdf_parser.main import parse_all_pdf
+from policytool.airflow.safe_import import safe_import
 from policytool.sentry import report_exception
 
 
@@ -36,6 +36,9 @@ class ParsePdfOperator(BaseOperator):
 
     @report_exception
     def execute(self, context):
+        with safe_import():
+            from policytool.pdf_parser.main import parse_all_pdf
+
         os.environ.setdefault(
             'SCRAPY_SETTINGS_MODULE',
             'scraper.wsf_scraping.settings'
