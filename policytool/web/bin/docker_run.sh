@@ -13,5 +13,5 @@ docker run \
     -v $BUILD_DIR/:/build/web/static \
     -v $DIR/gulpfile.js:/src/gulpfile.js \
     -v $DIR/static:/src/static \
-    uk.ac.wellcome/policytool-web-build:latest \
+    policytool-web-build:latest \
     $*
