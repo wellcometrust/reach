@@ -9,7 +9,7 @@ from airflow.utils.decorators import apply_defaults
 from elasticsearch import Elasticsearch
 
 from policytool.airflow.hook.wellcome_s3_hook import WellcomeS3Hook
-from policytool.elastic.import_epmc_metadata import import_into_elasticsearch,
+from policytool.elastic.import_epmc_metadata import import_into_elasticsearch
 from policytool.elastic.import_epmc_metadata import clean_es
 
 

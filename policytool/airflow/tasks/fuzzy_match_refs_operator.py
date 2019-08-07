@@ -14,7 +14,7 @@ from airflow.models import BaseOperator
 from airflow.utils.decorators import apply_defaults
 
 from policytool.airflow.hook.wellcome_s3_hook import WellcomeS3Hook
-from policytool.refparse.refparse import fuzzy_match_reference
+from policytool.airflow.safe_import import safe_import
 from policytool.sentry import report_exception
 
 logger = logging.getLogger(__name__)
@@ -101,6 +101,9 @@ class FuzzyMatchRefsOperator(BaseOperator):
 
     @report_exception
     def execute(self, context):
+        with safe_import():
+            from policytool.refparse.refparse import fuzzy_match_reference
+
         structured_references_path = 's3://{path}'.format(
             path=self.structured_references_path,
         )

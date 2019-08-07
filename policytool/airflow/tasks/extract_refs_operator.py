@@ -10,8 +10,8 @@ import gzip
 from airflow.models import BaseOperator
 from airflow.utils.decorators import apply_defaults
 
-from policytool.refparse.refparse import yield_structured_references
 from policytool.airflow.hook.wellcome_s3_hook import WellcomeS3Hook
+from policytool.airflow.safe_import import safe_import
 from policytool.sentry import report_exception
 
 
@@ -46,6 +46,9 @@ class ExtractRefsOperator(BaseOperator):
 
     @report_exception
     def execute(self, context):
+        with safe_import():
+            from policytool.refparse.refparse import yield_structured_references
+
         pool_map = map
         s3 = WellcomeS3Hook(aws_conn_id=self.aws_conn_id)
 
