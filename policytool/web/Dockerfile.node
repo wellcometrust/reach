@@ -1,4 +1,4 @@
-FROM node:8.16.0-alpine
+FROM node:12.7.0-alpine
 
 # Rationale: install modules into /src/node_modules, which
 # we keep inside the docker image. Then, volume in whatever
