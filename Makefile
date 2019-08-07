@@ -12,7 +12,7 @@ VERSION := latest
 # policytool/web
 #
 
-WEB_BUILD_IMAGE := uk.ac.wellcome/policytool-web-build
+WEB_BUILD_IMAGE := policytool-web-build
 WEB_BUILD_SOURCES := \
 	policytool/web/static/style.css \
 	policytool/web/gulpfile.js
