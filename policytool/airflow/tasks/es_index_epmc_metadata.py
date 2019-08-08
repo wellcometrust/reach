@@ -6,14 +6,13 @@ import tempfile
 
 from airflow.models import BaseOperator
 from airflow.utils.decorators import apply_defaults
-from elasticsearch import Elasticsearch
 
 from policytool.airflow.hook.wellcome_s3_hook import WellcomeS3Hook
-from policytool.elastic.import_epmc_metadata import import_into_elasticsearch
-from policytool.elastic.import_epmc_metadata import clean_es
+from policytool.elastic import epmc_metadata
+import policytool.elastic.common
 
 
-class ESIndexPublications(BaseOperator):
+class ESIndexEPMCMetadata(BaseOperator):
     """ Download EPMC publication metadatas stored in S3 and index them with
     Elasticsearch.
     """
@@ -47,12 +46,12 @@ class ESIndexPublications(BaseOperator):
         self.max_epmc_metadata = max_epmc_metadata
 
     def execute(self, context):
-
-        es = Elasticsearch([{'host': self.es_host, 'port': self.es_port}])
+        es = policytool.elastic.common.connect(
+            self.es_host, self.es_port)
         s3 = WellcomeS3Hook()
 
         # TODO: implement skipping mechanism
-        clean_es(es)
+        epmc_metadata.clean_es(es)
 
         self.log.info(
             'Getting %s pubs from %s',
@@ -64,15 +63,9 @@ class ESIndexPublications(BaseOperator):
         with tempfile.NamedTemporaryFile() as tf:
             s3_object.download_fileobj(tf)
             tf.seek(0)
-
-            line_count, insert_sum = import_into_elasticsearch(
+            count = epmc_metadata.insert_file(
                 tf,
                 es,
-                max_epmc_metadata=self.max_epmc_metadata
+                max_items=self.max_epmc_metadata
             )
-
-        self.log.info(
-            'Elasticsearch has %d records (%d newly imported)',
-            line_count['count'],
-            insert_sum,
-        )
+        self.log.info('execute: insert complete count=%d', count)
