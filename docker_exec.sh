@@ -1,3 +1,3 @@
 #!/bin/bash
 
-exec docker exec -ti policytool_airflow-scheduler_1 "$@"
+exec docker exec -ti policytool_airflow-worker_1 "$@"
