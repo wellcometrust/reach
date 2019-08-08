@@ -6,8 +6,6 @@ x-airflow-image: &airflow-image
 x-airflow_env: &airflow-env
   AIRFLOW_HOME: /airflow
 
-
-
   # S3 prefix for all datalabs operators.
   # (in `core` because we must be in an existing section of the cfg)
   AIRFLOW__CORE__REACH_S3_PREFIX: "s3://datalabs-dev/reach-airflow" # No trailing /!
@@ -23,6 +21,10 @@ x-airflow_env: &airflow-env
   AIRFLOW__CORE__SQL_ALCHEMY_CONN: "postgresql://postgres:development@postgres:5432/airflow?connect_timeout=20"
   AIRFLOW__CELERY__BROKER_URL: "redis://redis:6379/0"
   AIRFLOW__CELERY__RESULT_BACKEND: "db+postgresql://postgres:development@postgres:5432/airflow_celery_results?connect_timeout=20"
+
+  # AIRFLOW__WEBSERVER__BASE_URL: "http://localhost:8080"
+  AIRFLOW__WEBSERVER__WORKERS: 2
+  AIRFLOW__WEBSERVER__SECRET_KEY: development
 
   AWS_ACCESS_KEY_ID: "${AWS_ACCESS_KEY_ID}"
   AWS_SECRET_ACCESS_KEY: "${AWS_SECRET_ACCESS_KEY}"
@@ -59,6 +61,10 @@ services:
     volumes:
       - ./build/airflow.db:/var/lib/postgresql/data
       - ./policytool/airflow/initdb:/docker-entrypoint-initdb.d
+    deploy:
+      resources:
+        limits:
+          memory: "64M"
 
   redis:
     image: redis:5.0.3-alpine
@@ -70,6 +76,10 @@ services:
       - "yes"
     volumes:
       - ./build/airflow.redis:/data
+    deploy:
+      resources:
+        limits:
+          memory: "40M"
 
   elasticsearch:
     image: docker.elastic.co/elasticsearch/elasticsearch:7.2.0
@@ -80,6 +90,11 @@ services:
       - 127.0.0.1:9200:9200
     volumes:
       - esdata:/usr/share/elasticsearch/data
+    deploy:
+      resources:
+        limits:
+          memory: "2560M"
+
   # Uncomment if you want 100% CPU usage.
   #
   # kibana:
@@ -101,6 +116,11 @@ services:
       - "/airflow/initdb.sh && exec airflow scheduler"
     volumes: *airflow-volumes
     depends_on: ["postgres", "redis"]
+    deploy:
+      resources:
+        limits:
+          memory: "256M"
+
 
   airflow-web:
     image: *airflow-image
@@ -124,6 +144,11 @@ services:
       - "8080"
     volumes: *airflow-volumes
     depends_on: ["postgres", "redis"]
+    deploy:
+      resources:
+        limits:
+          memory: "512M"
+
 
   airflow-worker:
     image: *airflow-image
@@ -135,6 +160,11 @@ services:
       - worker
     volumes: *airflow-volumes
     depends_on: ["postgres", "redis"]
+    deploy:
+      resources:
+        limits:
+          memory: "4096M"
+
 
   web:
     image: *airflow-image
@@ -157,6 +187,10 @@ services:
       - ./policytool/web:/src/policytool/policytool/web/
       - ./policytool/scraper:/src/policytool/policytool/scraper/
       - ./build/web:/build/web
+    deploy:
+      resources:
+        limits:
+          memory: "64M"
 
   # TODO: run gulp watch with the right volumes in place
   # and update the web image to serve static from build/static
@@ -172,6 +206,10 @@ services:
       - ./policytool/web/static:/src/static
     # Signal handling in gulp? Not so much...
     stop_signal: SIGKILL
+    deploy:
+      resources:
+        limits:
+          memory: "96M"
 
 volumes:
   esdata:
