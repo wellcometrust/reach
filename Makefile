@@ -81,6 +81,7 @@ $(VIRTUALENV)/.installed: requirements.txt test_requirements.txt
 	@mkdir -p $(VIRTUALENV)
 	virtualenv --python python3 $(VIRTUALENV)
 	AIRFLOW_GPL_UNIDECODE=yes $(VIRTUALENV)/bin/pip3 install -r requirements.txt
+	$(VIRTUALENV)/bin/pip3 install https://datalabs-public.s3.eu-west-2.amazonaws.com/references_splitter/reference_splitter-2019.8.0-py3-none-any.whl
 	$(VIRTUALENV)/bin/pip3 install -r test_requirements.txt
 	$(VIRTUALENV)/bin/python setup.py develop --no-deps
 	touch $@
