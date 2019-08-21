@@ -24,10 +24,10 @@ class TestSplit(unittest.TestCase):
 
     def test_normal_section(self):
         references = split_section(
-            "One reference\nTwo references\nThree references\n"
+            "1. One reference\n2. Two references\n3. Three references\n"
         )
         self.assertEqual(
             references,
-            ["One reference", "Two references", "Three references"],
+            ["1. One reference", "\n2. Two references", "\n3. Three references\n"],
             "Should be ['One reference', 'Two reference', 'Three reference']"
         )
