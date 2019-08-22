@@ -22,4 +22,5 @@ RUN apt-get update -yqq && \
     locale-gen C.UTF-8 && \
     pip install -U pip && \
     AIRFLOW_GPL_UNIDECODE=yes python3 -m pip install -r requirements.txt && \
+    pip install https://datalabs-public.s3.eu-west-2.amazonaws.com/references_splitter/reference_splitter-2019.8.0-py3-none-any.whl && \
     apt-get remove --purge -y build-essential
