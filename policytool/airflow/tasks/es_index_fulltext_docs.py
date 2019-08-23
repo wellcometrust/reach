@@ -3,16 +3,14 @@ Operator to run the get the latest scraped fulltexts from AWS S3.
 """
 import tempfile
 
-from elasticsearch import Elasticsearch
 from airflow.models import BaseOperator
 from airflow.utils.decorators import apply_defaults
 
 from policytool.airflow.hook.wellcome_s3_hook import WellcomeS3Hook
-from policytool.elastic.import_fulltexts_s3 import import_into_elasticsearch
-from policytool.elastic.import_fulltexts_s3 import clean_es
+from policytool.elastic import fulltext_docs 
+import policytool.elastic.common
 
-
-class ESIndexFulltexts(BaseOperator):
+class ESIndexFulltextDocs(BaseOperator):
     """ Download the latest scraped publications texts stored in S3 and index
     them with Elasticsearch.
     """
@@ -23,14 +21,14 @@ class ESIndexFulltexts(BaseOperator):
 
     @apply_defaults
     def __init__(self, src_s3_key, es_host, organisation, es_port=9200,
-                 max_publication_number=None, aws_conn_id='aws_default',
+                 max_items=None, aws_conn_id='aws_default',
                  *args, **kwargs):
         """
         Args:
             src_s3_key: S3 URL for the json.gz output file.
             es_host: the hostname of elasticsearch database.
             es_port: the port of elasticsearch database. Default to 9200.
-            max_publication_number: Maximum number of fulltexts to process.
+            max_items: Maximum number of fulltexts to process.
             aws_conn_id: Aws connection name.
         """
 
@@ -44,20 +42,20 @@ class ESIndexFulltexts(BaseOperator):
         self.es_port = es_port
         self.organisation = organisation
         self.aws_conn_id = aws_conn_id
-        self.max_publication_number = max_publication_number
+        self.max_items = max_items
 
     def execute(self, context):
-
-        es = Elasticsearch([{'host': self.es_host, 'port': self.es_port}])
+        es = policytool.elastic.common.connect(
+            self.es_host, self.es_port)
         s3 = WellcomeS3Hook()
 
         # TODO: implement skipping mechanism
-        clean_es(es)
+        fulltext_docs.clean_es(es)
 
-        if self.max_publication_number:
+        if self.max_items:
             self.log.info(
                 'Getting %s pubs from %s',
-                self.max_publication_number,
+                self.max_items,
                 self.src_s3_key,
             )
         else:
@@ -71,16 +69,10 @@ class ESIndexFulltexts(BaseOperator):
         with tempfile.NamedTemporaryFile() as tf:
             s3_object.download_fileobj(tf)
             tf.seek(0)
-
-            line_count, insert_sum = import_into_elasticsearch(
+            count = fulltext_docs.insert_file(
                 tf,
                 es,
                 self.organisation,
-                max_publication_number=self.max_publication_number
+                max_items=self.max_items
             )
-
-        self.log.info(
-            'Elasticsearch has %d records (%d newly imported)',
-            line_count,
-            insert_sum,
-        )
+        self.log.info('import complete count=%d', count)

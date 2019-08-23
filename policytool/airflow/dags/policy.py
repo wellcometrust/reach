@@ -4,13 +4,12 @@ from airflow import DAG
 import airflow.configuration as conf
 import airflow.utils.dates
 
+from policytool.airflow.tasks import es_index_epmc_metadata
+from policytool.airflow.tasks import es_index_fulltext_docs
 from policytool.airflow.tasks.dummy_spider_operator import DummySpiderOperator
-from policytool.airflow.tasks.run_spider_operator import RunSpiderOperator
 from policytool.airflow.tasks.extract_refs_operator import ExtractRefsOperator
 from policytool.airflow.tasks.parse_pdf_operator import ParsePdfOperator
-from policytool.airflow.tasks.es_index_publications import ESIndexPublications
-from policytool.airflow.tasks.es_index_fulltext import ESIndexFulltexts
-
+from policytool.airflow.tasks.run_spider_operator import RunSpiderOperator
 
 ORGANISATIONS = [
     'who_iris',
@@ -87,8 +86,8 @@ def create_extract_pipeline(dag, organisation,
         dst_s3_key=s3_parse_dst_key,
         dag=dag)
 
-    es_index_fulltexts = ESIndexFulltexts(
-        task_id="ESIndexFulltexts.%s" % organisation,
+    es_index_fulltexts = es_index_fulltext_docs.ESIndexFulltextDocs(
+        task_id="ESIndexFulltextDocs.%s" % organisation,
         src_s3_key=s3_parse_dst_key,
         organisation=organisation,
         es_host='elasticsearch',
@@ -132,8 +131,8 @@ def create_dag(default_args, spider_op_cls):
         'output', 'open-research', 'epmc-metadata', 'epmc-metadata.json.gz'
     ])
 
-    es_index_publications = ESIndexPublications(
-        task_id=ESIndexPublications.__name__,
+    es_index_publications = es_index_epmc_metadata.ESIndexEPMCMetadata(
+        task_id='ESIndexEPMCMetadata',
         src_s3_key=epmc_metadata_key,
         es_host='elasticsearch',
         dag=dag
