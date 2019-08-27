@@ -1,5 +1,5 @@
 """
-Operator for scraping 10 articles from every organisation as a test.
+Operator for scraping articles from every organisation.
 """
 
 import json
@@ -57,7 +57,6 @@ class SpiderOperator(BaseOperator):
         self.item_max = item_max
         self.item_years = item_years
 
-
     def on_item_scraped(self, item, response):
         """ Increments our count of items for reporting/future metrics. """
         self.item_count += 1
@@ -80,7 +79,6 @@ class SpiderOperator(BaseOperator):
             ('manifest_storage_error', exception)
         )
 
-
     @report_exception
     def execute(self, context):
         # Initialise settings for a limited scraping
@@ -96,7 +94,8 @@ class SpiderOperator(BaseOperator):
         # a new Python interpreter for every task it runs. It thus *must*
         # remain inside execute(), so other code paths don't touch it.
         policytool.scraper.wsf_scraping.settings.MAX_ARTICLE = self.item_max
-        policytool.scraper.wsf_scraping.settings.WHO_IRIS_YEARS = self.item_years
+        policytool.scraper.wsf_scraping.settings.WHO_IRIS_YEARS = \
+            self.item_years
 
         policytool.scraper.wsf_scraping.settings.FEED_URI = \
             'manifest' + self.dst_s3_dir
@@ -106,7 +105,7 @@ class SpiderOperator(BaseOperator):
             "scrapy settings: %s",
             json.dumps(
                 {k: v for k, v in settings.items()
-                if isinstance(v, (str, int, float, bool))}
+                 if isinstance(v, (str, int, float, bool))}
             )
         )
 
