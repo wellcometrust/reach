@@ -67,21 +67,15 @@ def to_s3_model(*args):
 
 
 def create_extract_pipeline(dag, organisation,
-                            spider_op_cls,
-                            spider_max_item, spider_years):
+                            max_items, spider_years):
 
-    # spider_max_item is to low to test other tasks, but has to stay low.
-    max_items = None
-    if spider_max_item:
-        max_items = 500
-
-    spider = spider_op_cls(
+    spider = SpiderOperator(
         task_id='Spider.%s' % organisation,
         organisation=organisation,
         dst_s3_dir=to_s3_output_dir(
             dag, 'policy-scrape', organisation),
         item_years=spider_years,
-        item_max=spider_max_item,
+        item_max=max_items.get('spider'),
         dag=dag)
 
     s3_parse_dst_key = to_s3_output(
@@ -120,7 +114,7 @@ def create_extract_pipeline(dag, organisation,
     return extractRefs
 
 
-def create_dag(dag_id, default_args, spider_years, spider_max_item):
+def create_dag(dag_id, default_args, spider_years, max_items):
     """
     Creates a DAG.
 
@@ -139,34 +133,34 @@ def create_dag(dag_id, default_args, spider_years, spider_max_item):
         'output', 'open-research', 'epmc-metadata', 'epmc-metadata.json.gz'
     ])
 
-    max_epmc_metadata = None
-    if spider_max_item:
-        max_epmc_metadata = 500
-
     es_index_publications = es_index_epmc_metadata.ESIndexEPMCMetadata(
         task_id='ESIndexEPMCMetadata',
         src_s3_key=epmc_metadata_key,
         es_host='elasticsearch',
-        max_epmc_metadata=max_epmc_metadata,
+        max_epmc_metadata=max_items.get('index'),
         dag=dag
     )
     for organisation in ORGANISATIONS:
         extract_task = create_extract_pipeline(
             dag,
             organisation,
-            SpiderOperator,
-            spider_max_item,
+            max_items,
             spider_years,
         )
 
     return dag
 
 
-test_dag = create_dag('test_dag', DEFAULT_ARGS, [2018], 10)
+test_dag = create_dag(
+    'test_dag',
+    DEFAULT_ARGS,
+    [2018],
+    {'spiders': 10, 'index': 500}
+)
 
 policy_dag = create_dag(
     'policy_dag',
     DEFAULT_ARGS,
     list(range(2012, datetime.datetime.now().year + 1)),
-    None
+    {},
 )
