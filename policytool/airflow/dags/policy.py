@@ -69,6 +69,12 @@ def to_s3_model(*args):
 def create_extract_pipeline(dag, organisation,
                             spider_op_cls,
                             spider_max_item, spider_years):
+
+    # spider_max_item is to low to test other tasks, but has to stay low.
+    max_items = None
+    if spider_max_item:
+        max_items = 500
+
     spider = spider_op_cls(
         task_id='Spider.%s' % organisation,
         organisation=organisation,
@@ -93,6 +99,7 @@ def create_extract_pipeline(dag, organisation,
         src_s3_key=s3_parse_dst_key,
         organisation=organisation,
         es_host='elasticsearch',
+        max_items=max_items,
         dag=dag
     )
 
@@ -156,6 +163,7 @@ def create_dag(dag_id, default_args, spider_years, spider_max_item):
 
 
 test_dag = create_dag('test_dag', DEFAULT_ARGS, [2018], 10)
+
 policy_dag = create_dag(
     'policy_dag',
     DEFAULT_ARGS,
