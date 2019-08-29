@@ -78,7 +78,7 @@ def create_extract_pipeline(dag, organisation,
         dst_s3_dir=to_s3_output_dir(
             dag, 'policy-scrape', organisation),
         item_years=spider_years,
-        item_max=item_limits.spider,
+        item_max=item_limits.spiders,
         dag=dag)
 
     s3_parse_dst_key = to_s3_output(
