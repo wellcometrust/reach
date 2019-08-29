@@ -27,7 +27,7 @@ DEFAULT_ARGS = {
     'retry_delay': datetime.timedelta(minutes=5),
 }
 
-ItemLimits = nametuple('ItemLimits', ('spiders', 'index'))
+ItemLimits = namedtuple('ItemLimits', ('spiders', 'index'))
 
 
 def verify_s3_prefix():
