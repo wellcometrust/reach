@@ -1,15 +1,15 @@
 import datetime
 import os
+from collections import namedtuples
 from airflow import DAG
 import airflow.configuration as conf
 import airflow.utils.dates
 
 from policytool.airflow.tasks import es_index_epmc_metadata
 from policytool.airflow.tasks import es_index_fulltext_docs
-from policytool.airflow.tasks.dummy_spider_operator import DummySpiderOperator
+from policytool.airflow.tasks.spider_operator import SpiderOperator
 from policytool.airflow.tasks.extract_refs_operator import ExtractRefsOperator
 from policytool.airflow.tasks.parse_pdf_operator import ParsePdfOperator
-from policytool.airflow.tasks.run_spider_operator import RunSpiderOperator
 
 ORGANISATIONS = [
     'who_iris',
@@ -26,6 +26,8 @@ DEFAULT_ARGS = {
     'retries': 0,
     'retry_delay': datetime.timedelta(minutes=5),
 }
+
+ItemLimits = nametuple('ItemLimits', ('spiders', 'index'))
 
 
 def verify_s3_prefix():
@@ -68,12 +70,15 @@ def to_s3_model(*args):
 
 
 def create_extract_pipeline(dag, organisation,
-                            spider_op_cls):
-    spider = spider_op_cls(
+                            item_limits, spider_years):
+
+    spider = SpiderOperator(
         task_id='Spider.%s' % organisation,
         organisation=organisation,
         dst_s3_dir=to_s3_output_dir(
             dag, 'policy-scrape', organisation),
+        item_years=spider_years,
+        item_max=item_limits.spider,
         dag=dag)
 
     s3_parse_dst_key = to_s3_output(
@@ -91,6 +96,7 @@ def create_extract_pipeline(dag, organisation,
         src_s3_key=s3_parse_dst_key,
         organisation=organisation,
         es_host='elasticsearch',
+        item_limits=item_limits.index,
         dag=dag
     )
 
@@ -111,17 +117,16 @@ def create_extract_pipeline(dag, organisation,
     return extractRefs
 
 
-def create_dag(default_args, spider_op_cls):
+def create_dag(dag_id, default_args, spider_years, item_limits):
     """
     Creates a DAG.
 
     Args:
         default_args: default args for the DAG
-        spider_op_cls: Spider operator class, i.e. RunSpiderOperator or
-            DummySpiderOperator.
+        spider_op_cls: Spider operator class.
     """
     dag = DAG(
-        dag_id='test_dag',
+        dag_id=dag_id,
         default_args=default_args,
         schedule_interval='0 0 * * 0'
     )
@@ -135,16 +140,30 @@ def create_dag(default_args, spider_op_cls):
         task_id='ESIndexEPMCMetadata',
         src_s3_key=epmc_metadata_key,
         es_host='elasticsearch',
+        max_epmc_metadata=item_limits.index,
         dag=dag
     )
     for organisation in ORGANISATIONS:
         extract_task = create_extract_pipeline(
             dag,
             organisation,
-            spider_op_cls
+            item_limits,
+            spider_years,
         )
 
     return dag
 
 
-test_dag = create_dag(DEFAULT_ARGS, DummySpiderOperator)
+test_dag = create_dag(
+    'test_dag',
+    DEFAULT_ARGS,
+    [2018],
+    ItemLimits(10, 500),
+)
+
+policy_dag = create_dag(
+    'policy_dag',
+    DEFAULT_ARGS,
+    list(range(2012, datetime.datetime.now().year + 1)),
+    ItemLimits(None, None),
+)

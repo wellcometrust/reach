@@ -1,5 +1,5 @@
 """
-Operator for scraping 10 articles from every organisation as a test.
+Operator for scraping articles from every organisation.
 """
 
 import json
@@ -34,7 +34,7 @@ SPIDERS = {
 }
 
 
-class DummySpiderOperator(BaseOperator):
+class SpiderOperator(BaseOperator):
     """
     Pulls data from the dimensions.ai to a bucket in S3.
 
@@ -45,7 +45,8 @@ class DummySpiderOperator(BaseOperator):
     template_fields = ('dst_s3_dir',)
 
     @apply_defaults
-    def __init__(self, organisation, dst_s3_dir, *args, **kwargs):
+    def __init__(self, organisation, dst_s3_dir,
+                 item_years, item_max, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.organisation = organisation
         self.dst_s3_dir = dst_s3_dir
@@ -53,7 +54,8 @@ class DummySpiderOperator(BaseOperator):
 
         self.item_count = None
         self.scraper_errors = None
-
+        self.item_max = item_max
+        self.item_years = item_years
 
     def on_item_scraped(self, item, response):
         """ Increments our count of items for reporting/future metrics. """
@@ -77,7 +79,6 @@ class DummySpiderOperator(BaseOperator):
             ('manifest_storage_error', exception)
         )
 
-
     @report_exception
     def execute(self, context):
         # Initialise settings for a limited scraping
@@ -92,8 +93,9 @@ class DummySpiderOperator(BaseOperator):
         # This monkey-patching only works because Airflow shells out to
         # a new Python interpreter for every task it runs. It thus *must*
         # remain inside execute(), so other code paths don't touch it.
-        policytool.scraper.wsf_scraping.settings.MAX_ARTICLE = 10
-        policytool.scraper.wsf_scraping.settings.WHO_IRIS_YEARS = [2018]
+        policytool.scraper.wsf_scraping.settings.MAX_ARTICLE = self.item_max
+        policytool.scraper.wsf_scraping.settings.WHO_IRIS_YEARS = \
+            self.item_years
 
         policytool.scraper.wsf_scraping.settings.FEED_URI = \
             'manifest' + self.dst_s3_dir
@@ -103,7 +105,7 @@ class DummySpiderOperator(BaseOperator):
             "scrapy settings: %s",
             json.dumps(
                 {k: v for k, v in settings.items()
-                if isinstance(v, (str, int, float, bool))}
+                 if isinstance(v, (str, int, float, bool))}
             )
         )
 
