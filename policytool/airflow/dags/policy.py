@@ -1,5 +1,6 @@
 import datetime
 import os
+from collections import namedtuples
 from airflow import DAG
 import airflow.configuration as conf
 import airflow.utils.dates
@@ -25,6 +26,8 @@ DEFAULT_ARGS = {
     'retries': 0,
     'retry_delay': datetime.timedelta(minutes=5),
 }
+
+ItemLimits = nametuple('ItemLimits', ('spiders', 'index'))
 
 
 def verify_s3_prefix():
@@ -67,7 +70,7 @@ def to_s3_model(*args):
 
 
 def create_extract_pipeline(dag, organisation,
-                            max_items, spider_years):
+                            item_limits, spider_years):
 
     spider = SpiderOperator(
         task_id='Spider.%s' % organisation,
@@ -75,7 +78,7 @@ def create_extract_pipeline(dag, organisation,
         dst_s3_dir=to_s3_output_dir(
             dag, 'policy-scrape', organisation),
         item_years=spider_years,
-        item_max=max_items.get('spider'),
+        item_max=item_limits.spider,
         dag=dag)
 
     s3_parse_dst_key = to_s3_output(
@@ -93,7 +96,7 @@ def create_extract_pipeline(dag, organisation,
         src_s3_key=s3_parse_dst_key,
         organisation=organisation,
         es_host='elasticsearch',
-        max_items=max_items,
+        item_limits=item_limits.index,
         dag=dag
     )
 
@@ -114,7 +117,7 @@ def create_extract_pipeline(dag, organisation,
     return extractRefs
 
 
-def create_dag(dag_id, default_args, spider_years, max_items):
+def create_dag(dag_id, default_args, spider_years, item_limits):
     """
     Creates a DAG.
 
@@ -137,14 +140,14 @@ def create_dag(dag_id, default_args, spider_years, max_items):
         task_id='ESIndexEPMCMetadata',
         src_s3_key=epmc_metadata_key,
         es_host='elasticsearch',
-        max_epmc_metadata=max_items.get('index'),
+        max_epmc_metadata=item_limits.index,
         dag=dag
     )
     for organisation in ORGANISATIONS:
         extract_task = create_extract_pipeline(
             dag,
             organisation,
-            max_items,
+            item_limits,
             spider_years,
         )
 
@@ -155,12 +158,12 @@ test_dag = create_dag(
     'test_dag',
     DEFAULT_ARGS,
     [2018],
-    {'spiders': 10, 'index': 500}
+    ItemLimits(10, 500),
 )
 
 policy_dag = create_dag(
     'policy_dag',
     DEFAULT_ARGS,
     list(range(2012, datetime.datetime.now().year + 1)),
-    {},
+    ItemLimits(None, None),
 )
