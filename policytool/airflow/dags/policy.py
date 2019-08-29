@@ -1,6 +1,6 @@
 import datetime
 import os
-from collections import namedtuples
+from collections import namedtuple
 from airflow import DAG
 import airflow.configuration as conf
 import airflow.utils.dates
@@ -27,7 +27,7 @@ DEFAULT_ARGS = {
     'retry_delay': datetime.timedelta(minutes=5),
 }
 
-ItemLimits = nametuple('ItemLimits', ('spiders', 'index'))
+ItemLimits = namedtuple('ItemLimits', ('spiders', 'index'))
 
 
 def verify_s3_prefix():
