@@ -95,7 +95,14 @@ def parse_pdf(pdf, words, titles, context, pdf_hash):
             logger.warning('The pdf couldn\'t be parsed {pdf_hash}'.format(
                 pdf_hash=pdf_hash,
             ))
-            return None
+
+            # We still have to return something for the json to be complete.
+            return {
+                'file_hash': pdf_hash,
+                'sections': None,
+                'keywords': None,
+                'text': None,
+            }
 
         # Fetch references or other keyworded list
         keyword_dict = pdf_file.get_lines_by_keywords(
