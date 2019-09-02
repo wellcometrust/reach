@@ -101,4 +101,9 @@ class WsfScrapingPipeline(object):
                 'This pdf is already in the manifest file.'
             )
 
+        # Remove the file to save storage
+        os.unlink(
+            os.path.join('/tmp', item['pdf'])
+        )
+
         return item
