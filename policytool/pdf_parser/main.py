@@ -21,6 +21,13 @@ logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
 
 
+MANIFEST_IGNORE_FIELDS = [
+    'start-time',
+    'stop-time',
+    'organisation',
+]
+
+
 def default_resources_dir():
     """ Returns path to resources/ within our repo. """
     return os.path.join(
@@ -231,21 +238,25 @@ def parse_all_pdf(input_url, output_url, organisation, context,
     parsed_items = []
     manifest = file_system.get_manifest()
     for directory in manifest:
-        for item in manifest[directory]:
-            pdf = file_system.get(item)
+        if directory in MANIFEST_IGNORE_FIELDS:
+            continue
+        else:
+            for item in manifest[directory]:
+                logger.info(item + '  --- ' + directory)
+                pdf = file_system.get(item)
 
-            # Download PDF file to /tmp
-            with tempfile.NamedTemporaryFile(delete=False) as tf:
-                tf.write(pdf.read())
-                tf.seek(0)
-                item = parse_pdf(
-                    tf.name,
-                    words,
-                    titles,
-                    context,
-                    item,
-                )
-            parsed_items.append(item)
+                # Download PDF file to /tmp
+                with tempfile.NamedTemporaryFile(delete=False) as tf:
+                    tf.write(pdf.read())
+                    tf.seek(0)
+                    item = parse_pdf(
+                        tf.name,
+                        words,
+                        titles,
+                        context,
+                        item,
+                    )
+                parsed_items.append(item)
 
     write_to_file(output_url, parsed_items, organisation)
 

@@ -3,6 +3,7 @@ import os
 import hashlib
 import logging
 import json
+import datetime
 from abc import ABC, abstractmethod
 from botocore.exceptions import ClientError
 
@@ -71,6 +72,7 @@ class S3FileSystem(FileSystem):
         self.bucket = bucket
         self.prefix = path[1:]
         self.organisation = organisation
+        self.start_time = datetime.datetime.now()
 
     def save(self, body, path, filename):
         key = os.path.join(self.prefix, path, filename)
@@ -87,7 +89,7 @@ class S3FileSystem(FileSystem):
     def save_fileobj(self, fileobj, path, filename):
         key = os.path.join(self.prefix, path, filename)
         self.logger.info('FileSystem.save_fileobj: s3://%s/%s',
-            self.bucket, key)
+                         self.bucket, key)
         self.client.upload_fileobj(
             Fileobj=fileobj,
             Bucket=self.bucket,
@@ -118,6 +120,11 @@ class S3FileSystem(FileSystem):
 
     def update_manifest(self, data_file):
         current_manifest = self.get_manifest()
+        current_manifest['organisation'] = self.organisation
+        current_manifest['start-time'] = \
+            self.start_time.strftime("%Y-%m-%d, %H:%M:%S")
+        current_manifest['stop-time'] = \
+            datetime.datetime.now().strftime("%Y-%m-%d, %H:%M:%S")
         data_file.seek(0)
         for row in data_file:
             item = json.loads(row)
