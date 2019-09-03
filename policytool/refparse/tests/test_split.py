@@ -7,15 +7,15 @@ from policytool.refparse.refparse import SectionedDocument
 class TestSplit(unittest.TestCase):
 
     def test_empty_sections(self):
-        references = split_section("")
+        references = split_section(" ")
         self.assertEqual(references, [], "Should be []")
 
     def test_oneline_section(self):
-        references = split_section("This is one line")
+        references = split_section("Smith et al. 2019. This is a title. Journal of journals. 1-2")
         self.assertEqual(
-            references,
-            ["This is one line"],
-            "Should be ['This is one line']"
+            len(references),
+            1,
+            "There should be 1 reference found"
         )
 
     def test_empty_lines_section(self):
@@ -24,10 +24,12 @@ class TestSplit(unittest.TestCase):
 
     def test_normal_section(self):
         references = split_section(
-            "1. One reference\n2. Two references\n3. Three references\n"
+            "References \n1. Smith et al. 2019. This is a title. Journal of journals. 1-2. "+
+            "\n2. Smith et al. 2019. This is a title. Journal of journals. 1-2. "+
+            "\n3. Smith et al. 2019. This is a title. Journal of journals. 1-2."
         )
         self.assertEqual(
-            references,
-            ["1. One reference", "\n2. Two references", "\n3. Three references\n"],
-            "Should be ['One reference', 'Two reference', 'Three reference']"
+            len(references),
+            3,
+            "There should be 3 references found"
         )
