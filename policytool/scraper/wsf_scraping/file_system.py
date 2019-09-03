@@ -120,20 +120,27 @@ class S3FileSystem(FileSystem):
 
     def update_manifest(self, data_file):
         current_manifest = self.get_manifest()
-        current_manifest['organisation'] = self.organisation
-        current_manifest['start-time'] = \
+
+        metadata = {}
+        metadata['organisation'] = self.organisation
+        metadata['start-time'] = \
             self.start_time.strftime("%Y-%m-%d, %H:%M:%S")
-        current_manifest['stop-time'] = \
+        metadata['stop-time'] = \
             datetime.datetime.now().strftime("%Y-%m-%d, %H:%M:%S")
+
         data_file.seek(0)
+
+        # If the manifest has no content yet, let's create it
+        content = current_manifest.get('content', {})
         for row in data_file:
             item = json.loads(row)
-            hash_list = current_manifest.get(item['hash'][:2], None)
+            hash_list = content.get(item['hash'][:2], None)
             if hash_list:
                 if item['hash'] not in hash_list:
                     hash_list.append(item['hash'])
             else:
-                current_manifest[item['hash'][:2]] = [item['hash']]
+                content[item['hash'][:2]] = [item['hash']]
+
         key = os.path.join(
             self.prefix,
             'policytool-scrape--scraper-{organisation}.json'.format(
@@ -143,7 +150,9 @@ class S3FileSystem(FileSystem):
         self.client.put_object(
             Bucket=self.bucket,
             Key=key,
-            Body=json.dumps(current_manifest).encode('utf-8')
+            Body=json.dumps(
+                {'metadata': metadata, 'content': content}
+            ).encode('utf-8')
         )
 
     def get(self, file_hash):
