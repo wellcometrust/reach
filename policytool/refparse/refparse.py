@@ -131,8 +131,7 @@ def yield_structured_references(scraper_file,
         ))
 
         splitted_references = split_section(
-            doc.section,
-            settings.ORGANISATION_REGEX
+            doc.section
         )
 
         # For some weird reason not using pool map 
