@@ -22,8 +22,6 @@ class BaseSettings:
     MODEL_DIR = "s3://{}/reference_parser_models".format(BUCKET)
     CLASSIFIER_FILENAME = "reference_parser_pipeline.pkl"
 
-    ORGANISATION_REGEX = "\\n[\d\.\s\\n]+(?=[A-Z])"
-
     MIN_CHAR_LIMIT = 20
     MATCH_TITLE_LENGTH_THRESHOLD = 40
 

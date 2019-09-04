@@ -211,7 +211,6 @@ if __name__ == '__main__':
     logger.info('main: Running split section evaluation')
     eval_score_split = evaluate_split_section(
         evaluate_split_section_data,
-        settings.ORGANISATION_REGEX,
         settings.SPLIT_SECTION_SIMILARITY_THRESHOLD
         )
     logger.info('main: ---> Took %0.3f seconds', time.time() - start)

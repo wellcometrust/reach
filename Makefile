@@ -7,6 +7,7 @@ ECR_IMAGE := 160358319781.dkr.ecr.eu-west-1.amazonaws.com/$(IMAGE)
 LATEST_TAG := latest
 VERSION := latest
 
+REFERENCE_SPLITTER_URL := https://datalabs-public.s3.eu-west-2.amazonaws.com/references_splitter/reference_splitter-2019.8.0-py3-none-any.whl
 
 #
 # policytool/web
@@ -103,9 +104,15 @@ update-requirements-txt:
 	fi
 	virtualenv --python python3 $(VIRTUALENV)
 	$(VIRTUALENV)/bin/pip3 install -r unpinned_requirements.txt
+	# Install reference splitter here so that we can track the
+	# dependencies it pulls in.
+	$(VIRTUALENV)/bin/pip3 install $(REFERENCE_SPLITTER_URL)
 	echo "# Created by 'make update-requirements-txt'. DO NOT EDIT!" > requirements.txt
+	# ... and then make sure its full URL is used in the output
 	$(VIRTUALENV)/bin/pip freeze | grep -v pkg-resources==0.0.0 | \
+		grep -v references-splitter | \
 		sed 's/airflow/airflow[celery]/' >> requirements.txt
+	echo $(REFERENCE_SPLITTER_URL) >> requirements.txt
 
 
 #
