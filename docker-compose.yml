@@ -10,7 +10,9 @@ x-airflow_env: &airflow-env
   # (in `core` because we must be in an existing section of the cfg)
   AIRFLOW__CORE__REACH_S3_PREFIX: "s3://datalabs-dev/reach-airflow" # No trailing /!
   AIRFLOW__CORE__OPENRESEARCH_S3_PREFIX: "s3://datalabs-dev/airflow" # No trailing /!
-  # AIRFLOW__CORE__DATALABS_ALTERYX_PREFIX: "s3://datalabs-staging/alteryx" # No trailing /!
+
+  # Comma delimited list of elasticsearch addresses/urls to use
+  AIRFLOW__CORE__ELASTICSEARCH_HOSTS: "elasticsearch:9200"
 
   # dev creds encryption key, cf.
   # https://airflow.readthedocs.io/en/stable/howto/secure-connections.html
