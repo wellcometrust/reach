@@ -96,14 +96,8 @@ class WsfScrapingPipeline(object):
             )
             with open(item['pdf'], 'rb') as pdf:
                 self.storage.save(pdf, path, item['hash'] + '.pdf')
-        else:
-            raise DropItem(
-                'This pdf is already in the manifest file.'
-            )
 
         # Remove the file to save storage
-        os.unlink(
-            os.path.join('/tmp', item['pdf'])
-        )
+        os.unlink(item['pdf'])
 
         return item
