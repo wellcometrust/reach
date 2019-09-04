@@ -236,9 +236,10 @@ def parse_all_pdf(input_url, output_url, organisation, context,
         file_system = LocalFileSystem(output_url, organisation)
 
     parsed_items = []
-    manifest = file_system.get_manifest()
-    for directory in manifest:
-        for item in manifest[directory]:
+    content = file_system.get_manifest().get('content', [])
+    for directory in content:
+        for item in content[directory]:
+            logger.info(item + '  --- ' + directory)
             pdf = file_system.get(item)
 
             # Download PDF file to /tmp

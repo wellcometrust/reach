@@ -3,6 +3,7 @@ import os
 import hashlib
 import logging
 import json
+import datetime
 from abc import ABC, abstractmethod
 from botocore.exceptions import ClientError
 
@@ -71,6 +72,7 @@ class S3FileSystem(FileSystem):
         self.bucket = bucket
         self.prefix = path[1:]
         self.organisation = organisation
+        self.start_time = datetime.datetime.now()
 
     def save(self, body, path, filename):
         key = os.path.join(self.prefix, path, filename)
@@ -87,7 +89,7 @@ class S3FileSystem(FileSystem):
     def save_fileobj(self, fileobj, path, filename):
         key = os.path.join(self.prefix, path, filename)
         self.logger.info('FileSystem.save_fileobj: s3://%s/%s',
-            self.bucket, key)
+                         self.bucket, key)
         self.client.upload_fileobj(
             Fileobj=fileobj,
             Bucket=self.bucket,
@@ -118,15 +120,27 @@ class S3FileSystem(FileSystem):
 
     def update_manifest(self, data_file):
         current_manifest = self.get_manifest()
+
+        metadata = {}
+        metadata['organisation'] = self.organisation
+        metadata['start-time'] = \
+            self.start_time.isoformat()
+        metadata['stop-time'] = \
+            datetime.datetime.now().isoformat()
+
         data_file.seek(0)
+
+        # If the manifest has no content yet, let's create it
+        content = current_manifest.get('content', {})
         for row in data_file:
             item = json.loads(row)
-            hash_list = current_manifest.get(item['hash'][:2], None)
+            hash_list = content.get(item['hash'][:2], None)
             if hash_list:
                 if item['hash'] not in hash_list:
                     hash_list.append(item['hash'])
             else:
-                current_manifest[item['hash'][:2]] = [item['hash']]
+                content[item['hash'][:2]] = [item['hash']]
+
         key = os.path.join(
             self.prefix,
             'policytool-scrape--scraper-{organisation}.json'.format(
@@ -136,7 +150,9 @@ class S3FileSystem(FileSystem):
         self.client.put_object(
             Bucket=self.bucket,
             Key=key,
-            Body=json.dumps(current_manifest).encode('utf-8')
+            Body=json.dumps(
+                {'metadata': metadata, 'content': content}
+            ).encode('utf-8')
         )
 
     def get(self, file_hash):
