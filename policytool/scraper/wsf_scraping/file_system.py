@@ -124,9 +124,9 @@ class S3FileSystem(FileSystem):
         metadata = {}
         metadata['organisation'] = self.organisation
         metadata['start-time'] = \
-            self.start_time.strftime("%Y-%m-%d, %H:%M:%S")
+            self.start_time.isoformat()
         metadata['stop-time'] = \
-            datetime.datetime.now().strftime("%Y-%m-%d, %H:%M:%S")
+            datetime.datetime.now().isoformat()
 
         data_file.seek(0)
 
