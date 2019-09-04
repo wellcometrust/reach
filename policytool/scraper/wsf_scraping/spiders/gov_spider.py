@@ -28,21 +28,14 @@ class GovSpider(BaseSpider):
 
     def start_requests(self):
         """Sets up the base urls and start the initial requests."""
-        url = 'https://www.gov.uk/government/publications'
+        url = 'https://www.gov.uk/search/policy-papers-and-consultations'
 
-        if self.year_before or self.year_after:
-            query_dict = {
-                'keywords': '',
-                'publication_filter_option': 'all',
-                'topics[]': 'all',
-                'departments[]': 'all',
-                'official_document_status': 'all',
-                'world_locations[]': 'all',
-                'from_date': '01/01/{}'.format(self.year_after),
-                'to_date': '31/12/{}'.format(int(self.year_before) - 1)
-            }
-            query_params = urlencode(query_dict)
-            url = url + '?' + query_params
+        query_dict = {
+            'order': 'updated-newest',
+            'content_store_document_type%5B%5D': 'policy_papers',
+        }
+        query_params = urlencode(query_dict)
+        url = url + '?' + query_params
 
         self.logger.info('Initial url: %s', url)
         yield scrapy.Request(
@@ -55,21 +48,21 @@ class GovSpider(BaseSpider):
     def parse(self, response):
         """ Parse the articles listing page and go to the next one."""
 
-        file_links = response.css(
-            '.attachment-details .title a::attr("href")'
+        page_links = response.css(
+            '.gem-c-document-list__item-title::attr("href")'
         ).extract()
-        other_document_links = response.css(
-            'li.document-row a::attr("href")'
+        document_links = response.css(
+            '.attachment-details h2 a::attr("href")'
         ).extract()
 
-        for href in other_document_links:
+        for href in page_links:
             yield Request(
                 url=response.urljoin(href),
                 callback=self.parse,
                 errback=self.on_error,
             )
 
-        for fhref in file_links:
+        for fhref in document_links:
             title = response.css('h1::text').extract_first().strip('\n ')
             yield Request(
                 url=response.urljoin(fhref),
@@ -79,7 +72,7 @@ class GovSpider(BaseSpider):
             )
 
         next_page = response.css(
-            'li.next a::attr("href")'
+            '.gem-c-pagination__link::attr("href")'
         ).extract_first()
         if next_page:
             yield Request(
