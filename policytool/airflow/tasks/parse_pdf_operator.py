@@ -27,6 +27,8 @@ class ParsePdfOperator(BaseOperator):
         'src_s3_dir',
     )
 
+    KEYWORD_SEARCH_CONTEXT = 2
+
     @apply_defaults
     def __init__(self, organisation, src_s3_dir, dst_s3_key, *args, **kwargs):
         super(ParsePdfOperator, self).__init__(*args, **kwargs)
@@ -37,7 +39,7 @@ class ParsePdfOperator(BaseOperator):
     @report_exception
     def execute(self, context):
         with safe_import():
-            from policytool.pdf_parser.main import parse_all_pdf
+            import policytool.pdf_parser.main as pdf_parser_main
 
         os.environ.setdefault(
             'SCRAPY_SETTINGS_MODULE',
@@ -49,5 +51,8 @@ class ParsePdfOperator(BaseOperator):
             raise ValueError
 
         input_uri = 'manifest' + self.src_s3_dir
-        output_uri = 'manifest' + self.dst_s3_key
-        parse_all_pdf(input_uri, output_uri, self.organisation, 2)
+        pdf_parser_main.parse_all_pdf(
+            self.organisation,
+            input_uri,
+            self.dst_s3_key,
+        )

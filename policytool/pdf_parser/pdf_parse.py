@@ -1,10 +1,12 @@
+import errno
+import logging
 import math
 import os
-import errno
 import subprocess
-import logging
+import tempfile
 
 from bs4 import BeautifulSoup as bs
+
 from .objects.PdfObjects import PdfFile, PdfPage, PdfLine
 from .tools.extraction import _find_elements
 
@@ -12,95 +14,94 @@ BASE_FONT_SIZE = -10
 
 
 def parse_pdf_document(document):
-    """ Given a path to a pdf, parse the file using pdftotext, to return a
+    """ Parses a file using pdftotext, returning a
     PdfFile object, easier to analyse.
+
+    Args:
+        document: file object, pointing to a named file
     """
 
     logger = logging.getLogger(__name__)
-    parsed_path = document.name + '.xml'
-
-    # Run pdftohtml on the document, and output an xml formated document
-    cmd = [
-        'pdftohtml',
-        '-i',
-        '-xml',
-        '-zoom',
-        '1.5',
-        document.name,
-        parsed_path
-    ]
-
-    try:
-        with open(os.devnull, 'w') as FNULL:
-            subprocess.check_call(cmd, stdout=FNULL, stderr=FNULL)
-
-    except subprocess.CalledProcessError as e:
-        logger.warning(
-            "The pdf [%s] could not be converted: %r",
+    with tempfile.NamedTemporaryFile(suffix='.xml', mode='w+b') as tf:
+        # Run pdftohtml on the document, and output an xml formated document
+        cmd = [
+            'pdftohtml',
+            '-i',
+            '-xml',
+            '-zoom',
+            '1.5',
             document.name,
-            e.stderr,
-        )
-        return None, None
+            tf.name
+        ]
 
-    try:
-        # Try to get file stats in order to check both its existance
-        # and if it has some content
-        st = os.stat(parsed_path)
+        try:
+            subprocess.check_call(
+                cmd,
+                stdout=subprocess.DEVNULL,
+                stderr=subprocess.DEVNULL
+            )
+        except subprocess.CalledProcessError as e:
+            logger.warning(
+                "The pdf [%s] could not be converted: %r",
+                document.name,
+                e.stderr,
+            )
+            return None, None
 
-    except OSError as e:
-        if e.errno != errno.ENOENT:
-            raise
+        try:
+            # Try to get file stats in order to check both its existence
+            # and if it has some content
+            st = os.stat(tf.name)
+        except OSError as e:
+            if e.errno != errno.ENOENT:
+                raise
+            logger.warning('Error trying to open the parsed file: %s', e)
+            return None, None
 
-        logger.warning('Error trying to open the parsed file: %s', e)
-        return None, None
+        if st.st_size == 0:
+            logger.warning(
+                'Error trying to open the parsed file: The file is empty'
+            )
+            return None, None
 
-    if st.st_size == 0:
-        logger.warning(
-            'Error trying to open the parsed file: The file is empty'
-        )
-        return None, None
+        soup = bs(tf.read(), 'html.parser')
 
-    with open(parsed_path, 'rb') as html_file:
-        soup = bs(html_file.read(), 'html.parser')
+        file_pages = []
+        pages = soup.find_all('page')
+        full_text = soup.text
 
-    file_pages = []
-    pages = soup.find_all('page')
-    full_text = soup.text
+        for num, page in enumerate(pages):
+            words = page.find_all('text')
 
-    for num, page in enumerate(pages):
-        words = page.find_all('text')
+            page_lines = []
+            pdf_line = None
+            if words:
+                pos_y = words[0].attrs['top']
+                cur_line = ''
+                font_size = float(words[0].attrs['height'])
+                for word in words:
+                    cur_font_size = float(word.attrs['height'])
+                    if word.attrs['top'] == pos_y and font_size == cur_font_size:
+                        if word.string:
+                            cur_line = cur_line + ' ' + word.string
+                    else:
+                        pdf_line = PdfLine(
+                            int(math.ceil(font_size)),
+                            False,
+                            cur_line, num,
+                            '',
+                        )
+                        if pdf_line:
+                            page_lines.append(pdf_line)
+                        cur_line = word.string if word.string else ''
+                        pos_y = word.attrs['top']
+                        font_size = cur_font_size
+                if pdf_line:
+                    page_lines.append(pdf_line)
+            file_pages.append(PdfPage(page_lines, num))
 
-        page_lines = []
-        pdf_line = None
-        if words:
-            pos_y = words[0].attrs['top']
-            cur_line = ''
-            font_size = float(words[0].attrs['height'])
-            for word in words:
-                cur_font_size = float(word.attrs['height'])
-                if word.attrs['top'] == pos_y and font_size == cur_font_size:
-                    if word.string:
-                        cur_line = cur_line + ' ' + word.string
-                else:
-                    pdf_line = PdfLine(
-                        int(math.ceil(font_size)),
-                        False,
-                        cur_line, num,
-                        '',
-                    )
-                    if pdf_line:
-                        page_lines.append(pdf_line)
-                    cur_line = word.string if word.string else ''
-                    pos_y = word.attrs['top']
-                    font_size = cur_font_size
-            if pdf_line:
-                page_lines.append(pdf_line)
-        file_pages.append(PdfPage(page_lines, num))
-
-    pdf_file = PdfFile(file_pages)
-    html_file.close()
-    os.remove(parsed_path)
-    return pdf_file, full_text
+        pdf_file = PdfFile(file_pages)
+        return pdf_file, full_text
 
 
 def grab_section(pdf_file, keyword):
