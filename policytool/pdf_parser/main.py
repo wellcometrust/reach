@@ -1,15 +1,25 @@
 """
 Parse a set of pdfs from a given directory to extract their text, sections and
 find some words with their context.
+
+Example:
+
+    python -m policytool.pdf_parser.main \
+        msf \
+        manifests3://datalabs-staging/reach-airflow/output/policy/spider/msf/spider-msf \
+        s3://datalabs-dev/pdf_parser_test_output.json.gz
+        
+
 """
-from urllib.parse import urlparse
 from argparse import ArgumentParser
+from urllib.parse import urlparse
 import gzip
+import json
+import logging
 import os
 import os.path
-import logging
+import shutil
 import tempfile
-import json
 
 from policytool.scraper.wsf_scraping.file_system import (
     S3FileSystem,
@@ -18,8 +28,8 @@ from policytool.scraper.wsf_scraping.file_system import (
 from .pdf_parse import parse_pdf_document, grab_section
 
 logger = logging.getLogger(__name__)
-logger.setLevel(logging.INFO)
 
+KEYWORD_SEARCH_CONTEXT = 2
 
 def default_resources_dir():
     """ Returns path to resources/ within our repo. """
@@ -39,7 +49,7 @@ def write_to_file(output_url, items, organisation):
     parsed_url = urlparse(output_url)
     dirname = os.path.dirname(parsed_url.path)
     fname = os.path.basename(parsed_url.path)
-    if parsed_url.scheme == 'manifests3':
+    if parsed_url.scheme == 's3':
         file_system = S3FileSystem(
             dirname,
             organisation,  # not used
@@ -55,12 +65,6 @@ def write_to_file(output_url, items, organisation):
                 raw_f.flush()
                 raw_f.seek(0)
                 file_system.save_fileobj(raw_f, '', fname)
-        # elif fname.endswith('.json'):
-        #     with tempfile.TemporaryFile() as f:
-        #         json.dump(items, f)
-        #         f.flush()
-        #         f.seek(0)
-        #         file_system.save_fileobj(f, dirname, fname)
         else:
             raise ValueError(
                 'Unsupported output_url: %s' % output_url)
@@ -78,7 +82,7 @@ def parse_pdf(pdf, words, titles, context, pdf_hash):
        keywords.
 
     Args:
-        pdf: A pdf file binary.
+        pdf: file object, pointing to a named file
         words: A list of words to look for.
         titles: A list containing the titles of the sections to look for.
         context: The number of lines to scrape before and after a keyword.
@@ -87,41 +91,39 @@ def parse_pdf(pdf, words, titles, context, pdf_hash):
         item: A dict containing the pdf text, sections and keywords.
     """
     # Convert PDF content to text format
-    with open(pdf, 'rb') as f:
+    pdf_file, pdf_text = parse_pdf_document(pdf)
+    # If the PDF couldn't be converted, still remove the pdf file
+    if not pdf_file:
+        logger.warning('The pdf couldn\'t be parsed {pdf_hash}'.format(
+            pdf_hash=pdf_hash,
+        ))
 
-        pdf_file, pdf_text = parse_pdf_document(f)
-        # If the PDF couldn't be converted, still remove the pdf file
-        if not pdf_file:
-            logger.warning('The pdf couldn\'t be parsed {pdf_hash}'.format(
-                pdf_hash=pdf_hash,
-            ))
+        # We still have to return something for the json to be complete.
+        return {
+            'file_hash': pdf_hash,
+            'sections': None,
+            'keywords': None,
+            'text': None,
+        }
 
-            # We still have to return something for the json to be complete.
-            return {
-                'file_hash': pdf_hash,
-                'sections': None,
-                'keywords': None,
-                'text': None,
-            }
+    # Fetch references or other keyworded list
+    keyword_dict = pdf_file.get_lines_by_keywords(
+        words,
+        context
+    )
 
+    section_dict = {}
+    for title in titles:
         # Fetch references or other keyworded list
-        keyword_dict = pdf_file.get_lines_by_keywords(
-            words,
-            context
-        )
+        section = grab_section(pdf_file, title)
 
-        section_dict = {}
-        for title in titles:
-            # Fetch references or other keyworded list
-            section = grab_section(pdf_file, title)
-
-            # Add references and PDF name to JSON returned file
-            # If no section matchs, leave the attribute undefined
-            if section:
-                if section_dict.get(title):
-                    section_dict[title].append(section)
-                else:
-                    section_dict[title] = [section]
+        # Add references and PDF name to JSON returned file
+        # If no section matchs, leave the attribute undefined
+        if section:
+            if section_dict.get(title):
+                section_dict[title].append(section)
+            else:
+                section_dict[title] = [section]
 
     return {
         'file_hash': pdf_hash,
@@ -159,16 +161,21 @@ def create_argparser(description):
         parser: The argument parser from this configuration.
     """
     parser = ArgumentParser(description)
+
     parser.add_argument(
-        '--input-url',
-        help='Path or S3 URL to the manifest file.',
-        default=os.environ['PDF_PARSER_INPUT_URL']
+        'organisation',
+        help='The organisation that was scraped: [who_iris|nice|gov_uk|msf|unicef'
+             '|parliament]',
     )
 
     parser.add_argument(
-        '--output-url',
-        help='URL (local://! | manifests3://!)',
-        default=os.environ['PDF_PARSER_OUTPUT_URL']
+        'input_url',
+        help='URL to the manifest file (file://... | manifests3://...)',
+    )
+
+    parser.add_argument(
+        'output_url',
+        help='URL (file://... | s3://...)',
     )
 
     parser.add_argument(
@@ -180,20 +187,34 @@ def create_argparser(description):
     parser.add_argument(
         '--keyword-search-context',
         help='Number of lines to save before and after finding a word.',
-        default=os.environ['PDF_PARSER_CONTEXT'],
+        default=os.environ.get(
+            'PDF_PARSER_CONTEXT', KEYWORD_SEARCH_CONTEXT),
         type=int
-    )
-
-    parser.add_argument(
-        '--organisation',
-        help='The organisation to scrape: [who_iris|nice|gov_uk|msf|unicef'
-             '|parliament]',
     )
 
     return parser
 
 
-def parse_all_pdf(input_url, output_url, organisation, context,
+def _yield_items(file_system, words, titles, context):
+    content = file_system.get_manifest()['content']
+    for directory in content:
+        for item in content[directory]:
+            logger.info(item + '  --- ' + directory)
+            pdf = file_system.get(item)
+            with tempfile.NamedTemporaryFile() as tf:
+                shutil.copyfileobj(pdf, tf)
+                tf.seek(0)
+                yield parse_pdf(
+                    tf,
+                    words,
+                    titles,
+                    context,
+                    item,
+                )
+
+
+def parse_all_pdf(organisation, input_url, output_url,
+                  context=KEYWORD_SEARCH_CONTEXT,
                   resources_dir=None):
     """Parses all the pdfs from the manifest in the input url and export the
     result to the ouput url.
@@ -206,16 +227,19 @@ def parse_all_pdf(input_url, output_url, organisation, context,
       * Save the output to a json file located at the given output_url.
 
     Args:
+        organisation: The organisation to parse the files from.
         input_url: The location where the entry manifest file is located.
         output_url: The location to put the file containing the parsed items.
-        organisation: The organisation to parse the files from.
         context: The number of lines to save before and after finding a word
                  from the keywords list.
         resources_dir: Path to directory containing keywords.txt and
                        section_keywords.txt, used for finding titles and
                        words to look for.
     """
-    logger.info(output_url)
+    logger.info(
+        "parse_all_pdf: input_url=%s output_url=%s organisation=%s "
+        "context=%d resources_dir=%s",
+        input_url, output_url, organisation, context, resources_dir)
     if resources_dir is None:
         resources_dir = default_resources_dir()
     keywords_file = os.path.join(resources_dir, 'keywords.txt')
@@ -235,38 +259,21 @@ def parse_all_pdf(input_url, output_url, organisation, context,
     else:
         file_system = LocalFileSystem(output_url, organisation)
 
-    parsed_items = []
-    content = file_system.get_manifest().get('content', [])
-    for directory in content:
-        for item in content[directory]:
-            logger.info(item + '  --- ' + directory)
-            pdf = file_system.get(item)
-
-            # Download PDF file to /tmp
-            with tempfile.NamedTemporaryFile(delete=False) as tf:
-                tf.write(pdf.read())
-                tf.seek(0)
-                item = parse_pdf(
-                    tf.name,
-                    words,
-                    titles,
-                    context,
-                    item,
-                )
-            parsed_items.append(item)
+    parsed_items = _yield_items(file_system, words, titles, context)
 
     write_to_file(output_url, parsed_items, organisation)
 
 
 if __name__ == '__main__':
+    import policytool.logging
+    policytool.logging.basicConfig()
 
     parser = create_argparser(description=__doc__.strip())
     args = parser.parse_args()
-
     parse_all_pdf(
+        args.organisation,
         args.input_url,
         args.output_url,
-        args.organisation,
-        args.keywords_search_context,
+        args.keyword_search_context,
         resources_dir=args.resources_dir,
     )
