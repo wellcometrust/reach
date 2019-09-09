@@ -76,7 +76,7 @@ class TestGovSpider(unittest.TestCase):
             self.assertTrue(res)
 
             # Check the name of the function called in callback
-            self.assertEqual(res.callback.__name__, 'parse')
+            self.assertEqual(res.callback.__name__, 'parse_article')
 
     def test_parse_article(self):
         """Test if given an publication listing page of the who website,
@@ -92,7 +92,7 @@ class TestGovSpider(unittest.TestCase):
                 request=request
             )
 
-            res = next(self.spider.parse(response))
+            res = next(self.spider.parse_article(response))
 
             # Check if something is returned
             self.assertTrue(res)
