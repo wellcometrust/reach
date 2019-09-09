@@ -58,7 +58,8 @@ class TestPdfObjects(unittest.TestCase):
 
     def setUp(self):
         self.test_file = open(TEST_PDF, 'rb')
-        self.pdf_file_object, _ = parse_pdf_document(self.test_file)
+        self.pdf_file_object, _, errors = parse_pdf_document(self.test_file)
+        assert not errors
 
     def tearDown(self):
         self.test_file.close()
