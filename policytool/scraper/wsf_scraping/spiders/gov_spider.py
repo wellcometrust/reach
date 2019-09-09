@@ -1,5 +1,4 @@
 from urllib.parse import urlencode
-import os.path
 
 from scrapy.http import Request
 import scrapy
@@ -32,17 +31,17 @@ class GovSpider(BaseSpider):
 
         query_dict = {
             'order': 'updated-newest',
-            'content_store_document_type%5B%5D': 'policy_papers',
+            'content_store_document_type[]': 'policy_papers',
         }
         query_params = urlencode(query_dict)
         url = url + '?' + query_params
 
         self.logger.info('Initial url: %s', url)
-        yield scrapy.Request(
+        yield Request(
             url=url,
+            dont_filter=True,
             callback=self.parse,
             errback=self.on_error,
-            dont_filter=True,
         )
 
     def parse(self, response):
@@ -51,16 +50,30 @@ class GovSpider(BaseSpider):
         page_links = response.css(
             '.gem-c-document-list__item-title::attr("href")'
         ).extract()
-        document_links = response.css(
-            '.attachment-details h2 a::attr("href")'
-        ).extract()
 
         for href in page_links:
             yield Request(
                 url=response.urljoin(href),
+                callback=self.parse_article,
+                errback=self.on_error,
+            )
+
+        next_page = response.css(
+            '.gem-c-pagination__item--next a::attr("href")'
+        ).extract_first()
+        if next_page:
+            yield Request(
+                url=response.urljoin(next_page),
                 callback=self.parse,
                 errback=self.on_error,
             )
+
+    def parse_article(self, response):
+        """Parse the PDF files found in a gov_uk page. """
+
+        document_links = response.css(
+            '.attachment-details h2 a::attr("href")'
+        ).extract()
 
         for fhref in document_links:
             title = response.css('h1::text').extract_first().strip('\n ')
@@ -71,12 +84,4 @@ class GovSpider(BaseSpider):
                 meta={'title': title}
             )
 
-        next_page = response.css(
-            '.gem-c-pagination__link::attr("href")'
-        ).extract_first()
-        if next_page:
-            yield Request(
-                url=response.urljoin(next_page),
-                callback=self.parse,
-                errback=self.on_error,
-            )
+
