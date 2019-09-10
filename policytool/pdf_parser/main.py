@@ -91,12 +91,14 @@ def parse_pdf(pdf, words, titles, context, pdf_hash):
         item: A dict containing the pdf text, sections and keywords.
     """
     # Convert PDF content to text format
-    pdf_file, pdf_text = parse_pdf_document(pdf)
+    pdf_file, pdf_text, errors = parse_pdf_document(pdf)
     # If the PDF couldn't be converted, still remove the pdf file
     if not pdf_file:
-        logger.warning('The pdf couldn\'t be parsed {pdf_hash}'.format(
-            pdf_hash=pdf_hash,
-        ))
+        assert errors, 'Errors must be supplied if no parse'
+        logger.warning(
+            'parse_pdf: pdf_hash=%s errors=%s',
+            pdf_hash, ','.join(errors)
+        )
 
         # We still have to return something for the json to be complete.
         return {
@@ -104,6 +106,7 @@ def parse_pdf(pdf, words, titles, context, pdf_hash):
             'sections': None,
             'keywords': None,
             'text': None,
+            'errors': errors,
         }
 
     # Fetch references or other keyworded list
