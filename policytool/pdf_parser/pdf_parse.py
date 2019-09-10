@@ -10,8 +10,15 @@ from bs4 import BeautifulSoup as bs
 from .objects.PdfObjects import PdfFile, PdfPage, PdfLine
 from .tools.extraction import _find_elements
 
+MAX_HTML_SIZE = 64 * 1024 * 1024
+ERR_PDF2HTML_NONZERO_EXIT = 'pdf2html failed'
+ERR_NO_FILE = 'pdf2html produced no output'
+ERR_EMPTY_FILE = 'html file was empty'
+ERR_FILE_TOO_LARGE = 'html file too large'
+
 BASE_FONT_SIZE = -10
 
+logger = logging.getLogger(__name__)
 
 def parse_pdf_document(document):
     """ Parses a file using pdftotext, returning a
@@ -21,7 +28,6 @@ def parse_pdf_document(document):
         document: file object, pointing to a named file
     """
 
-    logger = logging.getLogger(__name__)
     with tempfile.NamedTemporaryFile(suffix='.xml', mode='w+b') as tf:
         # Run pdftohtml on the document, and output an xml formated document
         cmd = [
@@ -46,7 +52,7 @@ def parse_pdf_document(document):
                 document.name,
                 e.stderr,
             )
-            return None, None
+            return None, None, [ERR_PDF2HTML_NONZERO_EXIT]
 
         try:
             # Try to get file stats in order to check both its existence
@@ -55,14 +61,19 @@ def parse_pdf_document(document):
         except OSError as e:
             if e.errno != errno.ENOENT:
                 raise
-            logger.warning('Error trying to open the parsed file: %s', e)
-            return None, None
+            return None, None, [ERR_NO_FILE]
 
         if st.st_size == 0:
+            return None, None, [ERR_EMPTY_FILE]
+
+        if st.st_size > MAX_HTML_SIZE:
+            # Files this large are usually unparseable and blow out our
+            # memory usage. Skip them.
             logger.warning(
-                'Error trying to open the parsed file: The file is empty'
+                'oversized-pdf file: name=%s size=%d max-size=%d',
+                tf.name, st.st_size, MAX_HTML_SIZE
             )
-            return None, None
+            return None, None, [ERR_FILE_TOO_LARGE]
 
         soup = bs(tf.read(), 'html.parser')
 
@@ -101,7 +112,7 @@ def parse_pdf_document(document):
             file_pages.append(PdfPage(page_lines, num))
 
         pdf_file = PdfFile(file_pages)
-        return pdf_file, full_text
+        return pdf_file, full_text, None
 
 
 def grab_section(pdf_file, keyword):
