@@ -28,7 +28,7 @@ LOG_FORMATTER = 'policytool.scraper.wsf_scraping.middlewares.PoliteLogFormatter'
 # Set pdfminer log to WARNING
 logging.getLogger("pdfminer").setLevel(logging.WARNING)
 
-DUPEFILTER_CLASS = 'scrapy.dupefilters.BaseDupeFilter'
+DUPEFILTER_CLASS = 'scrapy.dupefilters.RFPDupeFilter'
 # Use a physicqal queue, slower but add fiability
 DEPTH_PRIORITY = 1
 SCHEDULER_DISK_QUEUE = 'scrapy.squeues.PickleFifoDiskQueue'
