@@ -12,6 +12,7 @@ import logging
 from . import common
 
 ES_INDEX = 'epmc-metadata'
+CHUNK_SIZE = 1000  # tuned for small(ish) size of pub metadata
 
 def to_es_action(line):
     d = json.loads(line)
@@ -42,6 +43,7 @@ def insert_file(f, es, max_items=None):
     return common.insert_actions(
         es,
         common.yield_actions(f, to_es_action, max_items),
+        CHUNK_SIZE,
         )
 
 

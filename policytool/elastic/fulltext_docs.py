@@ -13,7 +13,7 @@ import logging
 from . import common
 
 ES_INDEX = 'datalabs-fulltext'
-
+CHUNK_SIZE = 50  # tuned for large(ish) size of policy docs
 
 def to_es_action(org, line):
     """ Returns a preformated line to add to an Elasticsearch bulk query. """
@@ -51,6 +51,7 @@ def insert_file(f, es, org, max_items=None):
     return common.insert_actions(
         es,
         common.yield_actions(f, to_es_func, max_items),
+        CHUNK_SIZE,
         )
 
 
