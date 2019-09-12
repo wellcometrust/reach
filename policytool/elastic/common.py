@@ -11,9 +11,8 @@ import elasticsearch.helpers
 
 import policytool.logging
 
-CHUNK_SIZE = 1000
 MAX_RETRIES = 10
-MAX_ITEMS_PER_POOL = 50000
+MAX_CHUNKS_PER_POOL = 50
 
 WORKER_COUNT = 6
 QUEUE_SIZE = 6
@@ -82,8 +81,15 @@ def _n_actions(actions, max_items):
             return
 
 
-def insert_actions(es, actions):
-    """ Inserts an iterable of actions into an ES cluster. """
+def insert_actions(es, actions, chunk_size):
+    """ Inserts an iterable of actions into an ES cluster.
+    
+    Args:
+        es: ElasticSearch client
+        actions: iterable of ElasticSearch bulk API action dicts
+        chunk_size: maximum number of actions to send in any one API
+            call.
+    """
     # Why this loops: once an exception occurs in bulk API calls, memory
     # starts to grow rapidly, presumably because frames start
     # accumulating within elasticsearch.helpers.parallel_bulk() or
@@ -93,25 +99,27 @@ def insert_actions(es, actions):
     # retries become necessary), our python process starts ballooning,
     # reaching 4GB well before we get to even 3M records.
     # 
-    # Thus, we only call parallel_bulk() in chunks of MAX_ITEMS_PER_POOL
-    # before calling it again, giving the reference counter a chance to
-    # free up memory from the call stack from time to time. Note also
-    # that retries are handled by the ES connection itself, so we can
-    # get away with using parallel_bulk(), which has no retry logic of
-    # its own.
+    # Thus, we only call parallel_bulk() with blocks of (chunk_size *
+    # MAX_CHUNKS_PER_POOL) items before calling it again, giving the
+    # reference counter a chance to free up memory from the call stack
+    # from time to time. Note also that retries are handled by the ES
+    # connection itself, so we can get away with using parallel_bulk(),
+    # which has no retry logic of its own.
     start = time.time()
     total_count = 0
     loop_count = None
     while loop_count != 0:
         loop_count = 0
-        n_actions = _n_actions(actions, MAX_ITEMS_PER_POOL)
+        n_actions = _n_actions(
+            actions, chunk_size * MAX_CHUNKS_PER_POOL)
         tups = elasticsearch.helpers.parallel_bulk(
-                es, n_actions,
-                chunk_size=CHUNK_SIZE,
-                thread_count=WORKER_COUNT,
-                queue_size=QUEUE_SIZE,
-                raise_on_error=False,
-                )
+            es,
+            n_actions,
+            chunk_size=chunk_size,
+            thread_count=WORKER_COUNT,
+            queue_size=QUEUE_SIZE,
+            raise_on_error=False,
+            )
         for ok, result in tups:
             if not ok:
                 logging.error(
