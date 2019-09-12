@@ -15,11 +15,11 @@ from . import common
 ES_INDEX = 'datalabs-fulltext'
 CHUNK_SIZE = 50  # tuned for large(ish) size of policy docs
 
-def to_es_action(org, line):
+def to_es_action(org, es_index, line):
     """ Returns a preformated line to add to an Elasticsearch bulk query. """
     d = json.loads(line)
     return {
-        "_index": ES_INDEX,
+        "_index": es_index,
         "doc": {
             'hash': d['file_hash'],
             'text': d['text'],
@@ -28,12 +28,13 @@ def to_es_action(org, line):
     }
 
 
-def clean_es(es):
+def clean_es(es, es_index_prefix):
     """ Ensure an empty index exists. """
-    common.clean_es(es, ES_INDEX)
+    es_index = es_index_prefix + ES_INDEX
+    common.clean_es(es, es_index)
 
 
-def insert_file(f, es, org, max_items=None):
+def insert_file(f, es, org, es_index_prefix, max_items=None):
     """
     Inserts EPMC metadata from a json.gz file into Elasticsearch.
 
@@ -43,11 +44,15 @@ def insert_file(f, es, org, max_items=None):
         org: organization name associated with the doc
         max_items: maximum number of records to insert, or None
     """
+    if es_index_prefix:
+        es_index = es_index_prefix + ES_INDEX
+    else:
+        es_index = ES_INDEX
 
     logging.info(
         'fulltext_docs.insert_file: f=%s es=%s max_items=%s',
         f, es, max_items)
-    to_es_func = functools.partial(to_es_action, org)
+    to_es_func = functools.partial(to_es_action, org, es_index)
     return common.insert_actions(
         es,
         common.yield_actions(f, to_es_func, max_items),

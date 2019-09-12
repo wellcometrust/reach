@@ -136,7 +136,8 @@ def create_org_pipeline(dag, organisation, item_limits, spider_years):
     return fuzzyMatchRefs
 
 
-def create_dag(dag_id, default_args, spider_years, item_limits):
+def create_dag(dag_id, default_args, spider_years,
+               item_limits, es_index_prefix):
     """
     Creates a DAG.
 
@@ -160,6 +161,7 @@ def create_dag(dag_id, default_args, spider_years, item_limits):
         src_s3_key=epmc_metadata_key,
         es_host='elasticsearch',
         max_epmc_metadata=item_limits.index,
+        es_index_prefix=es_index_prefix,
         dag=dag
     )
     for organisation in ORGANISATIONS:
@@ -179,6 +181,7 @@ test_dag = create_dag(
     DEFAULT_ARGS,
     [2018],
     ItemLimits(10, 500),
+    'test_'
 )
 
 policy_dag = create_dag(
@@ -186,4 +189,5 @@ policy_dag = create_dag(
     DEFAULT_ARGS,
     list(range(2012, datetime.datetime.now().year + 1)),
     ItemLimits(None, None),
+    None
 )
