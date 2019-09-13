@@ -52,7 +52,7 @@ class ESIndexFulltextDocs(BaseOperator):
         s3 = WellcomeS3Hook()
 
         # TODO: implement skipping mechanism
-        fulltext_docs.clean_es(es)
+        fulltext_docs.clean_es(es, self.es_index_prefix)
 
         if self.max_items:
             self.log.info(
