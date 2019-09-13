@@ -32,22 +32,42 @@ def yield_structured_references(s3, structured_references_path):
 
 
 class ElasticsearchFuzzyMatcher:
-    def __init__(self, es, score_threshold, should_match_threshold, title_length_threshold=0):
+    MAX_TITLE_LENGTH = 512
+
+    def __init__(self, es, score_threshold, should_match_threshold,
+                 min_title_length=0):
         self.es = es
         self.score_threshold = score_threshold
-        self.title_length_threshold = title_length_threshold
+        self.min_title_length = min_title_length
         self.should_match_threshold = should_match_threshold
 
     def match(self, reference):
         title = reference['Title']
+        title_len = len(title)
 
-        if len(title) < self.title_length_threshold:
+        if title_len < self.min_title_length:
             return
+
+        if title_len > self.MAX_TITLE_LENGTH:
+            # ExtractRefs does not always yield journal titles;
+            # sometimes it just yields back a wholesale paragraph
+            # of text from somewhere in the document. Truncate this
+            # because sending it up to ES results in an error.
+            # (We may want to just skip long titles instead...and
+            # certainly should monitor them.)
+            title = ' '.join(
+                title[:self.MAX_TITLE_LENGTH].split()[:-1]
+            )
+            logger.info(
+                'ElasticsearchFuzzyMatcher.match: '
+                'orig-length=%d doc-id=%s truncated-title=%r',
+                title_len, reference['Document id'], title
+            )
 
         body = {
             "query": {
                 "match": {
-                    "title": {
+                    "doc.title": {
                         "query": title,
                         "minimum_should_match": f"{self.should_match_threshold}%"
                     }
@@ -68,11 +88,16 @@ class ElasticsearchFuzzyMatcher:
         best_score = best_match['_score']
         if best_score > self.score_threshold:
             matched_reference = best_match['_source']
+            # logger.info(
+            #     'ElasticsearchFuzzyMatcher.match: '
+            #     'doc-id=%s similarity=%.1f',
+            #     reference['Document id'], best_score
+            # )
             return {
                 'Document id': reference['Document id'],
                 'Reference id': reference['Reference id'],
                 'Extracted title': reference['Title'],
-                'Matched title': matched_reference['title'],
+                'Matched title': matched_reference['doc']['title'],
                 'Similarity': best_score,
                 'Match algorithm': 'Fuzzy match'
             }
@@ -125,20 +150,34 @@ class FuzzyMatchRefsOperator(BaseOperator):
         with tempfile.NamedTemporaryFile(mode='wb') as output_raw_f:
             with gzip.GzipFile(mode='wb', fileobj=output_raw_f) as output_f:
                 refs = yield_structured_references(s3, self.src_s3_key)
-                for structured_reference in refs:
+                match_count = 0
+                for count, structured_reference in enumerate(refs, 1):
+                    if count % 500 == 0:
+                        logger.info(
+                            'FuzzyMatchRefsOperator: references=%d', count
+                        )
                     fuzzy_matched_reference = fuzzy_match_reference(
                         fuzzy_matcher,
                         structured_reference
                     )
                     if fuzzy_matched_reference:
-                        logger.info("Match")
+                        match_count += 1
+                        if match_count % 100 == 0:
+                            logger.info(
+                                'FuzzyMatchRefsOperator: matches=%d',
+                                match_count
+                            )
                         output_f.write(json.dumps(fuzzy_matched_reference).encode('utf-8'))
                         output_f.write(b'\n')
 
             output_raw_f.flush()
-
             s3.load_file(
                 filename=output_raw_f.name,
                 key=self.dst_s3_key,
                 replace=True,
             )
+            logger.info(
+                'FuzzyMatchRefsOperator: references=%d matches=%d',
+                count, match_count
+            )
+
