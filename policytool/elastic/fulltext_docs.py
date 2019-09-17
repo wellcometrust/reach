@@ -12,8 +12,8 @@ import logging
 
 from . import common
 
-ES_INDEX = 'datalabs-fulltext'
 CHUNK_SIZE = 50  # tuned for large(ish) size of policy docs
+
 
 def to_es_action(org, es_index, line):
     """ Returns a preformated line to add to an Elasticsearch bulk query. """
@@ -28,13 +28,12 @@ def to_es_action(org, es_index, line):
     }
 
 
-def clean_es(es, es_index_prefix):
+def clean_es(es, es_index):
     """ Ensure an empty index exists. """
-    es_index = es_index_prefix + ES_INDEX
     common.clean_es(es, es_index)
 
 
-def insert_file(f, es, org, es_index_prefix, max_items=None):
+def insert_file(f, es, org, es_index, max_items=None):
     """
     Inserts EPMC metadata from a json.gz file into Elasticsearch.
 
@@ -44,10 +43,6 @@ def insert_file(f, es, org, es_index_prefix, max_items=None):
         org: organization name associated with the doc
         max_items: maximum number of records to insert, or None
     """
-    if es_index_prefix:
-        es_index = es_index_prefix + ES_INDEX
-    else:
-        es_index = ES_INDEX
 
     logging.info(
         'fulltext_docs.insert_file: f=%s es=%s max_items=%s',
@@ -62,7 +57,8 @@ def insert_file(f, es, org, es_index_prefix, max_items=None):
 
 if __name__ == '__main__':
     def insert_func(f, es, max_items=None):
-        return insert_file(f, es, 'unknown', max_items=max_items)
+        return insert_file(f, es, 'unknown', 'policy-test-fulltexts',
+                           max_items=max_items)
 
     count = common.insert_from_argv(
         __doc__.strip(), clean_es, insert_func)

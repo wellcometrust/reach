@@ -78,7 +78,7 @@ def to_s3_model(*args):
     ) % '/'.join(args)
 
 
-def create_org_pipeline(dag, organisation, item_limits, spider_years, es_index_prefix):
+def create_org_pipeline(dag, organisation, item_limits, spider_years):
     """ Creates all tasks tied to a single organisation::
 
         Spider -> ParsePdf
@@ -108,7 +108,7 @@ def create_org_pipeline(dag, organisation, item_limits, spider_years, es_index_p
         organisation=organisation,
         es_host='elasticsearch',
         item_limits=item_limits.index,
-        es_index_prefix=es_index_prefix,
+        es_index='-'.join([dag.dag_id, 'fulltext', organisation]),
         dag=dag
     )
 
@@ -138,7 +138,7 @@ def create_org_pipeline(dag, organisation, item_limits, spider_years, es_index_p
 
 
 def create_dag(dag_id, default_args, spider_years,
-               item_limits, es_index_prefix):
+               item_limits):
     """
     Creates a DAG.
 
@@ -162,7 +162,7 @@ def create_dag(dag_id, default_args, spider_years,
         src_s3_key=epmc_metadata_key,
         es_host='elasticsearch',
         max_epmc_metadata=item_limits.index,
-        es_index_prefix=es_index_prefix,
+        es_index='-'.join([dag_id, 'epmc', 'metadata']),
         dag=dag
     )
     for organisation in ORGANISATIONS:
@@ -171,7 +171,6 @@ def create_dag(dag_id, default_args, spider_years,
             organisation,
             item_limits,
             spider_years,
-            es_index_prefix=es_index_prefix,
         )
         esIndexPublications >> fuzzyMatchRefs
 
@@ -183,7 +182,6 @@ test_dag = create_dag(
     DEFAULT_ARGS,
     [2018],
     ItemLimits(10, 500),
-    'test_'
 )
 
 policy_dag = create_dag(
@@ -191,5 +189,4 @@ policy_dag = create_dag(
     DEFAULT_ARGS,
     list(range(2012, datetime.datetime.now().year + 1)),
     ItemLimits(None, None),
-    '',
 )
