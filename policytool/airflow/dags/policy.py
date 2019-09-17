@@ -129,6 +129,7 @@ def create_org_pipeline(dag, organisation, item_limits, spider_years):
         src_s3_key=extractRefs.dst_s3_key,
         dst_s3_key=to_s3_output(
             dag, 'fuzzy-matched-refs', organisation, '.json.gz'),
+        es_index='-'.join([dag.dag_id, 'epmc', 'metadata']),
         dag=dag,
         )
 

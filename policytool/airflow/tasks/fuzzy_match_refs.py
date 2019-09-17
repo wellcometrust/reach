@@ -15,7 +15,6 @@ from airflow.utils.decorators import apply_defaults
 
 from policytool.airflow.hook.wellcome_s3_hook import WellcomeS3Hook
 from policytool.airflow.safe_import import safe_import
-from policytool.elastic import epmc_metadata
 from policytool.sentry import report_exception
 
 logger = logging.getLogger(__name__)
@@ -35,8 +34,9 @@ class ElasticsearchFuzzyMatcher:
     MAX_TITLE_LENGTH = 512
 
     def __init__(self, es, score_threshold, should_match_threshold,
-                 min_title_length=0):
+                 es_index, min_title_length=0):
         self.es = es
+        self.es_index = es_index
         self.score_threshold = score_threshold
         self.min_title_length = min_title_length
         self.should_match_threshold = should_match_threshold
@@ -75,7 +75,7 @@ class ElasticsearchFuzzyMatcher:
             }
         }
         res = self.es.search(
-            index=epmc_metadata.ES_INDEX,
+            index=self.es_index,
             body=body,
             size=1
         )
@@ -83,7 +83,7 @@ class ElasticsearchFuzzyMatcher:
         matches_count = res['hits']['total']['value']
         if matches_count == 0:
             return
-        
+
         best_match = res['hits']['hits'][0]
         best_score = best_match['_score']
         if best_score > self.score_threshold:
@@ -101,7 +101,7 @@ class ElasticsearchFuzzyMatcher:
                 'Similarity': best_score,
                 'Match algorithm': 'Fuzzy match'
             }
-  
+
 
 class FuzzyMatchRefsOperator(BaseOperator):
     """
@@ -120,7 +120,7 @@ class FuzzyMatchRefsOperator(BaseOperator):
     SCORE_THRESHOLD = 50
 
     @apply_defaults
-    def __init__(self, es_hosts, src_s3_key, dst_s3_key,
+    def __init__(self, es_hosts, src_s3_key, dst_s3_key, es_index,
                  score_threshold=SCORE_THRESHOLD,
                  should_match_threshold=SHOULD_MATCH_THRESHOLD,
                  aws_conn_id='aws_default', *args, **kwargs):
@@ -130,7 +130,8 @@ class FuzzyMatchRefsOperator(BaseOperator):
         self.dst_s3_key = dst_s3_key
         self.score_threshold = score_threshold
         self.should_match_threshold = should_match_threshold
- 
+        self.es_index = es_index
+
         self.es = Elasticsearch(es_hosts)
         self.aws_conn_id = aws_conn_id
 
@@ -140,11 +141,12 @@ class FuzzyMatchRefsOperator(BaseOperator):
             from policytool.refparse.refparse import fuzzy_match_reference
 
         s3 = WellcomeS3Hook(aws_conn_id=self.aws_conn_id)
-    
+
         fuzzy_matcher = ElasticsearchFuzzyMatcher(
             self.es,
             self.score_threshold,
-            self.should_match_threshold
+            self.should_match_threshold,
+            self.es_index,
         )
 
         with tempfile.NamedTemporaryFile(mode='wb') as output_raw_f:
