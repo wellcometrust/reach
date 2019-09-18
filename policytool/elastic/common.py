@@ -98,7 +98,7 @@ def insert_actions(es, actions, chunk_size):
     # fine, with memory <400MB, but as ES starts to slow down (and
     # retries become necessary), our python process starts ballooning,
     # reaching 4GB well before we get to even 3M records.
-    # 
+    #
     # Thus, we only call parallel_bulk() with blocks of (chunk_size *
     # MAX_CHUNKS_PER_POOL) items before calling it again, giving the
     # reference counter a chance to free up memory from the call stack
@@ -130,7 +130,7 @@ def insert_actions(es, actions, chunk_size):
             total_count += 1
             if total_count % 10000 == 0:
                 logging.info("insert_actions: count=%d", total_count)
-            
+
             loop_count += 1
         logging.info("insert_actions: loop_count=%d", loop_count)
 
@@ -166,6 +166,7 @@ def connect(host, port):
 
 def es_from_args(args):
     return connect(args.host, args.port)
+
 
 def insert_from_argv(description, clean_es, insert_file):
     parser = create_argument_parser(description)

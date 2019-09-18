@@ -24,7 +24,7 @@ class ESIndexEPMCMetadata(BaseOperator):
     @apply_defaults
     def __init__(self, src_s3_key, es_host, es_port=9200,
                  max_epmc_metadata=None, aws_conn_id='aws_default',
-                 *args, **kwargs):
+                 es_index=None, *args, **kwargs):
         """
         Args:
             src_s3_key: S3 URL for the json.gz output file.
@@ -44,6 +44,7 @@ class ESIndexEPMCMetadata(BaseOperator):
         self.es_port = es_port
         self.aws_conn_id = aws_conn_id
         self.max_epmc_metadata = max_epmc_metadata
+        self.es_index = es_index
 
     def execute(self, context):
         es = policytool.elastic.common.connect(
@@ -51,7 +52,7 @@ class ESIndexEPMCMetadata(BaseOperator):
         s3 = WellcomeS3Hook()
 
         # TODO: implement skipping mechanism
-        epmc_metadata.clean_es(es)
+        epmc_metadata.clean_es(es, self.es_index)
 
         self.log.info(
             'Getting %s pubs from %s',
@@ -66,6 +67,7 @@ class ESIndexEPMCMetadata(BaseOperator):
             count = epmc_metadata.insert_file(
                 tf,
                 es,
-                max_items=self.max_epmc_metadata
+                max_items=self.max_epmc_metadata,
+                es_index=self.es_index,
             )
         self.log.info('execute: insert complete count=%d', count)

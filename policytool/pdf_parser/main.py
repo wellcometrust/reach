@@ -8,7 +8,7 @@ Example:
         msf \
         manifests3://datalabs-staging/reach-airflow/output/policy/spider/msf/spider-msf \
         s3://datalabs-dev/pdf_parser_test_output.json.gz
-        
+
 
 """
 from argparse import ArgumentParser
