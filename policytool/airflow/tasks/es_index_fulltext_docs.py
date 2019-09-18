@@ -7,8 +7,9 @@ from airflow.models import BaseOperator
 from airflow.utils.decorators import apply_defaults
 
 from policytool.airflow.hook.wellcome_s3_hook import WellcomeS3Hook
-from policytool.elastic import fulltext_docs 
+from policytool.elastic import fulltext_docs
 import policytool.elastic.common
+
 
 class ESIndexFulltextDocs(BaseOperator):
     """ Download the latest scraped publications texts stored in S3 and index
@@ -22,7 +23,7 @@ class ESIndexFulltextDocs(BaseOperator):
     @apply_defaults
     def __init__(self, src_s3_key, es_host, organisation, es_port=9200,
                  max_items=None, aws_conn_id='aws_default',
-                 *args, **kwargs):
+                 es_index=None, *args, **kwargs):
         """
         Args:
             src_s3_key: S3 URL for the json.gz output file.
@@ -43,6 +44,7 @@ class ESIndexFulltextDocs(BaseOperator):
         self.organisation = organisation
         self.aws_conn_id = aws_conn_id
         self.max_items = max_items
+        self.es_index = es_index
 
     def execute(self, context):
         es = policytool.elastic.common.connect(
@@ -50,7 +52,7 @@ class ESIndexFulltextDocs(BaseOperator):
         s3 = WellcomeS3Hook()
 
         # TODO: implement skipping mechanism
-        fulltext_docs.clean_es(es)
+        fulltext_docs.clean_es(es, self.es_index)
 
         if self.max_items:
             self.log.info(
@@ -73,6 +75,7 @@ class ESIndexFulltextDocs(BaseOperator):
                 tf,
                 es,
                 self.organisation,
-                max_items=self.max_items
+                max_items=self.max_items,
+                es_index=self.es_index,
             )
         self.log.info('import complete count=%d', count)

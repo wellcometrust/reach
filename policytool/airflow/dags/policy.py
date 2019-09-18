@@ -108,6 +108,7 @@ def create_org_pipeline(dag, organisation, item_limits, spider_years):
         organisation=organisation,
         es_host='elasticsearch',
         item_limits=item_limits.index,
+        es_index='-'.join([dag.dag_id, 'fulltext', organisation]),
         dag=dag
     )
 
@@ -128,6 +129,7 @@ def create_org_pipeline(dag, organisation, item_limits, spider_years):
         src_s3_key=extractRefs.dst_s3_key,
         dst_s3_key=to_s3_output(
             dag, 'fuzzy-matched-refs', organisation, '.json.gz'),
+        es_index='-'.join([dag.dag_id, 'epmc', 'metadata']),
         dag=dag,
         )
 
@@ -136,7 +138,8 @@ def create_org_pipeline(dag, organisation, item_limits, spider_years):
     return fuzzyMatchRefs
 
 
-def create_dag(dag_id, default_args, spider_years, item_limits):
+def create_dag(dag_id, default_args, spider_years,
+               item_limits):
     """
     Creates a DAG.
 
@@ -160,6 +163,7 @@ def create_dag(dag_id, default_args, spider_years, item_limits):
         src_s3_key=epmc_metadata_key,
         es_host='elasticsearch',
         max_epmc_metadata=item_limits.index,
+        es_index='-'.join([dag_id, 'epmc', 'metadata']),
         dag=dag
     )
     for organisation in ORGANISATIONS:
