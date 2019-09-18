@@ -108,7 +108,7 @@ def create_org_pipeline(dag, organisation, item_limits, spider_years):
         organisation=organisation,
         es_host='elasticsearch',
         item_limits=item_limits.index,
-        es_index='-'.join([dag.dag_id, 'fulltext', organisation]),
+        es_index='-'.join([dag.dag_id, 'policy-docs']),
         dag=dag
     )
 
