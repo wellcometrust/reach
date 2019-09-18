@@ -204,3 +204,11 @@ def insert_from_argv(description, clean_es, insert_file):
     else:
         with open(args.input, 'rb') as f:
             return insert_file(f, es, args.max_items)
+
+
+if __name__ == '__main__':
+    parser = create_argument_parser(
+        'Instantiates ES client for use with python -i')
+    args = parser.parse_args()
+
+    es = es_from_args(args)
