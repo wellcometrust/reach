@@ -153,6 +153,7 @@ class FuzzyMatchRefsOperator(BaseOperator):
             with gzip.GzipFile(mode='wb', fileobj=output_raw_f) as output_f:
                 refs = yield_structured_references(s3, self.src_s3_key)
                 match_count = 0
+                count = 0
                 for count, structured_reference in enumerate(refs, 1):
                     if count % 500 == 0:
                         logger.info(
