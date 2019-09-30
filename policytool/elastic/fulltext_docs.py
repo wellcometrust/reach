@@ -35,7 +35,8 @@ def clean_es(es, es_index):
 
 def insert_file(f, es, org, es_index, max_items=None):
     """
-    Inserts EPMC metadata from a json.gz file into Elasticsearch.
+    Inserts the policy documents' fulltexts from a json.gz file
+    into Elasticsearch.
 
     Args:
         f: json.gz file object
