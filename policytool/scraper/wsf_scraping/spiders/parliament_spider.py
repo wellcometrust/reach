@@ -15,23 +15,26 @@ class ParliamentSpider(BaseSpider):
         """This sets up the initial urls."""
 
         query_list = [
-            'Parameters.Fields.all=',
-            'Parameters.Fields.all-target=',
-            'Parameters.Fields.phrase=',
-            'Parameters.Fields.phrase-target=',
-            'Parameters.Fields.any=',
-            'Parameters.Fields.any-target=',
-            'Parameters.Fields.exclude=',
-            'Parameters.Fields.exclude-target=',
-            'Parameters.Fields.house=House+of+Commons',
-            'Parameters.Fields.house=House+of+Lords',
-            'Parameters.Fields.member=',
-            'Parameters.Fields.subject=',
-            'Parameters.Fields.reference=',
-            'When%3A=date',
-            'Parameters.Fields.date=01%2F01%2F1980',
-            'Parameters.Fields.date=04%2F10%2F2018',
-            'Parameters.PageSize=100'
+            "Parameters.Fields.all=",
+            "Parameters.Fields.all-target=",
+            "Parameters.Fields.phrase=",
+            "Parameters.Fields.phrase-target=",
+            "Parameters.Fields.any=",
+            "Parameters.Fields.any-target=",
+            "Parameters.Fields.exclude=",
+            "Parameters.Fields.exclude-target=",
+            "Parameters.Fields.type=Bills",
+            "Parameters.Fields.type=Select+Committee+reports",
+            "Parameters.Fields.type=Select+Committee+written+evidence",
+            "Parameters.Fields.type=Debates",
+            "Parameters.Fields.type=Research+briefings",
+            "Parameters.Fields.member=",
+            "Parameters.Fields.subject=",
+            "Parameters.Fields.reference=",
+            "When%3A=date",
+            "Parameters.Fields.date=01%2F01%2F1980",
+            "Parameters.Fields.date=04%2F10%2F2018",
+            "Parameters.PageSize=100"
         ]
         base_url = 'http://search-material.parliament.uk/search'
         query_params = '&'.join(query_list)
