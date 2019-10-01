@@ -12,19 +12,22 @@ import logging
 
 from . import common
 
-# TODO: Check that size for citations
-CHUNK_SIZE = 50
+CHUNK_SIZE = 1000  # Tuned for small citation metadata
 
 
 def to_es_action(org, es_index, line):
     """ Returns a preformated line to add to an Elasticsearch bulk query. """
     d = json.loads(line)
+
     return {
         "_index": es_index,
         "doc": {
-            'hash': d['file_hash'],
-            'text': d['text'],
-            'organisation': org,
+            'Document id': d['Document id'],
+            'Reference id': d['Reference id'],
+            'Extracted title': d['Extracted title'],
+            'Matched title': d['Matched title'],
+            'Similarity': d['Similarity'],
+            'Match algorithm': d['Match algorithm'],
         }
     }
 
