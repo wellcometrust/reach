@@ -81,13 +81,14 @@ def parse_pdf_document(document):
         tree = lxml.etree.parse(io.BytesIO(tf.read()))
 
         file_pages = []
+        full_text = '\n'.join([_flatten_text(text) for text in tree.xpath('//text')])
         pages = tree.xpath('page')
-        #full_text = _flatten_text(tree)
-        full_text = None
 
         for page_num, page in enumerate(pages):
             lines = page.xpath('//text')
             page_lines = []
+
+            # Create a mapping dict to allow font family and size lookups
             fontspec = _flatten_fontspec(page.xpath('//fontspec'))
 
             for line in lines:
