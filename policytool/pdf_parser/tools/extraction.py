@@ -67,3 +67,23 @@ def _find_elements(pdf_file, keyword):
         titles.append((start_title, None))
 
     return titles
+
+def _flatten_text(element):
+    """
+    Flatten an xml element into a string
+    """
+    return ' '.join(element.itertext())
+
+def _flatten_fontspec(fontspecs):
+    """
+    Flatten a list of fontspec elements into a mapping dict
+    """
+    fontspec_map = dict()
+    for fontspec in fontspecs:
+        fs_attrs = dict()
+        fs_attrs['size'] = fontspec.get('size')
+        fs_attrs['family'] = fontspec.get('family')
+        fs_attrs['color'] = fontspec.get('color')
+        fontspec_map[fontspec.get('id')] = fs_attrs
+
+    return fontspec_map
