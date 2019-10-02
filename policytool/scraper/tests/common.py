@@ -8,3 +8,4 @@ def get_path(p):
     )
 
 TEST_PDF = get_path('pdfs/test_pdf.pdf')
+TEST_XML = get_path('xml/test_xml.xml')
