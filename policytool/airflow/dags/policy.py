@@ -7,6 +7,7 @@ import airflow.utils.dates
 
 from policytool.airflow.tasks import es_index_epmc_metadata
 from policytool.airflow.tasks import es_index_fulltext_docs
+from policytool.airflow.tasks import es_index_fuzzy_matched
 from policytool.airflow.tasks import fuzzy_match_refs
 
 from policytool.airflow.tasks.spider_operator import SpiderOperator
@@ -133,8 +134,18 @@ def create_org_pipeline(dag, organisation, item_limits, spider_years):
         dag=dag,
         )
 
+    esIndexFuzzyMatched = es_index_fuzzy_matched.ESIndexFuzzyMatchedCitations(
+        task_id="ESIndexFuzzyMatchedCitations.%s" % organisation,
+        src_s3_key=fuzzyMatchRefs.dst_s3_key,
+        organisation=organisation,
+        es_host='elasticsearch',
+        item_limits=item_limits.index,
+        es_index='-'.join([dag.dag_id, 'policy-docs']),
+        dag=dag
+    )
+
     parsePdf >> esIndexFullTexts
-    spider >> parsePdf >> extractRefs >> fuzzyMatchRefs
+    spider >> parsePdf >> extractRefs >> fuzzyMatchRefs >> esIndexFuzzyMatched
     return fuzzyMatchRefs
 
 
