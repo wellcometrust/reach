@@ -1,14 +1,16 @@
 import errno
+import io
 import logging
 import math
 import os
 import subprocess
 import tempfile
 
-from bs4 import BeautifulSoup as bs
+import lxml.etree
 
-from .objects.PdfObjects import PdfFile, PdfPage, PdfLine
-from .tools.extraction import _find_elements
+from .objects.PdfObjects import PdfFile, PdfLine, PdfPage
+from .tools.extraction import (_find_elements, _flatten_text,
+                               _flatten_fontspec)
 
 MAX_HTML_SIZE = 64 * 1024 * 1024
 ERR_PDF2HTML_NONZERO_EXIT = 'pdf2html failed'
@@ -73,45 +75,42 @@ def parse_pdf_document(document):
                 'oversized-pdf file: name=%s size=%d max-size=%d',
                 tf.name, st.st_size, MAX_HTML_SIZE
             )
+
             return None, None, [ERR_FILE_TOO_LARGE]
 
-        soup = bs(tf.read(), 'html.parser')
+        tree = lxml.etree.parse(io.BytesIO(tf.read()))
 
         file_pages = []
-        pages = soup.find_all('page')
-        full_text = soup.text
+        pages = tree.xpath('page')
+        #full_text = _flatten_text(tree)
+        full_text = None
 
-        for num, page in enumerate(pages):
-            words = page.find_all('text')
-
+        for page_num, page in enumerate(pages):
+            lines = page.xpath('//text')
             page_lines = []
-            pdf_line = None
-            if words:
-                pos_y = words[0].attrs['top']
-                cur_line = ''
-                font_size = float(words[0].attrs['height'])
-                for word in words:
-                    cur_font_size = float(word.attrs['height'])
-                    if word.attrs['top'] == pos_y and font_size == cur_font_size:
-                        if word.string:
-                            cur_line = cur_line + ' ' + word.string
-                    else:
-                        pdf_line = PdfLine(
-                            int(math.ceil(font_size)),
-                            False,
-                            cur_line, num,
-                            '',
-                        )
-                        if pdf_line:
-                            page_lines.append(pdf_line)
-                        cur_line = word.string if word.string else ''
-                        pos_y = word.attrs['top']
-                        font_size = cur_font_size
+            fontspec = _flatten_fontspec(page.xpath('//fontspec'))
+
+            for line in lines:
+                family = fontspec[line.get('font')]['family']
+                size = int(fontspec[line.get('font')]['size'])
+                text = _flatten_text(line)
+
+                pdf_line = None
+                pdf_line = PdfLine(
+                    size,
+                    False,
+                    text,
+                    page_num,
+                    family
+                )
+
                 if pdf_line:
                     page_lines.append(pdf_line)
-            file_pages.append(PdfPage(page_lines, num))
+
+            file_pages.append(PdfPage(page_lines, page_num))
 
         pdf_file = PdfFile(file_pages)
+
         return pdf_file, full_text, None
 
 
