@@ -58,8 +58,7 @@ class TestPdfObjects(unittest.TestCase):
 
     def setUp(self):
         self.test_file = open(TEST_PDF, 'rb')
-        self.pdf_file_object, _, errors = parse_pdf_document(self.test_file)
-        assert not errors
+        self.pdf_file_object, _, _ = parse_pdf_document(self.test_file)
 
     def tearDown(self):
         self.test_file.close()
@@ -129,15 +128,14 @@ class TestPdfObjectsMultipage(unittest.TestCase):
 
     def setUp(self):
         self.test_file = open(TEST_PDF_MULTIPAGE, 'rb')
-        self.pdf_file_object, _, _ = parse_pdf_document(self.test_file)
+        self.pdf_file_object, self.full_text, _ = parse_pdf_document(self.test_file)
 
     def tearDown(self):
         self.test_file.close()
 
-    def test_parse_pdf_document(self):
+    def test_parse_pdf_document_pages(self):
 
         pages = self.pdf_file_object.pages
-        print(pages)
         self.assertEqual(len(pages), 2)
         self.assertEqual(len(pages[0].lines), 5)
         self.assertEqual(len(pages[1].lines), 5)
@@ -146,4 +144,10 @@ class TestPdfObjectsMultipage(unittest.TestCase):
         self.assertEqual(pages[1].lines[0].text, "Test Page 2")
         self.assertEqual(pages[0].lines[4].text, "Partly  italic  line.")
 
+    def test_parse_pdf_document_fulltext(self):
 
+        full_text_lines = self.full_text.split('\n')
+        self.assertIsInstance(full_text_lines, list)
+        self.assertEqual(len(full_text_lines), 10)
+        self.assertEqual(full_text_lines[0], 'Test Page 1')
+        self.assertEqual(full_text_lines[5], 'Test Page 2')
