@@ -12,7 +12,7 @@ arguments of your file locations. E.g., from the main `policytool` directory, ru
 mkdir -p ./tmp/parser-output/output_folder_name
 
 python -m policytool.refparse.refparse \
-    --scraper-file "s3://datalabs-data/scraper-results/msf/20190117.json" \
+    --scraper-file "s3://datalabs-dev/reach-airflow/output/policy/parsed-pdfs/msf/parsed-pdfs-msf.json.gz" \
     --references-file "s3://datalabs-data/wellcome_publications/uber_api_publications.csv" \
     --model-file "s3://datalabs-data/reference_parser_models/reference_parser_pipeline.pkl" \
     --output-url "file://./tmp/parser-output/output_folder_name"
