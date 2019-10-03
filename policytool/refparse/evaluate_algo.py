@@ -25,7 +25,8 @@ from policytool.refparse.algo_evaluation.evaluate_match_references import evalua
 def get_text(filepath):
     try:
         references_section = open(filepath).read()
-    except:
+    except FileNotFoundError:
+        logger.warning("File %s does not exist", filepath)
         references_section = ""
 
     return references_section
@@ -148,17 +149,30 @@ if __name__ == '__main__':
         'csv'
     )
 
-    evaluate_split_section_data['Reference section'] = [
-        get_text(
-            '{}.txt'.format(
-                os.path.join(
-                    settings.FOLDER_PREFIX,
-                    settings.NUM_REFS_TEXT_FOLDER_NAME,
-                    doc_hash
-                    )
-                )
-            ) for doc_hash in evaluate_split_section_data['hash']
-        ]
+    # Add the complete reference section to the dataframe by loading from a file
+    # downloaded from s3, and stored locally
+
+    split_section_data = []
+    section_path = os.path.join(
+        settings.FOLDER_PREFIX,
+        settings.NUM_REFS_TEXT_FOLDER_NAME
+        )
+
+    for doc_hash in evaluate_split_section_data['hash']:
+        path = os.path.join(section_path, f'{doc_hash}.txt')
+        text = None
+        if os.path.isfile(path):
+            text = get_text(path)
+        split_section_data.append(text)
+
+    evaluate_split_section_data['Reference section'] = split_section_data
+
+    # Subset the evaluation data to prevent IndexError described in
+    # https://github.com/wellcometrust/policytool/issues/249
+
+    evaluate_split_section_data.dropna(subset=['Reference section'],
+        inplace=True)
+
     logger.info('main: ---> Took %0.3f seconds', time.time() - start)
 
     # ==== Load data to evaluate parse: ====
