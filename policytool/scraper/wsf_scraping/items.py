@@ -6,7 +6,7 @@ class Article(scrapy.Item):
     def __repr__(self):
         return repr({
             'title': self.get('title'),
-            'url': self.get('uri'),
+            'url': self.get('url'),
         })
 
     title = scrapy.Field()
