@@ -23,7 +23,7 @@ BASE_FONT_SIZE = -10
 logger = logging.getLogger(__name__)
 
 def parse_pdf_document(document):
-    """ Parses a file using pdftotext, returning a
+    """ Parses a file using pdftohtml, returning a
     PdfFile object, easier to analyse.
 
     Args:
@@ -85,7 +85,7 @@ def parse_pdf_document(document):
         pages = tree.xpath('page')
 
         for page_num, page in enumerate(pages):
-            lines = page.xpath('//text')
+            lines = page.xpath('text')
             page_lines = []
 
             # Create a mapping dict to allow font family and size lookups
