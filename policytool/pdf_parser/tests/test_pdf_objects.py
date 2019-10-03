@@ -3,7 +3,7 @@ import json
 
 from policytool.pdf_parser.pdf_parse import parse_pdf_document
 from policytool.pdf_parser.objects.PdfObjects import PdfFile
-from policytool.scraper.tests.common import TEST_PDF
+from policytool.scraper.tests.common import TEST_PDF, TEST_PDF_MULTIPAGE
 
 """Test file content (html transcription):
 <h1>Test</h1>
@@ -121,3 +121,29 @@ class TestPdfObjects(unittest.TestCase):
         pdf_file.from_json(JSON_PDF)
         pdf_export = pdf_file.to_json()
         self.assertEqual(pdf_export, JSON_PDF)
+
+class TestPdfObjectsMultipage(unittest.TestCase):
+    """
+    Tests against a multi-page pdf
+    """
+
+    def setUp(self):
+        self.test_file = open(TEST_PDF_MULTIPAGE, 'rb')
+        self.pdf_file_object, _, _ = parse_pdf_document(self.test_file)
+
+    def tearDown(self):
+        self.test_file.close()
+
+    def test_parse_pdf_document(self):
+
+        pages = self.pdf_file_object.pages
+        print(pages)
+        self.assertEqual(len(pages), 2)
+        self.assertEqual(len(pages[0].lines), 5)
+        self.assertEqual(len(pages[1].lines), 5)
+        self.assertEqual(pages[0].lines[0].text, "Test Page 1")
+        self.assertEqual(pages[0].lines[4].text, "Partly  italic  line.")
+        self.assertEqual(pages[1].lines[0].text, "Test Page 2")
+        self.assertEqual(pages[0].lines[4].text, "Partly  italic  line.")
+
+
