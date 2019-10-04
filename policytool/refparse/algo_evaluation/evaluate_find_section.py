@@ -247,7 +247,7 @@ def scrape_process_pdf(
         pdf_name = os.path.splitext(pdf_name)[0]
 
     with open('{}/{}.pdf'.format(scrape_pdf_location, pdf_name), 'r') as f:
-        pdf_file, full_text = parse_pdf_document(f)
+        pdf_file, full_text, _ = parse_pdf_document(f)
         scrape_data = []
         for section_name in section_names:
             scrape_data.append({
