@@ -175,7 +175,6 @@ if __name__ == '__main__':
     for doc_hash in evaluate_split_section_data['hash']:
         path = os.path.join(section_path, f'{doc_hash}.txt')
         text = None
-
         if os.path.isfile(path):
             text = get_text(path)
         split_section_data.append(text)
