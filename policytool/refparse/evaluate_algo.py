@@ -25,7 +25,7 @@ from policytool.refparse.algo_evaluation.evaluate_match_references import evalua
 logging.basicConfig(
     format="%(asctime)s %(name)s %(levelname)s: %(message)s",
     datefmt="%Y-%m-%d %H:%M:%S",
-    level=logging.INFO,
+    level=logging.DEBUG,
 )
 
 def get_text(filepath):
