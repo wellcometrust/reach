@@ -105,7 +105,10 @@ class ParliamentSpider(BaseSpider):
                 callback=self.save_pdf,
                 errback=self.on_error,
             )
-        else:
+        elif self._check_headers(
+            response.headers,
+            b'text/html',
+        ):
             for href in response.css('a::attr(href)').extract():
                 if href.endswith('pdf'):
                     yield Request(
@@ -118,3 +121,4 @@ class ParliamentSpider(BaseSpider):
                         callback=self.save_pdf,
                         errback=self.on_error,
                     )
+        yield
