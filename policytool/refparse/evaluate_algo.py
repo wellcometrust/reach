@@ -2,25 +2,26 @@
 e.g. python evaluate_algo.py --verbose True
 """
 
-from argparse import ArgumentParser
-from collections import defaultdict
-from datetime import datetime
-from os import listdir 
-from urllib.parse import urlparse
 import json
 import logging
 import os
 import time
+from argparse import ArgumentParser
+from collections import defaultdict
+from datetime import datetime
+from os import listdir
+from urllib.parse import urlparse
 
 import pandas as pd
-
-from policytool.refparse.utils import FileManager
-from policytool.refparse.algo_evaluation.evaluate_settings import settings
-from policytool.refparse.algo_evaluation.evaluate_find_section import evaluate_find_section
-from policytool.refparse.algo_evaluation.evaluate_split_section import evaluate_split_section
+from policytool.refparse.algo_evaluation.evaluate_find_section import \
+    evaluate_find_section
+from policytool.refparse.algo_evaluation.evaluate_match_references import \
+    evaluate_match_references
 from policytool.refparse.algo_evaluation.evaluate_parse import evaluate_parse
-from policytool.refparse.algo_evaluation.evaluate_match_references import evaluate_match_references
-
+from policytool.refparse.algo_evaluation.evaluate_settings import settings
+from policytool.refparse.algo_evaluation.evaluate_split_section import \
+    evaluate_split_section
+from policytool.refparse.utils import FileManager
 
 logging.basicConfig(
     format="%(asctime)s %(name)s %(levelname)s: %(message)s",
@@ -45,12 +46,16 @@ def yield_section_data(scrape_pdf_location, sections_location):
     """
     sections_names = [
         section_name
+
         for section_name in listdir(sections_location)
+
         if not section_name.startswith('.')
     ]
+
     for filename in listdir(scrape_pdf_location):
         if not filename.startswith('.'):
             pdf_hash, _ = os.path.splitext(filename)
+
             for section_name in sections_names:
                 section_path = os.path.join(sections_location, section_name, pdf_hash)
                 section_text = get_text('{}.txt'.format(section_path))
@@ -63,10 +68,12 @@ def yield_pubs_json(pubs_file, total_N):
     output_cols = ['title', 'pmid']
     with open(pubs_file, "r") as f:
         references = []
+
         for i, line in enumerate(f):
             if i >= total_N:
                 break
             reference = json.loads(line)
+
             if all([output_col in reference for output_col in output_cols]):
                 yield {
                     'Document id': i,
@@ -102,7 +109,7 @@ if __name__ == '__main__':
             settings.LOG_FILE_PREFIX, now
         ), 'w'
     )
-        
+
     log_file.write(
         'Date of evaluation = {:%Y-%m-%d-%H%M}\n'.format(now)
     )
@@ -138,6 +145,7 @@ if __name__ == '__main__':
     provider_names = provider_names.set_index('file_hash')['name'].to_dict()
 
     evaluate_find_section_data = defaultdict(lambda: defaultdict(str))
+
     for pdf_hash, section_name, section_text in yield_section_data(
             scrape_pdf_location, sections_location
         ):
@@ -167,6 +175,7 @@ if __name__ == '__main__':
     for doc_hash in evaluate_split_section_data['hash']:
         path = os.path.join(section_path, f'{doc_hash}.txt')
         text = None
+
         if os.path.isfile(path):
             text = get_text(path)
         split_section_data.append(text)
@@ -218,7 +227,7 @@ if __name__ == '__main__':
     logger.info('\nStarting the evaluations...\n')
 
     start = time.time()
-    logger.info('main: Running find references section evaluation')           
+    logger.info('main: Running find references section evaluation')
     eval_scores_find = evaluate_find_section(
         evaluate_find_section_data,
         provider_names,
@@ -284,4 +293,3 @@ if __name__ == '__main__':
             log_file.write("{}\n".format(round(evals['Score'],2)))
 
     log_file.close()
-
