@@ -22,6 +22,12 @@ from policytool.refparse.algo_evaluation.evaluate_parse import evaluate_parse
 from policytool.refparse.algo_evaluation.evaluate_match_references import evaluate_match_references
 
 
+logging.basicConfig(
+    format="%(asctime)s %(name)s %(levelname)s: %(message)s",
+    datefmt="%Y-%m-%d %H:%M:%S",
+    level=logging.INFO,
+)
+
 def get_text(filepath):
     try:
         references_section = open(filepath).read()
