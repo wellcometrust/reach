@@ -88,7 +88,10 @@ class TestParliamentSpider(unittest.TestCase):
             response = HtmlResponse(
                 'http://foo.bar',
                 body=html_site.read(),
-                request=request
+                request=request,
+                headers={
+                    'content-type': 'text/html',
+                }
             )
 
             res = next(self.spider.parse_others(response))
