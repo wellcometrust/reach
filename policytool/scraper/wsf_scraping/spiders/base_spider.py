@@ -1,7 +1,7 @@
 import os.path
 import tempfile
 
-from scrapy.exceptions import CloseSpider
+from scrapy.exceptions import CloseSpider, IgnoreRequest
 from scrapy.spidermiddlewares.httperror import HttpError
 from scrapy.utils.project import get_project_settings
 from twisted.internet.error import DNSLookupError
@@ -42,6 +42,11 @@ class BaseSpider(scrapy.Spider):
         elif failure.check(TimeoutError):
             request = failure.request
             self.logger.warning('TimeoutError on %s', request.url)
+
+        # Catch the case where robots.txt files forbid a page
+        elif failure.check(IgnoreRequest):
+            request = failure.request
+            self.logger.warning('Robots.txt forbidden on %s', request.url)
 
         else:
             self.logger.error(repr(failure))
