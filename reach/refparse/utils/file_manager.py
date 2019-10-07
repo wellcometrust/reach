@@ -10,9 +10,6 @@ from .s3 import S3
 from reach.refparse.settings import settings
 
 
-SCRAPING_COLUMNS = ('title', 'file_hash', 'sections', 'uri')
-
-
 class FileManager():
     def __init__(self, mode='LOCAL', bucket=settings.BUCKET):
         self.mode = mode
@@ -27,11 +24,11 @@ class FileManager():
             'pickle': self.load_pickle_file,
         }
 
-    def to_row(self, line, lineno):
+    def to_row(self, line, lineno, scraping_columns):
         try:
             return {
                 k: v for k, v in json.loads(line).items()
-                if k in SCRAPING_COLUMNS
+                if k in scraping_columns
             }
         except Exception as e:
             self.logger.error(
@@ -39,7 +36,10 @@ class FileManager():
                 lineno, e, line)
             raise
 
-    def get_scraping_results(self, file_name, file_prefix):
+    def get_scraping_results(
+            self, file_name, file_prefix,
+            scraping_columns=('title', 'file_hash', 'sections', 'uri')
+            ):
         """Takes a scraping result-json to return it cleared of its unused
         parts, as a pandas DataFrame. This function is used instead of the
         others because of the size of the scraper result files, which requires
@@ -64,13 +64,15 @@ class FileManager():
                 if file_name.endswith('.gz'):
                     with gzip.GzipFile(fileobj=tf, mode='r') as text_tf:
                         rows = (
-                            self.to_row(line, lineno)
+                            self.to_row(line, lineno, scraping_columns)
                             for lineno, line in enumerate(text_tf)
                         )
                         return pd.DataFrame(rows)
                 else:
                     rows = (
-                        self.to_row(line, lineno) for lineno, line in enumerate(tf)
+                        self.to_row(
+                            line, lineno, scraping_columns
+                            ) for lineno, line in enumerate(tf)
                     )
                     return pd.DataFrame(rows)
 

@@ -3,7 +3,7 @@ import re
 
 class ExactMatcher:
 	def __init__(self, sectioned_documents, title_length_threshold):
-		self.reference_sections = [
+		self.texts = [
 			(doc.id, self.clean_text(doc.section))
 			for doc in sectioned_documents
 		]
@@ -38,9 +38,9 @@ class ExactMatcher:
 		if len(publication_title) < self.title_length_threshold:
 			return
 
-		for doc_id, reference_section in self.reference_sections:
+		for doc_id, text in self.texts:
 
-			if publication_title in reference_section:
+			if publication_title in text:
 				yield {
 					'Document id': doc_id,
 					'Matched title': publication_title,
