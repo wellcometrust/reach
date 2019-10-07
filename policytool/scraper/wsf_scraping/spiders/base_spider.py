@@ -99,7 +99,7 @@ class BaseSpider(scrapy.Spider):
 
         article = Article({
             'title': data_dict.get('title'),
-            'uri': response.request.url,
+            'url': response.request.url,
             'year': data_dict.get('year'),
             'authors': data_dict.get('authors'),
             'types': data_dict.get('types'),

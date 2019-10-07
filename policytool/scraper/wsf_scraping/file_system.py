@@ -132,6 +132,7 @@ class S3FileSystem(FileSystem):
 
         # If the manifest has no content yet, let's create it
         content = current_manifest.get('content', {})
+        data = current_manifest.get('data', {})
         for row in data_file:
             item = json.loads(row)
             hash_list = content.get(item['hash'][:2], None)
@@ -140,6 +141,9 @@ class S3FileSystem(FileSystem):
                     hash_list.append(item['hash'])
             else:
                 content[item['hash'][:2]] = [item['hash']]
+
+            if not data.get(item['hash']):
+                data[item['hash']] = {'url': item['url']}
 
         key = os.path.join(
             self.prefix,
@@ -151,7 +155,7 @@ class S3FileSystem(FileSystem):
             Bucket=self.bucket,
             Key=key,
             Body=json.dumps(
-                {'metadata': metadata, 'content': content}
+                {'metadata': metadata, 'content': content, 'data': data}
             ).encode('utf-8')
         )
 
