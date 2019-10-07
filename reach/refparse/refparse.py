@@ -402,12 +402,6 @@ if __name__ == '__main__':
                 logger
             )
 
-
-        
-
-
-
-
     except Exception as e:
         sentry_sdk.capture_exception(e)
         logger.error(e)
