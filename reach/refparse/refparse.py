@@ -48,14 +48,14 @@ def check_publications_file(publications, publications_file):
     )
 
 
-def transform_scraper_file(scraper_data):
+def transform_scraper_file(scraper_data, section_column="sections"):
     """Takes a pandas dataframe. Yields back individual
     SectionedDocument tuples.
     """
     for _, document in scraper_data.iterrows():
-        if document["sections"]:
+        if document[section_column]:
             try:
-                sections = document['sections']
+                sections = document[section_column]
             except KeyError:
                 return
             for section_list in sections.values():
@@ -66,6 +66,22 @@ def transform_scraper_file(scraper_data):
                         None, # TODO: use document['uri'] after fixing scrape
                         document['file_hash']
                     )
+
+def transform_scraper_text_file(scraper_data, text_column="text"):
+    """Takes a pandas dataframe. Yields back individual
+    SectionedDocument tuples.
+    """
+    for _, document in scraper_data.iterrows():
+        if document[text_column]:
+            try:
+                text = document[text_column]
+            except KeyError:
+                return
+            yield SectionedDocument(
+                text,
+                None, # TODO: use document['uri'] after fixing scrape
+                document['file_hash']
+            )
 
 def transform_structured_references(
         splitted_references, structured_references,
@@ -82,7 +98,12 @@ def transform_structured_references(
     return transformed_structured_references
 
 
-def get_file(file_str, file_type, get_scraped=False):
+def get_file(
+        file_str,
+        file_type,
+        get_scraped=False,
+        scraping_columns=('title', 'file_hash', 'sections', 'uri')
+        ):
     if file_str.startswith('s3://'):
         u = urlparse(file_str)
         fm = FileManager('S3', bucket=u.netloc)
@@ -95,7 +116,8 @@ def get_file(file_str, file_type, get_scraped=False):
     if get_scraped:
         file = fm.get_scraping_results(
             file_name,
-            file_dir,)
+            file_dir,
+            scraping_columns,)
     else:
         file = fm.get_file(
             file_name,
@@ -268,16 +290,19 @@ def refparse(scraper_file, publications_file, model_file,
                     if structured_reference:
                         srefs_f.write(json.dumps(structured_reference)+'\n')
 
-    scraper_file = get_file(scraper_file, "", get_scraped=True)
-    sectioned_documents = transform_scraper_file(scraper_file)
-    exact_matcher = ExactMatcher(sectioned_documents, settings.MATCH_TITLE_LENGTH_THRESHOLD)
+    scraper_file = get_file(
+        scraper_file, "",
+        get_scraped=True,
+        scraping_columns=('title', 'file_hash', 'uri', 'text')
+        )
+    document_texts = transform_scraper_text_file(scraper_file)
+    exact_matcher = ExactMatcher(document_texts, settings.MATCH_TITLE_LENGTH_THRESHOLD)
     with open(exact_matched_reference_filepath, 'w') as emrefs_f: 
         for publication in publications:
             exact_matched_references = exact_match_publication(exact_matcher, publication)
             for exact_matched_reference in exact_matched_references:
                 if exact_matched_reference:
                     emrefs_f.write(json.dumps(exact_matched_reference)+'\n')
-
 
 def refparse_profile(scraper_file, references_file,
                              model_file, output_dir, logger):
@@ -376,6 +401,12 @@ if __name__ == '__main__':
                 args.num_workers,
                 logger
             )
+
+
+        
+
+
+
 
     except Exception as e:
         sentry_sdk.capture_exception(e)
