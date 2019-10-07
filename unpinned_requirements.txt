@@ -1,11 +1,11 @@
 apache-airflow[crypto]
-beautifulsoup4
 boto3
 cryptography
 celery
 editdistance
 elasticsearch
 falcon
+lxml
 matplotlib
 numpy
 pandas

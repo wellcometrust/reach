@@ -161,6 +161,16 @@ def evaluate_metric_scraped(actual, predicted, sections, files, providers):
 
     return metrics
 
+def levenshtein_distance(actual_text, predicted_text, normalised=True):
+    """
+    Calculate levenshtein distance given an actual and predicted text
+    """
+
+    distance = editdistance.eval(actual_text, predicted_text)
+    if normalised:
+        distance = distance / max(len(actual_text), len(predicted_text))
+
+    return distance
 
 def evaluate_metric_quality(scrape_data, levenshtein_threshold):
     """
@@ -169,19 +179,21 @@ def evaluate_metric_quality(scrape_data, levenshtein_threshold):
     """
 
     # Get rid of times when there is no section
+    
     scrape_data = list(filter(lambda x: x['Actual text'] != '', scrape_data))
 
+    hashes = [s['File'] for s in scrape_data]
     actual_texts = [s['Actual text'] for s in scrape_data]
     predicted_texts = [s['Predicted text'] for s in scrape_data]
     sections = [s['Section'] for s in scrape_data]
 
     # Get all the normalised Lev distances
-    lev_distances = [
-        editdistance.eval(actual_text, predicted_text) / 
-        max(len(actual_text), len(predicted_text)) \
-        for (actual_text, predicted_text) in 
-            zip(actual_texts, predicted_texts)
-    ]   
+
+    lev_distances_hash = dict()
+    for hash, actual_text, predicted_text in zip (hashes, actual_texts, predicted_texts):
+        lev_distances_hash[hash] = levenshtein_distance(actual_text, predicted_text)
+
+    lev_distances = list(lev_distances_hash.values())
 
     # Which sections were found exactly?
     equal = [lev_distance == 0 for lev_distance in lev_distances]
@@ -229,7 +241,7 @@ def evaluate_metric_quality(scrape_data, levenshtein_threshold):
                 )
             ] = lenient_acc_section
     
-    return {k:round(v,3) for k,v in metrics.items()}
+    return {k:round(v,3) for k,v in metrics.items()}, lev_distances_hash
 
 def scrape_process_pdf(
         section_names, pdf_name, scrape_pdf_location, actual_texts
@@ -247,7 +259,7 @@ def scrape_process_pdf(
         pdf_name = os.path.splitext(pdf_name)[0]
 
     with open('{}/{}.pdf'.format(scrape_pdf_location, pdf_name), 'r') as f:
-        pdf_file, full_text = parse_pdf_document(f)
+        pdf_file, full_text, _ = parse_pdf_document(f)
         scrape_data = []
         for section_name in section_names:
             scrape_data.append({
@@ -260,7 +272,8 @@ def scrape_process_pdf(
 
 def evaluate_find_section(
         evaluate_find_section_data, provider_names,
-        scrape_pdf_location, levenshtein_threshold
+        scrape_pdf_location, levenshtein_threshold,
+        csv=False
         ):
 
     # Get the predicted text for each of the pdf sections for each pdf
@@ -283,15 +296,22 @@ def evaluate_find_section(
         [provider_names[pred_section['File']] for pred_section in scrape_data]
         )
 
-    eval2_scores = evaluate_metric_quality(
-        scrape_data,
-        levenshtein_threshold)
+    eval2_scores, raw_levenshtein_distance = evaluate_metric_quality(
+        scrape_data, levenshtein_threshold)
 
     eval_scores_find = {
         "Score" : 1 - eval2_scores['Mean normalised Levenshtein distance']
         }
     eval_scores_find.update(eval1_scores)
     eval_scores_find.update(eval2_scores)
+
+    # Write out the full evaluation data to csv file
+
+    if csv:
+
+        df = pd.DataFrame(scrape_data)
+        df["lev_distance"] = [raw_levenshtein_distance.get(hash) for hash in df["File"]]
+        df.to_csv("./algo_evaluation/results/scrape_data.csv")
 
     return eval_scores_find
 
