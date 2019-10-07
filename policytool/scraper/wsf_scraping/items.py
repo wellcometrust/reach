@@ -6,12 +6,12 @@ class Article(scrapy.Item):
     def __repr__(self):
         return repr({
             'title': self.get('title'),
-            'uri': self.get('uri'),
+            'url': self.get('url'),
         })
 
     title = scrapy.Field()
     year = scrapy.Field()
-    uri = scrapy.Field()
+    url = scrapy.Field()
     pdf = scrapy.Field()
     hash = scrapy.Field()
     has_text = scrapy.Field()
