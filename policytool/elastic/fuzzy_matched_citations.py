@@ -1,9 +1,9 @@
 """
-Inserts fulltext documents (policy docs, normally) into Elasticsearch.
+Inserts fuzzy-matched citations into Elasticsearch.
 
 Sample URL for testing:
 
-    s3://datalabs-dev/reach-airflow/output/test_dag/policy-parse/nice/policy-parse-nice.json.gz
+    s3://datalabs-staging/reach-airflow/output/policy-test/fuzzy-matched-refs/nice/fuzzy-matched-refs-nice.json.gz
 """
 
 import functools
@@ -12,18 +12,22 @@ import logging
 
 from . import common
 
-CHUNK_SIZE = 50  # tuned for large(ish) size of policy docs
+CHUNK_SIZE = 1000  # Tuned for small citation metadata
 
 
 def to_es_action(org, es_index, line):
     """ Returns a preformated line to add to an Elasticsearch bulk query. """
     d = json.loads(line)
+
     return {
         "_index": es_index,
         "doc": {
-            'hash': d['file_hash'],
-            'text': d['text'],
-            'organisation': org,
+            'Document id': d['Document id'],
+            'Reference id': d['Reference id'],
+            'Extracted title': d['Extracted title'],
+            'Matched title': d['Matched title'],
+            'Similarity': d['Similarity'],
+            'Match algorithm': d['Match algorithm'],
         }
     }
 
@@ -35,8 +39,7 @@ def clean_es(es, es_index):
 
 def insert_file(f, es, org, es_index, max_items=None):
     """
-    Inserts the policy documents' fulltexts from a json.gz file
-    into Elasticsearch.
+    Inserts fuzzy matched citations from a json.gz file into Elasticsearch.
 
     Args:
         f: json.gz file object
@@ -46,7 +49,7 @@ def insert_file(f, es, org, es_index, max_items=None):
     """
 
     logging.info(
-        'fulltext_docs.insert_file: f=%s es=%s max_items=%s',
+        'fuzzymatched_citations.insert_file: f=%s es=%s max_items=%s',
         f, es, max_items)
     to_es_func = functools.partial(to_es_action, org, es_index)
     return common.insert_actions(
@@ -58,7 +61,7 @@ def insert_file(f, es, org, es_index, max_items=None):
 
 if __name__ == '__main__':
     def insert_func(f, es, max_items=None):
-        return insert_file(f, es, 'unknown', 'policy-test-fulltexts',
+        return insert_file(f, es, 'unknown', 'policy-test-fuzzymatched',
                            max_items=max_items)
 
     count = common.insert_from_argv(
