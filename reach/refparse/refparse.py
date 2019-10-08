@@ -63,7 +63,7 @@ def transform_scraper_file(scraper_data, section_column="sections"):
                 for section in section_list:
                     yield SectionedDocument(
                         section,
-                        None, # TODO: use document['uri'] after fixing scrape
+                        document.get('url', None),
                         document['file_hash']
                     )
 
@@ -73,13 +73,10 @@ def transform_scraper_text_file(scraper_data, text_column="text"):
     """
     for _, document in scraper_data.iterrows():
         if document[text_column]:
-            try:
-                text = document[text_column]
-            except KeyError:
-                return
+            text = document[text_column]
             yield SectionedDocument(
                 text,
-                None, # TODO: use document['uri'] after fixing scrape
+                document.get('url', None),
                 document['file_hash']
             )
 
