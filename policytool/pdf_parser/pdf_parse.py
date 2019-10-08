@@ -7,6 +7,7 @@ import subprocess
 import tempfile
 
 import lxml.etree
+from lxml.etree import XMLSyntaxError
 
 from .objects.PdfObjects import PdfFile, PdfLine, PdfPage
 from .tools.extraction import (_find_elements, _flatten_text,
@@ -17,6 +18,7 @@ ERR_PDF2HTML_NONZERO_EXIT = 'pdf2html failed'
 ERR_NO_FILE = 'pdf2html produced no output'
 ERR_EMPTY_FILE = 'html file was empty'
 ERR_FILE_TOO_LARGE = 'html file too large'
+ERR_XML_SYNTAX = 'xml file has some syntax error'
 
 BASE_FONT_SIZE = -10
 
@@ -78,7 +80,10 @@ def parse_pdf_document(document):
 
             return None, None, [ERR_FILE_TOO_LARGE]
 
-        tree = lxml.etree.parse(io.BytesIO(tf.read()))
+        try:
+            tree = lxml.etree.parse(io.BytesIO(tf.read()))
+        except XMLSyntaxError:
+            return None, None, [ERR_XML_SYNTAX]
 
         file_pages = []
         full_text = '\n'.join([_flatten_text(text) for text in tree.xpath('//text')])
