@@ -8,6 +8,7 @@ import airflow.utils.dates
 from reach.airflow.tasks import es_index_epmc_metadata
 from reach.airflow.tasks import es_index_fulltext_docs
 from reach.airflow.tasks import es_index_fuzzy_matched
+from reach.airflow.tasks import exact_match_refs_operator
 from reach.airflow.tasks import fuzzy_match_refs
 
 from reach.airflow.tasks.spider_operator import SpiderOperator
@@ -78,7 +79,7 @@ def create_org_pipeline(dag, organisation, item_limits, spider_years):
 
         Spider -> ParsePdf
                     \-> ExtractRefs -> FuzzyMatchRefs
-                    \-> ESIndexFulltextdocs [TODO: -> FullTextMatchRefs]
+                    \-> ESIndexFulltextdocs -> FullTextMatchRefs
     """
     spider = SpiderOperator(
         task_id='Spider.%s' % organisation,
@@ -124,6 +125,16 @@ def create_org_pipeline(dag, organisation, item_limits, spider_years):
         dag=dag,
         )
 
+    exactMatchRefs = exact_match_refs_operator.ExactMatchRefsOperator(
+        task_id='ExactMatchRefs.%s' % organisation,
+        es_hosts=get_es_hosts(),
+        src_s3_key=parsePdf.dst_s3_key,
+        dst_s3_key=to_s3_output(
+            dag, 'exact-matched-refs', organisation, '.json.gz'),
+        es_index=esIndexFullTexts,
+        dag=dag,
+        )
+    
     esIndexFuzzyMatched = es_index_fuzzy_matched.ESIndexFuzzyMatchedCitations(
         task_id="ESIndexFuzzyMatchedCitations.%s" % organisation,
         src_s3_key=fuzzyMatchRefs.dst_s3_key,
@@ -134,7 +145,7 @@ def create_org_pipeline(dag, organisation, item_limits, spider_years):
         dag=dag
     )
 
-    parsePdf >> esIndexFullTexts
+    parsePdf >> esIndexFullTexts >> exactMatchRefs
     spider >> parsePdf >> extractRefs >> fuzzyMatchRefs >> esIndexFuzzyMatched
     return fuzzyMatchRefs
 
@@ -168,13 +179,14 @@ def create_dag(dag_id, default_args, spider_years,
         dag=dag
     )
     for organisation in ORGANISATIONS:
-        fuzzyMatchRefs = create_org_pipeline(
+        fuzzyMatchRefs, exactMatchRefs = create_org_pipeline(
             dag,
             organisation,
             item_limits,
             spider_years,
         )
         esIndexPublications >> fuzzyMatchRefs
+        esIndexPublications >> exactMatchRefs
 
     return dag
 
