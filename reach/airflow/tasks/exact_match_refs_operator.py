@@ -24,16 +24,15 @@ def yield_publications(s3, publications_path):
     with tempfile.TemporaryFile(mode='rb+') as tf:
         key = s3.get_key(publications_path)
         key.download_fileobj(tf)
-
         tf.seek(0)
-
         with gzip.GzipFile(mode='rb', fileobj=tf) as f:
             for line in f:
                 yield json.loads(line)
 
 class ElasticsearchExactMatcher:
-    def __init__(self, es, title_length_threshold):
+    def __init__(self, es, es_index, title_length_threshold):
         self.es = es
+        self.es_index = es_index
         self.title_length_threshold = title_length_threshold
 
     def match(self, publication):
@@ -53,7 +52,7 @@ class ElasticsearchExactMatcher:
 
         }
         res = self.es.search(
-            index="datalabs-sections",
+            index=self.es_index,
             body=body,
             size=1000 # if there are more than 1000, need to paginate
         )
@@ -79,11 +78,12 @@ class ExactMatchRefsOperator(BaseOperator):
     """
 
     @apply_defaults
-    def __init__(self, es_host, publications_path, exact_matched_references_path,
+    def __init__(self, es_host, publications_path, exact_matched_references_path, es_index,
                  title_length_threshold, aws_conn_id='aws_default', *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.publications_path = publications_path
         self.exact_matched_references_path = exact_matched_references_path
+        self.es_index = es_index
         self.title_length_threshold = title_length_threshold
         self.es_host = es_host
         self.es = Elasticsearch([self.es_host])
@@ -105,6 +105,7 @@ class ExactMatchRefsOperator(BaseOperator):
 
         exact_matcher = ElasticsearchExactMatcher(
             self.es,
+            self.es_index,
             self.title_length_threshold
         )
 
@@ -130,3 +131,4 @@ class ExactMatchRefsOperator(BaseOperator):
                 key=exact_matched_references_path,
                 replace=True,
             )
+
