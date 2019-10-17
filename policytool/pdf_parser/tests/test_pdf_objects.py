@@ -1,9 +1,10 @@
-import unittest
 import json
+import unittest
 
-from policytool.pdf_parser.pdf_parse import parse_pdf_document
 from policytool.pdf_parser.objects.PdfObjects import PdfFile
-from policytool.scraper.tests.common import TEST_PDF, TEST_PDF_MULTIPAGE
+from policytool.pdf_parser.pdf_parse import parse_pdf_document, grab_section
+from policytool.scraper.tests.common import (TEST_PDF, TEST_PDF_MULTIPAGE,
+                                             TEST_PDF_PAGE_NUMBER)
 
 """Test file content (html transcription):
 <h1>Test</h1>
@@ -73,11 +74,13 @@ class TestPdfObjects(unittest.TestCase):
 
     def test_list_by_size(self):
         list_fonts = self.pdf_file_object.get_font_size_list()
+
         for i in list_fonts:
             self.assertTrue(i in [16, 22])
 
     def test_bold(self):
         list_bold_lines = self.pdf_file_object.get_bold_lines()
+
         for line in list_bold_lines:
             self.assertEqual(line.text, 'Test bold')
 
@@ -151,3 +154,38 @@ class TestPdfObjectsMultipage(unittest.TestCase):
         self.assertEqual(len(full_text_lines), 10)
         self.assertEqual(full_text_lines[0], 'Test Page 1')
         self.assertEqual(full_text_lines[5], 'Test Page 2')
+
+class TestPdfObjectsPageNumber(unittest.TestCase):
+    """
+    Provides a test case for the issue descrubed in
+    https://github.com/wellcometrust/policytool/issues/258
+    """
+
+    def setUp(self):
+        self.test_file = open(TEST_PDF_PAGE_NUMBER, 'rb')
+        self.pdf_file_object, _, _ = parse_pdf_document(self.test_file)
+
+        # Cycle through the pdf document, and flatten
+        # into a single string
+
+        pages = []
+        for num in range(0, 2):
+            page = self.pdf_file_object.get_page(num)
+            text = page.get_page_text()
+            pages.append(text)
+        full_text = "".join(pages)
+
+        # Split string apart again based on line endings
+
+        self.lines = full_text.split("\n")
+
+    def tearDown(self):
+        self.test_file.close()
+
+    def test_page_numbers_on_separate_lines(self):
+        """
+        Check that the page numbers end up on their own lines
+        """
+        self.assertEqual(self.lines[4], '99')
+        self.assertEqual(self.lines[8], '99')
+
