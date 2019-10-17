@@ -45,9 +45,11 @@ class PdfPage(object):
         """
         if ignore_page_numbers:
             result = list(filter(lambda x: not x.text.isdigit(), self.lines))
-            return '\n'.join(list(map(lambda x: x.text, result)))
+            page_text = '\n'.join(list(map(lambda x: x.text, result))) + "\n"
         else:
-            return '\n'.join(list(map(lambda x: x.text, self.lines)))
+            page_text = '\n'.join(list(map(lambda x: x.text, self.lines))) + "\n"
+
+        return page_text
 
 
 @attr.s
