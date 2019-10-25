@@ -32,9 +32,21 @@ def to_es_action(org, es_index, line):
     }
 
 
-def clean_es(es, es_index):
-    """ Ensure an empty index exists. """
-    common.clean_es(es, es_index)
+def clean_es(es, es_index, org):
+    """ Ensure an empty index exists and delete documents from the
+    organisation to ensure no duplicates are inserted.
+    """
+    es_body = {
+        'query': {
+            'match': {
+                'organisation': org,
+            }
+        }
+    }
+    es.delete_by_query(
+        index=es_index,
+        body=es_body,
+    )
 
 
 def insert_file(f, es, org, es_index, max_items=None):
