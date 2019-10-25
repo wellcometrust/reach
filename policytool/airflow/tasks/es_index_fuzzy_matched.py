@@ -54,7 +54,7 @@ class ESIndexFuzzyMatchedCitations(BaseOperator):
         s3 = WellcomeS3Hook()
 
         # TODO: implement skipping mechanism
-        fuzzy_matched_citations.clean_es(es, self.es_index)
+        fuzzy_matched_citations.clean_es(es, self.es_index, self.organisation)
 
         self.log.info(
             'Getting %s pubs from %s',
