@@ -9,6 +9,7 @@ $spectre_version: 0.5.8;
  */
 
 @import "search.css";
+@import "results.css";
 
 
 
@@ -39,6 +40,7 @@ body {
 a, a:visited {
   text-decoration: underline;
   color: $linkBlue;
+  cursor: pointer;
 }
 
  a:hover {
@@ -69,8 +71,27 @@ h3 {
     }
 }
 
+/* btn-lg is still a bit too small for us, make btn-xl from spectre class */
+.btn.btn-xl {
+  font-size: $fontSizeFormXl;
+  height: 2.5rem;
+  padding: .6rem .6rem;
+}
+
 .btn-primary {
   color: white;
+}
+
+.form-input.input-xl {
+    font-size: $fontSizeFormXl;
+    height: 2.5rem;
+    padding: .6rem .6rem;
+  }
+
+
+/* Override Spectre default */
+.breadcrumb .breadcrumb-item:not(:last-child) a {
+    color: $linkBlue;
 }
 
 
