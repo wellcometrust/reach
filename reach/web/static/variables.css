@@ -8,7 +8,8 @@ $textColor: #002E45;        /* lower contrast text :-) */
 $hoverBorderColor: #8BD1FF; /* border for buttons on hover */
 $footerColor: #F2F4F6;      /* light gray */
 $linkBlue: #007AF5;         /* primary blue, for links */
-$linkBlueHover: #005DB9;         /* primary blue, for links */
+$linkBlueHover: #005DB9;    /* primary blue, for links */
+$linkBlueDisabled: #CCECFD; /* paler blue, for disabled links */
 $borderDark: #CCD8DD;       /* Darker grey for dividers and borders */
 
 /*
@@ -22,6 +23,8 @@ $borderDark: #CCD8DD;       /* Darker grey for dividers and borders */
 $titleBigFontSize: 1.75rem;
 $titleFontSize: 1.125rem;
 $baseFontSize: 1rem;
+
+$fontSizeFormXl: 0.9rem;
 
 @font-face {
     font-family: Wellcome;
