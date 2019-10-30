@@ -13,8 +13,7 @@ from urllib.parse import urlparse
 import falcon
 from elasticsearch import Elasticsearch
 
-from .templates import TemplateResource
-from . import search
+from reach.web.views import template, search
 
 TEMPLATE_ROOT = os.path.join(os.path.dirname(__file__), 'templates')
 
@@ -64,23 +63,19 @@ def create_api(conf):
     api = falcon.API()
     api.add_route(
         '/',
-        TemplateResource(TEMPLATE_ROOT, get_context(os.environ))
+        template.TemplateResource(TEMPLATE_ROOT, get_context(os.environ))
     )
     api.add_route(
         '/search/citations',
-        TemplateResource(TEMPLATE_ROOT, get_context(os.environ))
+        template.TemplateResource(TEMPLATE_ROOT, get_context(os.environ))
     )
     api.add_route(
-        '/search/content',
-        TemplateResource(TEMPLATE_ROOT, get_context(os.environ))
-    )
-    api.add_route(
-        '/results/content',
+        '/search/policy-docs',
         search.FulltextPage(TEMPLATE_ROOT, es, conf.es_explain,
                             get_context(os.environ))
     )
     api.add_route(
-        '/api/search',
+        '/api/search/policy-docs',
         search.FulltextApi(es, conf.es_explain)
     )
     api.add_static_route('/static', conf.static_root)

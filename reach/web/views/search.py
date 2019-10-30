@@ -4,8 +4,7 @@ import math
 from elasticsearch import ConnectionError, NotFoundError
 import falcon
 
-from . import api
-from .templates import TemplateResource
+from reach.web.views import template
 
 
 def _get_pages(current_page, last_page):
@@ -47,7 +46,7 @@ def _search_es(es, params, explain=False):
                              succeeded or a string explaining why it failed
         """
         try:
-            fields = params.get('fields', [])
+            fields = params.get('fields', []).split(',')
             page = params.get('page', 1)
             size = params.get('size', 50)
             es.cluster.health(wait_for_status='yellow')
@@ -64,10 +63,6 @@ def _search_es(es, params, explain=False):
                 }
             }
 
-            api.logger.info('Searching for "{query}"'.format(
-                query=es_body
-            ))
-
             return True, es.search(
                 index='policy-test-docs',
                 body=json.dumps(es_body),
@@ -76,7 +71,6 @@ def _search_es(es, params, explain=False):
 
         except ConnectionError:
             message = 'Could not join the elasticsearch server'
-            api.logger.error(message)
             raise falcon.HTTPServiceUnavailable(description=message)
 
         except NotFoundError:
@@ -84,7 +78,6 @@ def _search_es(es, params, explain=False):
             return False, message
 
         except Exception as e:
-            api.logger.error(e)
             raise falcon.HTTPError(description=str(e))
 
 
@@ -126,7 +119,7 @@ class FulltextApi:
             resp.status = falcon.HTTP_400
 
 
-class FulltextPage(TemplateResource):
+class FulltextPage(template.TemplateResource):
     """Let you search for terms in publications fulltexts. Returns a web page.
 
     Args:
@@ -144,8 +137,8 @@ class FulltextPage(TemplateResource):
     def on_get(self, req, resp):
         if req.params:
             params = {
-                "term": req.params['term'],
-                "fields": ["text", "organisation"],
+                "term": req.params.get('term', ''),  # es returns none on empty
+                "fields": "text,organisation",  # search_es is expects a str
                 "page": int(req.params.get('page', 1)),
                 "size": int(req.params.get('size', 50)),
             }
@@ -161,4 +154,9 @@ class FulltextPage(TemplateResource):
                 )
 
             self.context.update(params)
-        super(FulltextPage, self).on_get(req, resp)
+            super(FulltextPage, self).render_template(
+                resp,
+                '/results/policy-docs',
+            )
+        else:
+            super(FulltextPage, self).on_get(req, resp)

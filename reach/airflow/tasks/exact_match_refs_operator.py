@@ -30,7 +30,7 @@ def yield_publications(s3, publications_path):
         with gzip.GzipFile(mode='rb', fileobj=tf) as f:
             for line in f:
                 yield json.loads(line)
- 
+
 class ElasticsearchExactMatcher:
     def __init__(self, es, title_length_threshold):
         self.es = es
@@ -38,7 +38,7 @@ class ElasticsearchExactMatcher:
 
     def match(self, publication):
         title = publication['title']
-        
+
         # Exclude short titles that create noisy matches
         if len(title) < self.title_length_threshold:
             return
@@ -50,17 +50,17 @@ class ElasticsearchExactMatcher:
                 }
             },
             "_source": ["hash"],
-            
+
         }
         res = self.es.search(
             index="datalabs-sections",
             body=body,
             size=1000 # if there are more than 1000, need to paginate
         )
-        
+
         for match in res['hits']['hits']:
             score = match['_score']
- 
+
             matched_policy_document = match['_source']
             yield {
                 'Document id': matched_policy_document['hash'],
@@ -68,7 +68,7 @@ class ElasticsearchExactMatcher:
                 'Matched title': title,
                 'Match algorithm': 'Exact match'
             }
-  
+
 
 class ExactMatchRefsOperator(BaseOperator):
     """
@@ -102,7 +102,7 @@ class ExactMatchRefsOperator(BaseOperator):
         )
 
         s3 = WellcomeS3Hook(aws_conn_id=self.aws_conn_id)
-    
+
         exact_matcher = ElasticsearchExactMatcher(
             self.es,
             self.title_length_threshold
@@ -119,7 +119,7 @@ class ExactMatchRefsOperator(BaseOperator):
                     for exact_matched_reference in exact_matched_references:
                         if exact_matched_reference:
                             logger.info("Match")
-                        
+
                             output_f.write(json.dumps(exact_matched_reference).encode('utf-8'))
                             output_f.write(b'\n')
 

@@ -1,4 +1,4 @@
-from . import api
+from .views import template
 
 
 def test_to_template_names():
@@ -10,4 +10,4 @@ def test_to_template_names():
         ('/_macros.html', tuple()),
     ]
     for path, expected in cases:
-        assert expected == api.to_template_names(path)
+        assert expected == template.to_template_names(path)
