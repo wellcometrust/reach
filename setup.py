@@ -11,16 +11,16 @@ with open('unpinned_requirements.txt') as f:
     ]
 
 setuptools.setup(
-    name="wellcome-policytool",
+    name="wellcome-reach",
     version="0.0.1",
     author="Wellcome Trust Data Labs Team",
     author_email="datalabs-engineering@wellcomecloud.onmicrosoft.com",
-    description="Wellcome Trust Data Labs Policy Tool",
+    description="Wellcome Trust Data Labs Reach",
     long_description=long_description,
     long_description_content_type="text/markdown",
     url="https://github.com/wellcometrust/data-labs/common",
     packages=setuptools.find_packages(
-        include=["policytool.*"],
+        include=["reach.*"],
     ),
     classifiers=[
         "Programming Language :: Python :: 3",
