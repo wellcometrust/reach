@@ -36,12 +36,15 @@ ItemLimits = namedtuple('ItemLimits', ('spiders', 'index'))
 # Configuration & paths
 #
 
+
 def verify_s3_prefix():
     reach_s3_prefix = conf.get("core", "reach_s3_prefix")
     assert reach_s3_prefix.startswith('s3://')
     assert not reach_s3_prefix.endswith('/')
 
+
 verify_s3_prefix()
+
 
 def get_es_hosts():
     result = conf.get("core", "elasticsearch_hosts")
@@ -109,7 +112,7 @@ def create_org_pipeline(dag, organisation, item_limits, spider_years):
         organisation=organisation,
         es_host='elasticsearch',
         item_limits=item_limits.index,
-        es_index='-'.join([dag.dag_id, 'policy-docs']),
+        es_index='-'.join([dag.dag_id, 'docs']),
         dag=dag
     )
 
@@ -140,7 +143,7 @@ def create_org_pipeline(dag, organisation, item_limits, spider_years):
         organisation=organisation,
         es_host='elasticsearch',
         item_limits=item_limits.index,
-        es_index='-'.join([dag.dag_id, 'policy-docs']),
+        es_index='-'.join([dag.dag_id, 'citations']),
         dag=dag
     )
 
