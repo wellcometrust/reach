@@ -26,14 +26,14 @@
             {% else %}
                 <div class="column col-12 col-md-12">
                     <h1>No search results for "{{ term }}"</h1>
-                    <p>Check the spellingm try alternate words or a more generic term.</p>
+                    <p>Check the spelling, try alternate words or a more generic term.</p>
                 </div>
             {% endif %}
             <div class="column col-12 col-md-12">
                 <p>Search the contents of Policy Documents(title, abstract, author)</p>
             </div>
             <div class="column col-6 col-md-12">
-                <form action="/results/content">
+                <form action="/search/policy-docs">
                     <div class="input-group">
                       <input type="text" class="form-input input-xl" placeholder="Search" name="term" id="search-term" value="{{ term }}">
                       <span id="search-clear" class="input-group-addon addon-lg"><i class="form-icon icon icon-cross"></i></span>
@@ -48,7 +48,7 @@
                         <div class="card">
                           {{ uparrow() }}
                           <div class="card-body">
-                            Wellcome Reach regularly loads the PDFs of WHO, MSF, UNICEF, NICE, and other
+                            Policy tool regularly loads the PDFs of WHO, MSF, UNICEF, NICE, and other
                             organizations. Click this button to search the text of these documents.
                           </div>
                         </div>

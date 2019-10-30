@@ -2,17 +2,14 @@ import os
 import jinja2
 import falcon
 
-from . import api
 
-
-class TemplateResource:
+class TemplateResource(object):
     """
     Serves HTML templates. Note that templates are read from the FS for
     every request.
     """
 
     def __init__(self, template_dir, context=None):
-        api.logger.info('TemplateResource: template_dir=%s', template_dir)
         self.env = jinja2.Environment(
             loader=jinja2.FileSystemLoader(template_dir),
             autoescape=jinja2.select_autoescape(['html']),
@@ -22,15 +19,18 @@ class TemplateResource:
         else:
             self.context = {}
 
-    def on_get(self, req, resp):
-        tnames = to_template_names(req.path)
+    def render_template(self, resp, tname):
+        tname = to_template_names(tname)
         try:
-            template = self.env.select_template(tnames)
+            template = self.env.select_template(tname)
             resp.body = template.render(**self.context)
             resp.content_type = 'text/html'
         except jinja2.TemplateNotFound:
             resp.status = falcon.HTTP_404
             return
+
+    def on_get(self, req, resp):
+        self.render_template(resp, req.path)
 
 
 def to_template_names(path):
