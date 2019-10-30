@@ -77,9 +77,14 @@ class ExactMatchRefsOperator(BaseOperator):
         references: The references to match against the database
     """
 
+    TITLE_LENGTH_THRESHOLD = 40
+
     @apply_defaults
-    def __init__(self, es_host, publications_path, exact_matched_references_path, es_full_text_index,
-                 title_length_threshold, aws_conn_id='aws_default', *args, **kwargs):
+    def __init__(self, es_host, publications_path,
+                exact_matched_references_path,
+                es_full_text_index,
+                title_length_threshold=TITLE_LENGTH_THRESHOLD,
+                aws_conn_id='aws_default', *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.publications_path = publications_path
         self.exact_matched_references_path = exact_matched_references_path
