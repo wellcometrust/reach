@@ -146,7 +146,7 @@ def create_org_pipeline(dag, organisation, item_limits, spider_years, epmc_metad
 
     parsePdf >> esIndexFullTexts >> exactMatchRefs
     spider >> parsePdf >> extractRefs >> fuzzyMatchRefs >> esIndexFuzzyMatched
-    return fuzzyMatchRefs
+    return fuzzyMatchRefs, exactMatchRefs
 
 
 def create_dag(dag_id, default_args, spider_years,
@@ -172,7 +172,7 @@ def create_dag(dag_id, default_args, spider_years,
     esIndexPublications = es_index_epmc_metadata.ESIndexEPMCMetadata(
         task_id='ESIndexEPMCMetadata',
         src_s3_key=epmc_metadata_key,
-        es_host='elasticsearch',
+        es_hosts=get_es_hosts(),
         max_epmc_metadata=item_limits.index,
         es_index='-'.join([dag_id, 'epmc', 'metadata']),
         dag=dag
