@@ -80,7 +80,7 @@ class ExactMatchRefsOperator(BaseOperator):
     TITLE_LENGTH_THRESHOLD = 40
 
     @apply_defaults
-    def __init__(self, es_host, publications_path,
+    def __init__(self, es_hosts, publications_path,
                 exact_matched_references_path,
                 es_full_text_index,
                 title_length_threshold=TITLE_LENGTH_THRESHOLD,
@@ -90,8 +90,8 @@ class ExactMatchRefsOperator(BaseOperator):
         self.exact_matched_references_path = exact_matched_references_path
         self.es_full_text_index = es_full_text_index
         self.title_length_threshold = title_length_threshold
-        self.es_host = es_host
-        self.es = Elasticsearch([self.es_host])
+        self.es_hosts = es_hosts
+        self.es = Elasticsearch(es_hosts)
         self.aws_conn_id = aws_conn_id
 
     @report_exception
