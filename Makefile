@@ -2,7 +2,7 @@
 
 VIRTUALENV := build/virtualenv
 
-IMAGE := uk.ac.wellcome/policytool
+IMAGE := uk.ac.wellcome/reach
 ECR_IMAGE := 160358319781.dkr.ecr.eu-west-1.amazonaws.com/$(IMAGE)
 LATEST_TAG := latest
 VERSION := latest
@@ -10,13 +10,13 @@ VERSION := latest
 REFERENCE_SPLITTER_URL := https://datalabs-public.s3.eu-west-2.amazonaws.com/references_splitter/reference_splitter-2019.8.0-py3-none-any.whl
 
 #
-# policytool/web
+# reach/web
 #
 
-WEB_BUILD_IMAGE := policytool-web-build
+WEB_BUILD_IMAGE := reach-web-build
 WEB_BUILD_SOURCES := \
-	policytool/web/static/style.css \
-	policytool/web/gulpfile.js
+	reach/web/static/style.css \
+	reach/web/gulpfile.js
 
 WEB_BUILD_TARGETS := \
 	build/web/static/style.css
@@ -26,8 +26,8 @@ WEB_BUILD_TARGETS := \
 web-build-image:
 	docker build \
 		-t $(WEB_BUILD_IMAGE):latest \
-		-f policytool/web/Dockerfile.node \
-		policytool/web/
+		-f reach/web/Dockerfile.node \
+		reach/web/
 
 
 # NB: our target will run every time b/c web-build-image is
@@ -37,9 +37,9 @@ $(WEB_BUILD_TARGETS): web-build-image $(WEB_BUILD_SOURCES)
 	@# CodePipeline (but not CodeBuild) code checkouts lose execution bits
 	@# (https://forums.aws.amazon.com/thread.jspa?threadID=235452).
 	@# So, fix this for CI builds.
-	@chmod +x policytool/web/bin/docker_run.sh
+	@chmod +x reach/web/bin/docker_run.sh
 	@mkdir -p build/web/static
-	policytool/web/bin/docker_run.sh gulp default
+	reach/web/bin/docker_run.sh gulp default
 
 
 #
@@ -56,7 +56,7 @@ CODEBUILD_LATEST_TAG := codebuild-latest
 .PHONY: base-image
 base-image:
 	docker build \
-		-t policytool.base \
+		-t reach.base \
 		-f Dockerfile.base \
 		.
 
@@ -121,13 +121,13 @@ update-requirements-txt:
 
 .PHONY: test
 test: virtualenv
-	$(VIRTUALENV)/bin/pytest ./policytool
+	$(VIRTUALENV)/bin/pytest ./reach
 
 .PHONY: docker-test
 docker-test: docker-build
 	docker run -u root -v $$(pwd)/test_requirements.txt:/test_requirements.txt \
 		--rm $(ECR_IMAGE):$(VERSION) \
-		sh -c "pip3 install -r /test_requirements.txt && pytest /src/policytool"
+		sh -c "pip3 install -r /test_requirements.txt && pytest /src/reach"
 
 
 

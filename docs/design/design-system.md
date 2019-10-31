@@ -1,4 +1,4 @@
-# Policy Tool – Design System
+# Reach – Design System
 Created by Data Labs at Wellcome Trust
 
 
@@ -10,7 +10,7 @@ Created by Data Labs at Wellcome Trust
 # 1.1. Intro
 ----------
 
-The present document provides a high level overview of the Policy Tool brand and style. [Spectre.CSS](https://picturepan2.github.io/spectre/index.html) is used as the CSS framework, but the UI components should be adapted to provide a unique user experience to the website.
+The present document provides a high level overview of the Reach brand and style. [Spectre.CSS](https://picturepan2.github.io/spectre/index.html) is used as the CSS framework, but the UI components should be adapted to provide a unique user experience to the website.
 
 
 

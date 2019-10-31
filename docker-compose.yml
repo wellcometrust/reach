@@ -1,7 +1,7 @@
 version: '3.4'
 
 x-airflow-image: &airflow-image
-  160358319781.dkr.ecr.eu-west-1.amazonaws.com/uk.ac.wellcome/policytool:latest
+  160358319781.dkr.ecr.eu-west-1.amazonaws.com/uk.ac.wellcome/reach:latest
 
 x-airflow_env: &airflow-env
   AIRFLOW_HOME: /airflow
@@ -38,9 +38,9 @@ x-airflow_env: &airflow-env
   DATABASE_URL: "postgresql://postgres:development@postgres:5432/wsf_scraping"
 
 x-airflow-volumes: &airflow-volumes
-  - ./policytool/airflow/airflow.cfg:/airflow/airflow.cfg
-  - ./policytool/airflow/initdb.sh:/airflow/initdb.sh
-  - ./policytool:/src/policytool/policytool
+  - ./reach/airflow/airflow.cfg:/airflow/airflow.cfg
+  - ./reach/airflow/initdb.sh:/airflow/initdb.sh
+  - ./reach:/src/reach/reach
   - ./build/airflow.db:/airflow/db
 
 # Restart airflow several times in case the DB wasn't present.
@@ -62,7 +62,7 @@ services:
       POSTGRES_PASSWORD: development
     volumes:
       - ./build/airflow.db:/var/lib/postgresql/data
-      - ./policytool/airflow/initdb:/docker-entrypoint-initdb.d
+      - ./reach/airflow/initdb:/docker-entrypoint-initdb.d
     deploy:
       resources:
         limits:
@@ -112,7 +112,7 @@ services:
       <<: *airflow-env
       POSTGRES_DSN: "postgresql://postgres:development@postgres:5432/airflow?connect_timeout=20"
     command:
-      - /src/policytool/policytool/scraper/pg_isready.py
+      - /src/reach/reach/scraper/pg_isready.py
       - sh
       - "-cx"
       - "/airflow/initdb.sh && exec airflow scheduler"
@@ -137,7 +137,7 @@ services:
       # in place.
       # Thus pg_isready.py, and with a longer success-secs than
       # airflow-scheduler.
-      - /src/policytool/policytool/scraper/pg_isready.py
+      - /src/reach/reach/scraper/pg_isready.py
       - "--timeout=30"
       - "--success-secs=8"  # allow extra time for initdb to get started
       - airflow
@@ -184,10 +184,10 @@ services:
       - gunicorn
       - --bind=0.0.0.0:8081
       - --reload
-      - policytool.web.wsgi:application
+      - reach.web.wsgi:application
     volumes:
-      - ./policytool/web:/src/policytool/policytool/web/
-      - ./policytool/scraper:/src/policytool/policytool/scraper/
+      - ./reach/web:/src/reach/reach/web/
+      - ./reach/scraper:/src/reach/reach/scraper/
       - ./build/web:/build/web
     deploy:
       resources:
@@ -198,14 +198,14 @@ services:
   # and update the web image to serve static from build/static
   # by either an env or complicated volumes
   gulp-watch:
-    image: policytool-web-build:latest
+    image: reach-web-build:latest
     command:
       - gulp
       - watch
     volumes:
       - ./build/web/static:/src/build/static
-      - ./policytool/web/gulpfile.js:/src/gulpfile.js
-      - ./policytool/web/static:/src/static
+      - ./reach/web/gulpfile.js:/src/gulpfile.js
+      - ./reach/web/static:/src/static
     # Signal handling in gulp? Not so much...
     stop_signal: SIGKILL
     deploy:
