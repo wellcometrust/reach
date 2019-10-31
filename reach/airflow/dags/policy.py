@@ -102,7 +102,7 @@ def create_org_pipeline(dag, organisation, item_limits, spider_years, epmc_metad
         task_id="ESIndexFulltextDocs.%s" % organisation,
         src_s3_key=parsePdf.dst_s3_key,
         organisation=organisation,
-        es_host='elasticsearch',
+        es_host='elasticsearch',  # TODO: refactor to es_hosts=get_es_hosts()
         item_limits=item_limits.index,
         es_index='-'.join([dag.dag_id, 'docs']),
         dag=dag
@@ -127,7 +127,7 @@ def create_org_pipeline(dag, organisation, item_limits, spider_years, epmc_metad
 
     exactMatchRefs = exact_match_refs_operator.ExactMatchRefsOperator(
         task_id='ExactMatchRefs.%s' % organisation,
-        es_host=get_es_hosts(),
+        es_host=get_es_hosts(), # TODO: refactor to es_hosts=get_es_hosts()
         publications_path=epmc_metadata_key,
         exact_matched_references_path=to_s3_output(
             dag, 'exact-matched-refs', organisation, '.json.gz'),
@@ -138,7 +138,7 @@ def create_org_pipeline(dag, organisation, item_limits, spider_years, epmc_metad
         task_id="ESIndexFuzzyMatchedCitations.%s" % organisation,
         src_s3_key=fuzzyMatchRefs.dst_s3_key,
         organisation=organisation,
-        es_host='elasticsearch',
+        es_host='elasticsearch', # TODO: refactor to es_hosts=get_es_hosts()
         item_limits=item_limits.index,
         es_index='-'.join([dag.dag_id, 'citations']),
         dag=dag
