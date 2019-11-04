@@ -13,6 +13,7 @@ from urllib.parse import urlparse
 import falcon
 from elasticsearch import Elasticsearch
 
+from reach.sentry import report_exception
 from reach.web.views import template, search
 
 TEMPLATE_ROOT = os.path.join(os.path.dirname(__file__), 'templates')
@@ -40,6 +41,7 @@ def get_context(os_environ):
     }
 
 
+@report_exception
 def create_api(conf):
     """
     Args:
