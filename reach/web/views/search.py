@@ -70,12 +70,12 @@ def _search_es(es, params, explain=False):
             )
 
         except ConnectionError:
-            message = 'Could not join the elasticsearch server'
+            message = 'Could not join the elasticsearch server.'
             raise falcon.HTTPServiceUnavailable(description=message)
 
         except NotFoundError:
             message = 'No results found.'
-            return False, message
+            return False, {'message': message}
 
         except Exception as e:
             raise falcon.HTTPError(description=str(e))
@@ -147,6 +147,15 @@ class FulltextPage(template.TemplateResource):
 
             self.context['es_response'] = response
             self.context['es_status'] = status
+
+            if (not status) or (response.get('message')):
+                self.context.update(params)
+                super(FulltextPage, self).render_template(
+                    resp,
+                    '/results/policy-docs',
+                )
+                return
+
             self.context['pages'] = _get_pages(
                 params['page'],
                 math.ceil(
