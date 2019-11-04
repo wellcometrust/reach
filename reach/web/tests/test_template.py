@@ -1,4 +1,4 @@
-from .views import template
+from reach.web.views import template
 
 
 def test_to_template_names():
