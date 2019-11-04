@@ -1,5 +1,10 @@
 {% extends 'base.html' %}
 
+{% set status = es_status %}
+{% if es_response is mapping %}
+    {% set status = status and (es_response.hits.total.value > 0) %}
+{% endif %}
+
 {% block main %}
 
 <div class="breadcrumb-box">
@@ -19,7 +24,7 @@
     <div class="container">
         <div class="columns">
 
-            {% if es_response.hits.hits %}
+            {% if status %}
                 <div class="column col-12 col-md-12">
                     <h1>Policy Documents results for "{{ term }}"</h1>
                 </div>
@@ -48,7 +53,7 @@
                         <div class="card">
                           {{ uparrow() }}
                           <div class="card-body">
-                            Policy tool regularly loads the PDFs of WHO, MSF, UNICEF, NICE, and other
+                            Wellcome Reach regularly loads the PDFs of WHO, MSF, UNICEF, NICE, and other
                             organizations. Click this button to search the text of these documents.
                           </div>
                         </div>
@@ -56,7 +61,7 @@
                     </div>
                 </div>
             </div>
-            {% if es_response.hits.hits %}
+            {% if status %}
                 <div class="column col-6 col-md-12 text-right">
                     <a class="btn btn-primary btn-xl" href="#" >Download results as .csv</a>
                 </div>
@@ -65,7 +70,7 @@
             {% endif %}
         </div>
     </div>
-    {% if es_response.hits.hits %}
+    {% if status %}
         <div class="container">
             <div class="columns">
                 <div class="column col-6 col-md-12">
