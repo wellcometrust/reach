@@ -5,9 +5,9 @@
 CONTRIBUTING.md
 Dockerfile
 build/*
-policytool/build/*
-policytool/results
-policytool/crawls
+reach/build/*
+reach/results
+reach/crawls
 !build/web/static
 pull_request_template.md
-policytool/refparse/algo_evaluation/data_evaluate/*
+reach/refparse/algo_evaluation/data_evaluate/*
