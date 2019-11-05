@@ -1,11 +1,5 @@
 @import "variables.css";
 
-
-/* Override Spectre default */
-.breadcrumb .breadcrumb-item:not(:last-child) a {
-    color: $linkBlue;
-}
-
 .search-box {
     background: $footerColor;
     border-top: 1px solid $borderDark;
