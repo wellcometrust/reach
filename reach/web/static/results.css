@@ -1,0 +1,22 @@
+@import "variables.css";
+
+.results-box {
+    background: $footerColor;
+    border-top: 1px solid $borderDark;
+    border-bottom: 1px solid $borderDark;
+    padding: $sectionPadding 0;
+}
+
+.results {
+	/*background: #FFF;*/
+}
+
+.table-bordered {
+	tr {
+		background: #FFF;
+	}
+
+	td, th {
+		border: 1px solid $borderDark;
+	}
+}
