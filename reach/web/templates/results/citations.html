@@ -1,0 +1,144 @@
+{% extends 'base.html' %}
+
+{% set status = es_status %}
+{% if es_response is mapping %}
+    {% set status = status and (es_response.hits.total.value > 0) %}
+{% endif %}
+
+{% block main %}
+
+<div class="breadcrumb-box">
+    <div class="container">
+        <div class="columns">
+            <div class="column col-12">
+                <ul class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="/">Home</a></li>
+                    <li class="breadcrumb-item">Search the contents of Policy Documents</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="results-box">
+    <div class="container">
+        <div class="columns">
+
+            {% if status %}
+                <div class="column col-12 col-md-12">
+                    <h1>Policy Documents results for "{{ term }}"</h1>
+                </div>
+            {% else %}
+                <div class="column col-12 col-md-12">
+                    <h1>No search results for "{{ term }}"</h1>
+                    <p>Check the spelling, try alternate words or a more generic term.</p>
+                </div>
+            {% endif %}
+            <div class="column col-12 col-md-12">
+                <p>Search the contents of Policy Documents(title, abstract, author)</p>
+            </div>
+            <div class="column col-6 col-md-12">
+                <form action="/search/policy-docs">
+                    <div class="input-group">
+                      <input type="text" class="form-input input-xl" placeholder="Search" name="term" id="search-term" value="{{ term }}">
+                      <span id="search-clear" class="input-group-addon addon-lg"><i class="form-icon icon icon-cross"></i></span>
+                      <button type="submit" class="btn btn-primary input-group-btn btn-xl">Search</button>
+                    </div>
+                </form>
+                <div class="search-tips">
+                    <a href="#">Advanced search tips</a>
+                    <div class="popover popover-bottom">
+                      <span class="btn help">?</span>
+                      <div class="popover-container">
+                        <div class="card">
+                          {{ uparrow() }}
+                          <div class="card-body">
+                            Wellcome Reach regularly loads the PDFs of WHO, MSF, UNICEF, NICE, and other
+                            organizations. Click this button to search the text of these documents.
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                </div>
+            </div>
+            {% if status %}
+                <div class="column col-6 col-md-12 text-right">
+                    <a class="btn btn-primary btn-xl" href="#" >Download results as .csv</a>
+                </div>
+            {% else %}
+                <div class="column col-6 col-md-12"></div>
+            {% endif %}
+        </div>
+    </div>
+    {% if status %}
+        <div class="container">
+            <div class="columns">
+                <div class="column col-6 col-md-12">
+                    {{ (page - 1) * size + 1 }} - {{ [(page - 1) * size + size, es_response.hits.total.value] | min }} of {{ es_response.hits.total.value }} results
+                </div>
+                <div class="column col-6 col-md-12">
+                    <div class="pagination-box float-right">
+
+                        <ul class="pagination">
+                            {% if page > 1 %}
+                                   <li class="page-item">
+                                    <a href="/results/content?term={{ term }}&page={{ page - 1 }}">Prev</a>
+                                </li>
+                            {% else %}
+                                <li class="page-item disabled">
+                                    <a href="#" tabindex="-1">Prev</a>
+                                </li>
+                            {% endif %}
+                            {% for n_page in pages %}
+                                <li class="page-item {% if n_page == page %}active{% endif %}">
+                                    <a href="/results/content?term={{ term }}&page={{ n_page }}">{{ n_page }}</a>
+                                </li>
+                            {% endfor %}
+                            {% if page < pages|length %}
+                                   <li class="page-item">
+                                    <a href="/results/content?term={{ term }}&page={{ page + 1 }}">Next</a>
+                                </li>
+                            {% else %}
+                                <li class="page-item disabled">
+                                    <a href="#" tabindex="-1">Next</a>
+                                </li>
+                            {% endif %}
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="results">
+            <div class="container">
+                <table class="table table-bordered table-hover">
+                    <thead>
+                        <tr>
+                            <th>Policy Document</th>
+                            <th>Organisation</th>
+                            <th>Author(s)</th>
+                            <th>Year of publication</th>
+                        </tr>
+                    </thead>
+                     <tbody>
+                        {% for hit in es_response.hits.hits %}
+                            <tr>
+                                <td>
+                                    {% if hit._source.doc.text %}
+                                        {{ hit._source.doc.text | truncate(60) }}
+                                    {% else %}
+                                        No title
+                                    {% endif %}
+                                    </td>
+                                <td>{{ hit._source.doc.organisation }}</td>
+                                <td>{{ hit._source.doc.authors }}</td>
+                                <td>{{ hit._source.doc.year }}</td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}
