@@ -13,6 +13,7 @@ from elasticsearch import Elasticsearch
 from airflow.models import BaseOperator
 from airflow.utils.decorators import apply_defaults
 
+import reach.elastic.common
 from reach.airflow.hook.wellcome_s3_hook import WellcomeS3Hook
 from reach.airflow.safe_import import safe_import
 from reach.sentry import report_exception
@@ -28,6 +29,7 @@ def yield_publications(s3, publications_path):
         with gzip.GzipFile(mode='rb', fileobj=tf) as f:
             for line in f:
                 yield json.loads(line)
+
 
 class ElasticsearchExactMatcher:
     def __init__(self, es, es_full_text_index, title_length_threshold):
@@ -91,7 +93,8 @@ class ExactMatchRefsOperator(BaseOperator):
         self.es_full_text_index = es_full_text_index
         self.title_length_threshold = title_length_threshold
         self.es_hosts = es_hosts
-        self.es = Elasticsearch(es_hosts)
+        self.es = reach.elastic.common.connect(es_hosts)
+
         self.aws_conn_id = aws_conn_id
 
     @report_exception
