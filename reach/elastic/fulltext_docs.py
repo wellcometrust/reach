@@ -43,6 +43,7 @@ def clean_es(es, es_index, org):
     es.delete_by_query(
         index=es_index,
         body=es_body,
+        ignore=[404],
     )
 
 
