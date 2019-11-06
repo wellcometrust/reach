@@ -83,7 +83,7 @@ def _n_actions(actions, max_items):
 
 def insert_actions(es, actions, chunk_size):
     """ Inserts an iterable of actions into an ES cluster.
-    
+
     Args:
         es: ElasticSearch client
         actions: iterable of ElasticSearch bulk API action dicts
@@ -158,10 +158,15 @@ def create_argument_parser(description):
     return parser
 
 
-def connect(hosts, port):
+def connect(hosts):
+    hosts_dict = [{'host': host, 'port': port} for host, port in hosts]
+    es_logger.info(hosts_dict)
     return elasticsearch.Elasticsearch(
-        [{'host': host, 'port': port} for host in hosts], timeout=60, retries=5,
-        retry_on_timeout=True)
+        hosts_dict,
+        timeout=60,
+        retries=5,
+        retry_on_timeout=True
+    )
 
 
 def es_from_args(args):
