@@ -48,7 +48,7 @@ class ESIndexEPMCMetadata(BaseOperator):
 
     def execute(self, context):
         es = reach.elastic.common.connect(
-            self.es_hosts, self.es_port)
+            self.es_hosts)
         s3 = WellcomeS3Hook()
 
         # TODO: implement skipping mechanism

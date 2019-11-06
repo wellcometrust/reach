@@ -50,7 +50,7 @@ verify_s3_prefix()
 def get_es_hosts():
     result = conf.get("core", "elasticsearch_hosts")
     assert result
-    return [x.strip() for x in result.split(',')]
+    return [x.strip().split(':') for x in result.split(',')]
 
 
 def to_s3_output(dag, *args):
@@ -133,7 +133,7 @@ def create_org_pipeline(dag, organisation, item_limits, spider_years, epmc_metad
             dag, 'exact-matched-refs', organisation, '.json.gz'),
         es_full_text_index=esIndexFullTexts,
         dag=dag)
-    
+
     esIndexFuzzyMatched = es_index_fuzzy_matched.ESIndexFuzzyMatchedCitations(
         task_id="ESIndexFuzzyMatchedCitations.%s" % organisation,
         src_s3_key=fuzzyMatchRefs.dst_s3_key,
