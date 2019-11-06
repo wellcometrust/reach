@@ -38,6 +38,10 @@ class ElasticsearchExactMatcher:
         self.title_length_threshold = title_length_threshold
 
     def match(self, publication):
+        
+        if 'title' not in publication:
+            return
+
         title = publication['title']
 
         # Exclude short titles that create noisy matches
