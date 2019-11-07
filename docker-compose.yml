@@ -84,10 +84,10 @@ services:
           memory: "40M"
 
   elasticsearch:
-    image: docker.elastic.co/elasticsearch/elasticsearch:7.2.0
+    image: docker.elastic.co/elasticsearch/elasticsearch:7.2.1
     environment:
       - discovery.type=single-node
-      - "ES_JAVA_OPTS=-Xms2g -Xmx2g"
+      - "ES_JAVA_OPTS=-Xms512m -Xmx2g"
     ports:
       - 127.0.0.1:9200:9200
     volumes:
@@ -189,6 +189,7 @@ services:
       - ./reach/web:/src/reach/reach/web/
       - ./reach/scraper:/src/reach/reach/scraper/
       - ./build/web:/build/web
+    depends_on: ['elasticsearch']
     deploy:
       resources:
         limits:
