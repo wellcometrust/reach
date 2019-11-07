@@ -12,6 +12,8 @@ from urllib.parse import urlparse
 from argparse import ArgumentParser
 from elasticsearch import Elasticsearch
 
+from . import common
+
 parser = ArgumentParser()
 parser.add_argument('file_url')
 
@@ -38,7 +40,7 @@ def write_to_es(es, item):
 
     Args:
         es: a living connection to elacticsearch
-        item: an dict from a json line. 
+        item: an dict from a json line.
     """
     if item["sections"]:
         print(item['hash'])
@@ -48,7 +50,7 @@ def write_to_es(es, item):
             'section': section,
             'uri': item['uri'],
             'hash': item['hash']
-        })  
+        })
         es.index(
             index='datalabs-sections',
             ignore=400,
@@ -64,16 +66,7 @@ def clean_es(es):
         es: a living connection to elasticsearch
 
     """
-    print('Cleaning the database..')
-    body = json.dumps({
-        'query': {
-            'match_all': {}
-        }
-    })
-    es.delete_by_query(
-        index='datalabs-sections',
-        body=body,
-    )
+    common.recreate_index(es, 'datalabs-sections')
 
 
 def import_data(file_url, es, size):
@@ -90,7 +83,7 @@ def import_data(file_url, es, size):
         parsed_url = urlparse(s3_url)
         print('Getting %s from %s bucket' % (parsed_url.path, parsed_url.netloc))
         s3_file = s3.Object(bucket_name=parsed_url.netloc, key=parsed_url.path[1:])
-        
+
         with tempfile.TemporaryFile(mode='r+b') as tf:
             rows = s3_file.get(Range='bytes=0-%d' % size)
             for data in rows['Body']:
