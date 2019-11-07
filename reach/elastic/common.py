@@ -8,6 +8,7 @@ import time
 import boto3
 import elasticsearch
 import elasticsearch.helpers
+from elasticsearch.exceptions import NotFoundError, TransportError
 
 import reach.logging
 
@@ -56,16 +57,76 @@ def yield_actions(tf, to_es_action, max_items=None):
         logging.info('yield_actions: count=%d', count)
 
 
-def clean_es(es, index_name):
-    """ Empty the elasticsearch database.
+def recreate_index(es, index_name):
+    """ Recreate an index from scratch
 
     Args:
         es: a living connection to elasticsearch
+        index_name: The name of the index to recreate
     """
-    logging.info('clean_es: index_name=%s', index_name)
-    # Ignore if the index doesn't exist, as it'll be created by next queries
-    es.indices.delete(index=index_name, ignore=[404])
+    logging.info('recreate_index: index_name=%s', index_name)
+
+    try:
+        es.indices.delete(index=index_name)
+    except NotFoundError as e:
+        if e.error == "index_not_found_exception":
+            pass
+        else:
+            raise
+
+    # No catch as anything should have been caught above
     es.indices.create(index=index_name)
+
+    # Refresh the index so we can use it
+    es.indices.refresh(index=index_name)
+
+
+def clear_index_by_query(es, query, index_name):
+    """ Clean out records from an index using a query
+
+    Args:
+        es: An active ES connection
+        query: The query specifying which documents to clear out
+        index_name: The name of the index to remove the documents from
+    """
+    logging.info("clear_index_by_query: index_name: %s", index_name)
+
+    try:
+        es.delete_by_query(body=query, index=index_name)
+    except (TransportError, NotFoundError) as e:
+        if e.error == "index_not_found_exception":
+            pass
+        else:
+            raise
+
+def clear_index_by_org(es, org, index_name):
+    """ Convenience method for clearing an orgs documents from an
+        an index
+
+    Args:
+        es: Active ElasticSearch connection
+        org: The org to delete documents for
+        index_name: The name of the index to clear from
+    """
+
+    logging.info("clear_index_by_org: index_name: %s, org: %s", index_name, org)
+
+    try:
+        es.delete_by_query(
+            index=index_name,
+            body={
+                'query': {
+                    'match': {
+                        'organisation': org,
+                    }
+                }
+            }
+        )
+    except (TransportError, NotFoundError) as e:
+        if e.error == "index_not_found_exception":
+            pass
+        else:
+            raise
 
 
 def count_es(es, index_name):
@@ -83,7 +144,7 @@ def _n_actions(actions, max_items):
 
 def insert_actions(es, actions, chunk_size):
     """ Inserts an iterable of actions into an ES cluster.
-    
+
     Args:
         es: ElasticSearch client
         actions: iterable of ElasticSearch bulk API action dicts
