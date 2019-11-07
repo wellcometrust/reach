@@ -12,6 +12,8 @@ from urllib.parse import urlparse
 from argparse import ArgumentParser
 from elasticsearch import Elasticsearch
 
+from . import common
+
 parser = ArgumentParser()
 parser.add_argument('s3_url')
 
@@ -38,7 +40,7 @@ def write_to_es(es, line):
 
     Args:
         es: a living connection to elacticsearch
-        line: a dict from a csv line. 
+        line: a dict from a csv line.
     """
 
     body = json.dumps({
@@ -59,16 +61,7 @@ def clean_es(es):
         es: a living connection to elasticsearch
 
     """
-    print('Cleaning the database..')
-    body = json.dumps({
-        'query': {
-            'match_all': {}
-        }
-    })
-    es.delete_by_query(
-        index='datalabs-references',
-        body=body,
-    )
+    common.recreate_index(es, 'datalabs-references')
 
 
 def import_data(s3_file, es, size):

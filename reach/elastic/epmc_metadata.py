@@ -25,7 +25,7 @@ def to_es_action(es_index, line):
 
 def clean_es(es, es_index):
     """ Ensure an empty index exists. """
-    common.clean_es(es, es_index)
+    common.recreate_index(es, es_index)
 
 
 def insert_file(f, es, es_index, max_items=None):
