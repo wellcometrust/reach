@@ -1,4 +1,6 @@
 import json
+import pytest
+import sys
 import unittest
 
 from reach.pdf_parser.objects.PdfObjects import PdfFile
@@ -66,7 +68,7 @@ class TestPdfObjects(unittest.TestCase):
 
     def test_mean(self):
         font_mean = self.pdf_file_object.get_mean_font_size()
-        self.assertTrue(font_mean in range(18, 22))
+        self.assertTrue(font_mean in range(17, 22))
 
     def test_upper_mean(self):
         upper_mean = self.pdf_file_object.get_upper_mean_font_size()
@@ -124,6 +126,8 @@ class TestPdfObjects(unittest.TestCase):
         pdf_export = pdf_file.to_json()
         self.assertEqual(pdf_export, JSON_PDF)
 
+
+@pytest.mark.skipif(sys.platform == 'darwin', reason="This test requires Linux")
 class TestPdfObjectsMultipage(unittest.TestCase):
     """
     Tests against a multi-page pdf
