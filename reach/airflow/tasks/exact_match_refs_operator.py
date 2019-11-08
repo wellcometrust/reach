@@ -20,10 +20,10 @@ from reach.sentry import report_exception
 
 logger = logging.getLogger(__name__)
 
+def yield_publications(s3, epmc_metadata_object):
 
-def yield_publications(s3, publications_path):
     with tempfile.TemporaryFile(mode='rb+') as tf:
-        key = s3.get_key(publications_path)
+        key = epmc_metadata_object
         key.download_fileobj(tf)
         tf.seek(0)
         with gzip.GzipFile(mode='rb', fileobj=tf) as f:
@@ -32,6 +32,7 @@ def yield_publications(s3, publications_path):
 
 
 class ElasticsearchExactMatcher:
+
     def __init__(self, es, es_full_text_index, title_length_threshold):
         self.es = es
         self.es_full_text_index = es_full_text_index
@@ -51,10 +52,10 @@ class ElasticsearchExactMatcher:
         body = {
             "query": {
                 "match_phrase": {
-                    "section": title
+                    "doc.text": title
                 }
             },
-            "_source": ["hash"],
+            "_source": ["doc.hash"],
 
         }
         res = self.es.search(
@@ -64,12 +65,13 @@ class ElasticsearchExactMatcher:
         )
 
         for match in res['hits']['hits']:
-            score = match['_score']
+            pub_doi = publication['doi'] if 'doi' in publication else None
+            pub_pmid = publication['pmid'] if 'pmid' in publication else None
 
-            matched_policy_document = match['_source']
             yield {
-                'Document id': matched_policy_document['hash'],
-                'Matched publication id': publication['uber_id'],
+                'Document id': match['_source']['doc']['hash'],
+                'Matched publication doi': pub_doi, 
+                'Matched publication pmid': pub_pmid,
                 'Matched title': title,
                 'Match algorithm': 'Exact match'
             }
@@ -82,36 +84,32 @@ class ExactMatchRefsOperator(BaseOperator):
     Args:
         references: The references to match against the database
     """
+    template_fields = (
+        'epmc_metadata_key',
+        'exact_matched_references_path',
+    )
 
     TITLE_LENGTH_THRESHOLD = 40
 
     @apply_defaults
-    def __init__(self, es_hosts, publications_path,
+    def __init__(self, es_hosts, epmc_metadata_key,
                 exact_matched_references_path,
                 es_full_text_index,
                 title_length_threshold=TITLE_LENGTH_THRESHOLD,
                 aws_conn_id='aws_default', *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.publications_path = publications_path
+        self.epmc_metadata_key = epmc_metadata_key
         self.exact_matched_references_path = exact_matched_references_path
         self.es_full_text_index = es_full_text_index
         self.title_length_threshold = title_length_threshold
         self.es_hosts = es_hosts
         self.es = reach.elastic.common.connect(es_hosts)
-
         self.aws_conn_id = aws_conn_id
 
     @report_exception
     def execute(self, context):
         with safe_import():
             from reach.refparse.refparse import exact_match_publication
-
-        publications_path = 's3://{path}'.format(
-            path=self.publications_path,
-        )
-        exact_matched_references_path = 's3://{path}'.format(
-            path=self.exact_matched_references_path,
-        )
 
         s3 = WellcomeS3Hook(aws_conn_id=self.aws_conn_id)
 
@@ -121,26 +119,51 @@ class ExactMatchRefsOperator(BaseOperator):
             self.title_length_threshold
         )
 
+        epmc_metadata_object = s3.get_key(self.epmc_metadata_key)
+        
+        logger.info(
+            'ExactMatchRefsOperator: Getting publications from %s', epmc_metadata_object
+        )
+
         with tempfile.NamedTemporaryFile(mode='wb') as output_raw_f:
             with gzip.GzipFile(mode='wb', fileobj=output_raw_f) as output_f:
-                publications = yield_publications(s3, publications_path)
+                publications = yield_publications(s3, epmc_metadata_object)
+                count = 0
+                count_match = 0
                 for publication in publications:
+                    count += 1
+                    if count % 100000 == 0:
+                        logger.info(
+                            'ExactMatchRefsOperator: publications=%d', count
+                            )
                     exact_matched_references = exact_match_publication(
                         exact_matcher,
                         publication
                     )
                     for exact_matched_reference in exact_matched_references:
                         if exact_matched_reference:
-                            logger.info("Match")
-
+                            count_match += 1
+                            if count_match % 500 == 0:
+                                logger.info(
+                                    'ExactMatchRefsOperator: matches=%d', count_match
+                                    )
                             output_f.write(json.dumps(exact_matched_reference).encode('utf-8'))
                             output_f.write(b'\n')
-
+                            
             output_raw_f.flush()
 
             s3.load_file(
                 filename=output_raw_f.name,
-                key=exact_matched_references_path,
+                key=self.exact_matched_references_path,
                 replace=True,
             )
+
+            logger.info(
+                    'ExactMatchRefsOperator: publications=%d matches=%d',
+                    count, count_match
+                )
+            logger.info(
+                    'ExactMatchRefsOperator: Matches saved to %s',
+                    s3.get_key(self.exact_matched_references_path)
+                )
 
