@@ -17,6 +17,6 @@ RUN \
         postcss-import \
         postcss-url
 
-VOLUME ["/src/build/static", "/src/gulpfile.js", "/src/static"]
+VOLUME ["/build/web/static", "/src/gulpfile.js", "/src/static"]
 
 CMD ["gulp", "watch"]
