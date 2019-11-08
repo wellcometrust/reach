@@ -3,7 +3,7 @@ FROM node:12.7.0-alpine
 # Rationale: install modules into /src/node_modules, which
 # we keep inside the docker image. Then, volume in whatever
 # grunt needs to run.
-WORKDIR /src
+WORKDIR /opt/reach/build/web
 RUN \
     npm install -g gulp && \
     npm install \
@@ -17,6 +17,6 @@ RUN \
         postcss-import \
         postcss-url
 
-VOLUME ["/src/build/static", "/src/gulpfile.js", "/src/static"]
+VOLUME ["/opt/reach/build/web/src", "/opt/reach/build/web/gulpfile.js", "/opt/reach/build/web/static"]
 
 CMD ["gulp", "watch"]

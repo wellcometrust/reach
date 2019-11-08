@@ -19,16 +19,16 @@ exports.css = function() {
         require('cssnano')
   ];
 
-  return src('static/**/*.css')
+  return src('src/**/*.css')
     .pipe( sourcemaps.init() )
     .pipe( postcss(plugins) )
     // sourcemaps are rooted in dest(), so '.' is what we want
     .pipe( sourcemaps.write('.') )
-    .pipe( dest('/src/build/static') );
+    .pipe( dest('/opt/reach/build/web/static') );
 };
 
 exports.default = parallel(exports.css);
 
 exports.watch = function() {
-  watch('static/*.css', {ignoreInitial: false}, exports.css);
+  watch('src/*.css', {ignoreInitial: false}, exports.css);
 };
