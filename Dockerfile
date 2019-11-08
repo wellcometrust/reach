@@ -1,26 +1,28 @@
 # Use a basic Python image
 FROM reach.base
 
-COPY setup.py /src/reach/
-COPY README.md /src/reach/
-COPY unpinned_requirements.txt /src/reach/
-COPY reach/ /src/reach/reach/
+COPY setup.py /opt/reach
+COPY README.md /opt/reach
+COPY unpinned_requirements.txt /opt/reach
+COPY reach/ /opt/reach/reach/
 
 # Airflow deps
 COPY reach/scrapy.cfg /etc/scraper/scrapy.cfg
 
-COPY build/web/ /build/web/
-ENV STATIC_ROOT=/build/web/static
+COPY build/web/ /opt/reach/build/web/
+ENV STATIC_ROOT=/opt/reach/build/web/static
 
 # TODO: cd /src after we've moved setup.py up a dir
-RUN /bin/sh -c 'cd /src/reach && python3 setup.py develop --no-deps'
+RUN /bin/sh -c 'cd /opt/reach && python3 setup.py develop --no-deps'
 
 # Airflow
-COPY reach/airflow/airflow.cfg /airflow/
-COPY reach/airflow/initdb.sh /airflow/
-RUN mkdir -p /airflow/db && \
-    ln -s /src/reach/reach/airflow/dags /airflow/dags && \
-    chmod +x /airflow/initdb.sh && \
-    chown -R www-data: /airflow
+COPY reach/airflow/airflow.cfg /opt/airflow/
+COPY reach/airflow/initdb.sh /opt/airflow/
+RUN mkdir -p /opt/airflow/db && \
+    ln -s /opt/reach/reach/airflow/dags /opt/airflow/dags && \
+    chmod +x /opt/airflow/initdb.sh && \
+    mkdir -p /opt/airflow/logs && \
+    chmod -R 777 /opt/airflow/logs && \
+    chown -R www-data: /opt/airflow
 
 USER www-data

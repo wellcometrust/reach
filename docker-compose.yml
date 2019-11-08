@@ -4,7 +4,7 @@ x-airflow-image: &airflow-image
   160358319781.dkr.ecr.eu-west-1.amazonaws.com/uk.ac.wellcome/reach:latest
 
 x-airflow_env: &airflow-env
-  AIRFLOW_HOME: /airflow
+  AIRFLOW_HOME: /opt/airflow
 
   # S3 prefix for all datalabs operators.
   # (in `core` because we must be in an existing section of the cfg)
@@ -38,10 +38,10 @@ x-airflow_env: &airflow-env
   DATABASE_URL: "postgresql://postgres:development@postgres:5432/wsf_scraping"
 
 x-airflow-volumes: &airflow-volumes
-  - ./reach/airflow/airflow.cfg:/airflow/airflow.cfg
-  - ./reach/airflow/initdb.sh:/airflow/initdb.sh
-  - ./reach:/src/reach/reach
-  - ./build/airflow.db:/airflow/db
+  - ./reach/airflow/airflow.cfg:/opt/airflow/airflow.cfg
+  - ./reach/airflow/initdb.sh:/opt/airflow/initdb.sh
+  - ./reach:/opt/reach/reach
+  - ./build/airflow.db:/opt/airflow/db
 
 # Restart airflow several times in case the DB wasn't present.
 # (Yes, we could netcat, but postgres can accept TCP conns before
@@ -112,10 +112,10 @@ services:
       <<: *airflow-env
       POSTGRES_DSN: "postgresql://postgres:development@postgres:5432/airflow?connect_timeout=20"
     command:
-      - /src/reach/reach/scraper/pg_isready.py
+      - /opt/reach/reach/scraper/pg_isready.py
       - sh
       - "-cx"
-      - "/airflow/initdb.sh && exec airflow scheduler"
+      - "/opt/airflow/initdb.sh && exec airflow scheduler"
     volumes: *airflow-volumes
     depends_on: ["postgres", "redis"]
     deploy:
@@ -137,7 +137,7 @@ services:
       # in place.
       # Thus pg_isready.py, and with a longer success-secs than
       # airflow-scheduler.
-      - /src/reach/reach/scraper/pg_isready.py
+      - /opt/reach/reach/scraper/pg_isready.py
       - "--timeout=30"
       - "--success-secs=8"  # allow extra time for initdb to get started
       - airflow
@@ -176,7 +176,7 @@ services:
       AWS_ACCESS_KEY_ID: "${AWS_ACCESS_KEY_ID}"
       AWS_SECRET_ACCESS_KEY: "${AWS_SECRET_ACCESS_KEY}"
       SENTRY_DSN: "${SENTRY_DSN}"
-      STATIC_ROOT: /build/web/static
+      STATIC_ROOT: /opt/reach/build/web/static
       ELASTICSEARCH_HOST: "http://elasticsearch:9200"
       # DATABASE_URL: "postgres://postgres:postgres@articles-db:5432/wsf_scraping"
 
@@ -186,14 +186,15 @@ services:
       - --reload
       - reach.web.wsgi:application
     volumes:
-      - ./reach/web:/src/reach/reach/web/
-      - ./reach/scraper:/src/reach/reach/scraper/
-      - ./build/web:/build/web
+      - ./reach/web:/opt/reach/reach/web/
+      - ./reach/scraper:/opt/reach/reach/scraper/
+      - ./build/web:/opt/reach/build/web
     depends_on: ['elasticsearch']
     deploy:
       resources:
         limits:
           memory: "64M"
+
 
   # TODO: run gulp watch with the right volumes in place
   # and update the web image to serve static from build/static
@@ -204,9 +205,9 @@ services:
       - gulp
       - watch
     volumes:
-      - ./build/web/static:/src/build/static
-      - ./reach/web/gulpfile.js:/src/gulpfile.js
-      - ./reach/web/static:/src/static
+      - ./build/web/static:/opt/reach/build/web/static
+      - ./reach/web/gulpfile.js:/opt/reach/build/web/gulpfile.js
+      - ./reach/web/static:/opt/reach/build/web/src
     # Signal handling in gulp? Not so much...
     stop_signal: SIGKILL
     deploy:
