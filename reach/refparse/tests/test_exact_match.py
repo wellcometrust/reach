@@ -4,8 +4,8 @@ from collections import namedtuple
 from pandas.util.testing import assert_frame_equal
 import pandas as pd
 
-from policytool.refparse.utils import ExactMatcher
-from policytool.refparse.settings import settings
+from reach.refparse.utils import ExactMatcher
+from reach.refparse.settings import settings
 
 SectionedDocument = namedtuple(
     'SectionedDocument',
