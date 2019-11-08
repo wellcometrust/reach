@@ -24,7 +24,7 @@ exports.css = function() {
     .pipe( postcss(plugins) )
     // sourcemaps are rooted in dest(), so '.' is what we want
     .pipe( sourcemaps.write('.') )
-    .pipe( dest('/src/build/static') );
+    .pipe( dest('/build/web/static') );
 };
 
 exports.default = parallel(exports.css);
