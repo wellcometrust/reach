@@ -74,7 +74,7 @@ def to_s3_output_dir(dag, *args):
     ) % (dag.dag_id, path, slug)
 
 
-def create_org_pipeline(dag, organisation, item_limits, spider_years, publications_path=None):
+def create_org_pipeline(dag, organisation, item_limits, spider_years, epmc_metadata_key=None):
     """ Creates all tasks tied to a single organisation::
 
         Spider -> ParsePdf
@@ -128,7 +128,7 @@ def create_org_pipeline(dag, organisation, item_limits, spider_years, publicatio
     exactMatchRefs = exact_match_refs_operator.ExactMatchRefsOperator(
         task_id='ExactMatchRefs.%s' % organisation,
         es_hosts=get_es_hosts(),
-        publications_path=publications_path,
+        epmc_metadata_key=epmc_metadata_key,
         exact_matched_references_path=to_s3_output(
             dag, 'exact-matched-refs', organisation, '.json.gz'),
         es_full_text_index='-'.join([dag.dag_id, 'docs']),
@@ -169,11 +169,6 @@ def create_dag(dag_id, default_args, spider_years,
         'output', 'open-research', 'epmc-metadata', 'epmc-metadata.json.gz'
     ])
 
-    publications_path = '/'.join([
-        "datalabs-staging", "airflow",
-        "output", "open-research", "epmc-metadata", "epmc-metadata.json.gz"
-    ])
-
     esIndexPublications = es_index_epmc_metadata.ESIndexEPMCMetadata(
         task_id='ESIndexEPMCMetadata',
         src_s3_key=epmc_metadata_key,
@@ -188,7 +183,7 @@ def create_dag(dag_id, default_args, spider_years,
             organisation,
             item_limits,
             spider_years,
-            publications_path,
+            epmc_metadata_key,
         )
         esIndexPublications >> fuzzyMatchRefs
         esIndexPublications >> exactMatchRefs
