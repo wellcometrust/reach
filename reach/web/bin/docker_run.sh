@@ -10,8 +10,8 @@ BUILD_DIR=$(cd $(dirname $0)/../../../build/web/static; pwd)
 docker run \
     --rm \
     -e NODE_ENV=production \
-    -v $BUILD_DIR/:/build/web/static \
-    -v $DIR/gulpfile.js:/src/gulpfile.js \
-    -v $DIR/static:/src/static \
+    -v $BUILD_DIR/:/opt/reach/build/web/static \
+    -v $DIR/gulpfile.js:/opt/reach/build/web/gulpfile.js \
+    -v $DIR/static:/opt/reach/reach/web/static \
     reach-web-build:latest \
     $*
