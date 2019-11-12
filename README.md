@@ -31,28 +31,14 @@ To develop for this project, you will need:
 
 1. Python 3.6+, plus `pip` and `virtualenv`
 1. Docker and docker-compose
-1. AWS credentials with read/write S3 permissions.
-1. A clean json file containing reference sections (TODO: remove this by
-   pulling from a public S3 bucket by default)
-1. A clean csv file containing all your references (TODO: remove this by
-   pulling from a public S3 bucket by default)
+1. AWS credentials with read/write S3 permissions to an S3 bucket
+   of your choosing.
 
 ### docker-compose
 
 To bring up the development environment using docker:
 
 1. Set your AWS credentials into your environment. (`AWS_ACCESS_KEY_ID` and `AWS_SECRET_ACCESS_KEY`)
-1. If you don't have Wellcome IAM creds, run: (TODO: remove this step)
-    ```
-    export 
-        DIMENSIONS_USERNAME="" \
-        DIMENSIONS_PASSWORD="" \
-        AIRFLOW_FERNET_KEY=""
-    ```
-1. If you do, simply run:
-    ```
-    eval $(./export_env.py)
-    ```
 1. Build and start the env with:
     ```
     make docker-build
@@ -121,6 +107,19 @@ then on the console. To do this, from top of the project directory:
 	    2018-11-02 -tp '${JSON_PARAMS}'
     ```
 
+### For developers inside Wellcome
+
+Although not required, you can add Sentry reporting from your local dev
+environment to a localdev project inside Wellcome's sentry account by
+running:
+
+    ```
+    eval $(./export_wellcome_env.py)
+    ```
+
+before running `docker-compose up -d` above.
+
+
 ## Deployment
 
 For production, a typical deployment uses:
@@ -156,4 +155,5 @@ You can read more about how we got the evaluation data and what the evaluation r
 - [reach/refparse/README.md](reach/refparse/README.md)
 
 ## Contributing
+
 See the [Contributing guidelines](./CONTRIBUTING.md)
