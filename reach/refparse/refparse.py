@@ -19,7 +19,6 @@ from .utils import (FileManager,
                    split_section,
                    structure_reference,
                    ExactMatcher)
-from .models import DatabaseEngine
 from .settings import settings
 
 
@@ -220,16 +219,13 @@ def exact_match_publication(exact_matcher, publication):
 # CLI functions
 #
 
-def run_match(scraper_file, publications_file, model_file,
-              output_url, num_workers, logger):
+def refparse(scraper_file, publications_file, model_file,
+              output_dir, num_workers, logger):
 
     # Loading the references file
     publications_df = get_file(publications_file, 'csv')
     publications = publications_df.to_dict('records')
     check_publications_file(publications, publications_file)
-
-    assert output_url.startswith('file://')
-    output_dir = output_url[7:]
 
     structured_references_filepath = os.path.join(
         output_dir,
@@ -277,8 +273,8 @@ def run_match(scraper_file, publications_file, model_file,
                     emrefs_f.write(json.dumps(exact_matched_reference)+'\n')
 
 
-def run_match_profile(scraper_file, references_file,
-                             model_file, output_url, logger):
+def refparse_profile(scraper_file, references_file,
+                             model_file, output_dir, logger):
     """
     Entry point for reference parser, single worker, with profiling.
 
@@ -286,13 +282,13 @@ def run_match_profile(scraper_file, references_file,
         scraper_file: path / S3 url to scraper results file
         references_file: path/S3 url to references CSV file
         model_file: path/S3 url to model pickle file (three formats FTW!)
-        output_url: file/S3 url for output files
+        output_dir: file/S3 url for output files
     """
     import cProfile
     cProfile.run(
         ''.join([
-            'run_match(scraper_file, references_file,',
-            'model_file, output_url, 1, logger)'
+            'refparse(scraper_file, references_file,',
+            'model_file, output_dir, 1, logger)'
         ]),
         'stats_dumps'
     )
@@ -315,9 +311,9 @@ def create_argparser(description):
     )
 
     parser.add_argument(
-        '--output-url',
-        help='URL (file://!) or DSN for output',
-        default=settings.OUTPUT_URL
+        '--output-dir',
+        help='Path or S3 URL for output',
+        default='.'
     )
 
     parser.add_argument(
@@ -361,19 +357,19 @@ if __name__ == '__main__':
         if args.profile:
             assert args.num_workers is None or args.num_workers == 1
 
-            run_match_profile(
+            refparse_profile(
                 args.scraper_file,
                 args.references_file,
                 args.model_file,
-                args.output_url,
+                args.output_dir,
                 logger
             )
         else:
-            run_match(
+            refparse(
                 args.scraper_file,
                 args.references_file,
                 args.model_file,
-                args.output_url,
+                args.output_dir,
                 args.num_workers,
                 logger
             )
