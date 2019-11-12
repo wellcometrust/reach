@@ -1,9 +1,17 @@
 #!/usr/bin/env python3
 
 """
-Prints the environment variables used for developing in this repo,
-after decrypting them using AWS KMS.
-Depends on `aws` (from awscli) being in your path, but not boto3.
+Prints environment variables that are not required, but that can help
+Wellcome employees when developing in this repo. (Only one variable is
+provided just now: SENTRY_DSN, so that exceptions in localdev can be
+inspected from the Sentry UI.)
+
+Depends on:
+
+    - `aws` (from awscli) being in your path, but not boto3.
+    - Wellcome AWS credentials that support decrypting the ciphertext
+      below.
+
 NB: to update the ciphertext:
 ```
 export_env.py -r > /tmp/creds.sh
@@ -25,7 +33,7 @@ parser = ArgumentParser(description=__doc__.strip())
 parser.add_argument('-r', dest='raw', action='store_true',
                     help='Print raw plaintext instead of removing \\s')
 
-CIPHERTEXT_BLOB = "AQICAHhguvwpM7IxTcll8NLhRiUH41+cNUymMx+YBOtLWUn7ogGyCOeYnH+HdZOq0nCQY159AAABZDCCAWAGCSqGSIb3DQEHBqCCAVEwggFNAgEAMIIBRgYJKoZIhvcNAQcBMB4GCWCGSAFlAwQBLjARBAwt4TsxrEXrc5fqTcUCARCAggEXpcs6/PuMMjusKgfCGt0KHYvm4kSTXtk3TkTsL2gxyr9+lBpHocuktzYrQo3gjagaBEms25yk2eW26BnNfjp0NooAYDlBM9TrMeCke67ulH/NqnN6vCXuHzAdBPTKY/bMddE34Rs7B8rWy9qivQqPuI7AaxIQ/o58Knx3i+2fl9uph6PVZ+sC13MSQV/r8KmmOl2AfMZKUd/KHRiB1HA3Q3ywhnAYM3bh5jaD2I7oYKXQCuY6Q1tUNpU34qJLRPX7jC8dT/daRj97aMAqo2M4DYb/RQNQIed5lba67ljS9Qx4Lj3Drba9r8rd4W0lfw6ftnt9uify2zdtLzajhRSfNambyDolNyYeBV8k1KLHr85/jKaKad2W"
+CIPHERTEXT_BLOB = "AQICAHhguvwpM7IxTcll8NLhRiUH41+cNUymMx+YBOtLWUn7ogHC88/HvpfVAu7FXCAC+54sAAAAsTCBrgYJKoZIhvcNAQcGoIGgMIGdAgEAMIGXBgkqhkiG9w0BBwEwHgYJYIZIAWUDBAEuMBEEDD4FDbBSWOIWi5aNEgIBEIBq6uGSuXJ/Jy2cwwC/2KMj/nhvurBbDIL2Q9dIgg9ye/yZR4eGrcGgAOC0iQ58oTJl6F4xhcFk74DFj3xrFiOpK68Ym+bGq4Zre4lHzQYPY4RDr0CHv8Bqy65Pe0GGnF/agmRRwlbDirzcAw=="
 
 
 def decrypt_env():

@@ -17,7 +17,7 @@ x-airflow_env: &airflow-env
   # dev creds encryption key, cf.
   # https://airflow.readthedocs.io/en/stable/howto/secure-connections.html
   # (but not used; everything's from env atm)
-  AIRFLOW__CORE__FERNET_KEY: "${AIRFLOW_FERNET_KEY}"
+  AIRFLOW__CORE__FERNET_KEY: "Hdse5UohkZRNITjzWt3f1kcYAPJE5LHcBbZnkVNV4_4="
 
   # Wait 20s to connect to PostgreSQL, in case it's coming up fresh.
   AIRFLOW__CORE__SQL_ALCHEMY_CONN: "postgresql://postgres:development@postgres:5432/airflow?connect_timeout=20"
