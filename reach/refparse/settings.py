@@ -30,48 +30,14 @@ class BaseSettings:
 
 class ProdSettings(BaseSettings):
     DEBUG = False
-
-    RDS_USERNAME = os.environ.get('RDS_USERNAME')
-    RDS_PASSWORD = os.environ.get('RDS_PASSWORD')
-    RDS_HOST = os.environ.get('RDS_HOST')
-    RDS_PORT = os.environ.get('RDS_PORT', 5432)
-    RDS_REFERENCES_DATABASE = "parser_references"
-
     S3 = True
-
-    OUTPUT_URL = "postgresql+psycopg2://{user}:{passw}@{host}:{port}/{db}".format(
-          user=RDS_USERNAME,
-          passw=RDS_PASSWORD,
-          host=RDS_HOST,
-          port=RDS_PORT,
-          db=RDS_REFERENCES_DATABASE
-    )
-    RDS_URL = OUTPUT_URL  # DEPRECATED
 
 
 class LocalSettings(BaseSettings):
     DEBUG = True
-
     S3 = False
-
-    RDS_USERNAME = 'postgres'
-    RDS_PASSWORD = ''
-    RDS_HOST = '127.0.0.1'
-    RDS_PORT = os.environ.get('RDS_PORT', 5432)
-    RDS_REFERENCES_DATABASE = "parser_references"
-
     SCRAPER_RESULTS_DIR = "scraper-results"
-
     MODEL_DIR = "reference_parser_models"
-
-    OUTPUT_URL = "postgresql+psycopg2://{user}:{passw}@{host}:{port}/{db}".format(
-          user=RDS_USERNAME,
-          passw=RDS_PASSWORD,
-          host=RDS_HOST,
-          port=RDS_PORT,
-          db=RDS_REFERENCES_DATABASE
-    )
-    RDS_URL = OUTPUT_URL  # DEPRECATED
 
 
 settings_mode = {
