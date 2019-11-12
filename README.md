@@ -1,7 +1,7 @@
 # Wellcome Reach
 
 Wellcome Reach is an open source service for discovering how research
-publications are being cited in global policy documents, including those
+publications are cited in global policy documents, including those
 produced by policy organizations such as the WHO, MSF, and the UK
 government. Key parts of it include:
 
@@ -15,12 +15,13 @@ government. Key parts of it include:
    produced above.
 
 Wellcome Reach is written in Python and developed using docker-compose.
+It's deployed into Kubernetes.
 
 Although parts of the Wellcome Reach have been in use at Wellcome since
-mid-2018, the project has only just gone open source starting in March
-2019. Given these early days, please be patient as various parts of it
-are made accessible to external users. All issues and pull requests
-are welcome. Contributing guidelines can be found in
+mid-2018, the project has only been open source since March 2019. Given
+these early days, please be patient as various parts of it are made
+accessible to external users. All issues and pull requests are welcome.
+Contributing guidelines can be found in
 [CONTRIBUTING.md](./CONTRIBUTING.md).
 
 ## Development
@@ -44,7 +45,7 @@ To bring up the development environment using docker:
     make docker-build
     docker-compose up -d
     ```
-1. Verify came up with:
+1. Verify it all came up with:
     ```
     docker-compose ps
     ```
@@ -58,7 +59,7 @@ Once up, you'll be able to access:
 
 ### virtualenv
 
-For local development outside of airflow or other services, just use the
+For local development outside of airflow or other services, use the
 project's virtualenv:
 
 ```
@@ -128,7 +129,6 @@ For production, a typical deployment uses:
 - a PostgreSQL or MySQL database for Airflow to use
 - a distributed storage service such as S3
 - an ElasticSearch cluster for searching documents
-
 
 ## Evaluating each component of the algorithm
 

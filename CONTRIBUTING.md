@@ -1,21 +1,32 @@
 # Contributing
 
-:tada: First of all, welcome to this repository, and thanks for your interest, whether you want to contribute
-or simply are interested in opening an issue.
+:tada: First of all, welcome to this repository, and thanks for your
+interest, whether you want to contribute or simply are interested in
+opening an issue.
 
-When contributing to this repository, please first discuss the change you wish to make by creating an issue before making a change.
+When contributing to this repository, please first discuss the change
+you wish to make by creating an issue before making a change.
 
-Please note we have a code of conduct, please follow it in all your interactions with the project.
+Please note we have a code of conduct, please follow it in all your
+interactions with the project.
 
 ## Pull Request Process
 
-1. Before pushing your code, please make sure to have it covered by some unit tests. Also make sure that the code passes both your tests and the other tests.
+1. Before pushing your code, please make sure to have it covered by some
+   unit tests. Please also make sure that the code passes both your
+   tests and the other tests. Finally, please create clear, logically
+   grouped commits and commit messages. Most any style guide will do;
+   here's [a historical one for any divers in the
+   team](https://github.com/torvalds/subsurface-for-dirk/blob/a48494d2fbed58c751e9b7e8fbff88582f9b2d02/README#L88).
 
-2. Use our pull request template to submit any changes to the code, even minor.
+2. Use the automatic pull request template to submit changes, even
+   minor.
 
-3. This project is developed using Python3.6 (currently the last Python version),
-   and follow the PEP8 (https://www.python.org/dev/peps/pep-0008/) rules. You should enforce this
-   behaviour and also use Pyflakes to check your code for unused libraries.
+3. This project is developed using Python 3.6 and 3.7 (though later
+   versions should work, too), and it follows the PEP8
+   (https://www.python.org/dev/peps/pep-0008/) rules. You should enforce
+   this behaviour and also use Pyflakes to check your code for unused
+   libraries.
 
 ## Style
 
@@ -23,6 +34,8 @@ The following style guides are recommended:
 
 - [Google JSON Style Guide](https://google.github.io/styleguide/jsoncstyleguide.xml)
 - [Google Python Style Guide](https://google.github.io/styleguide/pyguide.html)
+- [the above short note on commit
+  messages](https://github.com/torvalds/subsurface-for-dirk/blob/a48494d2fbed58c751e9b7e8fbff88582f9b2d02/README#L88)
 
 
 ## Code of Conduct
