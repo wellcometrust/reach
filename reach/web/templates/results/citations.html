@@ -13,7 +13,7 @@
             <div class="column col-12">
                 <ul class="breadcrumb">
                     <li class="breadcrumb-item"><a href="/">Home</a></li>
-                    <li class="breadcrumb-item">Search the contents of Policy Documents</li>
+                    <li class="breadcrumb-item">Find Research Publications cited by Policy Documents</li>
                 </ul>
             </div>
         </div>
@@ -26,7 +26,7 @@
 
             {% if status %}
                 <div class="column col-12 col-md-12">
-                    <h1>Policy Documents results for "{{ term }}"</h1>
+                    <h1>Research Publication and policy citations results for "{{ term }}"</h1>
                 </div>
             {% else %}
                 <div class="column col-12 col-md-12">
@@ -35,10 +35,10 @@
                 </div>
             {% endif %}
             <div class="column col-12 col-md-12">
-                <p>Search the contents of Policy Documents(title, abstract, author)</p>
+                <p>Search by Reseach Publication, journal, author or year of publication</p>
             </div>
             <div class="column col-6 col-md-12">
-                <form action="/search/policy-docs">
+                <form action="/search/citations">
                     <div class="input-group">
                       <input type="text" class="form-input input-xl" placeholder="Search" name="term" id="search-term" value="{{ term }}">
                       <span id="search-clear" class="input-group-addon addon-lg"><i class="form-icon icon icon-cross"></i></span>
@@ -54,7 +54,7 @@
                           {{ uparrow() }}
                           <div class="card-body">
                             Wellcome Reach regularly loads the PDFs of WHO, MSF, UNICEF, NICE, and other
-                            organizations. Click this button to search the text of these documents.
+                            organizations. Click this button to search the citations in those documents.
                           </div>
                         </div>
                       </div>
@@ -82,7 +82,7 @@
                         <ul class="pagination">
                             {% if page > 1 %}
                                    <li class="page-item">
-                                    <a href="/results/content?term={{ term }}&page={{ page - 1 }}">Prev</a>
+                                    <a href="/search/citations?term={{ term }}&page={{ page - 1 }}">Prev</a>
                                 </li>
                             {% else %}
                                 <li class="page-item disabled">
@@ -91,12 +91,12 @@
                             {% endif %}
                             {% for n_page in pages %}
                                 <li class="page-item {% if n_page == page %}active{% endif %}">
-                                    <a href="/results/content?term={{ term }}&page={{ n_page }}">{{ n_page }}</a>
+                                    <a href="/search/citations?term={{ term }}&page={{ n_page }}">{{ n_page }}</a>
                                 </li>
                             {% endfor %}
                             {% if page < pages|length %}
                                    <li class="page-item">
-                                    <a href="/results/content?term={{ term }}&page={{ page + 1 }}">Next</a>
+                                    <a href="/search/citations?term={{ term }}&page={{ page + 1 }}">Next</a>
                                 </li>
                             {% else %}
                                 <li class="page-item disabled">
@@ -114,18 +114,19 @@
                 <table class="table table-bordered table-hover">
                     <thead>
                         <tr>
-                            <th>Policy Document</th>
-                            <th>Organisation</th>
+                            <th>Research Publication</th>
+                            <th>Journal</th>
                             <th>Author(s)</th>
                             <th>Year of publication</th>
+                            <th>Citations in Policy Docs</th>
                         </tr>
                     </thead>
                      <tbody>
                         {% for hit in es_response.hits.hits %}
                             <tr>
                                 <td>
-                                    {% if hit._source.doc.text %}
-                                        {{ hit._source.doc.text | truncate(60) }}
+                                    {% if hit._source.doc.Document__id %}
+                                        {{ hit._source.doc.Document__id | truncate(60) }}
                                     {% else %}
                                         No title
                                     {% endif %}
@@ -133,6 +134,7 @@
                                 <td>{{ hit._source.doc.organisation }}</td>
                                 <td>{{ hit._source.doc.authors }}</td>
                                 <td>{{ hit._source.doc.year }}</td>
+                                <td>{{ hit._source.doc.citations }}</td>
                             </tr>
                         {% endfor %}
                     </tbody>

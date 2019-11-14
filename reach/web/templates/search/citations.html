@@ -19,12 +19,12 @@
         <div class="columns">
             <div class="column col-5 col-md-12">
                 <h1>Find Research Publications cited by Policy Documents</h1>
-                <p>We have pulled in the PDFs of UNICEF, MSF, NICE, WHO and the UK Parliament. Our tool alllows you to search across these documents.</p>
+                <p>We use software and machine learning to find where research publications have been cited in policy documents.</p>
             </div>
             <div class="column col-1 col-md-12"></div>
             <div class="column col-6 col-md-12">
-                <p>Search the contents of Policy Documents(title, abstract, author)</p>
-                <form action="/results/content">
+                <p>Search by Reseach Publication, journal, author or year of publication</p>
+                <form action="/search/citations">
                     <div class="input-group">
                       <input type="text" class="form-input input-lg" placeholder="Search" name="term" id="search-term">
                       <span id="search-clear" class="input-group-addon addon-lg"><i class="form-icon icon icon-cross"></i></span>
@@ -40,7 +40,7 @@
                           {{ uparrow() }}
                           <div class="card-body">
                             Wellcome Reach regularly loads the PDFs of WHO, MSF, UNICEF, NICE, and other
-                            organizations. Click this button to search the text of these documents.
+                            organizations. Click this button to search the citations in those documents.
                           </div>
                         </div>
                       </div>
