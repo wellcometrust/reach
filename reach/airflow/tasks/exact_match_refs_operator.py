@@ -94,12 +94,14 @@ class ExactMatchRefsOperator(BaseOperator):
     @apply_defaults
     def __init__(self, es_hosts, epmc_metadata_key,
                 exact_matched_references_path,
+                item_limits,
                 es_full_text_index,
                 title_length_threshold=TITLE_LENGTH_THRESHOLD,
                 aws_conn_id='aws_default', *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.epmc_metadata_key = epmc_metadata_key
         self.exact_matched_references_path = exact_matched_references_path
+        self.item_limits = item_limits
         self.es_full_text_index = es_full_text_index
         self.title_length_threshold = title_length_threshold
         self.es_hosts = es_hosts
@@ -130,8 +132,11 @@ class ExactMatchRefsOperator(BaseOperator):
                 publications = yield_publications(s3, epmc_metadata_object)
                 count = 0
                 count_match = 0
-                for publication in publications:
-                    count += 1
+                for count, publication in enumerate(publications, 1):
+                    if self.item_limits is not None and \
+                        count > self.item_limits:
+                        break
+
                     if count % 100000 == 0:
                         logger.info(
                             'ExactMatchRefsOperator: publications=%d', count
