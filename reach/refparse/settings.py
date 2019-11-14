@@ -19,9 +19,6 @@ class BaseSettings:
     STRUCTURED_REFS_FILENAME = 'structured_references.json'
     MATCHED_REFS_FILENAME = 'matched_references.json'
 
-    MODEL_DIR = "s3://{}/reference_parser_models".format(BUCKET)
-    CLASSIFIER_FILENAME = "reference_parser_pipeline.pkl"
-
     MIN_CHAR_LIMIT = 20
     MATCH_TITLE_LENGTH_THRESHOLD = 40
 
@@ -37,7 +34,6 @@ class LocalSettings(BaseSettings):
     DEBUG = True
     S3 = False
     SCRAPER_RESULTS_DIR = "scraper-results"
-    MODEL_DIR = "reference_parser_models"
 
 
 settings_mode = {

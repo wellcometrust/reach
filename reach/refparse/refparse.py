@@ -8,6 +8,7 @@ from multiprocessing import Pool
 from urllib.parse import urlparse
 from functools import partial
 import os
+import os.path
 import time
 import json
 
@@ -27,6 +28,11 @@ SectionedDocument = namedtuple(
     ['section', 'uri', 'id']
 )
 
+DEFAULT_MODEL_FILE = os.path.join(
+    os.path.dirname(__file__),
+    'reference_parser_models',
+    'reference_parser_pipeline.pkl'
+)
 
 def check_publications_file(publications, publications_file):
     publications_df = pd.DataFrame(publications)
@@ -99,7 +105,7 @@ def get_file(file_str, file_type, get_scraped=False):
 
 
 def yield_structured_references(scraper_file,
-                model_file, pool_map, logger):
+                pool_map, logger, model_file=DEFAULT_MODEL_FILE):
     """
     Parsers references using a (potentially parallelized) map()
     implementation, yielding back a list of reference dicts for each
@@ -107,9 +113,10 @@ def yield_structured_references(scraper_file,
 
     Args:
         scraper_file: path / S3 url to scraper results file
-        model_file: path/S3 url to model pickle file (three formats FTW!)
         pool_map: (possibly parallel) implementation of map() builtin
         logger: logging configuration name
+        model_file: path/S3 url to model pickle file.
+            Defaults to model within our source tree.
     """
 
     logger.info("[+] Reading input files")
@@ -162,8 +169,7 @@ def yield_structured_references(scraper_file,
     )
 
 
-def parse_references(scraper_file, model_file,
-                     num_workers, logger):
+def parse_references(scraper_file, model_file, num_workers, logger):
 
     """
     Entry point for reference parser.
@@ -183,7 +189,7 @@ def parse_references(scraper_file, model_file,
         pool_map = pool.map
 
     yield from yield_structured_references(
-        scraper_file, model_file, pool_map, logger)
+        scraper_file, pool_map, logger, model_file)
 
     if pool is not None:
         pool.terminate()
@@ -304,10 +310,7 @@ def create_argparser(description):
     parser.add_argument(
         '--model-file',
         help='Path or S3 URL to model pickle file',
-        default=os.path.join(
-            settings.MODEL_DIR,
-            settings.CLASSIFIER_FILENAME
-            )
+        default=DEFAULT_MODEL_FILE
     )
 
     parser.add_argument(

@@ -73,15 +73,6 @@ def to_s3_output_dir(dag, *args):
     ) % (dag.dag_id, path, slug)
 
 
-def to_s3_model(*args):
-    """ Returns the S3 URL for to a model, rooted under
-    ${REACH_S3_PREFIX}/models/"""
-    return (
-        '{{ conf.get("core", "reach_s3_prefix") }}'
-        '/models/%s'
-    ) % '/'.join(args)
-
-
 def create_org_pipeline(dag, organisation, item_limits, spider_years):
     """ Creates all tasks tied to a single organisation::
 
@@ -116,12 +107,8 @@ def create_org_pipeline(dag, organisation, item_limits, spider_years):
         dag=dag
     )
 
-    parser_model = to_s3_model(
-        'reference_parser_models',
-        'reference_parser_pipeline.pkl')
     extractRefs = ExtractRefsOperator(
         task_id='ExtractRefs.%s' % organisation,
-        model_path=parser_model,
         src_s3_key=parsePdf.dst_s3_key,
         dst_s3_key=to_s3_output(
             dag, 'extracted-refs', organisation, '.json.gz'),
