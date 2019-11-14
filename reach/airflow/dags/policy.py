@@ -196,7 +196,7 @@ def create_org_pipeline_exact_match(dag, organisation, item_limits, spider_years
         dag=dag)
 
 
-    parsePdf >> esIndexFullTexts >> exactMatchRefs
+    spider >> parsePdf >> esIndexFullTexts >> exactMatchRefs
     return exactMatchRefs
 
 def create_dag(dag_id, default_args, spider_years,
@@ -290,7 +290,7 @@ test_dag_exact_match = create_dag_exact_match(
     'policy-test-exact-match',
     DEFAULT_ARGS,
     [2018],
-    ItemLimits(10, 10),
+    ItemLimits(10, 100),
 )
 
 policy_dag = create_dag(
