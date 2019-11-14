@@ -82,7 +82,7 @@
                         <ul class="pagination">
                             {% if page > 1 %}
                                    <li class="page-item">
-                                    <a href="/results/content?term={{ term }}&page={{ page - 1 }}">Prev</a>
+                                    <a href="/search/policy-docs?term={{ term }}&page={{ page - 1 }}">Prev</a>
                                 </li>
                             {% else %}
                                 <li class="page-item disabled">
@@ -91,12 +91,12 @@
                             {% endif %}
                             {% for n_page in pages %}
                                 <li class="page-item {% if n_page == page %}active{% endif %}">
-                                    <a href="/results/content?term={{ term }}&page={{ n_page }}">{{ n_page }}</a>
+                                    <a href="/search/policy-docs?term={{ term }}&page={{ n_page }}">{{ n_page }}</a>
                                 </li>
                             {% endfor %}
                             {% if page < pages|length %}
                                    <li class="page-item">
-                                    <a href="/results/content?term={{ term }}&page={{ page + 1 }}">Next</a>
+                                    <a href="/search/policy-docs?term={{ term }}&page={{ page + 1 }}">Next</a>
                                 </li>
                             {% else %}
                                 <li class="page-item disabled">
