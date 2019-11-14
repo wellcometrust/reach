@@ -25,21 +25,18 @@ class ExtractRefsOperator(BaseOperator):
     newline-delimited json.gz file.
 
     Args:
-        model_path: S3 URL to extract refs model
         src_s3_key: S3 URL for input
         dst_s3_key: S3 URL for output
     """
 
     template_fields = (
-        'model_path',
         'src_s3_key',
         'dst_s3_key',
     )
 
     @apply_defaults
-    def __init__(self, model_path, src_s3_key, dst_s3_key, aws_conn_id='aws_default', *args, **kwargs):
+    def __init__(self, src_s3_key, dst_s3_key, aws_conn_id='aws_default', *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.model_path = model_path
         self.src_s3_key = src_s3_key
         self.dst_s3_key = dst_s3_key
         self.aws_conn_id = aws_conn_id
@@ -56,7 +53,6 @@ class ExtractRefsOperator(BaseOperator):
             with gzip.GzipFile(mode='wb', fileobj=dst_rawf) as dst_f:
                 refs = yield_structured_references(
                     self.src_s3_key,
-                    self.model_path,
                     pool_map,
                     logger)
                 for structured_references in refs:
