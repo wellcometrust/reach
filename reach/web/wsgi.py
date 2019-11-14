@@ -9,6 +9,8 @@ class Configuration:
 
         - ELASTICSEARCH_HOST
         - ELASTICSEARCH_EXPLAIN
+        - ELASTICSEARCH_POLICYDOCS_INDEX
+        - ELASTICSEARCH_CITATIONS_INDEX
         - STATIC_ROOT
         """
 
@@ -18,11 +20,11 @@ class Configuration:
         self.es_explain = os.environ.get('ELASTICSEARCH_EXPLAIN', False)
         self.es_policy_docs_index = os.environ.get(
             'ELASTICSEARCH_POLICYDOCS_INDEX',
-            'policy-docs'
+            'policy-test-docs'
         )
         self.es_citations_index = os.environ.get(
             'ELASTICSEARCH_CITATIONS_INDEX',
-            'policy-citation'
+            'policy-test-citations'
         )
 
         self.static_root = os.environ.get('STATIC_ROOT')

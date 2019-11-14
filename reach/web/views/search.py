@@ -5,6 +5,7 @@ from elasticsearch import ConnectionError, NotFoundError
 import falcon
 
 from reach.web.views import template
+from reach.web import api
 
 
 def _get_pages(current_page, last_page):
@@ -46,7 +47,7 @@ def _search_es(es, es_index, params, explain=False):
                              succeeded or a string explaining why it failed
         """
         try:
-            fields = params.get('fields', []).split(',')
+            fields = params.get('fields', '').split(',')
             page = params.get('page', 1)
             size = params.get('size', 50)
             es.cluster.health(wait_for_status='yellow')
@@ -63,6 +64,9 @@ def _search_es(es, es_index, params, explain=False):
                 }
             }
 
+            api.logger.info(es_body)
+            api.logger.info(es_index)
+
             return True, es.search(
                 index=es_index,
                 body=json.dumps(es_body),
@@ -76,6 +80,21 @@ def _search_es(es, es_index, params, explain=False):
         except NotFoundError:
             message = 'No results found.'
             return False, {'message': message}
+            # return True, {
+            #     "hits": {
+            #         "total": {"value": 2},
+            #         "hits": [
+            #             {"_source": {
+            #                 "doc":
+            #                     {"organisation": "foo", "Document id": "bar"}
+            #             }},
+            #             {"_source": {
+            #                 "doc":
+            #                     {"organisation": "foo", "Document id": "bar"}
+            #             }},
+            #         ]
+            #     },
+            # }
 
         except Exception as e:
             raise falcon.HTTPError(description=str(e))
@@ -179,7 +198,7 @@ class FulltextPage(template.TemplateResource):
             super(FulltextPage, self).on_get(req, resp)
 
 
-class CitationsPage(template.TemplateResource):
+class CitationPage(template.TemplateResource):
     """Let you search for terms in publications citations. Returns a web page.
 
     Args:
@@ -193,7 +212,7 @@ class CitationsPage(template.TemplateResource):
         self.es_index = es_index
         self.es_explain = es_explain
 
-        super(CitationsPage, self).__init__(template_dir, context)
+        super(CitationPage, self).__init__(template_dir, context)
 
     def on_get(self, req, resp):
         if req.params:
@@ -211,7 +230,7 @@ class CitationsPage(template.TemplateResource):
 
             if (not status) or (response.get('message')):
                 self.context.update(params)
-                super(CitationsPage, self).render_template(
+                super(CitationPage, self).render_template(
                     resp,
                     '/results/citations',
                 )
@@ -224,9 +243,9 @@ class CitationsPage(template.TemplateResource):
                 )
 
             self.context.update(params)
-            super(CitationsPage, self).render_template(
+            super(CitationPage, self).render_template(
                 resp,
                 '/results/citations',
             )
         else:
-            super(CitationsPage, self).on_get(req, resp)
+            super(CitationPage, self).on_get(req, resp)
