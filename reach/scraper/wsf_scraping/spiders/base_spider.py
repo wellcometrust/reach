@@ -1,5 +1,6 @@
 import os.path
 import tempfile
+from urllib.parse import urlparse
 
 from scrapy.exceptions import CloseSpider, IgnoreRequest
 from scrapy.spidermiddlewares.httperror import HttpError
@@ -12,6 +13,9 @@ from ..items import Article
 
 
 class BaseSpider(scrapy.Spider):
+
+    schemes = ['http', 'https', 'ftp', 'ftps']
+
 
     @staticmethod
     def jobdir(scraper_name):
@@ -55,6 +59,61 @@ class BaseSpider(scrapy.Spider):
                        desired_extension=b'application/pdf'):
         content_type = response_headers.get('content-type', '').split(b';')[0]
         return desired_extension == content_type
+
+    def _is_valid_pdf(self, response, extension=None, mimetype=None):
+        """ Test if a response is a PDF
+
+        Args:
+            response: The request response
+            extension: The type of extension to limit to
+            mimetype: Either a **list|tuple** of or single mimetype
+                      to limit the URL to
+        """
+
+        if extension is None:
+            extension = 'pdf'
+
+        if mimetype is None:
+            mimetype = b'application/pdf'
+
+        response_headers = response.headers
+        content_type = response_headers.get('content-type', '').split(b';')[0]
+        if isinstance(mimetype, (list, tuple,)):
+            if content_type not in mimetype:
+                return False
+        elif mimetype is not None:
+            if content_type != mimetype:
+                return False
+        else:
+            # Don't accept items which don't have a content-type/mimetype
+            return False
+
+        url = response.urljoin(response.request.url)
+
+        return self._is_valid_pdf_url(url)
+
+    def _is_valid_pdf_url(self, url, extension='pdf'):
+        """ Check if a URL represents a valid URL path
+
+        Args:
+            url: The URL to test
+            extension: The file extension to check
+        """
+        if url in ('', None,):
+            return False
+
+        try:
+            scheme, netloc, path, params, query, fragment = urlparse(url)
+        except ValueError: # For example invalid IPV6 URL or something
+            return False
+
+        if scheme != '' and scheme not in VALID_SCHEMES:
+            return False
+
+        if not path.lower().endswith(".%s" % extension.lower()):
+            return False
+
+        return True
 
     def save_pdf(self, response):
         """ Save the response body to a temporary PDF file.
