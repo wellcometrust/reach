@@ -64,8 +64,6 @@ def _search_es(es, es_index, params, explain=False):
                 }
             }
 
-            api.logger.info(es_body)
-            api.logger.info(es_index)
 
             return True, es.search(
                 index=es_index,
@@ -80,21 +78,6 @@ def _search_es(es, es_index, params, explain=False):
         except NotFoundError:
             message = 'No results found.'
             return False, {'message': message}
-            # return True, {
-            #     "hits": {
-            #         "total": {"value": 2},
-            #         "hits": [
-            #             {"_source": {
-            #                 "doc":
-            #                     {"organisation": "foo", "Document id": "bar"}
-            #             }},
-            #             {"_source": {
-            #                 "doc":
-            #                     {"organisation": "foo", "Document id": "bar"}
-            #             }},
-            #         ]
-            #     },
-            # }
 
         except Exception as e:
             raise falcon.HTTPError(description=str(e))
