@@ -107,7 +107,7 @@ class BaseSpider(scrapy.Spider):
         except ValueError: # For example invalid IPV6 URL or something
             return False
 
-        if scheme != '' and scheme not in VALID_SCHEMES:
+        if scheme != '' and scheme not in self.schemes:
             return False
 
         if not path.lower().endswith(".%s" % extension.lower()):
