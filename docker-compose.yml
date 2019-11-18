@@ -178,6 +178,8 @@ services:
       SENTRY_DSN: "${SENTRY_DSN}"
       STATIC_ROOT: /opt/reach/build/web/static
       ELASTICSEARCH_HOST: "http://elasticsearch:9200"
+      ELASTICSEARCH_POLICYDOCS_INDEX: "policy-test-docs"
+      ELASTICSEARCH_CITATIONS_INDEX: "policy-test-citations"
       # DATABASE_URL: "postgres://postgres:postgres@articles-db:5432/wsf_scraping"
 
     command:

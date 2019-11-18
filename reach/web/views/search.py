@@ -5,6 +5,7 @@ from elasticsearch import ConnectionError, NotFoundError
 import falcon
 
 from reach.web.views import template
+from reach.web import api
 
 
 def _get_pages(current_page, last_page):
@@ -31,7 +32,7 @@ def _get_pages(current_page, last_page):
     return pages
 
 
-def _search_es(es, params, explain=False):
+def _search_es(es, es_index, params, explain=False):
         """Run a search on the elasticsearch database.
 
         Args:
@@ -46,7 +47,7 @@ def _search_es(es, params, explain=False):
                              succeeded or a string explaining why it failed
         """
         try:
-            fields = params.get('fields', []).split(',')
+            fields = params.get('fields', '').split(',')
             page = params.get('page', 1)
             size = params.get('size', 50)
             es.cluster.health(wait_for_status='yellow')
@@ -63,8 +64,9 @@ def _search_es(es, params, explain=False):
                 }
             }
 
+
             return True, es.search(
-                index='policy-test-docs',
+                index=es_index,
                 body=json.dumps(es_body),
                 explain=explain
             )
@@ -81,17 +83,19 @@ def _search_es(es, params, explain=False):
             raise falcon.HTTPError(description=str(e))
 
 
-class FulltextApi:
+class SearchApi:
     """Let you search for terms in publications fulltexts. Returns a json.
 
     Args:
         es: An elasticsearch connection
+        es_index: The index to search on
         es_explain: A boolean to enable|disable elasticsearch's explain.
 
     """
 
-    def __init__(self, es, es_explain):
+    def __init__(self, es, es_index, es_explain):
         self.es = es
+        self.es_index = es_index
         self.es_explain = es_explain
 
     def on_get(self, req, resp):
@@ -102,7 +106,12 @@ class FulltextApi:
             resp: The reponse object to be returned
         """
         if req.params:
-            status, response = _search_es(self.es, req.params, self.es_explain)
+            status, response = _search_es(
+                self.es,
+                self.es_index,
+                req.params,
+                self.es_explain
+            )
             if status:
                 response['status'] = 'success'
                 resp.body = json.dumps(response)
@@ -128,8 +137,9 @@ class FulltextPage(template.TemplateResource):
 
     """
 
-    def __init__(self, template_dir, es, es_explain, context=None):
+    def __init__(self, template_dir, es, es_index, es_explain, context=None):
         self.es = es
+        self.es_index = es_index
         self.es_explain = es_explain
 
         super(FulltextPage, self).__init__(template_dir, context)
@@ -143,7 +153,7 @@ class FulltextPage(template.TemplateResource):
                 "size": int(req.params.get('size', 50)),
             }
 
-            status, response = _search_es(self.es, params, True)
+            status, response = _search_es(self.es, self.es_index, params, True)
 
             self.context['es_response'] = response
             self.context['es_status'] = status
@@ -169,3 +179,56 @@ class FulltextPage(template.TemplateResource):
             )
         else:
             super(FulltextPage, self).on_get(req, resp)
+
+
+class CitationPage(template.TemplateResource):
+    """Let you search for terms in publications citations. Returns a web page.
+
+    Args:
+        es: An elasticsearch connection
+        es_explain: A boolean to enable|disable elasticsearch's explain.
+
+    """
+
+    def __init__(self, template_dir, es, es_index, es_explain, context=None):
+        self.es = es
+        self.es_index = es_index
+        self.es_explain = es_explain
+
+        super(CitationPage, self).__init__(template_dir, context)
+
+    def on_get(self, req, resp):
+        if req.params:
+            params = {
+                "term": req.params.get('term', ''),  # es returns none on empty
+                "fields": "Extracted title,Matched title,Document id",
+                "page": int(req.params.get('page', 1)),
+                "size": int(req.params.get('size', 50)),
+            }
+
+            status, response = _search_es(self.es, self.es_index, params, True)
+
+            self.context['es_response'] = response
+            self.context['es_status'] = status
+
+            if (not status) or (response.get('message')):
+                self.context.update(params)
+                super(CitationPage, self).render_template(
+                    resp,
+                    '/results/citations',
+                )
+                return
+
+            self.context['pages'] = _get_pages(
+                params['page'],
+                math.ceil(
+                    float(response['hits']['total']['value']) / params['size'])
+                )
+
+            self.context.update(params)
+            super(CitationPage, self).render_template(
+                resp,
+                '/results/citations',
+            )
+        else:
+            super(CitationPage, self).on_get(req, resp)

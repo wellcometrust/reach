@@ -15,12 +15,11 @@ REFERENCE_SPLITTER_URL := https://datalabs-public.s3.eu-west-2.amazonaws.com/ref
 
 WEB_BUILD_IMAGE := reach-web-build
 WEB_BUILD_SOURCES := \
-	reach/web/static/style.css \
+	reach/web/static/css/style.css \
 	reach/web/gulpfile.js
 
 WEB_BUILD_TARGETS := \
 	build/web/static/style.css
-
 # Image used for building web static assets
 .PHONY: web-build-image
 web-build-image:
