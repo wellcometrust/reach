@@ -69,16 +69,26 @@ def create_api(conf):
     )
     api.add_route(
         '/search/citations',
-        template.TemplateResource(TEMPLATE_ROOT, get_context(os.environ))
+        search.CitationPage(
+            TEMPLATE_ROOT,
+            es,
+            conf.es_citations_index,
+            conf.es_explain,
+            get_context(os.environ)
+        )
     )
     api.add_route(
         '/search/policy-docs',
-        search.FulltextPage(TEMPLATE_ROOT, es, conf.es_explain,
-                            get_context(os.environ))
+        search.FulltextPage(
+            TEMPLATE_ROOT,
+            es,
+            conf.es_policy_docs_index,
+            conf.es_explain,
+            get_context(os.environ))
     )
     api.add_route(
         '/api/search/policy-docs',
-        search.FulltextApi(es, conf.es_explain)
+        search.SearchApi(es, conf.es_policy_docs_index, conf.es_explain)
     )
     api.add_static_route('/static', conf.static_root)
     return api

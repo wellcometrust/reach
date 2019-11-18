@@ -1,6 +1,6 @@
 $spectre_version: 0.5.8;
-@import "vendor/spectre-$(spectre_version)/spectre.css";
-@import "vendor/spectre-$(spectre_version)/spectre-icons.css";
+@import "../vendor/spectre-$(spectre_version)/spectre.css";
+@import "../vendor/spectre-$(spectre_version)/spectre-icons.css";
 @import "variables.css";
 /* @import "vendor/spectre-$(spectre_version)/spectre-exp.css"; */
 
