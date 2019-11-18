@@ -12,6 +12,6 @@ docker run \
     -e NODE_ENV=production \
     -v $BUILD_DIR/:/opt/reach/build/web/static \
     -v $DIR/gulpfile.js:/opt/reach/build/web/gulpfile.js \
-    -v $DIR/static:/opt/reach/reach/web/static \
+    -v $DIR/src:/opt/reach/reach/web/src \
     reach-web-build:latest \
     $*
