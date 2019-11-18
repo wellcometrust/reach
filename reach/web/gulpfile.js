@@ -21,7 +21,7 @@ exports.css = function() {
   ];
 
 
-  return src('static/**/*.css')
+  return src('src/**/*.css')
     .pipe(sourcemaps.init())
     .pipe(postcss(plugins))
     // sourcemaps are rooted in dest(), so '.' is what we want
@@ -33,21 +33,27 @@ exports.js = function() {
 
   const babel = require('gulp-babel');
   const uglify = require('gulp-uglify');
-  const concat = require('gulp-concat')
+  const concat = require('gulp-concat');
+  const webpack = require('webpack-stream');
+  const named = require('vinyl-named');
 
-  return src('static/**/*.js')
-    .pipe(concat('main.js'))
-    .pipe(sourcemaps.init())
+  return src('src/js/app.js')
+    .pipe(named())
     .pipe(babel())
-    .pipe(uglify())
+    .pipe(webpack({
+      devtool: 'source-map',
+      output: {
+        filename: 'main.js',
+      },
+    }))
     // sourcemaps are rooted in dest(), so '.' is what we want
-    .pipe( sourcemaps.write('.') )
-    .pipe( dest('/opt/reach/build/web/static') );
+    .pipe(sourcemaps.write('.'))
+    .pipe(dest('/opt/reach/build/web/static/js'));
 };
 
 exports.default = parallel(exports.css, exports.js);
 
 exports.watch = function() {
-  watch('src/*.css', {ignoreInitial: false}, exports.css);
-  watch('src/*.js', {ignoreInitial: false}, exports.js);
+  watch('src/**/*.css', {ignoreInitial: false}, exports.css);
+  watch('src/**/*.js', {ignoreInitial: false}, exports.js);
 };
