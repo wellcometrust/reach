@@ -209,7 +209,7 @@ services:
     volumes:
       - ./build/web/static:/opt/reach/build/web/static
       - ./reach/web/gulpfile.js:/opt/reach/build/web/gulpfile.js
-      - ./reach/web/static:/opt/reach/build/web/src
+      - ./reach/web/src:/opt/reach/build/web/src
     # Signal handling in gulp? Not so much...
     stop_signal: SIGKILL
     deploy:
