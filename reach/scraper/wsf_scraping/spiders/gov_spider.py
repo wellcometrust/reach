@@ -75,13 +75,17 @@ class GovSpider(BaseSpider):
             '.attachment-details h2 a::attr("href")'
         ).extract()
 
+        print("LINKS", document_links)
+
         for fhref in document_links:
             title = response.css('h1::text').extract_first().strip('\n ')
-            yield Request(
-                url=response.urljoin(fhref),
-                callback=self.save_pdf,
-                errback=self.on_error,
-                meta={'title': title}
-            )
+            print(fhref)
+            if self._is_valid_pdf_url(fhref):
+                yield Request(
+                    url=response.urljoin(fhref),
+                    callback=self.save_pdf,
+                    errback=self.on_error,
+                    meta={'title': title}
+                )
 
 

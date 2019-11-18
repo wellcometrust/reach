@@ -54,7 +54,7 @@ class UnicefSpider(BaseSpider):
 
         title = response.css('.entry-heading h1::text').extract_first()
         hrefs = response.css('a::attr("href")').extract()
-        ls = list(filter(lambda x: x.endswith('pdf'), hrefs))
+        ls = list(filter(lambda x: self._is_valid_pdf_url(x), hrefs))
         for link in ls:
             yield Request(
                 url=response.urljoin(link),

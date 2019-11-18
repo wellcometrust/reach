@@ -86,12 +86,7 @@ class ParliamentSpider(BaseSpider):
         at this point, we stop looking this way.
         """
 
-        # Some of the parliament's pdf are categorised as octetstream,
-        # so we pass multiple mimetypes that the file could be
-        if self._is_valid_pdf(
-                response,
-                mimetype=(b'application/octet-stream', b'application/pdf',)
-            ):
+        if self._is_valid_pdf(response):
             yield Request(
                 url=response.urljoin(response.request.url),
                 meta={
@@ -107,9 +102,10 @@ class ParliamentSpider(BaseSpider):
             b'text/html',
         ):
             for href in response.css('a::attr(href)').extract():
-                if self._is_valid_pdf_url(href):
+                url = response.urljoin(href)
+                if self._is_valid_pdf_url(url):
                     yield Request(
-                        url=response.urljoin(href),
+                        url=url,
                         meta={
                             'title': response.meta.get('title'),
                             'year': response.meta.get('year'),
