@@ -36,8 +36,9 @@ class MsfSpider(BaseSpider):
 
         doc_links = response.css('.field-items a::attr(href)').extract()
         for url in doc_links:
-            yield scrapy.Request(
-                url=response.urljoin(url),
-                errback=self.on_error,
-                callback=self.save_pdf
-            )
+            if self._is_valid_pdf_url(url):
+                yield scrapy.Request(
+                    url=response.urljoin(url),
+                    errback=self.on_error,
+                    callback=self.save_pdf
+                )

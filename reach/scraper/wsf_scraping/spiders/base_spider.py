@@ -60,8 +60,11 @@ class BaseSpider(scrapy.Spider):
         content_type = response_headers.get('content-type', '').split(b';')[0]
         return desired_extension == content_type
 
-    def _is_valid_pdf(self, response, extension=None, mimetype=None):
+    def _is_valid_pdf(self, response):
         """ Test if a response is a PDF
+
+        We allow a pdf if it's file extension is not .pdf but
+        its content-type is explicitly `application/pdf`
 
         Args:
             response: The request response
@@ -70,34 +73,41 @@ class BaseSpider(scrapy.Spider):
                       to limit the URL to
         """
 
-        if extension is None:
-            extension = 'pdf'
+        # Check the headers of the response
+        is_pdf_type, is_octet_type = self._get_response_typing(response)
 
-        if mimetype is None:
-            mimetype = b'application/pdf'
+        if is_pdf_type:
+            return True
 
-        response_headers = response.headers
-        content_type = response_headers.get('content-type', '').split(b';')[0]
-        if isinstance(mimetype, (list, tuple,)):
-            if content_type not in mimetype:
-                return False
-        elif mimetype is not None:
-            if content_type != mimetype:
-                return False
+        if is_octet_type:
+            # If the response is an octet, make sure its a pdf
+            # as this could result in trying to download images,
+            # word docs, powerpoints, etc...
+            url = response.urljoin(response.request.url)
+            return self._is_valid_pdf_url(url)
         else:
-            # Don't accept items which don't have a content-type/mimetype
             return False
 
-        url = response.urljoin(response.request.url)
+    def _get_response_typing(self, response):
+        """ Test if a response has valid content-type headers
 
-        return self._is_valid_pdf_url(url)
+        Args:
+            response: HTTP request response
+        """
+        response_headers = response.headers
+        content_type = response_headers.get('content-type', '').split(b';')[0]
 
-    def _is_valid_pdf_url(self, url, extension='pdf'):
+        is_pdf_type = b'application/pdf' == content_type
+        is_octet_type = b'application/octet-stream' == content_type
+
+        return (is_pdf_type, is_octet_type)
+
+
+    def _is_valid_pdf_url(self, url):
         """ Check if a URL represents a valid URL path
 
         Args:
             url: The URL to test
-            extension: The file extension to check
         """
         if url in ('', None,):
             return False
@@ -110,12 +120,12 @@ class BaseSpider(scrapy.Spider):
         if scheme != '' and scheme not in self.schemes:
             return False
 
-        if not path.lower().endswith(".%s" % extension.lower()):
+        if not path.lower().endswith(".pdf"):
             return False
 
         return True
 
-    def save_pdf(self, response):
+    def save_pdf(self, response, allow_octet=False):
         """ Save the response body to a temporary PDF file.
 
         If the response body is PDF-typed, save the PDF to a tempfile to parse
@@ -132,7 +142,10 @@ class BaseSpider(scrapy.Spider):
 
         data_dict = response.meta.get('data_dict', {})
 
-        is_pdf = self._check_headers(response.headers)
+        # Handle application/octet-stream in case some servers
+        # don't provide a specific content-type in the response
+        # as well as verify that path belongs to a PDF file.
+        is_pdf = self._is_valid_pdf(response)
 
         if not is_pdf:
             self.logger.info('Not a PDF, aborting (%s)', response.url)

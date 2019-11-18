@@ -4,6 +4,14 @@ from .base_spider import BaseSpider
 
 
 class NiceSpider(BaseSpider):
+    """ Handle crawling responses for the nice.org.uk web site
+
+        Note: NICE may not return valid extension based URLs
+            for actual PDF files, so this has to operate on
+            content-type of a requests response in order to
+            decide whether to save it.
+    """
+
     name = 'nice'
 
     custom_settings = {
@@ -104,12 +112,13 @@ class NiceSpider(BaseSpider):
         }
         # Scrap all the pdf on the page, passing scrapped metadata
         for href in response.css('.track-link::attr(href)').extract():
-            yield Request(
-                url=response.urljoin(href),
-                errback=self.on_error,
-                callback=self.save_pdf,
-                meta={'data_dict': data_dict}
-            )
+            if self._is_valid_pdf_url(href):
+                yield Request(
+                    url=response.urljoin(href),
+                    errback=self.on_error,
+                    callback=self.save_pdf,
+                    meta={'data_dict': data_dict}
+                )
 
     def parse_article(self, response):
         """ Scrape the guidance metadata from the detailed article page. Then,
@@ -141,9 +150,16 @@ class NiceSpider(BaseSpider):
             # Third case: Direct download link, without menu
             href = response.css('#nice-download::attr("href")').extract_first()
 
-        if href:
+        url = response.urljoin(href)
+        if url:
+            # Nice doesn't supply file extensions for its downloads
+            # so contrary to other spiders, we don't check for a valid
+            # PDF URL here.
+            # TODO: Maybe do an OPTION call to the route first to avoid
+            # downloadning the whole page in case it's not a PDF, would
+            # save some time, as some of these routes aren't PDFs (images, etc...)
             yield Request(
-                url=response.urljoin(href),
+                url=url,
                 errback=self.on_error,
                 callback=self.save_pdf,
                 meta={'data_dict': data_dict}
