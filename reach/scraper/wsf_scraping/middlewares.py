@@ -5,6 +5,8 @@ import sentry_sdk
 from twisted.python import log
 from scrapy import signals
 from scrapy import logformatter
+from scrapy.spidermiddlewares.offsite import OffsiteMiddleware
+from scrapy.utils.httpobj import urlparse_cached
 
 
 sentry_sdk.init(os.getenv('SENTRY_DSN'))
@@ -19,6 +21,7 @@ def log_to_sentry(event):
 
 
 log.addObserver(log_to_sentry)
+logger = logging.getLogger(__name__)
 
 
 class PoliteLogFormatter(logformatter.LogFormatter):
@@ -80,3 +83,32 @@ class WsfScrapingSpiderMiddleware(object):
     def spider_opened(self, spider):
         # spider.logger.info('Spider opened: %s' % spider.name)
         pass
+
+
+
+class ReachOffsiteMiddleware(OffsiteMiddleware):
+    """ Overridden scrapy.middlewares.offsite.OffsiteMiddleware
+    to provide some custom functionality
+    """
+
+    def should_follow(self, request, spider):
+        """ Overridden to alow support for a custom `disallowed_domains`
+        class property in the sub-classed reach spiders to stop the crawler
+        from hitting known problematic offsite routes
+        """
+
+        regex = self.host_regex
+        disallowed_hosts = getattr(spider, 'disallowed_hosts', None)
+        # hostname can be None for wrong URLs (like javascript links)
+        host = urlparse_cached(request).hostname or ''
+
+        if disallowed_hosts and host in disallowed_hosts:
+            logger.warn(
+                "Filtered offsite request to %(domain)r: %(request)s",
+                {'domain': host, 'request': x}, extra={'spider': spider})
+            return False
+
+        return bool(regex.search(host))
+
+
+
