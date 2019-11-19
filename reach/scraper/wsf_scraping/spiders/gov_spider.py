@@ -12,6 +12,10 @@ class GovSpider(BaseSpider):
         'JOBDIR': BaseSpider.jobdir(name)
     }
 
+    disallowed_domains = [
+        'beta.hfea.gov.uk', # Site no longer exists but gov links off to it
+    ]
+
     def __init__(self, **kwargs):
         """Initialise the class attribute year_before and year_after. The
         attribute year_before excludes everything from said year.
