@@ -12,7 +12,7 @@ class GovSpider(BaseSpider):
         'JOBDIR': BaseSpider.jobdir(name)
     }
 
-    disallowed_domains = [
+    disallowed_hosts = [
         'beta.hfea.gov.uk', # Site no longer exists but gov links off to it
     ]
 
