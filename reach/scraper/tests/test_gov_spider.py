@@ -44,9 +44,9 @@ class TestGovSpider(unittest.TestCase):
             'content-type': b'application/pdf'
         }
 
-        request = Request('http://foo.bar', meta=meta)
+        request = Request('http://foo.bar/documents/document.pdf', meta=meta)
         pdf_response = Response(
-            'http://foo.bar',
+            'http://foo.bar/documents/document.pdf',
             body=self.test_file.read(),
             request=request,
             headers=headers
@@ -84,7 +84,7 @@ class TestGovSpider(unittest.TestCase):
         parse_article function.
         """
 
-        with open(get_path('mock_sites/gov/2.html'), 'rb') as html_site:
+        with open(get_path('mock_sites/gov/3.html'), 'rb') as html_site:
             request = Request('http://foo.bar')
             response = HtmlResponse(
                 'http://foo.bar',

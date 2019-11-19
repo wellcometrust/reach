@@ -46,9 +46,9 @@ class TestNiceSpider(unittest.TestCase):
             'content-type': b'application/pdf'
         }
 
-        request = Request('http://foo.bar', meta=meta)
+        request = Request('http://foo.bar/documents/document.pdf', meta=meta)
         pdf_response = Response(
-            'http://foo.bar',
+            'http://foo.bar/documents/document.pdf',
             body=self.test_file.read(),
             request=request,
             headers=headers
