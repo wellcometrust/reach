@@ -122,7 +122,7 @@ class WhoIrisSpider(BaseSpider):
         data_dict['authors'] = ', '.join(
             details_dict.get('contributor author', [])
         )
-        if href:
+        if self._is_valid_pdf_url(href):
             yield Request(
                 url=response.urljoin(href),
                 callback=self.save_pdf,
