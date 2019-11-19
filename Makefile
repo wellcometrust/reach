@@ -20,8 +20,8 @@ WEB_BUILD_SOURCES := \
 	reach/web/src/js/app.js
 
 WEB_BUILD_TARGETS := \
- 	build/web/static/style.css \
- 	build/web/static/main.js
+ 	build/web/static/css/style.css \
+ 	build/web/static/js/main.js
 
 # Image used for building web static assets
 .PHONY: web-build-image
