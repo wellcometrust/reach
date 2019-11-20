@@ -11,3 +11,5 @@ build/*
 *.pdf
 *.txt
 *.png
+!package.json
+**/node_modules

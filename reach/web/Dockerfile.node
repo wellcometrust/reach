@@ -4,18 +4,11 @@ FROM node:12.7.0-alpine
 # we keep inside the docker image. Then, volume in whatever
 # grunt needs to run.
 WORKDIR /opt/reach/build/web
+COPY package.json ./package.json
+COPY .babelrc ./.babelrc
 RUN \
     npm install -g gulp && \
-    npm install \
-        autoprefixer \
-        cssnano \
-        gulp \
-        gulp-postcss \
-        gulp-sourcemaps \
-        precss \
-        postcss \
-        postcss-import \
-        postcss-url
+    npm install
 
 VOLUME ["/opt/reach/build/web/src", "/opt/reach/build/web/gulpfile.js", "/opt/reach/build/web/static"]
 
