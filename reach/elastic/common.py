@@ -219,14 +219,19 @@ def create_argument_parser(description):
     return parser
 
 
-def connect(host, port):
+def connect(hosts):
+    hosts_dict = [{'host': host, 'port': port} for host, port in hosts]
+    es_logger.info(hosts_dict)
     return elasticsearch.Elasticsearch(
-        [{'host': host, 'port': port}], timeout=60, retries=5,
-        retry_on_timeout=True)
+        hosts_dict,
+        timeout=60,
+        retries=5,
+        retry_on_timeout=True
+    )
 
 
 def es_from_args(args):
-    return connect(args.host, args.port)
+    return connect([args.host], args.port)
 
 
 def insert_from_argv(description, clean_es, insert_file):

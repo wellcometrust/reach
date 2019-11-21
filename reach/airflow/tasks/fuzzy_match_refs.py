@@ -13,9 +13,11 @@ from elasticsearch import Elasticsearch
 from airflow.models import BaseOperator
 from airflow.utils.decorators import apply_defaults
 
+import reach.elastic.common
 from reach.airflow.hook.wellcome_s3_hook import WellcomeS3Hook
 from reach.airflow.safe_import import safe_import
 from reach.sentry import report_exception
+
 
 logger = logging.getLogger(__name__)
 
@@ -132,7 +134,7 @@ class FuzzyMatchRefsOperator(BaseOperator):
         self.should_match_threshold = should_match_threshold
         self.es_index = es_index
 
-        self.es = Elasticsearch(es_hosts)
+        self.es = reach.elastic.common.connect(es_hosts)
         self.aws_conn_id = aws_conn_id
 
     @report_exception
