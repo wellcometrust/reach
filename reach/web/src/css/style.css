@@ -10,8 +10,20 @@ $spectre_version: 0.5.8;
 
 @import "search.css";
 @import "results.css";
+@import "header.css";
 
+/*  Offsets the grid */
+@media screen and (min-width: 1280px) {
+   .container {
+     padding: 0 91px;
+   }
+}
 
+@media screen and (max-width: 1280px) {
+   .container {
+     padding: 0 22px;
+   }
+}
 
 /*
  * Generic elements
@@ -32,53 +44,105 @@ body {
    *  BlinkMacSystemFont,
    *  Helvetica Neue
    */
-  color: $textColor;
+  color: $greyDark;
   font-size: $baseFontSize;
-  line-height: 2rem;
+  font-family: HelveticaNeue;
+  line-height: normal;
+  font-weight: normal;
+  font-stretch: normal;
+  font-style: normal;
+  line-height: normal;
+  letter-spacing: normal;
+}
+
+/* Titles */
+
+h1 {
+  font-family: Wellcome;
+  font-size: $h1FontSize;
+  font-weight: bold;
+  font-stretch: normal;
+  font-style: normal;
+  line-height: 1.5;
+  letter-spacing: -0.45px;
+  color: $greyDark;
+}
+
+h2 {
+  font-family: Wellcome;
+  font-size: $h2FontSize;
+  font-weight: bold;
+  font-stretch: normal;
+  font-style: normal;
+  line-height: 1.5;
+  letter-spacing: normal;
+  color: $greyDark;
+}
+
+h3 {
+  font-family: Helvetica;
+  font-size: $h3FontSize;
+  font-weight: normal;
+  font-stretch: normal;
+  font-style: normal;
+  line-height: 1.53;
+  letter-spacing:  0.56px;
+  color: $greyDark;
+}
+
+h4 {
+  font-family: HelveticaNeue;
+  font-size: $h4FontSize;
+  font-weight: bold;
+  font-stretch: normal;
+  font-style: normal;
+  line-height: 1.5;
+  letter-spacing: 0.5px;
+  color: $greyLink;
+}
+
+p {
+  font-family: HelveticaNeue;
+  font-size: $baseFontSize;
+  font-weight: normal;
+  font-stretch: normal;
+  font-style: normal;
+  line-height: 1.5;
+  letter-spacing: 0.5px;
+  color: $greyDark;
 }
 
 a, a:visited {
   text-decoration: underline;
-  color: $linkBlue;
+  color: $cyanPrimary;
+  font-family: HelveticaNeue;
+  font-size: 0.875rem;
+  font-weight: normal;
+  font-stretch: normal;
+  font-style: normal;
+  line-height: 1.71;
+  letter-spacing: normal;
   cursor: pointer;
 }
 
  a:hover {
-     color: $linkBlueHover;
+     color: $cyanLight;
  }
-h1, h2, h3, h4, h5, h6 {
-    font-family: Wellcome;
-}
 
-h1 {
-    font-size: $titleBigFontSize;
-}
-
-h3 {
-    font-size: $titleFontSize;
-}
-
-/*  Offsets the grid */
-@media screen and (min-width: 1280px) {
-    .container {
-      padding: 0 91px;
-    }
-}
-
-@media screen and (max-width: 1280px) {
-    .container {
-      padding: 0 22px;
-    }
-}
+ a .a-light {
+   color: white
+ }
 
 /* btn-lg is still a bit too small for us, make btn-xl from spectre class */
 .btn.btn-xl {
-  font-size: $fontSizeFormXl;
-  height: 2.5rem;
-  padding: .6rem .6rem;
+  font-size: $baseFontSize;
+  height: 3.5rem;
+  text-align: center;
 }
 
 .btn-primary {
+  border-color: $cyanDark;
+  background: $cyanDark;
   color: white;
 }
 
@@ -98,34 +162,6 @@ h3 {
 /*
  * Page structures
  */
-
-nav {
-  color: white;
-  background-color: $navColor;
-  display: inline-block;
-  font-family: Wellcome;
-}
-
-nav h3 {
-  font-size: $titleFontSize;
-  margin: $sectionPadding 0;
-}
-
-nav .column {
-    padding: 0;
-}
-
-nav .columns {
-  margin: 0;
-}
-
-
-nav ul li {
-  list-style: none;
-  display: inline;
-  align-self: flex-end;
-  margin: $sectionPadding 0;
-}
 
 section#hero {
   background-color: $buttonColor;

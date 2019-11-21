@@ -1,0 +1,27 @@
+nav {
+ color: white;
+ background-color: $navColor;
+ display: inline-block;
+ font-family: Wellcome;
+}
+
+nav h3 {
+ font-size: $titleFontSize;
+ margin: $sectionPadding 0;
+}
+
+nav .column {
+   padding: 0;
+}
+
+nav .columns {
+ margin: 0;
+}
+
+
+nav ul li {
+ list-style: none;
+ display: inline;
+ align-self: flex-end;
+ margin: $sectionPadding 0;
+}
