@@ -22,13 +22,13 @@ class ESIndexEPMCMetadata(BaseOperator):
     )
 
     @apply_defaults
-    def __init__(self, src_s3_key, es_host, es_port=9200,
+    def __init__(self, src_s3_key, es_hosts, es_port=9200,
                  max_epmc_metadata=None, aws_conn_id='aws_default',
                  es_index=None, *args, **kwargs):
         """
         Args:
             src_s3_key: S3 URL for the json.gz output file.
-            es_host: the hostname of elasticsearch database.
+            es_hosts: the hostname of elasticsearch database.
             es_port: the port of elasticsearch database. Default to 9200.
             max_epmc_metadata: Maximum number of EPMC pubs to process.
             aws_conn_id: Aws connection name.
@@ -40,7 +40,7 @@ class ESIndexEPMCMetadata(BaseOperator):
             raise ValueError('src_s3_key must end in .json.gz')
 
         self.src_s3_key = src_s3_key
-        self.es_host = es_host
+        self.es_hosts = es_hosts
         self.es_port = es_port
         self.aws_conn_id = aws_conn_id
         self.max_epmc_metadata = max_epmc_metadata
@@ -48,7 +48,7 @@ class ESIndexEPMCMetadata(BaseOperator):
 
     def execute(self, context):
         es = reach.elastic.common.connect(
-            self.es_host, self.es_port)
+            self.es_hosts)
         s3 = WellcomeS3Hook()
 
         # TODO: implement skipping mechanism
