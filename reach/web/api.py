@@ -14,7 +14,9 @@ import falcon
 from elasticsearch import Elasticsearch
 
 from reach.sentry import report_exception
-from reach.web.views import template, search
+from reach.web.views import template
+from reach.web.views import search
+from reach.web.views import robotstxt
 
 TEMPLATE_ROOT = os.path.join(os.path.dirname(__file__), 'templates')
 
@@ -67,6 +69,7 @@ def create_api(conf):
         '/',
         template.TemplateResource(TEMPLATE_ROOT, get_context(os.environ))
     )
+    api.add_route('/robots.txt', robotstxt.RobotsTxtResource())
     api.add_route(
         '/search/citations',
         search.CitationPage(
