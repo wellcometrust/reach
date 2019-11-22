@@ -5,6 +5,7 @@ import sentry_sdk
 from twisted.python import log
 from scrapy import signals
 from scrapy import logformatter
+from scrapy.http import Request
 from scrapy.spidermiddlewares.offsite import OffsiteMiddleware
 from scrapy.utils.httpobj import urlparse_cached
 
@@ -85,30 +86,64 @@ class WsfScrapingSpiderMiddleware(object):
         pass
 
 
+class ReachDisallowedHostMiddleware(object):
+    """ Provides additional functionality to sub-classes spiders
+    to explicity block crawling hosts which are known to be problematic
+    through the `disallowed_hosts` class property.
 
-class ReachOffsiteMiddleware(OffsiteMiddleware):
-    """ Overridden scrapy.middlewares.offsite.OffsiteMiddleware
-    to provide some custom functionality
+    `disallowed_hosts` must be explicit about the domain being blocked,
+    for instance for the domain gov.uk, you should include both
+    www.gov.uk and gov.uk in the disallowed_hosts property.
     """
 
-    def should_follow(self, request, spider):
-        """ Overridden to alow support for a custom `disallowed_domains`
-        class property in the sub-classed reach spiders to stop the crawler
-        from hitting known problematic offsite routes
+    def __init__(self, stats):
+        self.stats = stats
+
+    @classmethod
+    def from_crawler(cls, crawler):
+        o = cls(crawler.stats)
+        crawler.signals.connect(o.spider_opened, signal=signals.spider_opened)
+        return o
+
+    def spider_opened(self, spider):
+        self.domains_seen = set()
+
+    def process_spider_output(self, response, result, spider):
+        """ Process the output from a spider and filter out any requests which
+        may lead to hosts we have explicitly disallowed in the
+        `disallowed_hosts` property of the spider
+
+        Args:
+            response: The response from the crawl
+            result: A list of requests that are prepped from the response
+            spider: The spider instance doing the crawl
         """
-
-        regex = self.host_regex
         disallowed_hosts = getattr(spider, 'disallowed_hosts', None)
-        # hostname can be None for wrong URLs (like javascript links)
-        host = urlparse_cached(request).hostname or ''
 
-        if disallowed_hosts and host in disallowed_hosts:
-            logger.warn(
-                "Filtered offsite request to %(domain)r: %(request)s",
-                {'domain': host, 'request': x}, extra={'spider': spider})
-            return False
+        for x in result:
+            if isinstance(x, Request):
+                domain = urlparse_cached(x).hostname
+                if domain and domain in disallowed_domains:
+                    # The domain is a disallowed one
+                    if domain not in self.domains_seen:
+                        # We only fire this once for every time we come
+                        # across a domain that we're filtering
+                        self.domains_seen.add(domain)
+                        logger.debug(
+                            " Filtered request to %(domain)s: %(request)s",
+                            {'domain': domain, 'request': x}, extra={'spider': spider})
+                        self.stats.inc_value('disallowed/domains', spider=spider)
 
-        return bool(regex.search(host))
+                    self.stats.inc_value('disallowed/filtered', spider=spider)
+                else:
+                    # We're not filtering this domain
+                    yield x
+            else:
+                # Not a request, yield it
+                yield x
+
+
+
 
 
 

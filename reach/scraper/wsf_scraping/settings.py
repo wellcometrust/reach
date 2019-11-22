@@ -23,7 +23,7 @@ FEED_STORAGES = {
 }
 
 SPIDER_MIDDLEWARES = {
-    'reach.scraper.wsf_scraping.middlewares.ReachOffsiteMiddleware': 450,
+    'reach.scraper.wsf_scraping.middlewares.ReachDisallowedHostMiddleware': 450,
 }
 
 LOG_LEVEL = 'INFO'
