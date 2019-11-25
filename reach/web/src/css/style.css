@@ -194,6 +194,13 @@ a, a:visited {
   letter-spacing: normal;
 }
 
+.input-btn-xl {
+  border-radius: none !important;
+  font-size: $baseFontSize;
+  height: 2.5rem;
+  padding: .6rem .6rem;
+}
+
 .btn.btn-primary {
   border: none;
   background: $cyanDark;
@@ -217,10 +224,10 @@ a, a:visited {
 }
 
 .form-input.input-xl {
-    font-size: $baseFontSize;
-    height: 2.5rem;
-    padding: .6rem .6rem;
-  }
+  font-size: $baseFontSize;
+  height: 2.5rem;
+  padding: .6rem .6rem;
+}
 
 
 /* Override Spectre default */
