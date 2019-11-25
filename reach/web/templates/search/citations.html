@@ -1,66 +1,82 @@
 {% extends 'base.html' %}
 
+
+{% block header %}
+
+<header class="navbar">
+  <section class="navbar-section">
+        <a href="/" class="navbar-brand"><h2>Reach</h2></a>
+  </section>
+  <section class="navbar-section hide-md" id="navbar-links">
+    <a href="/about" class="a-light">About Reach</a>
+    <a href="/how-it-works" class="a-light">How Reach works</a>
+    <a href="/search/citations" class="a-light active">Discover citations</a>
+    <a href="/search/policy-docs" class="a-light">Browse policy documents</a>
+  </section>
+</header>
+
+{% endblock %}
+
 {% block main %}
-<div class="breadcrumb-box">
-    <div class="container">
-        <div class="columns">
-            <div class="column col-12">
-                <ul class="breadcrumb">
-                    <li class="breadcrumb-item"><a href="/">Home</a></li>
-                    <li class="breadcrumb-item">Find Research Publications cited by Policy Documents</li>
-                </ul>
-            </div>
-        </div>
-    </div>
-</div>
 
-<div class="search-box">
-    <div class="container">
-        <div class="columns">
-            <div class="column col-5 col-md-12">
-                <h1>Find Research Publications cited by Policy Documents</h1>
-                <p>We use software and machine learning to find where research publications have been cited in policy documents.</p>
-            </div>
-            <div class="column col-1 col-md-12"></div>
-            <div class="column col-6 col-md-12">
-                <p>Search by Reseach Publication, journal, author or year of publication</p>
-                <form action="/search/citations">
-                    <div class="input-group">
-                      <input type="text" class="form-input input-lg" placeholder="Search" name="term" id="search-term">
-                      <span id="search-clear" class="input-group-addon addon-lg"><i class="form-icon icon icon-cross"></i></span>
-                      <button type="submit" class="btn btn-primary input-group-btn btn-lg">Search</button>
-                    </div>
-                </form>
-                <div class="search-tips">
-                    <a href="#">Advanced search tips</a>
-                    <div class="popover popover-bottom">
-                      <span class="btn help">?</span>
-                      <div class="popover-container">
-                        <div class="card">
-                          {{ uparrow() }}
-                          <div class="card-body">
-                            Wellcome Reach regularly loads the PDFs of WHO, MSF, UNICEF, NICE, and other
-                            organizations. Click this button to search the citations in those documents.
-                          </div>
-                        </div>
-                      </div>
-                    </div>
+<section id="breadcrumbs">
+    <div class="breadcrumb-box">
+        <ul class="breadcrumb">
+            <li class="breadcrumb-item"><a href="/">Home</a></li>
+            <li class="breadcrumb-item">Discover citations</li>
+        </ul>
+    </div>
+</section>
+
+<section class="search-citation">
+  <div class="container">
+    <hr class="fs">
+    <hr class="fs">
+    <div class="columns">
+      <div class="column col-3 hide-md"></div>
+      <div class="column col-6 col-md-12 text-center">
+          <h1>Find Research Publications cited by Policy Documents</h1>
+      </div>
+      <div class="column col-3 hide-md"></div>
+    </div>
+    <div class="columns">
+      <div class="column col-4 hide-md"></div>
+      <div class="column col-4 col-md-12 text-center">
+        <h3>We use software and machine learning to find where over 1.1 million research publications have been cited in policy documents.</h3>
+      </div>
+      <div class="column col-4 hide-md"></div>
+    </div>
+    <hr class="fs">
+    <div class="columns">
+      <div class="column col-3 hide-md"></div>
+      <div class="column col-6 col-md-12">
+        <p>Search by Reseach Publication, journal, author or year of publication</p>
+        <form action="/search/citations">
+          <div class="input-group">
+            <input type="text" class="form-input input-xl" placeholder="Search" name="term" id="search-term">
+            <button type="submit" class="btn btn-primary input-btn-xl input-group-btn">Find citations</button>
+          </div>
+        </form>
+        {#- Search tooltips #}
+        <div class="search-tips">
+          <a href="#">Advanced search tips</a>
+          <div class="popover popover-bottom">
+            <span class="btn help">?</span>
+            <div class="popover-container">
+              <div class="card">
+                {{ uparrow() }}
+                <div class="card-body">
+                  Wellcome Reach regularly loads the PDFs of WHO, MSF, UNICEF, NICE, and other
+                  organizations. Click this button to search the citations in those documents.
                 </div>
+              </div>
             </div>
+          </div>
         </div>
+        {#- #}
+      </div>
+      <div class="column col-3 hide-md"></div>
     </div>
-</div>
-
-<div class="insights">
-    <div class="container">
-        <div class="columns">
-            <div class="column col-6 col-md-12">
-                <h3>Key insights</h3>
-            </div>
-            <div class="column col-6 col-md-12">
-
-            </div>
-        </div>
-    </div>
-</div>
+  </div>
+</section>
 {% endblock %}
