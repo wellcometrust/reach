@@ -22,6 +22,10 @@ FEED_STORAGES = {
     'local': 'reach.scraper.wsf_scraping.feed_storage.ManifestFeedStorage',
 }
 
+SPIDER_MIDDLEWARES = {
+    'reach.scraper.wsf_scraping.middlewares.ReachDisallowedHostMiddleware': 450,
+}
+
 LOG_LEVEL = 'INFO'
 LOG_FORMATTER = 'reach.scraper.wsf_scraping.middlewares.PoliteLogFormatter'
 

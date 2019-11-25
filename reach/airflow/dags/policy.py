@@ -163,7 +163,7 @@ def create_org_pipeline_fuzzy_match(dag, organisation, item_limits, spider_years
                     \-> ExtractRefs -> FuzzyMatchRefs -> EsIndexFullTextDocs
                                          ^
                                          |
-                                       EsIndexPublications 
+                                       EsIndexPublications
     """
 
     parsePdf = org_refs(dag, organisation, item_limits, spider_years)
@@ -278,6 +278,36 @@ def create_dag_all_match(dag_id, default_args, spider_years,
     return dag
 
 
+def create_test_dag(dag_id, default_args, spider_years, item_limits):
+    dag = DAG(
+        dag_id=dag_id,
+        default_args=default_args,
+        schedule_interval=("0 0 * * 0,3")
+    )
+
+    spider = SpiderOperator(
+        task_id='Spider.gov_uk',
+        organisation='gov_uk',
+        dst_s3_dir=to_s3_output_dir(
+            dag, 'spider', 'gov_uk'
+        ),
+        item_years=spider_years,
+        item_max=item_limits.spiders,
+        dag=dag
+    )
+
+    parsePdf = ParsePdfOperator(
+        task_id='ParsePdf.gov_uk',
+        organisation='gov_uk',
+        src_s3_dir=spider.dst_s3_dir,
+        dst_s3_key=to_s3_output(
+            dag, 'parsed-pdfs', 'gov_uk', '.json.gz'),
+        dag=dag)
+
+    spider >> parsePdf
+    return dag
+
+
 test_dag = create_dag_all_match(
     'policy-test',
     DEFAULT_ARGS,
@@ -290,4 +320,11 @@ policy_dag = create_dag_fuzzy_match(
     DEFAULT_ARGS,
     list(range(2012, datetime.datetime.now().year + 1)),
     ItemLimits(None, None),
+)
+
+gov_scrape_dag = create_test_dag(
+    'scrape-test',
+    DEFAULT_ARGS,
+    [2018],
+    ItemLimits(10, 500),
 )
