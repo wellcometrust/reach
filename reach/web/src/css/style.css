@@ -10,6 +10,7 @@ $spectre_version: 0.5.8;
  */
 
 @import "home.css";
+@import "about.css";
 @import "search.css";
 @import "results.css";
 @import "header.css";
