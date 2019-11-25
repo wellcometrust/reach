@@ -16,11 +16,6 @@ section#hero {
   background-color: $backgroundTint2;
   background-image: linear-gradient(-177deg, $backgroundTint2 70%, $backgroundTint1 calc(70% + 2px));
   color: white;
-  padding: $heroPadding 0;
-
-	.columns {
-	  margin-top: $guidePadding;
-	}
 }
 
 section#hero h1 {
@@ -37,35 +32,18 @@ section#hero .btn-primary {
   /* margin: 1ex 0.6em 1ex 0; */
 }
 
-section#search-reach {
-	.columns {
-		margin-top: $guidePadding;
-	}
-}
-
 section#about-reach {
-	min-height: 600px;
 	background-image: url(../images/wave.svg);
 	background-repeat: no-repeat;
 	background-size: 100% 100%;
 	background-position: bottom;
-
-	.columns {
-	  margin-top: $guidePadding;
-	}
 }
 
 section#about-us {
-	min-height: 600px;
 	background-image: url(../images/white-wave.svg);
 	background-repeat: no-repeat;
 	background-size: 100% 100%;
 	background-position: bottom;
-	padding-top: $guidePadding;
-
-	.columns {
-	  margin-bottom: $guidePadding;
-	}
 }
 
 
