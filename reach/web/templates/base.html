@@ -22,17 +22,19 @@ viewbox="0 0 100 100" preserveAspectRatio="none">
 
 {#- The homepage need to override this header #}
 {% block header %}
+
 <header class="navbar">
   <section class="navbar-section">
         <a href="/" class="navbar-brand"><h2>Reach</h2></a>
   </section>
   <section class="navbar-section hide-md" id="navbar-links">
-    <a href="" class="a-light">About Reach</a>
+    <a href="/about" class="a-light">About Reach</a>
     <a href="" class="a-light">How Reach works</a>
-    <a href="#" class="btn cta-link">Discover citations</a>
-    <a href="#" class="btn cta-link">Browse policy documents</a>
+    <a href="#" class="a-light">Discover citations</a>
+    <a href="#" class="a-light">Browse policy documents</a>
   </section>
 </header>
+
 {% endblock %}
 
 {% block main %}

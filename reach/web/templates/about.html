@@ -1,0 +1,47 @@
+{% extends 'base.html' %}
+
+{% block main %}
+
+<section id="about-page">
+    <div class="container">
+        <div class="columns">
+            <div class="column col-1 hide-md"></div>
+            <div class="column col-10  col-md-12">
+              <div class="container">
+                <div class="columns">
+                  <div class="column col-3 hide-md"></div>
+                  <div class="column col-6 col-md-12 text-center">
+                    <h1>About Reach</h1>
+                    <h3>Reach aims to make it easier to track how scientific research influences policy and to analyse trends in the use of scientific research in policy.</h3>
+                  </div>
+                  <div class="column col-3 hide-md"></div>
+                </div>
+                <div class="columns">
+                  <div class="column col-4 col-md-12">
+                    [Nice picture]
+                    <h3>Open Source</h3>
+                    <p>Reach's code is entirely open sources! You can check it out on our <a href="https://github.com/wellcometrust/reach" target="_blank">Github Repository.</a></p>
+                  </div>
+                  <div class="column col-4 col-md-12">
+                    [Nice picture]
+                    <h3>Accuracy</h3>
+                    <p>Reach uses software and machine learning to process thousands of policy documents. Machine learning is not 100% accurate as it is based on probability. We are constantly working on Reach to improve its accuracy. </p>
+                  </div>
+                  <div class="column col-4 col-md-12">
+                    [Nice picture]
+                    <h3>Transparency</h3>
+                    <p>{{ lipsum(n=1, html=True, min=20, max=50) }}</p></div>
+                </div>
+                <div class="columns">
+                  <div class="column col-12 text-center">
+                    <a href="" class="btn btn-light btn-xl">Learn more about Reach</a>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="column col-1 hide-md"></div>
+        </div>
+    </div>
+</section>
+
+{% endblock %}
