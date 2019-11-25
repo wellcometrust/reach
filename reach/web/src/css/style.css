@@ -57,8 +57,15 @@ body {
   font-style: normal;
   line-height: normal;
   letter-spacing: normal;
+
+  /* Always use 100% of the page height if we can */
+  min-height: 100vh;
+
   background-color: $backgroundTint1;
+  background-image: linear-gradient(-25deg, $backgroundTint2 20%, $backgroundTint1 calc(20% + 2px));
 }
+
+
 
 /* Titles */
 
@@ -188,6 +195,34 @@ a, a:visited {
     color: $cyanPrimary;
 }
 
+
+.breadcrumb .breadcrumb-item:not(:first-child)::before {
+  color: $greyDark;
+  content: ">";
+  padding-right: .4rem;
+}
+
+.breadcrumb .breadcrumb-item {
+  color: $greyDark;
+}
+
+#breadcrumbs {
+  background: white;
+  border-bottom: 1px solid $greyLight;
+}
+
+
+@media screen and (min-width: 1280px) {
+   #breadcrumbs {
+     padding: 0 $guidePadding;
+   }
+}
+
+@media screen and (max-width: 1280px) {
+   .container {
+     padding: 0 $smallPadding;
+   }
+}
 
 /* Help tooltip */
 .help {
