@@ -57,11 +57,11 @@ body {
   font-style: normal;
   line-height: normal;
   letter-spacing: normal;
-
-  /* Always use 100% of the page height if we can */
-  min-height: 100vh;
-
   background-color: $backgroundTint1;
+}
+
+
+.content{
   background-image: linear-gradient(-25deg, $backgroundTint2 20%, $backgroundTint1 calc(20% + 2px));
 }
 
