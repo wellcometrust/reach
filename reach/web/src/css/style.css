@@ -10,7 +10,6 @@ $spectre_version: 0.5.8;
  */
 
 @import "home.css";
-@import "about.css";
 @import "search.css";
 @import "results.css";
 @import "header.css";
@@ -19,14 +18,41 @@ $spectre_version: 0.5.8;
 /*  Offsets the grid */
 @media screen and (min-width: 1280px) {
    .container {
-     padding: 0 22px;
+     padding: 0 92px;
    }
+
+  /* Full spaces */
+  .fs {
+    height: 4rem;
+    width: 4rem;
+  }
+
+  /* Half spaces */
+  .hs {
+    height: 2rem;
+    width: 2rem;
+  }
 }
 
 @media screen and (max-width: 1280px) {
    .container {
      padding: 0 22px;
    }
+
+  .big-space {
+    height: 2rem;
+    width: 2rem;
+  }
+
+  .small-space {
+    height: 1rem;
+    width: 1rem;
+  }
+}
+
+.column {
+  padding-right: 22px;
+  background-color: rgba(255, 0, 0, 0.2);
 }
 
 /*
@@ -60,12 +86,19 @@ body {
   background-color: $backgroundTint1;
 }
 
+hr.fs, hr.hs {
+  border: none;
+  margin: 0;
+  padding: 0;
+}
 
 .content{
   background-image: linear-gradient(-25deg, $backgroundTint2 20%, $backgroundTint1 calc(20% + 2px));
 }
 
-
+section#about-page, section#how-it-works-page{
+  min-height: 600px;
+}
 
 /* Titles */
 
@@ -152,7 +185,7 @@ a, a:visited {
   border-radius: 1.75rem;
   font-family: "Helvetica Neue";
   height: 3.5rem;
-  padding: 0 $smallPadding;
+  padding: 0 2rem;
   text-align: center;
   font-weight: normal;
   font-stretch: normal;
