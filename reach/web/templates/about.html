@@ -1,6 +1,38 @@
 {% extends 'base.html' %}
 
+
+{% block header %}
+
+<header class="navbar">
+  <section class="navbar-section">
+        <a href="/" class="navbar-brand"><h2>Reach</h2></a>
+  </section>
+  <section class="navbar-section hide-md" id="navbar-links">
+    <a href="/about" class="a-light active">About Reach</a>
+    <a href="" class="a-light">How Reach works</a>
+    <a href="#" class="a-light">Discover citations</a>
+    <a href="#" class="a-light">Browse policy documents</a>
+  </section>
+</header>
+
+{% endblock %}
+
 {% block main %}
+
+<section id="breadcrumbs">
+	<div class="breadcrumb-box">
+	    <div class="container">
+	        <div class="columns">
+	            <div class="column col-12">
+	                <ul class="breadcrumb">
+	                    <li class="breadcrumb-item"><a href="/">Home</a></li>
+	                    <li class="breadcrumb-item">About Reach</li>
+	                </ul>
+	            </div>
+	        </div>
+	    </div>
+	</div>
+</section>
 
 <section id="about-page">
     <div class="container">
@@ -33,9 +65,14 @@
                     <p>{{ lipsum(n=1, html=True, min=20, max=50) }}</p></div>
                 </div>
                 <div class="columns">
-                  <div class="column col-12 text-center">
-                    <a href="" class="btn btn-light btn-xl">Learn more about Reach</a>
+               	  <div class="column col-4"></div>
+                  <div class="column col-4 text-center">
+                   	<h1>About Data Labs</h1>
+                   	<p>Wellcome Data Labs exists to enable responsible, data-driven decision making at Wellcome and in the wider research cuommunity. We build products, support data innovation in health and research, and blend technology social sciences approaches in our work.
+                   	</p>
+                   	<p>We’d love to hear from you. Get in touch via email: reachout@wellcomedatalabs.org</p>
                   </div>
+                  <div class="column col-4"></div>
                 </div>
               </div>
             </div>
