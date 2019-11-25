@@ -1,0 +1,12 @@
+@import "variables.css";
+
+footer {
+  padding: $heroPadding $guidePadding;
+  background-color: white;
+}
+
+footer #wellcome-logo {
+  height: 1.5em;
+  width: 1.5em;
+  margin-bottom: -0.4em;
+}

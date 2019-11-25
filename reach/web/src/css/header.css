@@ -1,27 +1,59 @@
-nav {
- color: white;
- background-color: $navColor;
- display: inline-block;
- font-family: Wellcome;
+@import "variables.css";
+
+
+
+@media screen and (min-width: 1280px) {
+  header.navbar {
+    padding: 0 5.75rem;
+  }
+
 }
 
-nav h3 {
- font-size: $titleFontSize;
- margin: $sectionPadding 0;
+@media screen and (max-width: 1280px) {
+  header.navbar {
+    padding: 0 $smallPadding;
+  }
+
 }
 
-nav .column {
-   padding: 0;
+header.navbar {
+  color: white;
+  background-color: $cyanDark;
+  height: 5rem;
+
+  h2 {
+    color: white;
+    margin: 0;
+  }
+
+  a {
+    white-space: nowrap;
+    text-decoration: none;
+  }
+
+  #navbar-links a {
+    margin: 0 $smallPadding;
+  }
+
 }
 
-nav .columns {
- margin: 0;
+.btn.cta-link {
+  background-color: $cyanDark;
+  border-radius: 28px;
+  font-size: $baseFontSize;
+  line-height: 2.75rem;
+  height: 2.75rem;
+  border: 1px solid white;
+  text-decoration: none;
+  color: white;
+  padding: 0 $smallPadding;
+  text-align: center;
+  font-weight: normal;
+  font-stretch: normal;
+  font-style: normal;
+  letter-spacing: normal;
 }
 
-
-nav ul li {
- list-style: none;
- display: inline;
- align-self: flex-end;
- margin: $sectionPadding 0;
+.btn.cta-link:hover {
+  background-color: $cyanPrimary;
 }
