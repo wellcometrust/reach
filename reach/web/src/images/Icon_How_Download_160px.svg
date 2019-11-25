@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="160px" height="160px" viewBox="0 0 160 160" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <!-- Generator: Sketch 59.1 (86144) - https://sketch.com -->
+    <title>Icon_How_Download_160px</title>
+    <desc>Created with Sketch.</desc>
+    <defs>
+        <rect id="path-1" x="0" y="0" width="84" height="118" rx="4.8"></rect>
+        <filter x="-14.3%" y="-9.3%" width="131.0%" height="122.0%" filterUnits="objectBoundingBox" id="filter-2">
+            <feMorphology radius="1" operator="dilate" in="SourceAlpha" result="shadowSpreadOuter1"></feMorphology>
+            <feOffset dx="1" dy="2" in="shadowSpreadOuter1" result="shadowOffsetOuter1"></feOffset>
+            <feGaussianBlur stdDeviation="3" in="shadowOffsetOuter1" result="shadowBlurOuter1"></feGaussianBlur>
+            <feComposite in="shadowBlurOuter1" in2="SourceAlpha" operator="out" result="shadowBlurOuter1"></feComposite>
+            <feColorMatrix values="0 0 0 0 0.643126028   0 0 0 0 0.665483051   0 0 0 0 0.676870748  0 0 0 0.24 0" type="matrix" in="shadowBlurOuter1"></feColorMatrix>
+        </filter>
+    </defs>
+    <g id="Icon_How_Download_160px" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <g id="Group" transform="translate(34.000000, 17.000000)">
+            <g id="Top-page" transform="translate(4.000000, 4.000000)">
+                <g id="Rectangle">
+                    <use fill="black" fill-opacity="1" filter="url(#filter-2)" xlink:href="#path-1"></use>
+                    <rect stroke="#CCCCCC" stroke-width="1" stroke-linejoin="square" fill="#FFFFFF" fill-rule="evenodd" x="0.5" y="0.5" width="83" height="117" rx="4.8"></rect>
+                </g>
+                <text id="policy-doc" font-family="HelveticaNeue-Bold, Helvetica Neue" font-size="8" font-weight="bold" letter-spacing="0.25" fill="#005361">
+                    <tspan x="15.134" y="12">POLICY DOC</tspan>
+                </text>
+                <rect id="Rectangle" fill="#BEEBF4" x="7" y="30" width="56.7488372" height="4" rx="2"></rect>
+                <rect id="Rectangle-Copy-13" fill="#BEEBF4" x="7" y="62" width="56" height="4" rx="2"></rect>
+                <rect id="Rectangle-Copy-16" fill="#BEEBF4" x="7" y="94" width="56" height="4" rx="2"></rect>
+                <rect id="Rectangle-Copy-12" fill="#BEEBF4" x="7" y="46" width="55.3813953" height="4" rx="2"></rect>
+                <rect id="Rectangle-Copy-14" fill="#BEEBF4" x="7" y="78" width="55" height="4" rx="2"></rect>
+                <rect id="Rectangle-Copy-11" fill="#BEEBF4" x="7" y="38" width="65.6372093" height="4" rx="2"></rect>
+                <rect id="Rectangle-Copy-15" fill="#BEEBF4" x="7" y="70" width="65" height="4" rx="2"></rect>
+                <rect id="Rectangle-Copy-17" fill="#BEEBF4" x="7" y="102" width="65" height="4" rx="2"></rect>
+            </g>
+            <path d="M87,0 L6,0 C2.6862915,6.08718376e-16 -4.05812251e-16,2.6862915 0,6 L0,120 C4.05812251e-16,123.313708 2.6862915,126 6,126 L87,126 C90.3137085,126 93,123.313708 93,120 L93,6 C93,2.6862915 90.3137085,-6.08718376e-16 87,0 Z" id="Path-6-Copy-2" stroke="#009BB2" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="4,7"></path>
+            <polygon id="Fill-2" fill="#009BB2" points="116 83 116 88 104 88 104 83 102 83 102 89.3939394 102.727273 90 117.234578 90 118 89.3939394 118 83"></polygon>
+            <polygon id="Fill-1" fill="#009BB2" points="109.26874 81.1289105 106.280442 79 105.481404 79.8113529 110 84.5005294 114.481404 79.8113529 113.681612 79.0007647 110.754255 81.1289105"></polygon>
+            <polyline id="Path-6-Copy-2" stroke="#009BB2" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" points="93 65 110 65 110 82"></polyline>
+        </g>
+    </g>
+</svg>
