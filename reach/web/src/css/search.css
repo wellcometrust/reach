@@ -1,21 +1,21 @@
 @import "variables.css";
 
 .search-box {
-    background: $footerColor;
-    border-top: 1px solid $borderDark;
-    border-bottom: 1px solid $borderDark;
-    padding: $sectionPadding 0;
+    background: $backgroundTint1;
+    border-top: 1px solid $greyDark;
+    border-bottom: 1px solid $greyDark;
+    padding: $mediumPadding 0;
 }
 
 .search-tips {
-    margin: $sectionPadding 0;
+    margin: $mediumPadding 0;
 }
 
 .search-tips .btn.help {
-  background-color: $linkBlue;
+  background-color: $cyanPrimary;
   margin-top: 0;
 }
 
 .insights {
-    padding: $sectionPadding 0;
+    padding: $mediumPadding 0;
 }
