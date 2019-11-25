@@ -33,6 +33,12 @@ header.navbar {
 
   #navbar-links a {
     margin: 0 $smallPadding;
+    line-height: 4.75rem;
+  }
+
+  #navbar-links a.active {
+    border-bottom: .25rem solid white;
+
   }
 
 }
