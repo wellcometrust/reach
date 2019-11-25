@@ -2,6 +2,9 @@
 
 footer {
   padding: $heroPadding $guidePadding;
+}
+
+footer.home {
   background-color: white;
 }
 
