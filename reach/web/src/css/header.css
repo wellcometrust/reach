@@ -47,11 +47,12 @@ header.navbar {
   background-color: $cyanDark;
   border-radius: 28px;
   font-size: $baseFontSize;
-  line-height: 2.75rem;
+  line-height: 2.75rem !important;
   height: 2.75rem;
   border: 1px solid white;
   text-decoration: none;
   color: white;
+  margin: 0;
   padding: 0 $smallPadding;
   text-align: center;
   font-weight: normal;
