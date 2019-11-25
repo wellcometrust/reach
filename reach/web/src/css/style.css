@@ -2,20 +2,23 @@ $spectre_version: 0.5.8;
 @import "../vendor/spectre-$(spectre_version)/spectre.css";
 @import "../vendor/spectre-$(spectre_version)/spectre-icons.css";
 @import "variables.css";
+
 /* @import "vendor/spectre-$(spectre_version)/spectre-exp.css"; */
 
 /*
  * Page specific file imports
  */
 
+@import "home.css";
 @import "search.css";
 @import "results.css";
 @import "header.css";
+@import "footer.css";
 
 /*  Offsets the grid */
 @media screen and (min-width: 1280px) {
    .container {
-     padding: 0 91px;
+     padding: 0 22px;
    }
 }
 
@@ -46,13 +49,14 @@ body {
    */
   color: $greyDark;
   font-size: $baseFontSize;
-  font-family: HelveticaNeue;
+  font-family: "Helvetica Neue";
   line-height: normal;
   font-weight: normal;
   font-stretch: normal;
   font-style: normal;
   line-height: normal;
   letter-spacing: normal;
+  background-color: $backgroundTint1;
 }
 
 /* Titles */
@@ -91,18 +95,19 @@ h3 {
 }
 
 h4 {
-  font-family: HelveticaNeue;
+  font-family: "Helvetica Neue";
   font-size: $h4FontSize;
   font-weight: bold;
   font-stretch: normal;
   font-style: normal;
+  text-transform: uppercase;
   line-height: 1.5;
   letter-spacing: 0.5px;
   color: $greyLink;
 }
 
 p {
-  font-family: HelveticaNeue;
+  font-family: "Helvetica Neue";
   font-size: $baseFontSize;
   font-weight: normal;
   font-stretch: normal;
@@ -115,7 +120,7 @@ p {
 a, a:visited {
   text-decoration: underline;
   color: $cyanPrimary;
-  font-family: HelveticaNeue;
+  font-family: "Helvetica Neue";
   font-size: 0.875rem;
   font-weight: normal;
   font-stretch: normal;
@@ -129,25 +134,49 @@ a, a:visited {
      color: $cyanLight;
  }
 
- a .a-light {
-   color: white
+ a.a-light {
+   color: white;
  }
 
 /* btn-lg is still a bit too small for us, make btn-xl from spectre class */
 .btn.btn-xl {
   font-size: $baseFontSize;
+  border-radius: 1.75rem;
+  font-family: "Helvetica Neue";
   height: 3.5rem;
+  padding: 0 $smallPadding;
   text-align: center;
+  font-weight: normal;
+  font-stretch: normal;
+  font-style: normal;
+  line-height: 3.5rem;
+  letter-spacing: normal;
 }
 
-.btn-primary {
-  border-color: $cyanDark;
+.btn.btn-primary {
+  border: none;
   background: $cyanDark;
   color: white;
 }
 
+.btn.btn-light {
+  border: 1px solid $cyanDark;
+  color: $cyanDark;
+  background: $backgroundTint2;
+}
+
+.btn.btn-white {
+  border: 1px solid $cyanDark;
+  color: $cyanDark;
+  background: white;
+}
+
+.btn.btn-outline-light {
+  border: 1px solid white;
+}
+
 .form-input.input-xl {
-    font-size: $fontSizeFormXl;
+    font-size: $baseFontSize;
     height: 2.5rem;
     padding: .6rem .6rem;
   }
@@ -155,34 +184,11 @@ a, a:visited {
 
 /* Override Spectre default */
 .breadcrumb .breadcrumb-item:not(:last-child) a {
-    color: $linkBlue;
+    color: $cyanPrimary;
 }
 
 
-/*
- * Page structures
- */
-
-section#hero {
-  background-color: $buttonColor;
-  color: white;
-  padding: $heroPadding 0;
-}
-
-section#hero h1 {
-  font-family: Wellcome;
-}
-
-/* */ section#hero .buttons {
-  display: flex;
-}
-
-section#hero .btn-primary {
-  background-color: $navColor;
-  border: 1px solid $navColor;
-  /* margin: 1ex 0.6em 1ex 0; */
-}
-
+/* Help tooltip */
 .help {
   width: 22px;
   height: 22px;
@@ -193,13 +199,13 @@ section#hero .btn-primary {
   border-radius: 50%;
   line-height: 22px;
   text-align: center;
-  background-color: $navColor;
+  background-color: $cyanPrimary;
   margin-top: 2.7ex;
 }
 
 section#hero a.btn-primary:hover,
 section#hero .btn.help:hover {
-  border: 1px solid $hoverBorderColor;
+  border: 1px solid white;
 }
 
 .hero-button {
@@ -221,21 +227,5 @@ section#hero .btn.help:hover {
 }
 
 .popover-container .card {
-  color: $textColor;
-}
-
-#about-tool, #how, #about-us  {
-  padding: $heroPadding 0;
-  border-bottom: 1px solid $borderDark;
-}
-
-footer {
-  padding: $sectionPadding 0;
-  background-color: $footerColor;
-}
-
-footer svg#wellcomelogo {
-  height: 1.6em;
-  width: 1.6em;
-  margin-bottom: -0.4em;
+  color: $greyDark;
 }
