@@ -53,8 +53,8 @@ $spectre_version: 0.5.8;
 
 .column {
   padding-right: 22px;
-/*  background-color: rgba(255, 0, 0, 0.2);
-*/}
+  background-color: rgba(255, 0, 0, 0.2);
+}
 
 /*
  * Generic elements
@@ -187,16 +187,19 @@ a, a:visited {
 /* btn-lg is still a bit too small for us, make btn-xl from spectre class */
 .btn.btn-xl {
   font-size: $baseFontSize;
-  border-radius: 1.75rem;
   font-family: "Helvetica Neue";
-  height: 3.5rem;
+  height: 2.75rem;
   padding: 0 2rem;
   text-align: center;
   font-weight: normal;
   font-stretch: normal;
   font-style: normal;
-  line-height: 3.5rem;
+  line-height: 2.75rem;
   letter-spacing: normal;
+}
+
+.btn.btn-round {
+  border-radius: 1.75rem;
 }
 
 .input-btn-xl {
