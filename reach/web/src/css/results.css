@@ -1,16 +1,5 @@
 @import "variables.css";
 
-.results-box {
-    background: $backgroundTint1;
-    border-top: 1px solid $greyDark;
-    border-bottom: 1px solid $greyDark;
-    padding: $mediumPadding 0;
-}
-
-.results {
-	/*background: #FFF;*/
-}
-
 .table-bordered {
 	tr {
 		background: white;

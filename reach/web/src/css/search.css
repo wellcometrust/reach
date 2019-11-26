@@ -2,9 +2,6 @@
 
 .search-box {
     background: $backgroundTint1;
-    border-top: 1px solid $greyDark;
-    border-bottom: 1px solid $greyDark;
-    padding: $mediumPadding 0;
 }
 
 .search-tips {
@@ -18,4 +15,9 @@
 
 .insights {
     padding: $mediumPadding 0;
+}
+
+.feedback-box {
+	background-color: $backgroundTint2;
+	padding: $smallPadding;
 }
