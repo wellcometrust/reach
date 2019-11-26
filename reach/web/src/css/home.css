@@ -13,10 +13,12 @@ section#hero, section#about-us {
 }
 
 .hero-picture {
-	img {
-		max-height: 40vh;
-		width: inherit;
-	}
+	min-height: 40vh;
+	width: 100%;
+	background-image: url(../images/Image_Product-shot.png);
+	background-size: 100%;
+	background-repeat: no-repeat;
+	box-shadow: inset 0px -100px 20px -25px $backgroundTint1;
 }
 
 section#hero {
