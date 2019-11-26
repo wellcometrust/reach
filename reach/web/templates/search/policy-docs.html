@@ -1,66 +1,82 @@
 {% extends 'base.html' %}
 
+
+{% block header %}
+
+<header class="navbar">
+  <section class="navbar-section">
+        <a href="/" class="navbar-brand"><h2>Reach</h2></a>
+  </section>
+  <section class="navbar-section hide-md" id="navbar-links">
+    <a href="/about" class="a-light">About Reach</a>
+    <a href="/how-it-works" class="a-light">How Reach works</a>
+    <a href="/search/citations" class="a-light">Discover citations</a>
+    <a href="/search/policy-docs" class="a-light active">Browse policy documents</a>
+  </section>
+</header>
+
+{% endblock %}
+
 {% block main %}
-<div class="breadcrumb-box">
-    <div class="container">
-        <div class="columns">
-            <div class="column col-12">
-                <ul class="breadcrumb">
-                    <li class="breadcrumb-item"><a href="/">Home</a></li>
-                    <li class="breadcrumb-item">Search the contents of Policy Documents</li>
-                </ul>
-            </div>
-        </div>
-    </div>
-</div>
 
-<div class="search-box">
-    <div class="container">
-        <div class="columns">
-            <div class="column col-5 col-md-12">
-                <h1>Search the contents of Policy Documents</h1>
-                <p>We have pulled in the PDFs of UNICEF, MSF, NICE, WHO and the UK Parliament. Our tool alllows you to search across these documents.</p>
-            </div>
-            <div class="column col-1 col-md-12"></div>
-            <div class="column col-6 col-md-12">
-                <p>Search the contents of Policy Documents(title, abstract, author)</p>
-                <form action="/search/policy-docs">
-                    <div class="input-group">
-                      <input type="text" class="form-input input-lg" placeholder="Search" name="term" id="search-term">
-                      <span id="search-clear" class="input-group-addon addon-lg"><i class="form-icon icon icon-cross"></i></span>
-                      <button type="submit" class="btn btn-primary input-group-btn btn-lg">Search</button>
-                    </div>
-                </form>
-                <div class="search-tips">
-                    <a href="#">Advanced search tips</a>
-                    <div class="popover popover-bottom">
-                      <span class="btn help">?</span>
-                      <div class="popover-container">
-                        <div class="card">
-                          {{ uparrow() }}
-                          <div class="card-body">
-                            Wellcome Reach regularly loads the PDFs of WHO, MSF, UNICEF, NICE, and other
-                            organizations. Click this button to search the text of these documents.
-                          </div>
-                        </div>
-                      </div>
-                    </div>
+<section id="breadcrumbs">
+    <div class="breadcrumb-box">
+        <ul class="breadcrumb">
+            <li class="breadcrumb-item"><a href="/">Home</a></li>
+            <li class="breadcrumb-item">Browse policy documents</li>
+        </ul>
+    </div>
+</section>
+
+<section class="search-policy-docs">
+  <div class="container">
+    <hr class="fs">
+    <hr class="fs">
+    <div class="columns">
+      <div class="column col-3 hide-md"></div>
+      <div class="column col-6 col-md-12 text-center">
+          <h1>Search the content of Policy Documents</h1>
+      </div>
+      <div class="column col-3 hide-md"></div>
+    </div>
+    <div class="columns">
+      <div class="column col-4 hide-md"></div>
+      <div class="column col-4 col-md-12 text-center">
+        <h3>We have pulled in the PDFs of UNICEF, MSF, NICE, WHO and the UK Parliament. Our tool alllows you to search across these documents.</h3>
+      </div>
+      <div class="column col-4 hide-md"></div>
+    </div>
+    <hr class="fs">
+    <div class="columns">
+      <div class="column col-3 hide-md"></div>
+      <div class="column col-6 col-md-12">
+        <p>Search by publication title, journal, author or year of publication</p>
+        <form action="/search/policy-docs">
+          <div class="input-group">
+            <input type="text" class="form-input input-xl" placeholder="Search" name="term" id="search-term">
+            <button type="submit" class="btn btn-primary input-btn-xl input-group-btn">Browse policy documents <span class="icn icn-search"></span></button>
+          </div>
+        </form>
+        {#- Search tooltips #}
+        <div class="search-tips">
+          <a href="#">Advanced search tips</a>
+          <div class="popover popover-bottom">
+            <span class="btn help">?</span>
+            <div class="popover-container">
+              <div class="card">
+                {{ uparrow() }}
+                <div class="card-body">
+                  Wellcome Reach regularly loads the PDFs of WHO, MSF, UNICEF, NICE, and other
+                  organizations. Click this button to search the citations in those documents.
                 </div>
+              </div>
             </div>
+          </div>
         </div>
+        {#- #}
+      </div>
+      <div class="column col-3 hide-md"></div>
     </div>
-</div>
-
-<div class="insights">
-    <div class="container">
-        <div class="columns">
-            <div class="column col-6 col-md-12">
-                <h3>Key insights</h3>
-            </div>
-            <div class="column col-6 col-md-12">
-
-            </div>
-        </div>
-    </div>
-</div>
+  </div>
+</section>
 {% endblock %}

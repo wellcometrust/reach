@@ -3,46 +3,54 @@
 {% set status = es_status %}
 {% if es_response is mapping %}
     {% set status = status and (es_response.hits.total.value > 0) %}
-{% endif %}
+{% endif %}{% block header %}
+
+<header class="navbar">
+  <section class="navbar-section">
+        <a href="/" class="navbar-brand"><h2>Reach</h2></a>
+  </section>
+  <section class="navbar-section hide-md" id="navbar-links">
+    <a href="/about" class="a-light">About Reach</a>
+    <a href="/how-it-works" class="a-light">How Reach works</a>
+    <a href="/search/citations" class="a-light">Discover citations</a>
+    <a href="/search/policy-docs" class="a-light active">Browse policy documents</a>
+  </section>
+</header>
+
+{% endblock %}
 
 {% block main %}
 
-<div class="breadcrumb-box">
-    <div class="container">
-        <div class="columns">
-            <div class="column col-12">
-                <ul class="breadcrumb">
-                    <li class="breadcrumb-item"><a href="/">Home</a></li>
-                    <li class="breadcrumb-item">Search the contents of Policy Documents</li>
-                </ul>
-            </div>
-        </div>
+<section id="breadcrumbs">
+    <div class="breadcrumb-box">
+        <ul class="breadcrumb">
+            <li class="breadcrumb-item"><a href="/">Home</a></li>
+            <li class="breadcrumb-item">Browse policy documents</li>
+        </ul>
     </div>
-</div>
+</section>
 
-<div class="results-box">
+<section id="policy-docs-results" class="results-box">
     <div class="container">
+        <hr class="hs">
         <div class="columns">
-
             {% if status %}
                 <div class="column col-12 col-md-12">
-                    <h1>Policy Documents results for "{{ term }}"</h1>
+                    <h1>Research Publication and policy citations results for "{{ term }}"</h1>
                 </div>
             {% else %}
                 <div class="column col-12 col-md-12">
-                    <h1>No search results for "{{ term }}"</h1>
-                    <p>Check the spelling, try alternate words or a more generic term.</p>
+                    <h1>No results for "{{ term }}" in policy documents</h1>
                 </div>
             {% endif %}
             <div class="column col-12 col-md-12">
-                <p>Search the contents of Policy Documents(title, abstract, author)</p>
+                <p>Search by Reseach Publication, journal, author or year of publication</p>
             </div>
             <div class="column col-6 col-md-12">
-                <form action="/search/policy-docs">
+                <form action="/search/citations">
                     <div class="input-group">
                       <input type="text" class="form-input input-xl" placeholder="Search" name="term" id="search-term" value="{{ term }}">
-                      <span id="search-clear" class="input-group-addon addon-lg"><i class="form-icon icon icon-cross"></i></span>
-                      <button type="submit" class="btn btn-primary input-group-btn btn-xl">Search</button>
+                      <button type="submit" class="btn btn-primary input-group-btn input-btn-xl">Browse policy documents <span class="icn icn-search"></span></button>
                     </div>
                 </form>
                 <div class="search-tips">
@@ -54,20 +62,53 @@
                           {{ uparrow() }}
                           <div class="card-body">
                             Wellcome Reach regularly loads the PDFs of WHO, MSF, UNICEF, NICE, and other
-                            organizations. Click this button to search the text of these documents.
+                            organizations. Click this button to search the citations in those documents.
                           </div>
                         </div>
                       </div>
                     </div>
                 </div>
             </div>
-            {% if status %}
-                <div class="column col-6 col-md-12 text-right">
-                    <a class="btn btn-primary btn-xl" href="#" >Download results as .csv</a>
+            <div class="column col-6 hide-md"></div>
+        </div>
+        {% if not status %}
+            <hr class="fs">
+            <div class="columns">
+                <div class="column col-6 col-md-12">
+                    <p class="bold">
+                        Search tips
+                    </p>
+                    <ul>
+                        <li>Check your spelling</li>
+                        <li>Broaden your search by using fewer or more general terms</li>
+                        <li>Try searching by topic, award or area of work</li>
+                    </ul>
+                    <p class="bold">
+                        Still can’t find what you are looking for?
+                    </p>
+                    <p>Help us to improve Reach and <a href="mailto:engineering.datalabs@wellcome.ac.uk">send us your feedback</a></p>
                 </div>
-            {% else %}
-                <div class="column col-6 col-md-12"></div>
-            {% endif %}
+                <div class="column col-6 hide-md"></div>
+            </div>
+            <hr class="fs">
+            <hr class="fs">
+            <div class="columns">
+                <div class="column col-6 col-md-12">
+                    <div class="feedback-box">
+                        <p class="bold">Can't find what you're looking for?</p>
+                        <p>Can’t find what you’re looking for? We are working to continually improve Reach, if it is not working as you expect, there is an error or you have a suggestion, please <a href="mailto:engineering.datalabs@wellcome.ac.uk">send us your feedback</a>.</p>
+                    </div>
+                </div>
+            </div>
+            <hr class="fs">
+        {% endif %}
+        {% if status %}
+            <div class="column col-6 col-md-12 text-right">
+                <a class="btn btn-primary btn-xl" href="#" >Download results as .csv</a>
+            </div>
+        {% else %}
+            <div class="column col-6 col-md-12"></div>
+        {% endif %}
         </div>
     </div>
     {% if status %}
@@ -140,5 +181,5 @@
             </div>
         </div>
     {% endif %}
-</div>
+</section>
 {% endblock %}
