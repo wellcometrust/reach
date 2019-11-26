@@ -11,5 +11,6 @@ build/*
 *.pdf
 *.txt
 *.png
+!Image_Product-shot.png
 !package.json
 **/node_modules
