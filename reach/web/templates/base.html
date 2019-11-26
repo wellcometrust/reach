@@ -19,44 +19,44 @@ viewbox="0 0 100 100" preserveAspectRatio="none">
 {% block scripts %}{% endblock %}
 </head>
 <body>
-<div class="content">
-{#- The homepage need to override this header #}
-{% block header %}
+  <div class="content">
+    {#- The homepage need to override this header #}
+    {% block header %}
 
-<header class="navbar">
-  <section class="navbar-section">
-        <a href="/" class="navbar-brand"><h2>Reach</h2></a>
-  </section>
-  <section class="navbar-section hide-md" id="navbar-links">
-    <a href="/about" class="a-light">About Reach</a>
-    <a href="/how-it-works" class="a-light">How Reach works</a>
-    <a href="/search/citations" class="a-light">Discover citations</a>
-    <a href="/search/policy-docs" class="a-light">Browse policy documents</a>
-  </section>
-</header>
+    <header class="navbar">
+      <section class="navbar-section">
+            <a href="/" class="navbar-brand"><h2>Reach</h2></a>
+      </section>
+      <section class="navbar-section hide-md" id="navbar-links">
+        <a href="/about" class="a-light">About Reach</a>
+        <a href="/how-it-works" class="a-light">How Reach works</a>
+        <a href="/search/citations" class="a-light">Discover citations</a>
+        <a href="/search/policy-docs" class="a-light">Browse policy documents</a>
+      </section>
+    </header>
 
-{% endblock %}
+    {% endblock %}
 
-{% block main %}
-{% endblock %}
+    {% block main %}
+    {% endblock %}
 
-{% block footer %}
-<footer>
-  <div class="container">
-    <div class="columns">
-      <div class="column col-10 col-lg-12" id="wellcome-logo-container">
-        {#- from static/w-avatar-pitch-1.svg, minified by https://jakearchibald.github.io/svgomg/
-            Originally from the EPS in the Team Drive, from Chloe, SVG by Inkscape
-         #}
-         <img src="/static/images/wellcome-logo.svg" alt="Wellcome's logo" id="wellcome-logo"/>
-        Created by <a href="#">Data Labs</a> at <a href="https://www.wellcome.ac.uk">Wellcome</a>
+    {% block footer %}
+    <footer>
+      <div class="container">
+        <div class="columns">
+          <div class="column col-10 col-lg-12" id="wellcome-logo-container">
+            {#- from static/w-avatar-pitch-1.svg, minified by https://jakearchibald.github.io/svgomg/
+                Originally from the EPS in the Team Drive, from Chloe, SVG by Inkscape
+             #}
+             <img src="/static/images/wellcome-logo.svg" alt="Wellcome's logo" id="wellcome-logo"/>
+            Created by <a href="#">Data Labs</a> at <a href="https://www.wellcome.ac.uk">Wellcome</a>
+          </div>
+          <div class="column col-1 col-lg-6"><a href="/api/">Our API</a></div>
+          <div class="column col-1 col-lg-6"><a href="https://github.com/wellcometrust/reach" target="_blank">Github&nbspRepo</a></div>
+        </div>
       </div>
-      <div class="column col-1 col-lg-6"><a href="/api/">Our API</a></div>
-      <div class="column col-1 col-lg-6"><a href="https://github.com/wellcometrust/reach" target="_blank">Github&nbspRepo</a></div>
-    </div>
+    </footer>
+    {% endblock %}
   </div>
-</footer>
-{% endblock %}
-</div>
 </body>
 </html>
