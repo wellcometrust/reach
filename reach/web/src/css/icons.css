@@ -1,0 +1,5 @@
+.icn.icn-search::before {
+	color: white;
+	fill: white;
+	content: url(../images/Icon_Search_16px.svg);
+}
