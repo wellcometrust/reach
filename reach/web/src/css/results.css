@@ -1,11 +1,13 @@
 @import "variables.css";
 
-.table-bordered {
+.table-light {
+	border: 1px solid $greyLight;
 	tr {
 		background: white;
 	}
 
 	td, th {
-		border: 1px solid $greyDark;
+		border-top: 1px solid $greyLight;
+		border-bottom: 1px solid $greyLight;
 	}
 }

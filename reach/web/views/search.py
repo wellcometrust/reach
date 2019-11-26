@@ -64,7 +64,6 @@ def _search_es(es, es_index, params, explain=False):
                 }
             }
 
-
             return True, es.search(
                 index=es_index,
                 body=json.dumps(es_body),
@@ -150,7 +149,7 @@ class FulltextPage(template.TemplateResource):
                 "term": req.params.get('term', ''),  # es returns none on empty
                 "fields": "text,organisation",  # search_es is expects a str
                 "page": int(req.params.get('page', 1)),
-                "size": int(req.params.get('size', 50)),
+                "size": int(req.params.get('size', 20)),
             }
 
             status, response = _search_es(self.es, self.es_index, params, True)
@@ -203,7 +202,7 @@ class CitationPage(template.TemplateResource):
                 "term": req.params.get('term', ''),  # es returns none on empty
                 "fields": "Extracted title,Matched title,Document id",
                 "page": int(req.params.get('page', 1)),
-                "size": int(req.params.get('size', 50)),
+                "size": int(req.params.get('size', 20)),
             }
 
             status, response = _search_es(self.es, self.es_index, params, True)
