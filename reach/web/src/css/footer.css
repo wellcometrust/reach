@@ -15,13 +15,13 @@ footer #wellcome-logo {
 
 
 /*  Offsets the grid */
-@media screen and (min-width: 1280px) {
+@media screen and (min-width: 780px) {
 	footer {
 		text-align: left;
 	}
 }
 
-@media screen and (max-width: 1280px) {
+@media screen and (max-width: 780px) {
 	footer {
 		text-align: center;
 	}
