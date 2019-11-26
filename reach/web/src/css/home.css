@@ -12,6 +12,13 @@ section#hero, section#about-us {
 	display: flex;
 }
 
+.hero-picture {
+	img {
+		max-height: 40vh;
+		width: inherit;
+	}
+}
+
 section#hero {
   background-color: $backgroundTint2;
   background-image: linear-gradient(-177deg, $backgroundTint2 70%, $backgroundTint1 calc(70% + 2px));
