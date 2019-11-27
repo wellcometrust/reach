@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="160px" height="160px" viewBox="0 0 160 160" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <!-- Generator: Sketch 59.1 (86144) - https://sketch.com -->
+    <title>Icon_How_Match_160px</title>
+    <desc>Created with Sketch.</desc>
+    <defs>
+        <rect id="path-1" x="8" y="25" width="84" height="118" rx="4.8"></rect>
+        <filter x="-14.3%" y="-9.3%" width="131.0%" height="122.0%" filterUnits="objectBoundingBox" id="filter-2">
+            <feMorphology radius="1" operator="dilate" in="SourceAlpha" result="shadowSpreadOuter1"></feMorphology>
+            <feOffset dx="1" dy="2" in="shadowSpreadOuter1" result="shadowOffsetOuter1"></feOffset>
+            <feGaussianBlur stdDeviation="3" in="shadowOffsetOuter1" result="shadowBlurOuter1"></feGaussianBlur>
+            <feComposite in="shadowBlurOuter1" in2="SourceAlpha" operator="out" result="shadowBlurOuter1"></feComposite>
+            <feColorMatrix values="0 0 0 0 0.643126028   0 0 0 0 0.665483051   0 0 0 0 0.676870748  0 0 0 0.24 0" type="matrix" in="shadowBlurOuter1"></feColorMatrix>
+        </filter>
+        <rect id="path-3" x="4" y="21" width="84" height="118" rx="4.8"></rect>
+        <filter x="-14.3%" y="-9.3%" width="131.0%" height="122.0%" filterUnits="objectBoundingBox" id="filter-4">
+            <feMorphology radius="1" operator="dilate" in="SourceAlpha" result="shadowSpreadOuter1"></feMorphology>
+            <feOffset dx="1" dy="2" in="shadowSpreadOuter1" result="shadowOffsetOuter1"></feOffset>
+            <feGaussianBlur stdDeviation="3" in="shadowOffsetOuter1" result="shadowBlurOuter1"></feGaussianBlur>
+            <feComposite in="shadowBlurOuter1" in2="SourceAlpha" operator="out" result="shadowBlurOuter1"></feComposite>
+            <feColorMatrix values="0 0 0 0 0.643126028   0 0 0 0 0.665483051   0 0 0 0 0.676870748  0 0 0 0.24 0" type="matrix" in="shadowBlurOuter1"></feColorMatrix>
+        </filter>
+        <rect id="path-5" x="0" y="16" width="84" height="118" rx="4.8"></rect>
+        <filter x="-14.3%" y="-9.3%" width="131.0%" height="122.0%" filterUnits="objectBoundingBox" id="filter-6">
+            <feMorphology radius="1" operator="dilate" in="SourceAlpha" result="shadowSpreadOuter1"></feMorphology>
+            <feOffset dx="1" dy="2" in="shadowSpreadOuter1" result="shadowOffsetOuter1"></feOffset>
+            <feGaussianBlur stdDeviation="3" in="shadowOffsetOuter1" result="shadowBlurOuter1"></feGaussianBlur>
+            <feComposite in="shadowBlurOuter1" in2="SourceAlpha" operator="out" result="shadowBlurOuter1"></feComposite>
+            <feColorMatrix values="0 0 0 0 0.643126028   0 0 0 0 0.665483051   0 0 0 0 0.676870748  0 0 0 0.24 0" type="matrix" in="shadowBlurOuter1"></feColorMatrix>
+        </filter>
+    </defs>
+    <g id="Icon_How_Match_160px" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <g id="Group" transform="translate(38.000000, 5.000000)">
+            <g id="Rectangle-Copy-2">
+                <use fill="black" fill-opacity="1" filter="url(#filter-2)" xlink:href="#path-1"></use>
+                <rect stroke="#E6E6E6" stroke-width="1" stroke-linejoin="square" fill="#FFFFFF" fill-rule="evenodd" x="8.5" y="25.5" width="83" height="117" rx="4.8"></rect>
+            </g>
+            <g id="Rectangle-Copy">
+                <use fill="black" fill-opacity="1" filter="url(#filter-4)" xlink:href="#path-3"></use>
+                <rect stroke="#E6E6E6" stroke-width="1" stroke-linejoin="square" fill="#FFFFFF" fill-rule="evenodd" x="4.5" y="21.5" width="83" height="117" rx="4.8"></rect>
+            </g>
+            <g id="Rectangle">
+                <use fill="black" fill-opacity="1" filter="url(#filter-6)" xlink:href="#path-5"></use>
+                <rect stroke="#CCCCCC" stroke-width="1" stroke-linejoin="square" fill="#FFFFFF" fill-rule="evenodd" x="0.5" y="16.5" width="83" height="117" rx="4.8"></rect>
+            </g>
+            <text id="Research-pub." font-family="HelveticaNeue-Bold, Helvetica Neue" font-size="8" font-weight="bold" letter-spacing="0.25" fill="#005361">
+                <tspan x="7.479" y="30">RESEARCH PUB.</tspan>
+            </text>
+            <text id="policy-doc" font-family="HelveticaNeue-Bold, Helvetica Neue" font-size="8" font-weight="bold" letter-spacing="0.25" fill="#005361">
+                <tspan x="15.634" y="88">POLICY DOC</tspan>
+            </text>
+            <rect id="Rectangle" fill="#BEEBF4" x="7" y="48" width="56.7488372" height="4" rx="2"></rect>
+            <rect id="Rectangle-Copy-16" fill="#BEEBF4" x="7" y="112" width="56" height="4" rx="2"></rect>
+            <rect id="Rectangle-Copy-12" fill="#BEEBF4" x="7" y="64" width="55.3813953" height="4" rx="2"></rect>
+            <path d="M42.5860277,76.3726112 L44.6021791,78.6726622 C44.8934197,79.0049132 44.8601742,79.510353 44.5279232,79.8015936 C44.3820195,79.9294882 44.1946084,80 44.0005854,80 L38.7650956,80 C38.3232678,80 37.9650956,79.6418278 37.9650956,79.2 C37.9650956,79.005977 38.0356074,78.818566 38.1635019,78.6726622 L40.1796533,76.3726112 C40.7621345,75.7081093 41.7730141,75.6416183 42.437516,76.2240996 C42.4902191,76.2702974 42.5398299,76.3199082 42.5860277,76.3726112 Z" id="Triangle" fill="#005361" transform="translate(41.382841, 77.500000) scale(1, -1) translate(-41.382841, -77.500000) "></path>
+            <rect id="Rectangle-Copy-14" fill="#BEEBF4" x="7" y="104" width="55" height="4" rx="2"></rect>
+            <rect id="Rectangle-Copy-11" fill="#BEEBF4" x="7" y="56" width="65.6372093" height="4" rx="2"></rect>
+            <rect id="Rectangle-Copy-17" fill="#BEEBF4" x="7" y="120" width="65" height="4" rx="2"></rect>
+            <path d="M88,0 L88.0573477,0 C96.8939037,-1.623249e-15 104.057348,7.163444 104.057348,16 C104.057348,24.836556 96.8939037,32 88.0573477,32 L88,32 C79.163444,32 72,24.836556 72,16 C72,7.163444 79.163444,1.623249e-15 88,0 Z" id="Rectangle" stroke="#009BB2" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="4,6"></path>
+            <path d="M92.1808028,10.7970402 C92.9108136,11.4616666 93.5984467,12.0876244 94.3315508,12.7550918 C91.6628354,15.8012305 89.0248979,18.8120151 86.3193726,21.9001368 C84.5871435,20.2050316 82.8892497,18.5435445 81.1229947,16.8149791 C81.843571,16.1453021 82.523007,15.5135046 83.256575,14.8315167 C84.1720272,15.7219993 85.1502726,16.6734047 86.1640906,17.6593751 C88.1821375,15.3577253 90.1677051,13.093008 92.1808028,10.7970402" id="Fill-1" fill="#009BB2"></path>
+        </g>
+    </g>
+</svg>

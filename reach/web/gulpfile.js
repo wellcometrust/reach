@@ -51,9 +51,15 @@ exports.js = function() {
     .pipe(dest('/opt/reach/build/web/static/js'));
 };
 
-exports.default = parallel(exports.css, exports.js);
+exports.images = function () {
+  return src('src/images/*')
+    .pipe(dest('/opt/reach/build/web/static/images'))
+};
+
+exports.default = parallel(exports.css, exports.js, exports.images);
 
 exports.watch = function() {
   watch('src/**/*.css', {ignoreInitial: false}, exports.css);
   watch('src/**/*.js', {ignoreInitial: false}, exports.js);
+  watch('src/**/*.svg', {ignoreInitial: false}, exports.images);
 };
