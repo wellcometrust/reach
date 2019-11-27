@@ -8,28 +8,28 @@ from reach.web.views import template
 from reach.web import api
 
 
-def _get_pages(current_page, last_page):
-    """Return a list of pages to be used in the rendered template from the
-    last page number."""
-    pages = []
+# def _get_pages(current_page, last_page):
+#     """Return a list of pages to be used in the rendered template from the
+#     last page number."""
+#     pages = []
 
-    if current_page > 3:
-        pages.append(1)
+#     if current_page > 3:
+#         pages.append(1)
 
-    if current_page > 4:
-        pages.append('...')
-    pages.extend(
-        range(
-            max(current_page - 2, 1), min(current_page + 3, last_page)
-        )
-    )
-    if current_page < last_page - 3:
-        pages.append('...')
+#     if current_page > 4:
+#         pages.append('...')
+#     pages.extend(
+#         range(
+#             max(current_page - 2, 1), min(current_page + 3, last_page)
+#         )
+#     )
+#     if current_page < last_page - 3:
+#         pages.append('...')
 
-    if last_page not in pages:
-        pages.append(last_page)
+#     if last_page not in pages:
+#         pages.append(last_page)
 
-    return pages
+#     return pages
 
 
 def _search_es(es, es_index, params, explain=False):
@@ -48,12 +48,10 @@ def _search_es(es, es_index, params, explain=False):
         """
         try:
             fields = params.get('fields', '').split(',')
-            page = params.get('page', 1)
-            size = params.get('size', 50)
+            size = params.get('size', 1000)
             es.cluster.health(wait_for_status='yellow')
 
             es_body = {
-                'from': (page - 1) * size,
                 'size': size,
                 'query': {
                     'multi_match': {
@@ -148,8 +146,7 @@ class FulltextPage(template.TemplateResource):
             params = {
                 "term": req.params.get('term', ''),  # es returns none on empty
                 "fields": "text,organisation",  # search_es is expects a str
-                "page": int(req.params.get('page', 1)),
-                "size": int(req.params.get('size', 20)),
+                "size": int(req.params.get('size', 1000)),
             }
 
             status, response = _search_es(self.es, self.es_index, params, True)
@@ -164,12 +161,6 @@ class FulltextPage(template.TemplateResource):
                     '/results/policy-docs',
                 )
                 return
-
-            self.context['pages'] = _get_pages(
-                params['page'],
-                math.ceil(
-                    float(response['hits']['total']['value']) / params['size'])
-                )
 
             self.context.update(params)
             super(FulltextPage, self).render_template(
@@ -201,8 +192,7 @@ class CitationPage(template.TemplateResource):
             params = {
                 "term": req.params.get('term', ''),  # es returns none on empty
                 "fields": "Extracted title,Matched title,Document id",
-                "page": int(req.params.get('page', 1)),
-                "size": int(req.params.get('size', 20)),
+                "size": int(req.params.get('size', 1000)),
             }
 
             status, response = _search_es(self.es, self.es_index, params, True)
@@ -217,12 +207,6 @@ class CitationPage(template.TemplateResource):
                     '/results/citations',
                 )
                 return
-
-            self.context['pages'] = _get_pages(
-                params['page'],
-                math.ceil(
-                    float(response['hits']['total']['value']) / params['size'])
-                )
 
             self.context.update(params)
             super(CitationPage, self).render_template(
