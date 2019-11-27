@@ -1,0 +1,81 @@
+{% extends 'base.html' %}
+
+
+{% block header %}
+
+<header class="navbar">
+  <section class="navbar-section">
+        <a href="/" class="navbar-brand"><h2>Reach</h2></a>
+  </section>
+  <section class="navbar-section hide-md" id="navbar-links">
+    <a href="/about" class="a-light active">About Reach</a>
+    <a href="/how-it-works" class="a-light">How Reach works</a>
+    <a href="/search/citations" class="a-light">Discover citations</a>
+    <a href="/search/policy-docs" class="a-light">Browse policy documents</a>
+  </section>
+</header>
+
+{% endblock %}
+
+{% block main %}
+
+<section id="breadcrumbs">
+	<div class="breadcrumb-box">
+    <ul class="breadcrumb">
+        <li class="breadcrumb-item"><a href="/">Home</a></li>
+        <li class="breadcrumb-item">About Reach</li>
+    </ul>
+	</div>
+</section>
+
+<section id="about-page">
+    <div class="container">
+      <hr class="fs">
+      <div class="columns">
+        <div class="column col-3 hide-md"></div>
+        <div class="column col-6 col-md-12 text-center">
+          <h1>About Reach</h1>
+          <hr class="hs">
+          <h3>Reach aims to make it easier to track how scientific research influences policy and to analyse trends in the use of scientific research in policy.</h3>
+          <hr class="hs">
+        </div>
+        <div class="column col-3 hide-md"></div>
+      </div>
+      <div class="columns">
+        <div class="column col-4 col-md-12">
+          <div class="text-center">
+            <img src="/static/images/Icon_About_Open-source_100px.svg" alt="">
+            <h3>Open Source</h3>
+          </div>
+          <p>Reach's code is entirely open sources! You can check it out on our <a href="https://github.com/wellcometrust/reach" target="_blank">Github Repository.</a></p>
+        </div>
+        <div class="column col-4 col-md-12">
+          <div class="text-center">
+            <img src="/static/images/Icon_About_Accuracy_100px.svg" alt="">
+            <h3>Accuracy</h3>
+          </div>
+          <p>Reach uses software and machine learning to process thousands of policy documents. Machine learning is not 100% accurate as it is based on probability. We are constantly working on Reach to improve its accuracy. </p>
+        </div>
+        <div class="column col-4 col-md-12">
+          <div class="text-center">
+            <img src="/static/images/Icon_About_Transparent_100px.svg" alt="">
+            <h3>Transparency</h3>
+          </div>
+          <p>{{ lipsum(n=1, html=True, min=20, max=50) }}</p></div>
+      </div>
+      <hr class="fs">
+      <hr class="fs">
+      <div class="columns">
+     	  <div class="column col-4"></div>
+        <div class="column col-4 text-center">
+         	<h1>About Data Labs</h1>
+         	<p>Wellcome Data Labs exists to enable responsible, data-driven decision making at Wellcome and in the wider research cuommunity. We build products, support data innovation in health and research, and blend technology social sciences approaches in our work.
+         	</p>
+         	<p>We’d love to hear from you. Get in touch via email: reachout@wellcomedatalabs.org</p>
+        </div>
+        <div class="column col-4"></div>
+      </div>
+    </div>
+</section>
+
+{% endblock %}

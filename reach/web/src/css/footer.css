@@ -1,0 +1,28 @@
+@import "variables.css";
+
+footer {
+  padding: $heroPadding 0;
+}
+
+footer.home {
+  background-color: white;
+}
+
+footer #wellcome-logo {
+  height: 1.5em;
+  width: 1.5em;
+}
+
+
+/*  Offsets the grid */
+@media screen and (min-width: 780px) {
+	footer {
+		text-align: left;
+	}
+}
+
+@media screen and (max-width: 780px) {
+	footer {
+		text-align: center;
+	}
+}

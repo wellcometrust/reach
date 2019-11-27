@@ -1,0 +1,58 @@
+@import "variables.css";
+
+.bg2 {
+	background-color: $backgroundTint2;
+}
+
+/*
+ * Page structures
+ */
+
+section#hero, section#about-us {
+	display: flex;
+}
+
+.hero-picture {
+	min-height: 40vh;
+	width: 100%;
+	background-image: url(../images/Image_Product-shot.png);
+	background-size: 100%;
+	background-repeat: no-repeat;
+	box-shadow: inset 0px -100px 20px -25px $backgroundTint1;
+}
+
+section#hero {
+  background-color: $backgroundTint2;
+  background-image: linear-gradient(-177deg, $backgroundTint2 70%, $backgroundTint1 calc(70% + 2px));
+  color: white;
+}
+
+section#hero h1 {
+  font-family: Wellcome;
+}
+
+section#hero .buttons {
+  display: flex;
+
+}
+
+section#hero .btn-primary {
+  background-color: $cyanPrimary;
+  /* margin: 1ex 0.6em 1ex 0; */
+}
+
+section#about-reach {
+	background-image: url(../images/Shape_01.svg);
+	background-repeat: no-repeat;
+	background-size: 100% 100%;
+	background-position: bottom;
+}
+
+section#about-us {
+	background-image: url(../images/Shape_02.svg);
+	background-repeat: no-repeat;
+	background-size: 100% 100%;
+	background-position: bottom;
+}
+
+

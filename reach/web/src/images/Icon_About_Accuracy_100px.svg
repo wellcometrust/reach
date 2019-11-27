@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="100px" height="100px" viewBox="0 0 100 100" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <!-- Generator: Sketch 59.1 (86144) - https://sketch.com -->
+    <title>Icon_About_Accuracy_100px</title>
+    <desc>Created with Sketch.</desc>
+    <g id="Icon_About_Accuracy_100px" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <g id="Group-4" transform="translate(22.000000, 22.000000)" stroke="#009BB2" stroke-width="3">
+            <rect id="Rectangle-Copy-8" x="20.5" y="20.5" width="14" height="14" rx="7"></rect>
+            <rect id="Rectangle-Copy-11" x="10.5" y="10.5" width="34" height="34" rx="17"></rect>
+            <rect id="Rectangle-Copy-12" x="1.5" y="1.5" width="52" height="52" rx="26"></rect>
+            <g id="Group" transform="translate(46.500000, 22.373414) rotate(-14.000000) translate(-46.500000, -22.373414) translate(27.000000, 4.873414)" stroke-linecap="round">
+                <polyline id="Path-3" stroke-linejoin="round" transform="translate(33.046553, 17.126586) scale(-1, 1) translate(-33.046553, -17.126586) " points="29.0465527 12.1265861 37.0465527 17.1265861 29.0465527 22.1265861"></polyline>
+                <line x1="9" y1="33.2531722" x2="29.0931054" y2="1" id="Path-4" transform="translate(19.046553, 17.126586) rotate(58.077888) translate(-19.046553, -17.126586) "></line>
+            </g>
+        </g>
+    </g>
+</svg>

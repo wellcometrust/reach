@@ -71,6 +71,14 @@ def create_api(conf):
     )
     api.add_route('/robots.txt', robotstxt.RobotsTxtResource())
     api.add_route(
+        '/about',
+        template.TemplateResource(TEMPLATE_ROOT, get_context(os.environ))
+    )
+    api.add_route(
+        '/how-it-works',
+        template.TemplateResource(TEMPLATE_ROOT, get_context(os.environ))
+    )
+    api.add_route(
         '/search/citations',
         search.CitationPage(
             TEMPLATE_ROOT,
