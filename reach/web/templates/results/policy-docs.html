@@ -3,7 +3,9 @@
 {% set status = es_status %}
 {% if es_response is mapping %}
     {% set status = status and (es_response.hits.total.value > 0) %}
-{% endif %}{% block header %}
+{% endif %}
+
+{% block header %}
 
 <header class="navbar">
   <section class="navbar-section">
@@ -47,7 +49,7 @@
                 <p>Search by research publication title, journal, author or year of publication</p>
             </div>
             <div class="column col-6 col-md-12">
-                <form action="/search/citations">
+                <form action="/search/policy-docs">
                     <div class="input-group">
                       <input type="text" class="form-input input-xl" placeholder="Search" name="term" id="search-term" value="{{ term }}">
                       <button type="submit" class="btn btn-primary input-group-btn input-btn-xl">Browse policy documents <span class="icn icn-search"></span></button>
@@ -111,68 +113,41 @@
         {% endif %}
         </div>
     {% if status %}
-        <div class="container">
-            <div class="columns">
-                <div class="column col-6 col-md-12">
-                    {{ (page - 1) * size + 1 }} - {{ [(page - 1) * size + size, es_response.hits.total.value] | min }} of {{ es_response.hits.total.value }} results
-                </div>
-                <div class="column col-6 col-md-12">
-                    <div class="pagination-box float-right">
-
-                        <ul class="pagination">
-                            {% if page > 1 %}
-                                   <li class="page-item">
-                                    <a href="/search/policy-docs?term={{ term }}&page={{ page - 1 }}">Prev</a>
-                                </li>
-                            {% else %}
-                                <li class="page-item disabled">
-                                    <a href="#" tabindex="-1">Prev</a>
-                                </li>
-                            {% endif %}
-                            {% for n_page in pages %}
-                                <li class="page-item {% if n_page == page %}active{% endif %}">
-                                    <a href="/search/policy-docs?term={{ term }}&page={{ n_page }}">{{ n_page }}</a>
-                                </li>
-                            {% endfor %}
-                            {% if page < pages|length %}
-                                   <li class="page-item">
-                                    <a href="/search/policy-docs?term={{ term }}&page={{ page + 1 }}">Next</a>
-                                </li>
-                            {% else %}
-                                <li class="page-item disabled">
-                                    <a href="#" tabindex="-1">Next</a>
-                                </li>
-                            {% endif %}
-                        </ul>
+        <div class="results">
+            <div class="container" id="policy-docs-result-table">
+                <div class="columns">
+                    <div class="column col-6 col-md-12 text-left">
+                        <span  id="result-count">{#- Generated using JS #}</span>
+                        <span id="max-results">{{ es_response.hits.hits | length }}</span>
+                    </div>
+                    <div class="column col-6 col-md-12 text-right">
+                        {#- List.js will generate that for us #}
+                        <ul class="pagination"></ul>
                     </div>
                 </div>
-            </div>
-        </div>
 
-        <div class="results">
-            <div class="container">
                 <table class="table table-light table-hover">
                     <thead>
                         <tr>
-                            <th>Policy Document</th>
-                            <th>Organisation</th>
-                            <th>Author(s)</th>
-                            <th>Year of publication</th>
+                            <th class="sort" data-sort="pub-name">Policy Document</th>
+                            <th class="sort" data-sort="organisation">Organisation</th>
+                            <th class="sort" data-sort="authors">Author(s)</th>
+                            <th class="sort" data-sort="year">Year of publication</th>
                         </tr>
                     </thead>
-                     <tbody>
+                     <tbody class="list">
                         {% for hit in es_response.hits.hits %}
                             <tr>
-                                <td>
+                                <td class="pub-name">
                                     {% if hit._source.doc.text %}
                                         {{ hit._source.doc.text | truncate(60) }}
                                     {% else %}
                                         No title
                                     {% endif %}
                                     </td>
-                                <td>{{ hit._source.doc.organisation }}</td>
-                                <td>{{ hit._source.doc.authors }}</td>
-                                <td>{{ hit._source.doc.year }}</td>
+                                <td class="organisation">{{ hit._source.doc.organisation }}</td>
+                                <td class="authors">{{ hit._source.doc.get('authors', 'No authors') }}</td>
+                                <td class="year">{{ hit._source.doc.get('year', 'No year') }}</td>
                             </tr>
                         {% endfor %}
                     </tbody>
