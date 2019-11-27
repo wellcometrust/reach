@@ -132,16 +132,16 @@
                         {% for hit in es_response.hits.hits %}
                             <tr>
                                 <td>
-                                    {% if hit._source.doc.Document__id %}
-                                        {{ hit._source.doc.Document__id | truncate(60) }}
+                                    {% if hit._source.doc.get('Matched title') %}
+                                        {{ hit._source.doc.get('Matched title') | truncate(60) }}
                                     {% else %}
                                         No title
                                     {% endif %}
                                     </td>
-                                <td>{{ hit._source.doc.organisation }}</td>
-                                <td>{{ hit._source.doc.authors }}</td>
-                                <td>{{ hit._source.doc.year }}</td>
-                                <td>{{ hit._source.doc.citations }}</td>
+                                <td>{{ hit._source.doc.get('journal', 'No Journal') }}</td>
+                                <td>{{ hit._source.doc.get('authors', 'No Authors') }}</td>
+                                <td>{{ hit._source.doc.get('year', 'No Year') }}</td>
+                                <td>{{ hit._source.doc.get('citation_count', '-') }}</td>
                             </tr>
                         {% endfor %}
                     </tbody>
