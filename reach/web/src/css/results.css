@@ -11,3 +11,6 @@
 		border-bottom: 1px solid $greyLight;
 	}
 }
+.pagination .page-item.active a {
+	background-color: $cyanPrimary;
+}
