@@ -1,35 +1,12 @@
 import json
-import math
+import csv
+import tempfile
 
 from elasticsearch import ConnectionError, NotFoundError
 import falcon
 
 from reach.web.views import template
 from reach.web import api
-
-
-# def _get_pages(current_page, last_page):
-#     """Return a list of pages to be used in the rendered template from the
-#     last page number."""
-#     pages = []
-
-#     if current_page > 3:
-#         pages.append(1)
-
-#     if current_page > 4:
-#         pages.append('...')
-#     pages.extend(
-#         range(
-#             max(current_page - 2, 1), min(current_page + 3, last_page)
-#         )
-#     )
-#     if current_page < last_page - 3:
-#         pages.append('...')
-
-#     if last_page not in pages:
-#         pages.append(last_page)
-
-#     return pages
 
 
 def _search_es(es, es_index, params, explain=False):
@@ -112,6 +89,78 @@ class SearchApi:
             if status:
                 response['status'] = 'success'
                 resp.body = json.dumps(response)
+            else:
+                resp.body = json.dumps({
+                    'status': 'error',
+                    'message': response
+                })
+        else:
+            resp.body = json.dumps({
+                'status': 'error',
+                'message': "The request doesn't contain any parameters"
+            })
+            resp.status = falcon.HTTP_400
+
+
+class CSVExport:
+    """Let you search for terms in publications fulltexts. Returns a json.
+
+    Args:
+        es: An elasticsearch connection
+        es_index: The index to search on
+        es_explain: A boolean to enable|disable elasticsearch's explain.
+
+    """
+
+    def __init__(self, es, es_index, es_explain):
+        self.es = es
+        self.es_index = es_index
+        self.es_explain = es_explain
+
+    def on_get(self, req, resp):
+        """Returns the result of a search on the elasticsearch cluster.
+
+        Args:
+            req: The request passed to this controller
+            resp: The reponse object to be returned
+        """
+        if req.params:
+            if 'citations' in self.es_index:
+                params = {
+                    "term": req.params.get('term', ''),
+                    "fields": "Extracted title,Matched title,Document id",
+                }
+            else:
+                params = {
+                    "term": req.params.get('term', ''),
+                    "fields": "text,organisation",
+                }
+
+            status, response = _search_es(
+                self.es,
+                self.es_index,
+                params,
+                self.es_explain
+            )
+            if status:
+                response['status'] = 'success'
+                headers = response['hits']['hits'][0]['_source']['doc'].keys()
+                with tempfile.TemporaryFile(mode="w+") as csv_file:
+                    writer = csv.DictWriter(csv_file, fieldnames=headers)
+                    writer.writeheader()
+                    for item in response['hits']['hits']:
+                        writer.writerow(item['_source']['doc'])
+
+                    csv_file.seek(0)
+
+                    resp.content_type = 'text/csv'
+                    resp.append_header(
+                        'Content-Disposition',
+                        'attachment; filename="{filename}.csv"'.format(
+                            filename='reach_export'
+                        )
+                    )
+                    resp.body = csv_file.read()
             else:
                 resp.body = json.dumps({
                     'status': 'error',
