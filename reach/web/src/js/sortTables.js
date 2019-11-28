@@ -38,7 +38,7 @@ const sortTables = (reach) => {
 
 
     var citationTable = new List('citations-result-table', {
-          valueNames: ['pub-name', 'organisation', 'authors', 'year'],
+          valueNames: ['match-name', 'pub-name', 'organisation', 'authors', 'year'],
           page: ItemsPerPage,
           innerWindow: 3,
           outerWindow: 3,
