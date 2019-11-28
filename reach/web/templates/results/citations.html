@@ -96,7 +96,8 @@
                 <table class="table table-light table-hover">
                     <thead>
                         <tr>
-                            <th class="sort" data-sort="pub-name">Research Publication</th>
+                            <th class="sort" data-sort="match-name">Research Publication</th>
+                            <th class="sort" data-sort="pub-name">Policy Document</th>
                             <th class="sort" data-sort="journal">Journal</th>
                             <th class="sort" data-sort="authors">Author(s)</th>
                             <th class="sort" data-sort="year">Year of publication</th>
@@ -106,13 +107,20 @@
                      <tbody class="list">
                         {% for hit in es_response.hits.hits %}
                             <tr>
-                                <td class="pub-name">
+                                <td class="match-name">
                                     {% if hit._source.doc.get('Matched title') %}
                                         {{ hit._source.doc.get('Matched title') | truncate(60) }}
                                     {% else %}
                                         No title
                                     {% endif %}
-                                    </td>
+                                </td>
+                                <td class="pub-name">
+                                    {% if hit._source.doc.get('Extracted title') %}
+                                        {{ hit._source.doc.get('Extracted title') | truncate(60) }}
+                                    {% else %}
+                                        No title
+                                    {% endif %}
+                                </td>
                                 <td class="journal">{{ hit._source.doc.get('journal', 'No Journal') }}</td>
                                 <td class="authors">{{ hit._source.doc.get('authors', 'No Authors') }}</td>
                                 <td class="year">{{ hit._source.doc.get('year', 'No Year') }}</td>
