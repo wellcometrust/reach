@@ -101,5 +101,17 @@ def create_api(conf):
         '/api/search/policy-docs',
         search.SearchApi(es, conf.es_policy_docs_index, conf.es_explain)
     )
+    api.add_route(
+        '/api/search/citations',
+        search.SearchApi(es, conf.es_citations_index, conf.es_explain)
+    )
+    api.add_route(
+        '/search/citations/csv',
+        search.CSVExport(es, conf.es_citations_index, conf.es_explain)
+    )
+    api.add_route(
+        '/search/policy-docs/csv',
+        search.CSVExport(es, conf.es_policy_docs_index, conf.es_explain)
+    )
     api.add_static_route('/static', conf.static_root)
     return api
