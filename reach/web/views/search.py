@@ -145,7 +145,9 @@ class CSVExport:
             if status:
                 response['status'] = 'success'
                 headers = response['hits']['hits'][0]['_source']['doc'].keys()
-                with tempfile.TemporaryFile(mode="w+") as csv_file:
+                csv_file = None
+                try:
+                    csv_file = tempfile.TemporaryFile(mode="w+")
                     writer = csv.DictWriter(csv_file, fieldnames=headers)
                     writer.writeheader()
                     for item in response['hits']['hits']:
@@ -160,7 +162,12 @@ class CSVExport:
                             filename='reach_export'
                         )
                     )
-                    resp.body = csv_file.read()
+                    # Falcon will call resp.stream.close()
+                    resp.stream = csv_file
+                except:  # noqa
+                    if csv_file is not None:
+                        csv_file.close()
+
             else:
                 resp.body = json.dumps({
                     'status': 'error',
