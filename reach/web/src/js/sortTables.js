@@ -1,4 +1,5 @@
 const List = require('list.js');
+const ItemsPerPage = 25;
 
 function updateCount(htmlItem) {
     let current = 1;
@@ -15,9 +16,13 @@ function updateCount(htmlItem) {
     if (htmlItem && htmlItem.innerText) {
         current = parseInt(htmlItem.innerText);
     }
+    let maxResults = ItemsPerPage + (current - 1) * ItemsPerPage;
 
-    let maxResults = (maxEsResults < 25 || (25 + (current - 1) * 25) > maxEsResults)? maxEsResults : 25 + (current - 1) * 25;
-    let resultsTemplate = `${1 + (current - 1) * 25} - ${maxResults} of `;
+    if (maxEsResults < ItemsPerPage || (ItemsPerPage + (current - 1) * ItemsPerPage) > maxEsResults) {
+    	maxResults = maxEsResults;
+    }
+
+    let resultsTemplate = `${1 + (current - 1) * ItemsPerPage} - ${maxResults} of `;
 
     resultCountDiv.innerText = resultsTemplate;
 }
@@ -25,7 +30,7 @@ function updateCount(htmlItem) {
 const sortTables = (reach) => {
     var policyTable = new List('policy-docs-result-table', {
           valueNames: ['pub-name', 'organisation', 'authors', 'year'],
-          page: 25,
+          page: ItemsPerPage,
           innerWindow: 3,
           outerWindow: 3,
           pagination: true,
@@ -34,7 +39,7 @@ const sortTables = (reach) => {
 
     var citationTable = new List('citations-result-table', {
           valueNames: ['pub-name', 'organisation', 'authors', 'year'],
-          page: 25,
+          page: ItemsPerPage,
           innerWindow: 3,
           outerWindow: 3,
           pagination: true,
