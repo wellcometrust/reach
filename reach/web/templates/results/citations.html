@@ -3,7 +3,9 @@
 {% set status = es_status %}
 {% if es_response is mapping %}
     {% set status = status and (es_response.hits.total.value > 0) %}
-{% endif %}{% block header %}
+{% endif %}
+
+{% block header %}
 
 <header class="navbar">
   <section class="navbar-section">
@@ -77,71 +79,44 @@
             <div class="column col-6 hide-md"></div>
             {% endif %}
         </div>
+    </div>
     {% if status %}
-        <div class="container">
-            <div class="columns">
-                <div class="column col-6 col-md-12">
-                    {{ (page - 1) * size + 1 }} - {{ [(page - 1) * size + size, es_response.hits.total.value] | min }} of {{ es_response.hits.total.value }} results
-                </div>
-                <div class="column col-6 col-md-12">
-                    <div class="pagination-box float-right">
-
-                        <ul class="pagination">
-                            {% if page > 1 %}
-                                   <li class="page-item">
-                                    <a href="/search/citations?term={{ term }}&page={{ page - 1 }}">Prev</a>
-                                </li>
-                            {% else %}
-                                <li class="page-item disabled">
-                                    <a href="#" tabindex="-1">Prev</a>
-                                </li>
-                            {% endif %}
-                            {% for n_page in pages %}
-                                <li class="page-item {% if n_page == page %}active{% endif %}">
-                                    <a href="/search/citations?term={{ term }}&page={{ n_page }}">{{ n_page }}</a>
-                                </li>
-                            {% endfor %}
-                            {% if page < pages|length %}
-                                   <li class="page-item">
-                                    <a href="/search/citations?term={{ term }}&page={{ page + 1 }}">Next</a>
-                                </li>
-                            {% else %}
-                                <li class="page-item disabled">
-                                    <a href="#" tabindex="-1">Next</a>
-                                </li>
-                            {% endif %}
-                        </ul>
+        <div class="results">
+            <div class="container" id="citations-result-table">
+                <div class="columns">
+                    <div class="column col-6 col-md-12 text-left">
+                        <span  id="result-count">{#- Generated using JS #}</span>
+                        <span id="max-results">{{ es_response.hits.hits | length }}</span>
+                    </div>
+                    <div class="column col-6 col-md-12 text-right">
+                        {#- List.js will generate that for us #}
+                        <ul class="pagination"></ul>
                     </div>
                 </div>
-            </div>
-        </div>
-
-        <div class="results">
-            <div class="container">
                 <table class="table table-light table-hover">
                     <thead>
                         <tr>
-                            <th>Research Publication</th>
-                            <th>Journal</th>
-                            <th>Author(s)</th>
-                            <th>Year of publication</th>
-                            <th>Citations in Policy Docs</th>
+                            <th class="sort" data-sort="pub-name">Research Publication</th>
+                            <th class="sort" data-sort="journal">Journal</th>
+                            <th class="sort" data-sort="authors">Author(s)</th>
+                            <th class="sort" data-sort="year">Year of publication</th>
+                            <th class="sort" data-sort="citation-count">Citations in Policy Docs</th>
                         </tr>
                     </thead>
-                     <tbody>
+                     <tbody class="list">
                         {% for hit in es_response.hits.hits %}
                             <tr>
-                                <td>
+                                <td class="pub-name">
                                     {% if hit._source.doc.get('Matched title') %}
                                         {{ hit._source.doc.get('Matched title') | truncate(60) }}
                                     {% else %}
                                         No title
                                     {% endif %}
                                     </td>
-                                <td>{{ hit._source.doc.get('journal', 'No Journal') }}</td>
-                                <td>{{ hit._source.doc.get('authors', 'No Authors') }}</td>
-                                <td>{{ hit._source.doc.get('year', 'No Year') }}</td>
-                                <td>{{ hit._source.doc.get('citation_count', '-') }}</td>
+                                <td class="journal">{{ hit._source.doc.get('journal', 'No Journal') }}</td>
+                                <td class="authors">{{ hit._source.doc.get('authors', 'No Authors') }}</td>
+                                <td class="year">{{ hit._source.doc.get('year', 'No Year') }}</td>
+                                <td class="citation-count">{{ hit._source.doc.get('citation_count', '-') }}</td>
                             </tr>
                         {% endfor %}
                     </tbody>

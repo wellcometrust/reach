@@ -14,3 +14,39 @@
 .pagination .page-item.active a {
 	background-color: $cyanPrimary;
 }
+
+.pagination {
+	float: right;
+
+	li a {
+		padding: 0.3rem;
+		text-decoration: none;
+	}
+
+	li.active a {
+		background-color: $cyanPrimary;
+		color: white;
+	}
+}
+
+th {
+  font-family: "Helvetica Neue";
+  font-size: 0.75rem;
+  font-weight: bold;
+  font-stretch: normal;
+  font-style: normal;
+  text-transform: uppercase;
+  line-height: 1.5;
+  letter-spacing: 0.5px;
+  color: $greyLink;
+}
+
+#citations-result-table th:first-child::before {
+	content: url(../images/Icon_Research_24px.svg);
+	margin-right: 10px;
+}
+
+th::after {
+	content: url(../images/Icon_Sort-by_16px.svg);
+	margin-left: 10px;
+}
