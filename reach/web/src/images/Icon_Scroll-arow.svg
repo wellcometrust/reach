@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="17px" height="30px" viewBox="0 0 17 30" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <!-- Generator: Sketch 59.1 (86144) - https://sketch.com -->
+    <title>Icon_Scroll-arow_</title>
+    <desc>Created with Sketch.</desc>
+    <g id="Icon_Scroll-arow_" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <g id="Icon-/-Arrow" stroke="#005361" stroke-width="2">
+            <line x1="8.5" y1="-7.12346848e-14" x2="8.5" y2="30" id="Path-2"></line>
+            <line x1="4.5" y1="21" x2="4.5" y2="31" id="Path-2-Copy" transform="translate(4.500000, 26.000000) rotate(-50.000000) translate(-4.500000, -26.000000) "></line>
+            <line x1="12.5" y1="21" x2="12.5" y2="31" id="Path-2-Copy-2" transform="translate(12.500000, 26.000000) scale(-1, 1) rotate(-50.000000) translate(-12.500000, -26.000000) "></line>
+        </g>
+    </g>
+</svg>
