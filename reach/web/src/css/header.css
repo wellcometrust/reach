@@ -47,7 +47,7 @@ header.navbar {
 .btn.cta-link {
   background-color: $cyanDark;
   border-radius: 28px;
-  font-size: $baseFontSize;
+  font-size: $smallFontSize;
   line-height: 2.75rem !important;
   height: 2.75rem;
   border: 1px solid white;
