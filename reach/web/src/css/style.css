@@ -105,7 +105,7 @@ section#about-page, section#how-it-works-page{
 h1 {
   font-family: Wellcome;
   font-size: $h1FontSize;
-  font-weight: bold;
+  font-weight: normal;
   font-stretch: normal;
   font-style: normal;
   line-height: 1.5;
@@ -116,7 +116,7 @@ h1 {
 h2 {
   font-family: Wellcome;
   font-size: $h2FontSize;
-  font-weight: bold;
+  font-weight: normal;
   font-stretch: normal;
   font-style: normal;
   line-height: 1.5;
