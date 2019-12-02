@@ -1,5 +1,5 @@
 {% extends 'base.html' %}
-
+{% set home = True %}
 {% block header %}
 <header class="navbar home">
   <section class="navbar-section">
@@ -35,7 +35,10 @@
     <div class="columns">
       <div class="column col-2 hide-md"></div>
         <div class="column col-8  col-md-12">
-          <div class="hero-picture text-center"></div>
+          <div class="hero-picture text-center">
+            <div class="img-container">
+            </div>
+          </div>
         </div>
       <div class="column col-2 hide-md"></div>
       <div class="column col-12 text-center"><img src="/static/images/icon_Scroll-arow_.svg" alt=""></div>

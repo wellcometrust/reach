@@ -187,13 +187,13 @@ a, a:visited {
 .btn.btn-xl {
   font-size: $baseFontSize;
   font-family: "Helvetica Neue";
-  height: 2.75rem;
+  height: 3rem;
   padding: 0 2rem;
   text-align: center;
   font-weight: normal;
   font-stretch: normal;
   font-style: normal;
-  line-height: 2.75rem;
+  line-height: 3rem;
   letter-spacing: normal;
 }
 
