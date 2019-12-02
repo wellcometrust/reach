@@ -1,0 +1,7 @@
+@import "variables.css";
+
+#about-page {
+	h3.category-title {
+		font-weight: bold;
+	}
+}
