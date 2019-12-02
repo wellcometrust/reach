@@ -16,6 +16,10 @@ footer #wellcome-logo {
   width: 1.5em;
 }
 
+footer a{
+	font-size: $smallFontSize;
+}
+
 
 /*  Offsets the grid */
 @media screen and (min-width: 780px) {

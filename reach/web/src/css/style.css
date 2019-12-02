@@ -179,7 +179,7 @@ a, a:visited {
   text-decoration: underline;
   color: $cyanPrimary;
   font-family: "Helvetica Neue";
-  font-size: 0.875rem;
+  font-size: $baseFontSize;
   font-weight: normal;
   font-stretch: normal;
   font-style: normal;
