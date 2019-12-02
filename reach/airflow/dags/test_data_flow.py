@@ -104,7 +104,7 @@ def create_e2e_test_dag(dag_id, default_args, spider_years, item_limits):
         dag=dag
     )
 
-    es_index_epmc_metadata.ESIndexEPMCMetadata(
+    epmc_data = es_index_epmc_metadata.ESIndexEPMCMetadata(
         task_id='ESIndexEPMCMetadata',
         src_s3_key=EPMC_METADATA_KEY,
         es_hosts=get_es_hosts(),
@@ -133,6 +133,7 @@ def create_e2e_test_dag(dag_id, default_args, spider_years, item_limits):
         dag=dag
     )
 
+    epmc_data >> fuzzyMatchRefs
     spider >> parsePdf >> esIndexFullTexts
     parsePdf >> extractRefs >> fuzzyMatchRefs >> esIndexFuzzyMatched
     return dag
