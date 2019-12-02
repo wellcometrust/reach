@@ -56,6 +56,10 @@ section#about-reach {
 	background-image: url(../images/Shape_01.svg);
 	background-repeat: no-repeat;
 	background-size: cover;
+
+	a {
+		font-size: $baseFontSize;
+	}
 }
 
 section#about-us {
