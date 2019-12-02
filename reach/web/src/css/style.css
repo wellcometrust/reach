@@ -236,41 +236,6 @@ a, a:visited {
   padding: .6rem .6rem;
 }
 
-
-/* Override Spectre default */
-.breadcrumb .breadcrumb-item:not(:last-child) a {
-    color: $cyanPrimary;
-}
-
-
-.breadcrumb .breadcrumb-item:not(:first-child)::before {
-  color: $greyDark;
-  content: ">";
-  padding-right: .4rem;
-}
-
-.breadcrumb .breadcrumb-item {
-  color: $greyDark;
-}
-
-#breadcrumbs {
-  background: white;
-  border-bottom: 1px solid $greyLight;
-}
-
-
-@media screen and (min-width: 1280px) {
-   #breadcrumbs {
-     padding: 0 $guidePadding;
-   }
-}
-
-@media screen and (max-width: 1280px) {
-   #breadcrumbs {
-     padding: 0 1.375rem;
-   }
-}
-
 /* Help tooltip */
 .help {
   width: 22px;
