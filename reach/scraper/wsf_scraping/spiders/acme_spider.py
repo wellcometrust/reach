@@ -17,7 +17,7 @@ class AcmeSpider(BaseSpider):
         """ This sets up the urls to scrape for each years.
         """
         keys = [key for key in self.settings.keys()]
-        urls = ['http://scrape_target:8888']
+        urls = ['http://scrape-target:8888']
         # Initial URL (splited for PEP8 compliance)
 
         for url in urls:
@@ -38,11 +38,12 @@ class AcmeSpider(BaseSpider):
         """
 
         year = response.meta.get('year', {})
-        for href in response.css('.doc-page-link').extract():
+        for href in response.css('.doc-page-link::attr("href")').extract():
             yield Request(
                 url=response.urljoin(href),
                 callback=self.parse_article,
                 errback=self.on_error,
+                dont_filter=True,
                 meta={'year': year}
             )
 
@@ -57,15 +58,17 @@ class AcmeSpider(BaseSpider):
 
         # Scrap all the pdf on the page, passing scrapped metadata
         href = response.css(
-            '.doc-download-link::("href")'
+            '.doc-download-link::attr("href")'
         ).extract_first()
 
-        print("## ", href, response.urljoin(href))
+        data_dict = {}
+
         if self._is_valid_pdf_url(href):
             yield Request(
                 url=response.urljoin(href),
                 callback=self.save_pdf,
                 errback=self.on_error,
+                dont_filter=True,
                 meta={'data_dict': data_dict}
             )
         else:

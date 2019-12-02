@@ -118,12 +118,12 @@ class ReachDisallowedHostMiddleware(object):
             result: A list of requests that are prepped from the response
             spider: The spider instance doing the crawl
         """
-        disallowed_hosts = getattr(spider, 'disallowed_hosts', None)
+        disallowed_hosts = getattr(spider, 'disallowed_hosts', [])
 
         for x in result:
             if isinstance(x, Request):
                 domain = urlparse_cached(x).hostname
-                if domain and domain in disallowed_domains:
+                if domain and domain in disallowed_hosts:
                     # The domain is a disallowed one
                     if domain not in self.domains_seen:
                         # We only fire this once for every time we come
