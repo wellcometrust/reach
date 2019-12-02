@@ -1,7 +1,8 @@
 @import "variables.css";
 
 footer {
-  padding: $heroPadding 0;
+  padding: 5rem 0;
+  font-size: $smallFontSize;
 }
 
 footer.home {
