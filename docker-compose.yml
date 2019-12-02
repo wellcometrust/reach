@@ -167,6 +167,19 @@ services:
         limits:
           memory: "4096M"
 
+  scrape_target:
+      image: *airflow-image
+      ports:
+        - 127.0.0.1:8083:8888
+      command:
+        - python
+        - /opt/test_target/target_server.py
+      volumes:
+        - ./test_target:/opt/test_target
+      deploy:
+        resources:
+          limits:
+            memory: "64M"
 
   web:
     image: *airflow-image
