@@ -1,6 +1,6 @@
 @import "variables.css";
 
-.content.home {
+body.home {
 	background-image: none;
 }
 
