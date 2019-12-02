@@ -38,9 +38,14 @@ header.navbar {
     line-height: 4.75rem;
   }
 
+  #navbar-links a:hover {
+    color: $cyanLight;
+  }
+
   #navbar-links a.active {
     border-bottom: .25rem solid white;
-
+    padding-top: 0.25rem;
+    line-height: 4.50rem;
   }
 
 }
@@ -65,4 +70,5 @@ header.navbar {
 
 .btn.cta-link:hover {
   background-color: $cyanPrimary;
+  color: white !important;
 }
