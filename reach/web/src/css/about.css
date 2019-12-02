@@ -1,6 +1,7 @@
 @import "variables.css";
 
-#about-page {
+#about-page,
+#how-it-works-page {
 	h3.category-title {
 		font-weight: bold;
 	}
