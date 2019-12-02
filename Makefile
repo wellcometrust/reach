@@ -135,3 +135,7 @@ docker-test: docker-build
 
 .PHONY: all
 all: docker-test
+
+.PHONY: run-scrape
+run-scrape:
+	$(VIRTUALENV)/bin/python test_target/target_server.py

@@ -21,6 +21,7 @@ from reach.scraper.wsf_scraping.spiders.gov_spider import GovSpider
 from reach.scraper.wsf_scraping.spiders.msf_spider import MsfSpider
 from reach.scraper.wsf_scraping.spiders.unicef_spider import UnicefSpider
 from reach.scraper.wsf_scraping.spiders.parliament_spider import ParliamentSpider
+from reach.scraper.wsf_scraping.spiders.acme_spider import AcmeSpider
 import reach.scraper.wsf_scraping.settings
 
 
@@ -31,6 +32,7 @@ SPIDERS = {
     'msf': MsfSpider,
     'unicef': UnicefSpider,
     'parliament': ParliamentSpider,
+    'acme': AcmeSpider,
 }
 
 

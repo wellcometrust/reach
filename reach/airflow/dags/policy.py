@@ -10,6 +10,7 @@ from reach.airflow.tasks import es_index_fulltext_docs
 from reach.airflow.tasks import es_index_fuzzy_matched
 from reach.airflow.tasks import exact_match_refs_operator
 from reach.airflow.tasks import fuzzy_match_refs
+from reach.airflow.dags.test_data_flow import create_e2e_test_dag
 
 from reach.airflow.tasks.spider_operator import SpiderOperator
 from reach.airflow.tasks.extract_refs_operator import ExtractRefsOperator
@@ -277,37 +278,6 @@ def create_dag_all_match(dag_id, default_args, spider_years,
 
     return dag
 
-
-def create_test_dag(dag_id, default_args, spider_years, item_limits):
-    dag = DAG(
-        dag_id=dag_id,
-        default_args=default_args,
-        schedule_interval=("0 0 * * 0,3")
-    )
-
-    spider = SpiderOperator(
-        task_id='Spider.gov_uk',
-        organisation='gov_uk',
-        dst_s3_dir=to_s3_output_dir(
-            dag, 'spider', 'gov_uk'
-        ),
-        item_years=spider_years,
-        item_max=item_limits.spiders,
-        dag=dag
-    )
-
-    parsePdf = ParsePdfOperator(
-        task_id='ParsePdf.gov_uk',
-        organisation='gov_uk',
-        src_s3_dir=spider.dst_s3_dir,
-        dst_s3_key=to_s3_output(
-            dag, 'parsed-pdfs', 'gov_uk', '.json.gz'),
-        dag=dag)
-
-    spider >> parsePdf
-    return dag
-
-
 test_dag = create_dag_all_match(
     'policy-test',
     DEFAULT_ARGS,
@@ -322,9 +292,12 @@ policy_dag = create_dag_fuzzy_match(
     ItemLimits(None, None),
 )
 
-gov_scrape_dag = create_test_dag(
-    'scrape-test',
+
+# TODO: Put this behind a DEBUG flag
+e2e_test_dag = create_e2e_test_dag(
+    'e2e_test_dag',
     DEFAULT_ARGS,
     [2018],
-    ItemLimits(10, 500),
+    ItemLimits(0, 0),
 )
+
