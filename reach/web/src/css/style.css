@@ -53,11 +53,17 @@ $spectre_version: 0.5.8;
 
 .column {
   padding-right: 22px;
-}
+/*  background-color: rgba(255,0,0,0.2);
+*/}
 
 /*
  * Generic elements
  */
+
+ html,
+ body {
+    height: 100%;
+ }
 
 body {
   /* Brand guidelines say Helvetica Neue or Arial, but
@@ -84,6 +90,13 @@ body {
   line-height: normal;
   letter-spacing: normal;
   background-color: $backgroundTint1;
+  overflow-y: scroll;
+  display: flex;
+  flex-direction: column;
+
+  background-image: linear-gradient(-25deg, $backgroundTint2 20%, $backgroundTint1 calc(20% + 2px));
+  background-repeat: no-repeat;
+  background-position: bottom;
 }
 
 hr.fs, hr.hs {
@@ -93,7 +106,11 @@ hr.fs, hr.hs {
 }
 
 .content{
-  background-image: linear-gradient(-25deg, $backgroundTint2 20%, $backgroundTint1 calc(20% + 2px));
+  flex: 1 0 auto;
+}
+
+footer {
+  flex-shrink: 0;
 }
 
 section#about-page, section#how-it-works-page{

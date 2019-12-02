@@ -3,9 +3,11 @@
 footer {
   padding: 5rem 0;
   font-size: $smallFontSize;
+  width: 100%;
 }
 
 footer.home {
+  position: relative;
   background-color: white;
 }
 
