@@ -1,6 +1,5 @@
 {% extends 'base.html' %}
 
-
 {% block header %}
 
 <header class="navbar">
@@ -46,34 +45,34 @@
           <div class="text-center">
             <img src="/static/images/Icon_About_Open-source_100px.svg" alt="">
             <h3>Open Source</h3>
+            <p>Reach's code is entirely open sources! You can check it out on our <a href="https://github.com/wellcometrust/reach" target="_blank">Github Repository.</a></p>
           </div>
-          <p>Reach's code is entirely open sources! You can check it out on our <a href="https://github.com/wellcometrust/reach" target="_blank">Github Repository.</a></p>
         </div>
         <div class="column col-4 col-md-12">
           <div class="text-center">
             <img src="/static/images/Icon_About_Accuracy_100px.svg" alt="">
             <h3>Accuracy</h3>
+            <p>Reach uses software and machine learning to process thousands of policy documents. Machine learning is not 100% accurate as it is based on probability. We are constantly working on Reach to improve its accuracy. </p>
           </div>
-          <p>Reach uses software and machine learning to process thousands of policy documents. Machine learning is not 100% accurate as it is based on probability. We are constantly working on Reach to improve its accuracy. </p>
         </div>
         <div class="column col-4 col-md-12">
           <div class="text-center">
             <img src="/static/images/Icon_About_Transparent_100px.svg" alt="">
             <h3>Transparency</h3>
+            <p>{{ lipsum(n=1, html=True, min=20, max=50) }}</p></div>
           </div>
-          <p>{{ lipsum(n=1, html=True, min=20, max=50) }}</p></div>
       </div>
       <hr class="fs">
       <hr class="fs">
       <div class="columns">
-     	  <div class="column col-4"></div>
-        <div class="column col-4 text-center">
+     	  <div class="column col-3 hide-md"></div>
+        <div class="column col-6 col-md-12 text-center">
          	<h1>About Data Labs</h1>
          	<p>Wellcome Data Labs exists to enable responsible, data-driven decision making at Wellcome and in the wider research cuommunity. We build products, support data innovation in health and research, and blend technology social sciences approaches in our work.
          	</p>
          	<p>We’d love to hear from you. Get in touch via email: reachout@wellcomedatalabs.org</p>
         </div>
-        <div class="column col-4"></div>
+        <div class="column col-3 hide-md"></div>
       </div>
     </div>
 </section>
