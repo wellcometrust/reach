@@ -210,7 +210,13 @@ a, a:visited {
 
 .btn.btn-primary {
   border: none;
-  background: $cyanDark;
+  background: $cyanPrimary;
+  color: white;
+}
+
+.btn.btn-primary:hover {
+  border: none;
+  background: $cyanLight;
   color: white;
 }
 
@@ -251,17 +257,6 @@ a, a:visited {
   margin-top: 2.7ex;
 }
 
-section#hero a.btn-primary:hover,
-section#hero .btn.help:hover {
-  border: 1px solid white;
-}
-
-.hero-button {
-    height: 3.5rem;
-    line-height: 3.5rem;
-    font-size: $baseFontSize;
-    padding: 0 $smallPadding;
-}
 .popover-container {
   display: block;
   opacity: 1;
