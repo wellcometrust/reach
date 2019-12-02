@@ -96,6 +96,7 @@ header.navbar.home {
 
 .breadcrumb .breadcrumb-item {
   color: $greyDark;
+  font-size: $smallFontSize;
 }
 
 #breadcrumbs {
