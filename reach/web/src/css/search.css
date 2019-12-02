@@ -4,6 +4,10 @@
     background: $backgroundTint1;
 }
 
+.search-tooltips {
+	margin-top: 0.5rem;
+}
+
 .search-tips {
     margin: $mediumPadding 0;
 }
@@ -21,6 +25,11 @@
 	background-color: $backgroundTint2;
 	padding: $smallPadding;
 }
+
+.form-label {
+	margin-bottom: 0.5rem;
+}
+
 /* Help tooltip */
 .help {
   width: 22px;
