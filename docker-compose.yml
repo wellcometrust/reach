@@ -97,14 +97,12 @@ services:
         limits:
           memory: "2560M"
 
-  # Uncomment if you want 100% CPU usage.
-  #
-  # kibana:
-  #   image: docker.elastic.co/kibana/kibana:7.0.0
-  #   ports:
-  #     - 127.0.0.1:5601:5601
-  #   environment:
-  #     ELASTICSEARCH_HOSTS: "http://elasticsearch:9200"
+  kibana:
+    image: docker.elastic.co/kibana/kibana:7.0.0
+    ports:
+      - 127.0.0.1:5601:5601
+    environment:
+      ELASTICSEARCH_HOSTS: "http://elasticsearch:9200"
 
   airflow-scheduler:
     image: *airflow-image

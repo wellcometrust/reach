@@ -133,8 +133,12 @@ class S3FileSystem(FileSystem):
         # If the manifest has no content yet, let's create it
         content = current_manifest.get('content', {})
         data = current_manifest.get('data', {})
+        import pprint
+        pprint.pprint(data)
+        pprint.pprint(content)
         for row in data_file:
             item = json.loads(row)
+            pprint.pprint(item)
             hash_list = content.get(item['hash'][:2], None)
             if hash_list:
                 if item['hash'] not in hash_list:
@@ -143,7 +147,12 @@ class S3FileSystem(FileSystem):
                 content[item['hash'][:2]] = [item['hash']]
 
             if not data.get(item['hash']):
-                data[item['hash']] = {'url': item['url']}
+                data[item['hash']] = {
+                    'url': item['url'],
+                    'title': item.get("title", None),
+                    'source_page': item.get('source_page', None),
+                    'page_title': item.get('page_title', None)
+                }
 
         key = os.path.join(
             self.prefix,

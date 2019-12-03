@@ -61,7 +61,10 @@ class AcmeSpider(BaseSpider):
             '.doc-download-link::attr("href")'
         ).extract_first()
 
-        data_dict = {}
+        data_dict = {
+            'source_page': response.url,
+            'page_title': response.xpath('//title/text()').extract_first(),
+        }
 
         if self._is_valid_pdf_url(href):
             yield Request(
