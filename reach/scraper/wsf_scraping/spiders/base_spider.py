@@ -182,6 +182,9 @@ class BaseSpider(scrapy.Spider):
             'types': data_dict.get('types'),
             'subjects': data_dict.get('subjects'),
             'pdf': filename,
+            'page_title': data_dict.get('page_title', None),
+            'source_page': data_dict.get('source_page', None)
+
         })
 
         return article

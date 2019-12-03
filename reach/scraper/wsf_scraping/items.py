@@ -20,3 +20,7 @@ class Article(scrapy.Item):
     authors = scrapy.Field()
     types = scrapy.Field()
     date_scraped = scrapy.Field()
+    page_title = scrapy.Field()
+    source_page = scrapy.Field()
+    path = scrapy.Field()
+

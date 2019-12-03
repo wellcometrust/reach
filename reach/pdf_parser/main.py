@@ -91,7 +91,7 @@ def parse_pdf(pdf, words, titles, context, pdf_hash):
         item: A dict containing the pdf text, sections and keywords.
     """
     # Convert PDF content to text format
-    pdf_file, pdf_text, errors = parse_pdf_document(pdf)
+    pdf_file, pdf_text, pdf_metadata, errors = parse_pdf_document(pdf)
     # If the PDF couldn't be converted, still remove the pdf file
     if not pdf_file:
         assert errors, 'Errors must be supplied if no parse'
@@ -132,7 +132,8 @@ def parse_pdf(pdf, words, titles, context, pdf_hash):
         'file_hash': pdf_hash,
         'sections': section_dict,
         'keywords': keyword_dict,
-        'text': pdf_text
+        'text': pdf_text,
+        'metadata': pdf_metadata
     }
 
 
