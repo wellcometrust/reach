@@ -256,6 +256,12 @@ a, a:visited {
 
 .form-input.input-xl {
   font-size: $baseFontSize;
+  border-color: $greyLight;
   height: 2.5rem;
   padding: .6rem .6rem;
+}
+
+.form-input:focus {
+  border-color: #767676;
+  box-shadow: none;
 }
