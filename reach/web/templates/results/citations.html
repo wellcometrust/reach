@@ -104,6 +104,24 @@
                 <div class="column col-6 hide-md"></div>
             </div>
             <hr class="fs">
+        {% endif %}
+    </div>
+    {% if status %}
+        <div class="results">
+            <div class="container" id="citations-result-table">
+                <div class="columns">
+                    <div class="column col-6 col-md-12 text-left">
+                        <span  id="result-count">{#- Generated using JS #}</span>
+                        <span id="max-results">{{ es_response.hits.hits | length }}</span>
+                    </div>
+                    <div class="column col-6 col-md-12 text-right">
+                        {#- List.js will generate that for us #}
+                        <ul class="pagination"></ul>
+                    </div>
+                </div>
+                <div class="column col-6 hide-md"></div>
+            </div>
+            <hr class="fs">
         </div>
         {% else %}
             </div>
