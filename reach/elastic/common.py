@@ -117,7 +117,7 @@ def clear_index_by_org(es, org, index_name):
             body={
                 'query': {
                     'match': {
-                        'organisation': org,
+                        'doc.organisation': org,
                     }
                 }
             }
