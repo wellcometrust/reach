@@ -15,6 +15,15 @@ from reach.airflow.tasks.spider_operator import SpiderOperator
 from reach.airflow.tasks.extract_refs_operator import ExtractRefsOperator
 from reach.airflow.tasks.parse_pdf_operator import ParsePdfOperator
 
+DEFAULT_ARGS = {
+    'depends_on_past': False,
+    'start_date': airflow.utils.dates.days_ago(2),
+    'retries': 0,
+    'retry_delay': datetime.timedelta(minutes=5),
+}
+
+ItemLimits = namedtuple('ItemLimits', ('spiders', 'index'))
+
 def verify_s3_prefix():
     reach_s3_prefix = conf.get("core", "reach_s3_prefix")
     assert reach_s3_prefix.startswith('s3://')
@@ -138,4 +147,12 @@ def create_e2e_test_dag(dag_id, default_args, spider_years, item_limits):
     parsePdf >> extractRefs >> fuzzyMatchRefs >> esIndexFuzzyMatched
     return dag
 
+
+# TODO: Put this behind a DEBUG flag
+e2e_test_dag = create_e2e_test_dag(
+    'e2e_test_dag',
+    DEFAULT_ARGS,
+    [2018],
+    ItemLimits(0, 0),
+)
 
