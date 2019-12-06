@@ -2,7 +2,6 @@ import numpy as np
 import logging
 
 import pandas as pd
-from reach.refparse.settings import settings
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
 
