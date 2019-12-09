@@ -36,10 +36,27 @@ def to_es_action(org, es_index, line):
 
 
 def clean_es(es, es_index, org):
-    """ Ensure an empty index exists and delete documents from the
-    organisation to ensure no duplicates are inserted.
+    """ Ensure an empty index exists and has a mapping.
+    Delete documents from the organisation to ensure no duplicates
+    are inserted.
     """
-    common.clear_index_by_org(es, org, es_index)
+    current_mapping = common.check_mapping(es, es_index)
+    if current_mapping:
+        org_mapping = current_mapping[es_index][
+            'mappings']['properties']['doc']['properties']['organisation']
+
+        if org_mapping.get('type') == 'keyword':
+            common.clear_index_by_org(es, org, es_index)
+
+    mapping_body = {
+        "mappings": {
+            "properties": {
+                "doc.text": {"type": "text"},
+                "doc.organisation": {"type": "keyword"}
+            }
+        }
+    }
+    common.recreate_index(es, es_index, mapping_body)
 
 
 def insert_file(f, es, org, es_index, max_items=None):
