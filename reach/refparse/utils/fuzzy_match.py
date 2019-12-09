@@ -1,15 +1,18 @@
-import numpy as np
 import logging
+
+import numpy as np
 
 import pandas as pd
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
 
-
 logger = logging.getLogger(__name__)
 
+
 class FuzzyMatcher:
-    def __init__(self, publications, similarity_threshold=0.8, title_length_threshold=0):
+    def __init__(
+        self, publications, similarity_threshold=0.8, title_length_threshold=0
+    ):
         """
         Takes information about publications in the format:
 
@@ -75,7 +78,6 @@ class FuzzyMatcher:
             reference(dict): A structure reference in a dict, that minimally
                 contains the key: 'Title'.
         """
-
         if not reference:
             return None
 
