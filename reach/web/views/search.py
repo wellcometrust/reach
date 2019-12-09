@@ -25,11 +25,11 @@ def _search_es(es, es_index, params, explain=False):
         """
         try:
             fields = params.get('fields', '').split(',')
-            size = params.get('size', 1000)
+            size = params.get('size', 100)
             es.cluster.health(wait_for_status='yellow')
 
             es_body = {
-                'size': size,
+                'size': int(size),
                 'query': {
                     'multi_match': {
                         'query': params.get('term'),
@@ -38,6 +38,14 @@ def _search_es(es, es_index, params, explain=False):
                     }
                 }
             }
+
+            if params.get('page'):
+                es_body['from'] = (int(params.get('page')) - 1) * int(size)
+
+            if params.get('sort'):
+                es_body['sort'] = {
+                    f"doc.{params.get('sort')}": params.get('order', 'asc')
+                }
 
             return True, es.search(
                 index=es_index,
