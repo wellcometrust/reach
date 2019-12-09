@@ -11,10 +11,30 @@ logger = logging.getLogger(__name__)
 class FuzzyMatcher:
     def __init__(self, publications, similarity_threshold=0.8, title_length_threshold=0):
         """
+        Takes information about publications in the format:
+
+        ```
+
+        [
+            {
+            "pmid": 18568110,
+            "pmcid": "PMC2424117",
+            "title": "Fluvoxamine in the treatment of anxiety disorders.",
+            "authors": [{"LastName": "Irons", "Initials": "J"}],
+            "journalTitle": "Neuropsychiatric disease and treatment",
+            "issue": "4",
+            "journalVolume": "1",
+            "pubYear": 2005,
+            "journalISSN": "1176-6328",
+            "pubType": "\"Journal Article\""
+            },
+            ...
+        ]
+        ```
+
         Args:
-            publications(list): A list of dicts containing reference information
-                from a canonical list of publications, which minially contain
-                the key 'title'.
+            publications(list): List of dicst containing publication info as
+                above.
             similarity_threshold(float): Minimum allowable similarity
                 threshold. If not results are found to have a similarity
                 higher than this, then nothing is returned.
@@ -33,7 +53,7 @@ class FuzzyMatcher:
         """
         Args:
             reference(dict): A structure reference in a dict, that minimally
-                contain the key: 'title'.
+                contains the key: 'Title'.
             nb_results(int): Number of results to return. This will be the top
                 n results, ordered by similarity score.
         """
@@ -49,10 +69,11 @@ class FuzzyMatcher:
         return retrieved_publications[:nb_results]
 
     def match(self, reference):
+
         """
         Args:
             reference(dict): A structure reference in a dict, that minimally
-                contain the key: 'Title'.
+                contains the key: 'Title'.
         """
 
         if not reference:
