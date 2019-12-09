@@ -43,9 +43,7 @@ class FuzzyMatcher:
         """
         self.publications = pd.DataFrame(publications)
         self.vectorizer = TfidfVectorizer(lowercase=True, ngram_range=(1, 1))
-        self.tfidf_matrix = self.vectorizer.fit_transform(
-            self.publications['title']
-        )
+        self.tfidf_matrix = self.vectorizer.fit_transform(self.publications.get("title"))
         self.similarity_threshold = similarity_threshold
         self.title_length_threshold = title_length_threshold
 
@@ -57,15 +55,14 @@ class FuzzyMatcher:
             nb_results(int): Number of results to return. This will be the top
                 n results, ordered by similarity score.
         """
-        title_vector = self.vectorizer.transform(
-            [reference['Title']]
-        )[0]
-        title_similarities = cosine_similarity(
-            title_vector, self.tfidf_matrix
-        )[0]
+        title_vector = self.vectorizer.transform([reference.get("Title")])[0]
+        title_similarities = cosine_similarity(title_vector, self.tfidf_matrix)[0]
         retrieved_publications = self.publications.copy()
-        retrieved_publications['similarity'] = title_similarities
-        retrieved_publications.sort_values(by='similarity', ascending=False, inplace=True)
+        retrieved_publications["similarity"] = title_similarities
+        retrieved_publications.sort_values(
+            by="similarity", ascending=False, inplace=True
+        )
+
         return retrieved_publications[:nb_results]
 
     def match(self, reference):
@@ -78,18 +75,22 @@ class FuzzyMatcher:
 
         if not reference:
             return None
-        if len(reference['Title']) < self.title_length_threshold:
+
+        if len(reference.get("Title")) < self.title_length_threshold:
             return None
 
         retrieved_publications = self.search_publications(reference)
 
         best_match = retrieved_publications.iloc[0]
-        best_similarity = best_match['similarity']
+        best_similarity = best_match.get("similarity")
+
         if best_similarity > self.similarity_threshold:
             return {
-                'Matched title': best_match['title'],
-                'Matched publication id': best_match['uber_id'],
-                'Similarity': best_similarity,
-                'Match algorithm': 'Fuzzy match'
+                "Document id": reference.get("Document id"),
+                "Reference id": reference.get("Reference id"),
+                "Extracted title": reference.get("Title"),
+                "Matched title": best_match.get("title"),
+                "Matched publication id": best_match.get("uber_id"),
+                "Similarity": best_similarity,
+                "Match algorithm": "Fuzzy match",
             }
-
