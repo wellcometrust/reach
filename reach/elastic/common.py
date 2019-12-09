@@ -57,7 +57,7 @@ def yield_actions(tf, to_es_action, max_items=None):
         logging.info('yield_actions: count=%d', count)
 
 
-def recreate_index(es, index_name):
+def recreate_index(es, index_name, mapping=None):
     """ Recreate an index from scratch
 
     Args:
@@ -75,7 +75,7 @@ def recreate_index(es, index_name):
             raise
 
     # No catch as anything should have been caught above
-    es.indices.create(index=index_name)
+    es.indices.create(index=index_name, body=mapping)
 
     # Refresh the index so we can use it
     es.indices.refresh(index=index_name)
@@ -98,6 +98,7 @@ def clear_index_by_query(es, query, index_name):
             pass
         else:
             raise
+
 
 def clear_index_by_org(es, org, index_name):
     """ Convenience method for clearing an orgs documents from an
@@ -132,6 +133,21 @@ def clear_index_by_org(es, org, index_name):
 def count_es(es, index_name):
     """ Returns number of documents in an index. """
     return es.count(index=index_name)['count']
+
+
+def check_mapping(es, index_name):
+    """Check is a mapping is active on given index and return it.
+    Else return False. """
+    logging.info('check_mapping: checking current mapping status')
+    try:
+        mapping = es.indices.get_mapping(index=index_name)
+        return mapping if mapping else False
+
+    except (TransportError, NotFoundError) as e:
+        if e.error == "index_not_found_exception":
+            pass
+        else:
+            raise
 
 
 def _n_actions(actions, max_items):
