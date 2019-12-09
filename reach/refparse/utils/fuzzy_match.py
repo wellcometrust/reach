@@ -36,8 +36,8 @@ class FuzzyMatcher:
         ```
 
         Args:
-            publications(list): List of dicst containing publication info as
-                above.
+            publications(list): List of dicts containing publication info as
+                above, or a pandas.DataFrame.
             similarity_threshold(float): Minimum allowable similarity
                 threshold. If not results are found to have a similarity
                 higher than this, then nothing is returned.
@@ -46,10 +46,9 @@ class FuzzyMatcher:
         """
         # Filter out any publications that don't have titles
 
-        publications = [pub for pub in publications if pub.get("title")]
         self.publications = pd.DataFrame(publications)
         self.vectorizer = TfidfVectorizer(lowercase=True, ngram_range=(1, 1))
-        self.tfidf_matrix = self.vectorizer.fit_transform(self.publications.get("title"))
+        self.tfidf_matrix = self.vectorizer.fit_transform(self.publications["title"])
         self.similarity_threshold = similarity_threshold
         self.title_length_threshold = title_length_threshold
 
