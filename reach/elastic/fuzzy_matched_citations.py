@@ -30,6 +30,14 @@ def clean_es(es, es_index, org):
     organisation to ensure no duplicates are inserted.
     """
     common.clear_index_by_org(es, org, es_index)
+    if not common.check_mapping(es, es_index):
+        mapping_body = {
+            "properties": {
+                "doc.Extracted title": {"type": "text"},
+                "doc.Matched title": {"type": "text"}
+            }
+        }
+        es.indices.put_mapping(index=es_index, body=mapping_body)
 
 
 def insert_file(f, es, org, es_index, max_items=None):
