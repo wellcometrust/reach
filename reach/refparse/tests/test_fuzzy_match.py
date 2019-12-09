@@ -1,10 +1,10 @@
 import unittest
 
-from pandas.util.testing import assert_frame_equal
 import pandas as pd
+from pandas.util.testing import assert_frame_equal
 
-from reach.refparse.utils import FuzzyMatcher
 from reach.refparse.settings import settings
+from reach.refparse.utils import FuzzyMatcher
 
 
 class TestFuzzyMatcherInit(unittest.TestCase):
@@ -12,13 +12,13 @@ class TestFuzzyMatcherInit(unittest.TestCase):
         real_publications = pd.DataFrame({
             'title': []
         })
-        threshold = 75
+        threshold = 0.75
         with self.assertRaises(ValueError):
             FuzzyMatcher(real_publications, threshold)
 
     def test_no_title(self):
         real_publications = pd.DataFrame({})
-        threshold = 75
+        threshold = 0.75
         with self.assertRaises(KeyError):
             FuzzyMatcher(real_publications, threshold)
 
@@ -26,14 +26,32 @@ class TestFuzzyMatcherInit(unittest.TestCase):
         real_publications = pd.DataFrame({
             'title': [1,2]
         })
-        threshold = 75
+        threshold = 0.75
         with self.assertRaises(AttributeError):
             FuzzyMatcher(real_publications, threshold)
 
     def test_init_variables(self):
         real_publications = pd.DataFrame({
-            'title': ['Malaria', 'Zika']
+            'title': ['Malaria', 'Zika'],
+            'pmcid': [0, 1]
         })
+        threshold = 0
+        fuzzy_matcher = FuzzyMatcher(real_publications, threshold)
+        assert_frame_equal(
+            fuzzy_matcher.publications, real_publications
+        )
+        self.assertEqual(
+            fuzzy_matcher.similarity_threshold, threshold
+        )
+        self.assertTrue(
+            fuzzy_matcher.tfidf_matrix.size != 0
+        )
+
+    def test_init_variables_jsonl(self):
+        real_publications = pd.DataFrame(
+            {'title': 'Malaria', 'pmcid': 0},
+            {'title': 'Zika', 'pmcid': 1},
+        )
         threshold = 0
         fuzzy_matcher = FuzzyMatcher(real_publications, threshold)
         assert_frame_equal(
@@ -54,6 +72,7 @@ class TestFuzzyMatch(unittest.TestCase):
         })
         threshold = settings.FUZZYMATCH_SIMILARITY_THRESHOLD
         fuzzy_matcher = FuzzyMatcher(real_publications, threshold)
+
         return fuzzy_matcher
 
     def test_empty_reference(self):
@@ -61,28 +80,28 @@ class TestFuzzyMatch(unittest.TestCase):
         reference = {}
         self.assertTrue(
             fuzzy_matcher.match(reference) is None
-        ) 
+        )
 
     def test_no_match(self):
         fuzzy_matcher = self.init_fuzzy_matcher()
         reference = {
             'Document id': 1,
             'Reference id': 1,
-            'Title': 'Ebola'            
+            'Title': 'Ebola'
         }
         self.assertTrue(
-            fuzzy_matcher.match(reference) is None 
-        ) 
+            fuzzy_matcher.match(reference) is None
+        )
 
     def test_one_match(self):
         fuzzy_matcher = self.init_fuzzy_matcher()
         reference = {
-            'Document id': 10,
-            'Reference id': 11,
-            'Title': 'Malaria'            
+            'Document id': '10',
+            'Reference id': '11',
+            'Title': 'Malaria'
         }
         matched_publication = fuzzy_matcher.match(reference)
-        self.assertEqual(matched_publication['Document id'], 10)
+        self.assertEqual(matched_publication['Document id'], '10')
 
     def test_close_match(self):
         real_publications = pd.DataFrame({
@@ -92,9 +111,9 @@ class TestFuzzyMatch(unittest.TestCase):
         threshold = settings.FUZZYMATCH_SIMILARITY_THRESHOLD
         fuzzy_matcher = FuzzyMatcher(real_publications, threshold)
         reference = {
-            'Document id': 10,
-            'Reference id': 11,
-            'Title': 'Malaria'            
+            'Document id':  '10',
+            'Reference id': '11',
+            'Title': 'Malaria'
         }
         matched_publication = fuzzy_matcher.match(reference)
-        self.assertEqual(matched_publication, None) 
+        self.assertEqual(matched_publication, None)
