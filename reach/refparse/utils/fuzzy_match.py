@@ -41,6 +41,9 @@ class FuzzyMatcher:
             title_length_threhold(float): Minimum allowed length of title.
                 Less than this threshold will return no results.
         """
+        # Filter out any publications that don't have titles
+
+        publications = [pub for pub in publications if pub.get("title")]
         self.publications = pd.DataFrame(publications)
         self.vectorizer = TfidfVectorizer(lowercase=True, ngram_range=(1, 1))
         self.tfidf_matrix = self.vectorizer.fit_transform(self.publications.get("title"))
