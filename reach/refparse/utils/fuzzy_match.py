@@ -98,7 +98,6 @@ class FuzzyMatcher:
 
         retrieved_publications = [value for key, value in retrieved_publications.items()]
 
-
         retrieved_publications = sorted(retrieved_publications, key=lambda x: x['similarity'], reverse=True)
 
         return retrieved_publications
@@ -113,7 +112,7 @@ class FuzzyMatcher:
         if not reference:
             return None
 
-        if len(reference.get("Title")) < self.title_length_threshold:
+        if len(reference["Title"]) < self.title_length_threshold:
             return None
 
         retrieved_publications = self.search_publications(reference)
@@ -123,10 +122,10 @@ class FuzzyMatcher:
 
         if best_similarity > self.similarity_threshold:
             return {
-                "Document id": reference.get("Document id"),
-                "Reference id": reference.get("Reference id"),
-                "Extracted title": reference.get("Title"),
-                "Matched title": best_match.get("title"),
+                "Document id": reference["Document id"],
+                "Reference id": reference["Reference id"],
+                "Extracted title": reference["Title"],
+                "Matched title": best_match["title"],
                 "Matched publication id": best_match.get("uber_id"),
                 "Matched publication pmcid": best_match.get("pmcid"),
                 "Matched publication pmid": best_match.get("pmid"),
