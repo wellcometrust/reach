@@ -122,20 +122,16 @@ class FuzzyMatcher:
         best_similarity = best_match.get("similarity")
 
         if best_similarity > self.similarity_threshold:
-             return {
-                "Document id": _str_or_null(reference.get("Document id")),
-                "Reference id": _str_or_null(reference.get("Reference id")),
+            return {
+                "Document id": reference.get("Document id"),
+                "Reference id": reference.get("Reference id"),
                 "Extracted title": reference.get("Title"),
                 "Matched title": best_match.get("title"),
-                "Matched publication id": _str_or_null(best_match.get("uber_id")),
-                "Matched publication pmcid": _str_or_null(best_match.get("pmcid")),
-                "Matched publication pmid": _str_or_null(best_match.get("pmid")),
-                "Matched publication doi": _str_or_null(best_match.get("doi")),
+                "Matched publication id": best_match.get("uber_id"),
+                "Matched publication pmcid": best_match.get("pmcid"),
+                "Matched publication pmid": best_match.get("pmid"),
+                "Matched publication doi": best_match.get("doi"),
                 "Similarity": best_similarity,
                 "Match algorithm": "Fuzzy match",
             }
 
-def _str_or_null(docid):
-    if docid :
-        if isinstance(docid, float) and docid: docid = int(docid)
-    return str(docid)
