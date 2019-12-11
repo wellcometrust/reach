@@ -118,7 +118,7 @@ class FuzzyMatcher:
         retrieved_publications = self.search_publications(reference)
 
         best_match = retrieved_publications[0]
-        best_similarity = best_match.get("similarity")
+        best_similarity = best_match["similarity"]
 
         if best_similarity > self.similarity_threshold:
             return {
