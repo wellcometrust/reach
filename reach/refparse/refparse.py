@@ -58,7 +58,6 @@ def transform_scraper_file(scraper_data, section_column="sections"):
                 sections = document[section_column]
             except KeyError:
                 return
-            print(dict(document))
             for section_list in sections.values():
                 assert isinstance(section_list, list)
                 for section in section_list:
