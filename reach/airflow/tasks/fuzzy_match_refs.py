@@ -97,8 +97,6 @@ class ElasticsearchFuzzyMatcher:
             #     reference['Document id'], best_score
             # )
             ref_metadata = reference.get('metadata', {})
-            print("#MATCH_REF", matched_reference)
-            print("#REF", reference)
             return {
                 'reference_id': reference.get('Reference id', None),
                 'extracted_title': reference.get('Title', None),
