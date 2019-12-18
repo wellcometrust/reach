@@ -62,8 +62,9 @@ def get_pdf_metadata(document):
         string_data = result.stdout.decode("utf-8")
         data = {}
         for line in string_data.splitlines():
-            key, value = [x.strip() for x in line.split(":", 1)]
-            data[key] = value
+            if ":" in line:
+                key, value = [x.strip() for x in line.split(":", 1)]
+                data[key] = value
 
         # Massage this into a better format
         for key, value in data.items():
@@ -82,13 +83,8 @@ def parse_pdf_document(document):
         document: file object, pointing to a named file
     """
 
-    # Get metadata from the PDF file
-    cmd = [
-        "pdfinfo",
-        document.name
-    ]
-
     metadata = get_pdf_metadata(document)
+    title_candidates = []
 
     with tempfile.NamedTemporaryFile(suffix='.xml', mode='w+b') as tf:
         # Run pdftohtml on the document, and output an xml formated document
@@ -114,7 +110,7 @@ def parse_pdf_document(document):
                 document.name,
                 e.stderr,
             )
-            return None, None, [ERR_PDF2HTML_NONZERO_EXIT]
+            return None, None, None, [ERR_PDF2HTML_NONZERO_EXIT]
 
         try:
             # Try to get file stats in order to check both its existence
@@ -123,10 +119,10 @@ def parse_pdf_document(document):
         except OSError as e:
             if e.errno != errno.ENOENT:
                 raise
-            return None, None, [ERR_NO_FILE]
+            return None, None, None, [ERR_NO_FILE]
 
         if st.st_size == 0:
-            return None, None, [ERR_EMPTY_FILE]
+            return None, None, None, [ERR_EMPTY_FILE]
 
         if st.st_size > MAX_HTML_SIZE:
             # Files this large are usually unparseable and blow out our
@@ -136,12 +132,12 @@ def parse_pdf_document(document):
                 tf.name, st.st_size, MAX_HTML_SIZE
             )
 
-            return None, None, [ERR_FILE_TOO_LARGE]
+            return None, None, None, [ERR_FILE_TOO_LARGE]
 
         try:
             tree = lxml.etree.parse(io.BytesIO(tf.read()))
         except XMLSyntaxError:
-            return None, None, [ERR_XML_SYNTAX]
+            return None, None, None, [ERR_XML_SYNTAX]
 
         file_pages = []
         full_text = '\n'.join([_flatten_text(text) for text in tree.xpath('//text')])

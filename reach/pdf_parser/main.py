@@ -77,7 +77,7 @@ def write_to_file(output_url, items, organisation):
         file_system.save(json.dumps(items), '', parsed_url.path)
 
 
-def parse_pdf(pdf, words, titles, context, pdf_hash):
+def parse_pdf(pdf, words, titles, context, pdf_hash, metadata):
     """Parse the given pdf and returns a dict containing its test, sections and
        keywords.
 
@@ -128,12 +128,15 @@ def parse_pdf(pdf, words, titles, context, pdf_hash):
             else:
                 section_dict[title] = [section]
 
+
     return {
         'file_hash': pdf_hash,
         'sections': section_dict,
         'keywords': keyword_dict,
         'text': pdf_text,
-        'metadata': pdf_metadata
+        'pdf_metadata': pdf_metadata,
+        'source_metadata': metadata,
+        'title_candidates': pdf_file.get_title_candidates()
     }
 
 
@@ -201,6 +204,11 @@ def create_argparser(description):
 
 def _yield_items(file_system, words, titles, context):
     content = file_system.get_manifest()['content']
+    # Load data about individual documents
+    data = file_system.get_manifest()['data']
+    # Create lookup dict for retrieving an individual docs information
+    metadata_lookup = dict((doc_id, metadata) for doc_id, metadata in data.items())
+    # Iterate through directories parsing individual PDFs
     for directory in content:
         for item in content[directory]:
             logger.info(item + '  --- ' + directory)
@@ -214,6 +222,7 @@ def _yield_items(file_system, words, titles, context):
                     titles,
                     context,
                     item,
+                    metadata_lookup.get(item, {})
                 )
 
 

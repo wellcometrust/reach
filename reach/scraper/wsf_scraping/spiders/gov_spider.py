@@ -79,14 +79,25 @@ class GovSpider(BaseSpider):
             '.attachment-details h2 a::attr("href")'
         ).extract()
 
+        headings = response.xpath("/html/body//*[self::h1 or self::h2 or self::h3]/text()")
+        headings = [x.extract() for x in headings]
+
         for fhref in document_links:
             title = response.css('h1::text').extract_first().strip('\n ')
+            data_dict = {
+                    'source_page': response.url,
+                    'page_title': response.xpath('/html/head/title/text()').extract_first(),
+                    'link_text': None,
+                    'page_headings': headings,
+                    'title': title
+            }
             if self._is_valid_pdf_url(fhref):
                 yield Request(
                     url=response.urljoin(fhref),
                     callback=self.save_pdf,
                     errback=self.on_error,
-                    meta={'title': title}
+                    dont_filter=True,
+                    meta={'data_dict': data_dict}
                 )
 
 

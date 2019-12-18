@@ -12,6 +12,7 @@ class Article(scrapy.Item):
     title = scrapy.Field()
     year = scrapy.Field()
     url = scrapy.Field()
+    url_filename = scrapy.Field()
     pdf = scrapy.Field()
     hash = scrapy.Field()
     has_text = scrapy.Field()
@@ -22,5 +23,9 @@ class Article(scrapy.Item):
     date_scraped = scrapy.Field()
     page_title = scrapy.Field()
     source_page = scrapy.Field()
+    disposition_title = scrapy.Field()
+    link_title = scrapy.Field()
+    page_headings = scrapy.Field()
     path = scrapy.Field()
+
 

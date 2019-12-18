@@ -1,7 +1,7 @@
 # Created by 'make update-requirements-txt'. DO NOT EDIT!
 alembic==1.1.0
 amqp==2.5.1
-apache-airflow[celery]==1.10.5
+apache-airflow[celery]==1.10.4
 apispec==2.0.2
 asn1crypto==0.24.0
 attrs==19.1.0

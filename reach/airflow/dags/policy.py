@@ -10,7 +10,7 @@ from reach.airflow.tasks import es_index_fulltext_docs
 from reach.airflow.tasks import es_index_fuzzy_matched
 from reach.airflow.tasks import exact_match_refs_operator
 from reach.airflow.tasks import fuzzy_match_refs
-from reach.airflow.dags.test_data_flow import create_e2e_test_dag
+from reach.airflow.tasks import policy_name_normalizer
 
 from reach.airflow.tasks.spider_operator import SpiderOperator
 from reach.airflow.tasks.extract_refs_operator import ExtractRefsOperator
@@ -123,22 +123,33 @@ def org_refs(dag, organisation, item_limits, spider_years):
 def org_fuzzy_match(dag, organisation, item_limits, parsePdf, esIndexPublications):
     """ Returns the fuzzy match portion of the pipeline for a single
     organization. """
+
+    name_normalizer = policy_name_normalizer.PolicyNameNormalizerOperator(
+        task_id="PolicyNameExtract.%s" % organisation,
+        organisation=organisation,
+        src_s3_key=parsePdf.dst_s3_key,
+        dst_s3_key=to_s3_output(dag, 'normalized-names', organisation, '.json.gz'),
+        dag=dag
+    )
+
     extractRefs = ExtractRefsOperator(
         task_id='ExtractRefs.%s' % organisation,
-        src_s3_key=parsePdf.dst_s3_key,
+        src_s3_key=name_normalizer.dst_s3_key,
         dst_s3_key=to_s3_output(
             dag, 'extracted-refs', organisation, '.json.gz'),
-        dag=dag)
+        dag=dag
+    )
 
     fuzzyMatchRefs = fuzzy_match_refs.FuzzyMatchRefsOperator(
         task_id='FuzzyMatchRefs.%s' % organisation,
         es_hosts=get_es_hosts(),
         src_s3_key=extractRefs.dst_s3_key,
+        organisation=organisation,
         dst_s3_key=to_s3_output(
             dag, 'fuzzy-matched-refs', organisation, '.json.gz'),
         es_index='-'.join([dag.dag_id, 'epmc', 'metadata']),
         dag=dag,
-        )
+    )
 
     esIndexFuzzyMatched = es_index_fuzzy_matched.ESIndexFuzzyMatchedCitations(
         task_id="ESIndexFuzzyMatchedCitations.%s" % organisation,
@@ -150,8 +161,19 @@ def org_fuzzy_match(dag, organisation, item_limits, parsePdf, esIndexPublication
         dag=dag
     )
 
+    esIndexFullTexts = es_index_fulltext_docs.ESIndexFulltextDocs(
+        task_id="ESIndexFulltextDocs.%s" % organisation,
+        src_s3_key=name_normalizer.dst_s3_key,
+        organisation=organisation,
+        es_hosts=get_es_hosts(),
+        item_limits=item_limits.index,
+        es_index='-'.join([dag.dag_id, 'docs']),
+        dag=dag
+    )
+
+    parsePdf >> name_normalizer >> esIndexFullTexts
+    name_normalizer >> extractRefs >> fuzzyMatchRefs >> esIndexFuzzyMatched
     esIndexPublications >> fuzzyMatchRefs
-    parsePdf >> extractRefs >> fuzzyMatchRefs >> esIndexFuzzyMatched
     return esIndexFuzzyMatched
 
 
@@ -168,17 +190,7 @@ def create_org_pipeline_fuzzy_match(dag, organisation, item_limits, spider_years
     """
 
     parsePdf = org_refs(dag, organisation, item_limits, spider_years)
-    esIndexFullTexts = es_index_fulltext_docs.ESIndexFulltextDocs(
-        task_id="ESIndexFulltextDocs.%s" % organisation,
-        src_s3_key=parsePdf.dst_s3_key,
-        organisation=organisation,
-        es_hosts=get_es_hosts(),
-        item_limits=item_limits.index,
-        es_index='-'.join([dag.dag_id, 'docs']),
-        dag=dag
-    )
-    parsePdf >> esIndexFullTexts
-    return parsePdf, esIndexFullTexts, org_fuzzy_match(
+    return parsePdf, org_fuzzy_match(
         dag, organisation, item_limits, parsePdf, esIndexPublications)
 
 
@@ -260,21 +272,23 @@ def create_dag_all_match(dag_id, default_args, spider_years,
         default_args=default_args,
         schedule_interval='0 0 * * 0,3'
     )
-    esIndexPublications = es_index_publications(dag, item_limits)
+    epmc_limits = ItemLimits(None, None)
+    esIndexPublications = es_index_publications(dag, epmc_limits)
     for organisation in ORGANISATIONS:
-        parsePdf, esIndexFullTexts, _ = create_org_pipeline_fuzzy_match(
+        parsePdf, _ = create_org_pipeline_fuzzy_match(
             dag,
             organisation,
             item_limits,
             spider_years,
             esIndexPublications)
+
         create_org_pipeline_exact_match(
             dag,
             organisation,
             item_limits,
             spider_years,
             parsePdf=parsePdf,
-            esIndexFullTexts=esIndexFullTexts)
+            esIndexFullTexts=None)
 
     return dag
 
@@ -290,14 +304,5 @@ policy_dag = create_dag_fuzzy_match(
     DEFAULT_ARGS,
     list(range(2012, datetime.datetime.now().year + 1)),
     ItemLimits(None, None),
-)
-
-
-# TODO: Put this behind a DEBUG flag
-e2e_test_dag = create_e2e_test_dag(
-    'e2e_test_dag',
-    DEFAULT_ARGS,
-    [2018],
-    ItemLimits(0, 0),
 )
 
