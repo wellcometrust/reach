@@ -17,7 +17,6 @@ class WhoIrisSpider(BaseSpider):
         """ This sets up the urls to scrape for each years.
         """
         keys = [key for key in self.settings.keys()]
-        print(keys)
         years = self.settings['WHO_IRIS_YEARS']
         urls = []
         # Initial URL (splited for PEP8 compliance)
@@ -91,9 +90,8 @@ class WhoIrisSpider(BaseSpider):
         @returns items 0 0
         """
 
-        data_dict = {
-            'year': response.meta.get('year', {}),
-        }
+        data_dict = dict()
+        data_dict['year'] = response.meta.get('year', {})
         data_dict['title'] = response.css(
             'h2.page-header::text'
         ).extract_first()
@@ -122,11 +120,21 @@ class WhoIrisSpider(BaseSpider):
         data_dict['authors'] = ', '.join(
             details_dict.get('contributor author', [])
         )
+
+        # Extract headings level 1 to 3 from the page
+        headings = response.xpath("/html/body//*[self::h1 or self::h2 or self::h3]/text()")
+        headings = [x.extract() for x in headings]
+
         if self._is_valid_pdf_url(href):
+            data_dict['source_page'] = response.url
+            data_dict['page_title'] = response.xpath('/html/head/title/text()').extract_first()
+            data_dict['link_text'] = None
+            data_dict['page_headings'] = headings
             yield Request(
                 url=response.urljoin(href),
                 callback=self.save_pdf,
                 errback=self.on_error,
+                dont_filter=True,
                 meta={'data_dict': data_dict}
             )
         else:

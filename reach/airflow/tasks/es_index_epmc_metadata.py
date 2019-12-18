@@ -40,6 +40,7 @@ class ESIndexEPMCMetadata(BaseOperator):
             raise ValueError('src_s3_key must end in .json.gz')
 
         self.src_s3_key = src_s3_key
+        #self.src_s3_key = "file://opt/reach/reach/airflow/epmc-metadata.json.gz"
         self.es_hosts = es_hosts
         self.es_port = es_port
         self.aws_conn_id = aws_conn_id
@@ -60,14 +61,27 @@ class ESIndexEPMCMetadata(BaseOperator):
             self.src_s3_key,
         )
 
-        s3_object = s3.get_key(self.src_s3_key)
-        with tempfile.NamedTemporaryFile() as tf:
-            s3_object.download_fileobj(tf)
-            tf.seek(0)
-            count = epmc_metadata.insert_file(
-                tf,
-                es,
-                max_items=self.max_epmc_metadata,
-                es_index=self.es_index,
-            )
+        if self.src_s3_key.startswith("file://"):
+            # Use a local file
+            file_path = self.src_s3_key.replace("file:/", "")
+            with open(file_path, "rb") as f:
+                count = epmc_metadata.insert_file(
+                    f,
+                    es,
+                    max_items=self.max_epmc_metadata,
+                    es_index=self.es_index
+                )
+        else:
+            # DOwnload S3 object
+            s3_object = s3.get_key(self.src_s3_key)
+            with tempfile.NamedTemporaryFile() as tf:
+                s3_object.download_fileobj(tf)
+                tf.seek(0)
+                count = epmc_metadata.insert_file(
+                    tf,
+                    es,
+                    max_items=self.max_epmc_metadata,
+                    es_index=self.es_index,
+                )
+
         self.log.info('execute: insert complete count=%d', count)

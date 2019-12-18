@@ -62,13 +62,23 @@ class ParliamentSpider(BaseSpider):
             year = meta[0][-4:]
             types = meta[1]
 
+            # Extract headings level 1 to 3 from the page
+            headings = response.xpath("/html/body//*[self::h1 or self::h2 or self::h3]/text()")
+            headings = [x.extract() for x in headings]
+
+            data_dict = {
+                'source_page': response.url,
+                'page_title': response.xpath('/html/head/title/text()').extract_first(),
+                'link_text': title,
+                'title': title,
+                'year': year,
+                'types': types,
+                'page_headings': headings
+            }
+
             yield Request(
                 url=response.urljoin(link),
-                meta={
-                    'title': title,
-                    'year': year,
-                    'types': types
-                },
+                meta=data_dict,
                 callback=self.parse_others,
                 errback=self.on_error,
             )
@@ -89,11 +99,7 @@ class ParliamentSpider(BaseSpider):
         if self._is_valid_pdf(response):
             yield Request(
                 url=response.urljoin(response.request.url),
-                meta={
-                    'title': response.meta.get('title'),
-                    'year': response.meta.get('year'),
-                    'types': response.meta.get('types'),
-                },
+                meta={'data_dict': response.meta},
                 callback=self.save_pdf,
                 errback=self.on_error,
             )
@@ -106,12 +112,9 @@ class ParliamentSpider(BaseSpider):
                 if self._is_valid_pdf_url(url):
                     yield Request(
                         url=url,
-                        meta={
-                            'title': response.meta.get('title'),
-                            'year': response.meta.get('year'),
-                            'types': response.meta.get('types'),
-                        },
+                        meta={'data_dict': response.meta},
                         callback=self.save_pdf,
+                        dont_filter=True,
                         errback=self.on_error,
                     )
 

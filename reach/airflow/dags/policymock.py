@@ -10,10 +10,21 @@ from reach.airflow.tasks import es_index_fulltext_docs
 from reach.airflow.tasks import es_index_fuzzy_matched
 from reach.airflow.tasks import exact_match_refs_operator
 from reach.airflow.tasks import fuzzy_match_refs
+from reach.airflow.tasks import policy_name_normalizer
 
 from reach.airflow.tasks.spider_operator import SpiderOperator
 from reach.airflow.tasks.extract_refs_operator import ExtractRefsOperator
 from reach.airflow.tasks.parse_pdf_operator import ParsePdfOperator
+
+
+DEFAULT_ARGS = {
+    'depends_on_past': False,
+    'start_date': airflow.utils.dates.days_ago(2),
+    'retries': 0,
+    'retry_delay': datetime.timedelta(minutes=5),
+}
+
+ItemLimits = namedtuple('ItemLimits', ('spiders', 'index'))
 
 def verify_s3_prefix():
     reach_s3_prefix = conf.get("core", "reach_s3_prefix")
@@ -50,14 +61,17 @@ def to_s3_output_dir(dag, *args):
     ) % (dag.dag_id, path, slug)
 
 
+"""
 EPMC_METADATA_KEY = '/'.join([
     '{{ conf.get("core", "openresearch_s3_prefix") }}',
     'output', 'open-research', 'epmc-metadata', 'epmc-metadata.json.gz'
     ])
+"""
+EPMC_METADATA_KEY = "file://Users/jdu/Projects/wellcome/data/epmc-metadata.json.gz"
 
 
 
-def create_e2e_test_dag(dag_id, default_args, spider_years, item_limits):
+def create_e2e_test(dag_id, default_args, spider_years, item_limits):
     """ Creates a simple dag for testing end to end functionality """
 
     dag = DAG(
@@ -86,9 +100,17 @@ def create_e2e_test_dag(dag_id, default_args, spider_years, item_limits):
         dag=dag
     )
 
+    name_normalizer = policy_name_normalizer.PolicyNameNormalizerOperator(
+        task_id="NameNormalisation.acme",
+        organisation="acme",
+        src_s3_key=parsePdf.dst_s3_key,
+        dst_s3_key=to_s3_output(dag, 'normalized-names', 'acme', '.json.gz'),
+        dag=dag
+    )
+
     esIndexFullTexts = es_index_fulltext_docs.ESIndexFulltextDocs(
         task_id="ESIndexFulltextDocs.acme",
-        src_s3_key=parsePdf.dst_s3_key,
+        src_s3_key=name_normalizer.dst_s3_key,
         organisation='acme',
         es_hosts=get_es_hosts(),
         item_limits=item_limits.index,
@@ -98,7 +120,7 @@ def create_e2e_test_dag(dag_id, default_args, spider_years, item_limits):
 
     extractRefs = ExtractRefsOperator(
         task_id='ExtractRefs.acme',
-        src_s3_key=parsePdf.dst_s3_key,
+        src_s3_key=name_normalizer.dst_s3_key,
         dst_s3_key=to_s3_output(
             dag, 'extracted-refs', 'acme', '.json.gz'),
         dag=dag
@@ -117,6 +139,7 @@ def create_e2e_test_dag(dag_id, default_args, spider_years, item_limits):
         task_id='FuzzyMatchRefs.acme',
         es_hosts=get_es_hosts(),
         src_s3_key=extractRefs.dst_s3_key,
+        organisation="acme",
         dst_s3_key=to_s3_output(
             dag, 'fuzzy-matched-refs', 'acme', '.json.gz'),
         es_index='-'.join([dag.dag_id, 'epmc', 'metadata']),
@@ -134,8 +157,15 @@ def create_e2e_test_dag(dag_id, default_args, spider_years, item_limits):
     )
 
     epmc_data >> fuzzyMatchRefs
-    spider >> parsePdf >> esIndexFullTexts
-    parsePdf >> extractRefs >> fuzzyMatchRefs >> esIndexFuzzyMatched
+    spider >> parsePdf >> name_normalizer >> esIndexFullTexts
+    name_normalizer >> extractRefs >> fuzzyMatchRefs >> esIndexFuzzyMatched
     return dag
 
 
+# TODO: Put this behind a DEBUG flag
+policymock_dag = create_e2e_test(
+    'policy-mock',
+    DEFAULT_ARGS,
+    [2018],
+    ItemLimits(None, None),
+)

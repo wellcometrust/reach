@@ -104,15 +104,24 @@ class NiceSpider(BaseSpider):
         @returns items 0 0
         """
 
-        data_dict = {
-            'title': response.css('h1::text').extract_first(),
-            'year': response.css(
-                '.published-date time::attr(datetime)'
-            ).extract_first()[:4]
-        }
-        # Scrap all the pdf on the page, passing scrapped metadata
+        # Extract headings level 1 to 3 from the page
+        headings = response.xpath("/html/body//*[self::h1 or self::h2 or self::h3]/text()")
+        headings = [x.extract() for x in headings]
+
+        title = response.css('h1::text').extract_first()
+        year = response.css('.published-date time::attr(datetime)').extract_first()[:4]
+
+        # Scrape all the pdf on the page, passing scraped metadata
         for href in response.css('.track-link::attr(href)').extract():
             if self._is_valid_pdf_url(href):
+                data_dict = {
+                    'source_page': response.url,
+                    'page_title': response.xpath('/html/head/title/text()').extract_first(),
+                    'link_text': None,
+                    'page_headings': headings,
+                    'title': title,
+                    'year': year
+                }
                 yield Request(
                     url=response.urljoin(href),
                     errback=self.on_error,
@@ -132,10 +141,9 @@ class NiceSpider(BaseSpider):
         date = response.css(
             '.published-date time::attr(datetime)'
         ).extract_first()
-        data_dict = {
-            'title': response.css('h1::text').extract_first(),
-            'year': date[:4] if date else None
-        }
+
+        title = response.css('h1::text').extract_first()
+        year = date[:4] if date else None
 
         # First case: PDF exists as PDF, epub etc.
         href = response.xpath(
@@ -152,16 +160,29 @@ class NiceSpider(BaseSpider):
 
         url = response.urljoin(href)
         if url:
+            # Extract headings level 1 to 3 from the page
+            headings = response.xpath("/html/body//*[self::h1 or self::h2 or self::h3]/text()")
+            headings = [x.extract() for x in headings]
+
             # Nice doesn't supply file extensions for its downloads
             # so contrary to other spiders, we don't check for a valid
             # PDF URL here.
             # TODO: Maybe do an OPTION call to the route first to avoid
             # downloadning the whole page in case it's not a PDF, would
             # save some time, as some of these routes aren't PDFs (images, etc...)
+            data_dict = {
+                'source_page': response.url,
+                'page_title': response.xpath('/html/head/title/text()').extract_first(),
+                'title': title,
+                'year': year,
+                'link_text': None,
+                'page_headings': headings
+            }
             yield Request(
                 url=url,
                 errback=self.on_error,
                 callback=self.save_pdf,
+                dont_filter=True,
                 meta={'data_dict': data_dict}
             )
 

@@ -210,3 +210,18 @@ class PdfFile(object):
                             map(lambda x: x.text, result)
                         )
         return keyword_dict
+
+    def get_title_candidates(self):
+        """ Retrieve potential title candidates
+        from the PDF. This is fairly simple at the moment,
+        just sort the lines by font size and pull off the top
+        three.
+        """
+        lines = []
+        for page in self.pages:
+            lines.extend(page.lines)
+
+        sorted_lines = sorted(lines, key=lambda k: -k.size)
+        # TODO: Need to check there are actually enough lines to do this
+        return [x.text for x in sorted_lines[0:3]]
+
