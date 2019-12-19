@@ -159,6 +159,18 @@ class BaseSpider(scrapy.Spider):
             )
             return
 
+        # Try and get filename from Content-Disposition
+        disposition_name = None
+        cd_header = response.headers.get("Content-Disposition", None)
+        if cd_header:
+            cd_items = [x.split(b"=") for x in cd_header.split(b';')[1:]]
+            cd_items = dict((item[0].lower(), item[1] or None) for item in cd_items if item[0] is not None)
+            disposition_name = cd_items.get(b"name", None)
+            if disposition_name is None:
+                disposition_name = cd_items.get(b"filename", None)
+            if disposition_name is None:
+                disposition_name = cd_items.get(b'filename*', None)
+
         max_article = self.settings.getint('MAX_ARTICLE')
         current_item_count = self.crawler.stats.get_value('item_scraped_count')
         if max_article > 0 and current_item_count:
@@ -174,14 +186,21 @@ class BaseSpider(scrapy.Spider):
             tf.write(response.body)
             filename = tf.name
 
+        # TODO: Get the filename from Content-Disposition header if available
         article = Article({
-            'title': data_dict.get('title'),
+            'title': data_dict.get('title', None),
             'url': response.request.url,
-            'year': data_dict.get('year'),
-            'authors': data_dict.get('authors'),
-            'types': data_dict.get('types'),
-            'subjects': data_dict.get('subjects'),
+            'url_filename': response.request.url.split("/")[-1],
+            'year': data_dict.get('year', None),
+            'authors': data_dict.get('authors', None),
+            'types': data_dict.get('types', None),
+            'subjects': data_dict.get('subjects', None),
             'pdf': filename,
+            'page_title': data_dict.get('page_title', None),
+            'source_page': data_dict.get('source_page', None),
+            'link_title': data_dict.get('link_text', None),
+            'page_headings': data_dict.get('page_headings', None),
+            'disposition_title': disposition_name
         })
 
         return article

@@ -36,12 +36,13 @@ class ElasticsearchFuzzyMatcher:
     MAX_TITLE_LENGTH = 512
 
     def __init__(self, es, score_threshold, should_match_threshold,
-                 es_index, min_title_length=0):
+                 es_index, organisation, min_title_length=0):
         self.es = es
         self.es_index = es_index
         self.score_threshold = score_threshold
         self.min_title_length = min_title_length
         self.should_match_threshold = should_match_threshold
+        self.organisation = organisation
 
     def match(self, reference):
         title = reference['Title']
@@ -95,14 +96,37 @@ class ElasticsearchFuzzyMatcher:
             #     'doc-id=%s similarity=%.1f',
             #     reference['Document id'], best_score
             # )
+            ref_metadata = reference.get('metadata', {})
             return {
-                'Document id': reference['Document id'],
-                'Reference id': reference['Reference id'],
-                'Extracted title': reference['Title'],
-                'Matched title': matched_reference['doc']['title'],
-                'Similarity': best_score,
-                'Match algorithm': 'Fuzzy match'
+                'reference_id': reference.get('Reference id', None),
+                'extracted_title': reference.get('Title', None),
+                'similarity': best_score,
+                'organisation': self.organisation,
+
+                # Matched reference information
+                'match_title': matched_reference.get('doc', {}).get('title', 'Unknown'),
+                'match_algo': 'Fuzzy match',
+                'match_pub_year': matched_reference.get('doc', {}).get('pubYear', None),
+                'match_authors': ", ".join(list(map(map_author, matched_reference.get('doc', {}).get('authors', [])))),
+                'match_publication': matched_reference.get('doc', {}).get('journalTitle', 'Unknown'),
+                'match_pmcid': matched_reference.get('doc', {}).get('pmcid', None),
+                'match_pmid': matched_reference.get('doc', {}).get('pmid', None),
+                'match_doi': matched_reference.get('doc', {}).get('doi', None),
+                'match_issn': matched_reference.get('doc', {}).get('journalISSN', None),
+                'match_source': 'EPMC',
+
+                # Policy information
+                'policy_doc_id': ref_metadata.get("file_hash", None),
+                'policy_source_url': ref_metadata.get('url', None),
+                'policy_title': ref_metadata.get('title', None),
+                'policy_source_page': ref_metadata.get('source_page', None),
+                'policy_source_page_title': ref_metadata.get('source_page_title', None),
+                'policy_pdf_creator': ref_metadata.get('creator', None),
             }
+
+def map_author(author):
+    return "%s %s" % (author.get("LastName", "Unknown"), author.get("Initials", "?"),)
+
 
 
 class FuzzyMatchRefsOperator(BaseOperator):
@@ -124,6 +148,7 @@ class FuzzyMatchRefsOperator(BaseOperator):
     @apply_defaults
     def __init__(self, es_hosts, src_s3_key, dst_s3_key, es_index,
                  score_threshold=SCORE_THRESHOLD,
+                 organisation=None,
                  should_match_threshold=SHOULD_MATCH_THRESHOLD,
                  aws_conn_id='aws_default', *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -133,6 +158,7 @@ class FuzzyMatchRefsOperator(BaseOperator):
         self.score_threshold = score_threshold
         self.should_match_threshold = should_match_threshold
         self.es_index = es_index
+        self.organisation = organisation
 
         self.es = reach.elastic.common.connect(es_hosts)
         self.aws_conn_id = aws_conn_id
@@ -149,6 +175,7 @@ class FuzzyMatchRefsOperator(BaseOperator):
             self.score_threshold,
             self.should_match_threshold,
             self.es_index,
+            self.organisation,
         )
 
         with tempfile.NamedTemporaryFile(mode='wb') as output_raw_f:

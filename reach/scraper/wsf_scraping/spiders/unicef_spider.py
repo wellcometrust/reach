@@ -55,10 +55,23 @@ class UnicefSpider(BaseSpider):
         title = response.css('.entry-heading h1::text').extract_first()
         hrefs = response.css('a::attr("href")').extract()
         ls = list(filter(lambda x: self._is_valid_pdf_url(x), hrefs))
+
+        # Extract headings level 1 to 3 from the page
+        headings = response.xpath("/html/body//*[self::h1 or self::h2 or self::h3]/text()")
+        headings = [x.extract() for x in headings]
+
         for link in ls:
+            data_dict = {
+                'source_page': response.url,
+                'page_title': response.xpath('/html/head/title/text()').extract_first(),
+                'link_text': title,
+                'title': title,
+                'page_headings': headings
+            }
             yield Request(
                 url=response.urljoin(link),
                 callback=self.save_pdf,
                 errback=self.on_error,
-                meta={'title': title}
+                dont_filter=True,
+                meta={'data_dict': data_dict}
             )

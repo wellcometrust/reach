@@ -19,10 +19,61 @@ ERR_NO_FILE = 'pdf2html produced no output'
 ERR_EMPTY_FILE = 'html file was empty'
 ERR_FILE_TOO_LARGE = 'html file too large'
 ERR_XML_SYNTAX = 'xml file has some syntax error'
+ERR_PDFINFO_NONZERO_EXIT = 'pdfinfo could not get pdf metadata'
 
 BASE_FONT_SIZE = -10
 
 logger = logging.getLogger(__name__)
+
+METADATA_MAP = {
+    'CreationDate': 'created',
+    'Creator': 'creator',
+    'File size': 'file_size',
+    'Page rot': 'page_rot',
+    'Title': 'title',
+    'Author': 'author'
+}
+
+def get_pdf_metadata(document):
+    """ Get PDF metadata/document data using
+    the `pdfinfo` command line utility in poppler
+
+    Args:
+        document: (file) the file to parse
+    """
+    cmd = [
+        'pdfinfo',
+        document.name
+    ]
+
+    meta = {}
+
+    result = subprocess.run(
+        cmd,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+    )
+
+    # We ignore all other errors, as we want
+    # to carry on to trying to parse the PDF
+    # regardless of metadata problems
+    if result.returncode == 0:
+        # info scrape succeeded
+        string_data = result.stdout.decode("utf-8")
+        data = {}
+        for line in string_data.splitlines():
+            if ":" in line:
+                key, value = [x.strip() for x in line.split(":", 1)]
+                data[key] = value
+
+        # Massage this into a better format
+        for key, value in data.items():
+            if key in METADATA_MAP.keys():
+                meta[METADATA_MAP[key]] = value
+
+    return meta
+
+
 
 def parse_pdf_document(document):
     """ Parses a file using pdftohtml, returning a
@@ -31,6 +82,9 @@ def parse_pdf_document(document):
     Args:
         document: file object, pointing to a named file
     """
+
+    metadata = get_pdf_metadata(document)
+    title_candidates = []
 
     with tempfile.NamedTemporaryFile(suffix='.xml', mode='w+b') as tf:
         # Run pdftohtml on the document, and output an xml formated document
@@ -56,7 +110,7 @@ def parse_pdf_document(document):
                 document.name,
                 e.stderr,
             )
-            return None, None, [ERR_PDF2HTML_NONZERO_EXIT]
+            return None, None, None, [ERR_PDF2HTML_NONZERO_EXIT]
 
         try:
             # Try to get file stats in order to check both its existence
@@ -65,10 +119,10 @@ def parse_pdf_document(document):
         except OSError as e:
             if e.errno != errno.ENOENT:
                 raise
-            return None, None, [ERR_NO_FILE]
+            return None, None, None, [ERR_NO_FILE]
 
         if st.st_size == 0:
-            return None, None, [ERR_EMPTY_FILE]
+            return None, None, None, [ERR_EMPTY_FILE]
 
         if st.st_size > MAX_HTML_SIZE:
             # Files this large are usually unparseable and blow out our
@@ -78,12 +132,12 @@ def parse_pdf_document(document):
                 tf.name, st.st_size, MAX_HTML_SIZE
             )
 
-            return None, None, [ERR_FILE_TOO_LARGE]
+            return None, None, None, [ERR_FILE_TOO_LARGE]
 
         try:
             tree = lxml.etree.parse(io.BytesIO(tf.read()))
         except XMLSyntaxError:
-            return None, None, [ERR_XML_SYNTAX]
+            return None, None, None, [ERR_XML_SYNTAX]
 
         file_pages = []
         full_text = '\n'.join([_flatten_text(text) for text in tree.xpath('//text')])
@@ -117,7 +171,7 @@ def parse_pdf_document(document):
 
         pdf_file = PdfFile(file_pages)
 
-        return pdf_file, full_text, None
+        return pdf_file, full_text, metadata, None
 
 
 def grab_section(pdf_file, keyword):

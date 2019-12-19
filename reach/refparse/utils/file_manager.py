@@ -38,7 +38,7 @@ class FileManager():
 
     def get_scraping_results(
             self, file_name, file_prefix,
-            scraping_columns=('title', 'file_hash', 'sections', 'uri')
+            scraping_columns=('title', 'file_hash', 'sections', 'uri', 'metadata')
             ):
         """Takes a scraping result-json to return it cleared of its unused
         parts, as a pandas DataFrame. This function is used instead of the
