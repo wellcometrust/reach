@@ -17,10 +17,11 @@ import pandas as pd
 
 from .utils import (FileManager,
                    FuzzyMatcher,
-                   split_section,
                    structure_reference,
                    ExactMatcher)
 from .settings import settings
+
+from deep_reference_parser.split_section import SplitSection
 
 
 SectionedDocument = namedtuple(
@@ -167,6 +168,10 @@ def yield_structured_references(scraper_file,
 
     sectioned_documents = transform_scraper_file(scraper_file)
 
+    # Instantiate deep_reference_parser model here (not in loop!)
+
+    section_splitter = SplitSection()
+
     t0 = time.time()
     nb_references = 0
     for i, doc in enumerate(sectioned_documents):
@@ -174,7 +179,7 @@ def yield_structured_references(scraper_file,
             i
         ))
 
-        splitted_references = split_section(
+        splitted_references = section_splitter.split(
             doc.section
         )
 
