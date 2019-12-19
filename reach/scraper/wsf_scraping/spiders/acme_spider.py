@@ -56,24 +56,38 @@ class AcmeSpider(BaseSpider):
         @returns items 0 0
         """
 
-        # Scrap all the pdf on the page, passing scrapped metadata
-        href = response.css(
-            '.doc-download-link::attr("href")'
-        ).extract_first()
+        items = map(result_mapper, response.css(".doc-download-link"))
 
-        data_dict = {}
+        # Extract headings level 1 to 3 from the page
+        headings = response.xpath("/html/body//*[self::h1 or self::h2 or self::h3]/text()")
+        headings = [x.extract() for x in headings]
 
-        if self._is_valid_pdf_url(href):
-            yield Request(
-                url=response.urljoin(href),
-                callback=self.save_pdf,
-                errback=self.on_error,
-                dont_filter=True,
-                meta={'data_dict': data_dict}
-            )
-        else:
-            err_link = href if href else ''.join([response.url, ' (referer)'])
-            self.logger.debug(
-                "Item is null - Canceling (%s)",
-                err_link
-            )
+        data_dict = {
+            'source_page': response.url,
+            'page_title': response.xpath('/html/head/title/text()').extract_first(),
+            'page_headings': headings
+        }
+
+        for item in items:
+            if self._is_valid_pdf_url(item[0]):
+                data_dict['filename'] = item[0].split("/")[-1] or None
+                data_dict['link_text'] = item[1]
+                yield Request(
+                    url=response.urljoin(item[0]),
+                    callback=self.save_pdf,
+                    errback=self.on_error,
+                    dont_filter=True,
+                    meta={'data_dict': data_dict}
+                )
+            else:
+                err_link = href if href else ''.join([response.url, ' (referer)'])
+                self.logger.debug(
+                    "Item is null - Canceling (%s)",
+                    err_link
+                )
+
+def result_mapper(item):
+    return (
+        item.attrib['href'],
+        item.xpath('text()').extract_first(),
+    )

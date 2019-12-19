@@ -22,9 +22,15 @@ def to_es_action(org, es_index, line):
     return {
         "_index": es_index,
         "doc": {
-            'hash': d['file_hash'],
-            'text': d['text'],
+            'hash': d.get('file_hash', None),
+            'text': d.get('text', None),
             'organisation': org,
+            'title': d.get('title', None),
+            'authors': d.get("authors", None),
+            'created': d.get('created', None),
+            'year': d.get('year', None),
+            'source_page': d.get('source_page', None),
+            'url': d.get('url', None)
         }
     }
 

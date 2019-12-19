@@ -25,7 +25,7 @@ from .settings import settings
 
 SectionedDocument = namedtuple(
     'SectionedDocument',
-    ['section', 'uri', 'id']
+    ['section', 'uri', 'id', 'metadata']
 )
 
 DEFAULT_MODEL_FILE = os.path.join(
@@ -64,7 +64,8 @@ def transform_scraper_file(scraper_data, section_column="sections"):
                     yield SectionedDocument(
                         section,
                         document.get('url', None),
-                        document['file_hash']
+                        document['file_hash'],
+                        dict(document)
                     )
 
 def transform_scraper_text_file(scraper_data, text_column="text"):
@@ -72,17 +73,21 @@ def transform_scraper_text_file(scraper_data, text_column="text"):
     SectionedDocument tuples.
     """
     for _, document in scraper_data.iterrows():
+        metadata = {}
+        metadata.update(document.get("source_metadata", {}))
+        metadata.update(document.get("pdf_metadata", {}))
         if document[text_column]:
             text = document[text_column]
             yield SectionedDocument(
                 text,
                 document.get('url', None),
-                document['file_hash']
+                document['file_hash'],
+                metadata
             )
 
 def transform_structured_references(
         splitted_references, structured_references,
-        document_id, document_uri):
+        document_id, document_uri, document_metadata):
     transformed_structured_references = []
     for structured_reference, splitted_reference in zip(structured_references, splitted_references):
         # Don't return the structured references if no categories were found
@@ -90,16 +95,30 @@ def transform_structured_references(
             structured_reference['Document id'] = document_id
             structured_reference['Document uri'] = document_uri
             structured_reference['Reference id'] = hash(splitted_reference)
+            structured_reference['metadata'] = document_metadata
             transformed_structured_references.append(structured_reference)
 
     return transformed_structured_references
 
+SCRAPING_COLUMNS = [
+    'title',
+    'file_hash',
+    'sections',
+    'url',
+    'keywords',
+    'source_page',
+    'authors',
+    'subject',
+    'year',
+    'created',
+    'types'
+]
 
 def get_file(
         file_str,
         file_type,
         get_scraped=False,
-        scraping_columns=('title', 'file_hash', 'sections', 'uri')
+        scraping_columns=('title', 'file_hash', 'sections', 'uri', 'url', 'keywords')
         ):
     if file_str.startswith('s3://'):
         u = urlparse(file_str)
@@ -114,7 +133,7 @@ def get_file(
         file = fm.get_scraping_results(
             file_name,
             file_dir,
-            scraping_columns,)
+            SCRAPING_COLUMNS,)
     else:
         file = fm.get_file(
             file_name,
@@ -142,7 +161,7 @@ def yield_structured_references(scraper_file,
 
     # Loading the scraper results
     scraper_file = get_file(scraper_file, "", get_scraped=True)
-    
+
     # Loading the pipeline
     model = get_file(model_file, 'pickle')
 
@@ -159,7 +178,7 @@ def yield_structured_references(scraper_file,
             doc.section
         )
 
-        # For some weird reason not using pool map 
+        # For some weird reason not using pool map
         #   in my laptop is more performant
         structured_references = pool_map(
             # A better name would be parse_reference
@@ -172,7 +191,8 @@ def yield_structured_references(scraper_file,
             splitted_references,
             structured_references,
             doc.id,
-            doc.uri
+            doc.uri,
+            doc.metadata
         )
         yield structured_references
 
@@ -294,7 +314,7 @@ def refparse(scraper_file, publications_file, model_file,
         )
     document_texts = transform_scraper_text_file(scraper_file)
     exact_matcher = ExactMatcher(document_texts, settings.MATCH_TITLE_LENGTH_THRESHOLD)
-    with open(exact_matched_reference_filepath, 'w') as emrefs_f: 
+    with open(exact_matched_reference_filepath, 'w') as emrefs_f:
         for publication in publications:
             exact_matched_references = exact_match_publication(exact_matcher, publication)
             for exact_matched_reference in exact_matched_references:

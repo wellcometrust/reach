@@ -21,14 +21,7 @@ def to_es_action(org, es_index, line):
 
     return {
         "_index": es_index,
-        "doc": {
-            'Document id': d['Document id'],
-            'Reference id': d['Reference id'],
-            'Extracted title': d['Extracted title'],
-            'Matched title': d['Matched title'],
-            'Similarity': d['Similarity'],
-            'Match algorithm': d['Match algorithm'],
-        }
+        "doc": d
     }
 
 

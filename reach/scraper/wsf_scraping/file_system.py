@@ -143,7 +143,7 @@ class S3FileSystem(FileSystem):
                 content[item['hash'][:2]] = [item['hash']]
 
             if not data.get(item['hash']):
-                data[item['hash']] = {'url': item['url']}
+                data[item['hash']] = dict(item)
 
         key = os.path.join(
             self.prefix,
