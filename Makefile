@@ -87,7 +87,7 @@ docker-push: docker-test
 # build/virtualenv (for docker-less dev)
 #
 
-$(VIRTUALENV)/.installed: requirements.txt test_requirements.txt
+$(VIRTUALENV)/.installed: requirements.txt test_requirements.txt $(REFERENCE_SPLITTER_WHEEL)
 	@if [ -d $(VIRTUALENV) ]; then rm -rf $(VIRTUALENV); fi
 	@mkdir -p $(VIRTUALENV)
 	virtualenv --python python3 $(VIRTUALENV)
