@@ -40,11 +40,12 @@ class MsfSpider(BaseSpider):
 
         # TODO: Can pull document title from image alt or title properties
 
-        doc_links = list(response.css('field-item p'))
+        doc_links = list(response.css('.field-item p'))
 
-        for element in doc_links:
-            url = item.xpath('a[@class="btn"]/@href').extract_first()
-            image_alt = item.xapth('img[@class="file-default"]/@alt').extract_first()
+
+        for item in doc_links:
+            url = item.xpath('.//a[@class="btn"]/@href').extract_first()
+            image_alt = item.xpath('.//img[@class="media-element file-default"]/@alt').extract_first()
 
             if self._is_valid_pdf_url(url):
                 data_dict = {
