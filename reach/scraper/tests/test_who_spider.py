@@ -122,4 +122,4 @@ class TestWhoIrisSpider(unittest.TestCase):
                 'with the Government of the USSR'
             )
 
-            self.assertEqual(len(data_dict), 5)
+            self.assertEqual(len(data_dict), 9)

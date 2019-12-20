@@ -61,7 +61,7 @@ class TestPdfObjects(unittest.TestCase):
 
     def setUp(self):
         self.test_file = open(TEST_PDF, 'rb')
-        self.pdf_file_object, _, _ = parse_pdf_document(self.test_file)
+        self.pdf_file_object, _, _, _ = parse_pdf_document(self.test_file)
 
     def tearDown(self):
         self.test_file.close()
@@ -135,7 +135,7 @@ class TestPdfObjectsMultipage(unittest.TestCase):
 
     def setUp(self):
         self.test_file = open(TEST_PDF_MULTIPAGE, 'rb')
-        self.pdf_file_object, self.full_text, _ = parse_pdf_document(self.test_file)
+        self.pdf_file_object, self.full_text, _, _ = parse_pdf_document(self.test_file)
 
     def tearDown(self):
         self.test_file.close()
@@ -167,7 +167,7 @@ class TestPdfObjectsPageNumber(unittest.TestCase):
 
     def setUp(self):
         self.test_file = open(TEST_PDF_PAGE_NUMBER, 'rb')
-        self.pdf_file_object, _, _ = parse_pdf_document(self.test_file)
+        self.pdf_file_object, _, _, _ = parse_pdf_document(self.test_file)
 
         # Cycle through the pdf document, and flatten
         # into a single string
