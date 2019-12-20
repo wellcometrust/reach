@@ -123,7 +123,7 @@ update-requirements-txt:
 
 .PHONY: test
 test: virtualenv
-	$(VIRTUALENV)/bin/pytest ./reach
+	$(VIRTUALENV)/bin/pytest -s ./reach
 
 .PHONY: docker-test
 docker-test: docker-build
