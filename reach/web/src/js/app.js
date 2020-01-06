@@ -1,7 +1,7 @@
 import clearSearch from './clearSearch.js';
-import sortTables from './elasticCommon.js';
+import policyTable from './policyTable.js';
 
 document.addEventListener('DOMContentLoaded', function(event) {
   clearSearch();
-  elasticCommon();
+  policyTable();
 });
