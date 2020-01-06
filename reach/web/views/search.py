@@ -9,7 +9,63 @@ from reach.web.views import template
 from reach.web import api
 
 
-def _search_es(es, es_index, params, explain=False):
+def _search_policy(es, es_index, params, explain=False):
+        """Run a search on the elasticsearch database.
+
+        Args:
+            es: An Elasticsearch active connection.
+            params: The request's parameters. Shoud include 'term' and at
+                    least a field ([text|title|organisation]).
+            explain: A boolean to enable|disable elasticsearch's explain.
+
+        Returns:
+            True|False: The search success status
+            es.search()|str: A dict containing the result of the search if it
+                             succeeded or a string explaining why it failed
+        """
+        try:
+            fields = params.get('fields', '').split(',')
+            size = params.get('size', 100)
+            es.cluster.health(wait_for_status='yellow')
+
+            es_body = {
+                'size': int(size),
+                'query': {
+                    'multi_match': {
+                        'query': params.get('term'),
+                        'type': "best_fields",
+                        'fields': ['.'.join(['doc', f]) for f in fields]
+                    }
+                }
+            }
+
+            if params.get('page'):
+                es_body['from'] = (int(params.get('page')) - 1) * int(size)
+
+            if params.get('sort'):
+                es_body['sort'] = {
+                    f"doc.{params.get('sort')}": params.get('order', 'desc')
+                }
+
+            return True, es.search(
+                index=es_index,
+                body=json.dumps(es_body),
+                explain=explain
+            )
+
+        except ConnectionError:
+            message = 'Could not join the elasticsearch server.'
+            raise falcon.HTTPServiceUnavailable(description=message)
+
+        except NotFoundError:
+            message = 'No results found.'
+            return False, {'message': message}
+
+        except Exception as e:
+            raise falcon.HTTPError(description=str(e))
+
+
+def _search_citations(es, es_index, params, explain=False):
         """Run a search on the elasticsearch database.
 
         Args:
@@ -65,6 +121,18 @@ def _search_es(es, es_index, params, explain=False):
             raise falcon.HTTPError(description=str(e))
 
 
+def format_citations(es_reponse):
+    """Format a citations index ES reponse dict to output grouped citations.
+
+    Args:
+      es_reponse: A search response from ES citations index
+
+    Returns:
+      formatted response: A dict containing grouped citations
+    """
+    pass
+
+
 class SearchApi:
     """Let you search for terms in publications fulltexts. Returns a json.
 
@@ -87,14 +155,24 @@ class SearchApi:
             req: The request passed to this controller
             resp: The reponse object to be returned
         """
+        if "citation" in self.es_index:
+            search_es = _search_citations
+        else:
+            search_es = _search_policy
+
         if req.params:
-            status, response = _search_es(
+            status, response = search_es(
                 self.es,
                 self.es_index,
                 req.params,
                 self.es_explain
             )
             if status:
+
+                if 'citation' in self.es_index:
+                    # Clean dataset a bit before using in JS
+                    # response = format_citation(response)
+                    pass
                 response['status'] = 'success'
                 resp.body = json.dumps(response)
             else:
@@ -144,7 +222,7 @@ class CSVExport:
                     "fields": "text,organisation",
                 }
 
-            status, response = _search_es(
+            status, response = _search_policy(
                 self.es,
                 self.es_index,
                 params,
@@ -210,10 +288,17 @@ class FulltextPage(template.TemplateResource):
             params = {
                 "term": req.params.get('term', ''),  # es returns none on empty
                 "fields": "text,organisation",  # search_es is expects a str
-                "size": int(req.params.get('size', 1000)),
+                "size": int(req.params.get('size', 1)),
+                "sort": "organisation",
             }
 
-            status, response = _search_es(self.es, self.es_index, params, True)
+            # Still query on the backend to ensure some results are found
+            status, response = _search_policy(
+                self.es,
+                self.es_index,
+                params,
+                True
+            )
 
             self.context['es_response'] = response
             self.context['es_status'] = status
@@ -259,7 +344,7 @@ class CitationPage(template.TemplateResource):
                 "size": int(req.params.get('size', 1000)),
             }
 
-            status, response = _search_es(self.es, self.es_index, params, True)
+            status, response = _search_citations(self.es, self.es_index, params, True)
 
             self.context['es_response'] = response
             self.context['es_status'] = status
