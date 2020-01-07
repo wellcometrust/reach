@@ -32,19 +32,13 @@
     </div>
 </section>
 
-<section id="citation-results" class="results-box">
+<section id="citations-results" class="results-box">
     <div class="container">
         <hr class="hs">
         <div class="columns">
-            {% if status %}
                 <div class="column col-12 col-md-12">
                     <h1>Results for "{{ term }}" in citations</h1>
                 </div>
-            {% else %}
-                <div class="column col-12 col-md-12">
-                    <h1>No results for "{{ term }}" in citations</h1>
-                </div>
-            {% endif %}
             <div class="column col-12 col-md-12">
                 <p>Search by research publication title, journal, author or year of publication</p>
             </div>
@@ -52,7 +46,7 @@
                 <form action="/search/citations">
                     <div class="input-group">
                       <input type="text" class="form-input input-xl" placeholder="Search" name="term" id="search-term" value="{{ term }}">
-                      <button type="submit" class="btn btn-primary input-group-btn input-btn-xl">Find citations <span class="icn icn-search"></span></button>
+                      <button type="submit" class="btn btn-primary input-group-btn input-btn-xl">Discover citations <span class="icn icn-search"></span></button>
                     </div>
                 </form>
                 <div class="search-tips">
@@ -73,82 +67,92 @@
             </div>
             {% if status %}
             <div class="column col-6 col-md-12 text-right">
-                <a class="btn btn-primary btn-xl" href="/search/citations/csv?term={{ term }}" >Download results as .csv <span class="icn icn-download"></span></a>
+                <a class="btn btn-primary btn-xl" href="/search/citations/csv?term={{ term }}">Download results as .csv <span class="icn icn-download"></span></a>
             </div>
             {% else %}
             <div class="column col-6 hide-md"></div>
             {% endif %}
         </div>
-    </div>
-    {% if status %}
-        <div class="results">
-            <div class="container" id="citations-result-table">
-                <div class="columns">
-                    <div class="column col-6 col-md-12 text-left">
-                        <span  id="result-count">{#- Generated using JS #}</span>
-                        <span id="max-results">{{ es_response.hits.hits | length }}</span>
-                    </div>
-                    <div class="column col-6 col-md-12 text-right">
-                        {#- List.js will generate that for us #}
-                        <ul class="pagination"></ul>
+        {% if not status %}
+            <hr class="fs">
+            <div class="columns">
+                <div class="column col-6 col-md-12">
+                    <p class="bold">
+                        Search tips
+                    </p>
+                    <ul>
+                        <li>Check your spelling</li>
+                        <li>Broaden your search by using fewer or more general terms</li>
+                        <li>Try searching by topic, award or area of work</li>
+                    </ul>
+                    <p class="bold">
+                        Still can’t find what you are looking for?
+                    </p>
+                    <p>Help us to improve Reach and <a href="mailto:engineering.datalabs@wellcome.ac.uk">send us your feedback</a></p>
+                </div>
+                <div class="column col-6 hide-md"></div>
+            </div>
+            <hr class="fs">
+            <hr class="fs">
+            <div class="columns">
+                <div class="column col-6 col-md-12">
+                    <div class="feedback-box">
+                        <p class="bold">Can't find what you're looking for?</p>
+                        <p>Can’t find what you’re looking for? We are working to continually improve Reach, if it is not working as you expect, there is an error or you have a suggestion, please <a href="mailto:engineering.datalabs@wellcome.ac.uk">send us your feedback</a></p>
                     </div>
                 </div>
-                <table class="table table-light table-hover">
-                    <thead>
-                        <tr>
-                            <th class="sort" data-sort="match-name">Research Publication</th>
-                            <th class="sort" data-sort="pub-name">Policy Document</th>
-                            <th class="sort" data-sort="journal">Journal</th>
-                            <th class="sort" data-sort="authors">Author(s)</th>
-                            <th class="sort" data-sort="year">Year of publication</th>
-                            <th class="sort" data-sort="citation-count">Citations in Policy Docs</th>
-                        </tr>
-                    </thead>
-                     <tbody class="list">
-                        {% for hit in es_response.hits.hits %}
+                <div class="column col-6 hide-md"></div>
+            </div>
+            <hr class="fs">
+        </div>
+        {% else %}
+            </div>
+            <div class="results">
+                <div class="container">
+                    <div class="columns">
+                        <div class="column col-6 col-md-12">
+                            <div id="page-counter">
+                                {#- Updated dynamically in JS #}
+                            </div>
+                        </div>
+                        <div class="column col-6 col-md-12">
+                            <div class="pagination-box float-right" id="pagination-box">
+                                {#- Updated dynamically in JS #}
+                            </div>
+                        </div>
+                    </div>
+
+                    <table class="table table-light table-hover"  id="citations-result-table">
+                        <thead>
                             <tr>
-                                <td class="match-name">
-                                    {% if hit._source.doc.get('Matched title') %}
-                                        {{ hit._source.doc.get('Matched title') | truncate(60) }}
-                                    {% else %}
-                                        No title
-                                    {% endif %}
-                                </td>
-                                <td class="pub-name">
-                                    {% if hit._source.doc.get('Extracted title') %}
-                                        {{ hit._source.doc.get('Extracted title') | truncate(60) }}
-                                    {% else %}
-                                        No title
-                                    {% endif %}
-                                </td>
-                                <td class="journal">{{ hit._source.doc.get('journal', 'No Journal') }}</td>
-                                <td class="authors">{{ hit._source.doc.get('authors', 'No Authors') }}</td>
-                                <td class="year">{{ hit._source.doc.get('year', 'No Year') }}</td>
-                                <td class="citation-count">{{ hit._source.doc.get('citation_count', '-') }}</td>
+                                <th class="sort" data-sort="pub-name">Policy Document</th>
+                                <th class="sort" data-sort="organisation" data-order="asc" id="active-sort">Organisation</th>
+                                <th class="sort" data-sort="authors">Author(s)</th>
+                                <th class="sort" data-sort="year">Year of publication</th>
                             </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
-            </div>
-        </div>
-
-
-        <hr class="fs">
-        <div class="columns">
-            <div class="column col-6 col-md-12">
-                <div class="feedback-box">
-                    <p class="bold">About these results</p>
-                    <p>To learn more about how reach works and how it has generated these results, go to the <a href="/how-it-works">How Reach works</a> page</p>
+                        </thead>
+                         <tbody id="citations-results-tbody">
+                        </tbody>
+                    </table>
                 </div>
             </div>
-            <div class="column col-6 col-md-12">
-                <div class="feedback-box">
-                    <p class="bold">Can't find what you're looking for?</p>
-                    <p>Can’t find what you’re looking for? We are working to continually improve Reach, if it is not working as you expect, there is an error or you have a suggestion, please <a href="mailto:engineering.datalabs@wellcome.ac.uk">send us your feedback</a></p>
+
+            <hr class="fs">
+            <div class="columns">
+                <div class="column col-6 col-md-12">
+                    <div class="feedback-box">
+                        <p class="bold">About these results</p>
+                        <p>To learn more about how reach works and how it has generated these results, go to the <a href="/how-it-works">How Reach works</a> page</p>
+                    </div>
+                </div>
+                <div class="column col-6 col-md-12">
+                    <div class="feedback-box">
+                        <p class="bold">Can't find what you're looking for?</p>
+                        <p>Can’t find what you’re looking for? We are working to continually improve Reach, if it is not working as you expect, there is an error or you have a suggestion, please <a href="mailto:engineering.datalabs@wellcome.ac.uk">send us your feedback</a></p>
+                    </div>
                 </div>
             </div>
-        </div>
-        <hr class="fs">
-    {% endif %}
+            <hr class="fs">
+        {% endif %}
 </section>
 {% endblock %}
