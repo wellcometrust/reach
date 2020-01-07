@@ -7,6 +7,8 @@ import {
 
 
 const getPolicyTableContent = (data) => {
+    // Create the table rows to use in the policy-docs result table
+
     let rows = ``;
     data.hits.hits.forEach((item) => {
         rows += `<tr>`;
@@ -27,7 +29,6 @@ const refreshPolicy = (data, currentState) => {
 
     const table = document.getElementById('policy-docs-results-tbody');
     const pages = document.getElementsByClassName('page-item');
-    console.log(currentState);
 
     table.innerHTML = getPolicyTableContent(data);
 
@@ -45,7 +46,7 @@ const refreshPolicy = (data, currentState) => {
         item.addEventListener('click', (e) => {
             let currentState = getCurrentState();
             let currentPage = document.getElementById('active-page');
-            let pages = document.getElementsByClassName('page-item')
+            let pages = document.getElementsByClassName('page-item');
             currentState.fields = 'text,organisation';
             let newPage = e.currentTarget;
 
@@ -55,7 +56,6 @@ const refreshPolicy = (data, currentState) => {
             }
 
             else if (newPage.innerHTML === 'Next') {
-                console.log('NEXT!');
                 currentState.page += 1;
                 newPage = pages[currentState.page];
             }
@@ -69,14 +69,11 @@ const refreshPolicy = (data, currentState) => {
     };
 }
 
-
 const policyTable = () => {
     const policy_table = document.getElementById('policy-docs-result-table');
 
     if (policy_table) {
         const headers = document.getElementsByClassName('sort');
-
-
 
         for (let item of headers) {
             item.addEventListener('click', (e) => {
