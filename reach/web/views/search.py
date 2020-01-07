@@ -333,6 +333,14 @@ class CitationPage(template.TemplateResource):
         self.es = es
         self.es_index = es_index
         self.es_explain = es_explain
+        self.search_fields = ','.join([
+            'match_title',
+            'policy_title',
+            'organisation',
+            'match_source',
+            'match_publication',
+            'match_authors'
+        ])
 
         super(CitationPage, self).__init__(template_dir, context)
 
@@ -340,11 +348,16 @@ class CitationPage(template.TemplateResource):
         if req.params:
             params = {
                 "term": req.params.get('term', ''),  # es returns none on empty
-                "fields": "Extracted title,Matched title,Document id",
-                "size": int(req.params.get('size', 1000)),
+                "fields": self.search_fields,
+                "size": int(req.params.get('size', 1)),
             }
 
-            status, response = _search_citations(self.es, self.es_index, params, True)
+            status, response = _search_citations(
+                self.es,
+                self.es_index,
+                params,
+                False
+            )
 
             self.context['es_response'] = response
             self.context['es_status'] = status
