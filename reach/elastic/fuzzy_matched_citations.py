@@ -29,15 +29,30 @@ def clean_es(es, es_index, org):
     """ Ensure an empty index exists and delete documents from the
     organisation to ensure no duplicates are inserted.
     """
-    common.clear_index_by_org(es, org, es_index)
-    if not common.check_mapping(es, es_index):
-        mapping_body = {
+
+    current_mapping = common.check_mapping(es, es_index)
+    if current_mapping:
+        org_mapping = current_mapping[es_index][
+            'mappings']['properties']['doc']['properties']['organisation']
+
+        if org_mapping.get('type') == 'keyword':
+            logging.info('current mapping is set - cleaning index for ' + org)
+            common.clear_index_by_org(es, org, es_index)
+            return
+
+    mapping_body = {
+        "mappings": {
             "properties": {
-                "doc.Extracted title": {"type": "text"},
-                "doc.Matched title": {"type": "text"}
+                "doc.match_title": {"type": "text"},
+                "doc.policy_title": {"type": "text"},
+                "doc.organisation": {"type": "keyword"},
+                "doc.match_source": {"type": "keyword"},
+                "doc.match_publication": {"type": "keyword"},
+                "doc.match_authors": {"type": "text"},
             }
         }
-        es.indices.put_mapping(index=es_index, body=mapping_body)
+    }
+    common.recreate_index(es, es_index, mapping_body)
 
 
 def insert_file(f, es, org, es_index, max_items=None):

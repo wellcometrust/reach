@@ -46,7 +46,9 @@ def clean_es(es, es_index, org):
             'mappings']['properties']['doc']['properties']['organisation']
 
         if org_mapping.get('type') == 'keyword':
+            logging.info('current mapping is set - cleaning index for ' + org)
             common.clear_index_by_org(es, org, es_index)
+            return
 
     mapping_body = {
         "mappings": {
