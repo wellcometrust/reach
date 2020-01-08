@@ -85,7 +85,7 @@ export function getData(type, body, callback) {
               + `&sort=${body.sort}`
               + `&order=${body.order}`
               + `&page=${body.page + 1}`;
-    console.log(url);
+
     xhr.open('GET', url);
     xhr.responseType = 'json';
     xhr.send();
