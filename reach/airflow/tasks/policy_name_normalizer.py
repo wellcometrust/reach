@@ -120,7 +120,6 @@ class PolicyNameNormalizerOperator(BaseOperator):
                         'created': pdf_meta.get("created", None),
                         'types': source_meta.get("types", None)
                     }))
-
         # Write the results to S3
         with tempfile.NamedTemporaryFile(mode='wb') as output_raw_f:
             with gzip.GzipFile(mode='wb', fileobj=output_raw_f) as output_f:
@@ -135,7 +134,7 @@ class PolicyNameNormalizerOperator(BaseOperator):
                 replace=True
             )
             logger.info(
-                'PolicyNameNormalizerOperator: Done normalizing poicy names'
+                'PolicyNameNormalizerOperator: Done normalizing policy names'
             )
 
 
