@@ -71,7 +71,7 @@ def _search_citations(es, es_index, params, explain=False):
         Args:
             es: An Elasticsearch active connection.
             params: The request's parameters. Shoud include 'term' and at
-                    least a field ([text|title|organisation]).
+                    least a field.
             explain: A boolean to enable|disable elasticsearch's explain.
 
         Returns:
