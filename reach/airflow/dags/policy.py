@@ -250,7 +250,10 @@ def create_dag_fuzzy_match(dag_id, default_args, spider_years,
     esIndexPublications = es_index_publications(dag, item_limits)
     for organisation in ORGANISATIONS:
         create_org_pipeline_fuzzy_match(
-            dag, organisation, item_limits, spider_years,
+            dag,
+            organisation,
+            item_limits,
+            spider_years,
             esIndexPublications)
     return dag
 
