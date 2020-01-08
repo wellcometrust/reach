@@ -20,6 +20,7 @@ function getCitationsTableContent(data) {
         rows += `<td>${item._source.doc.organisation}</td>`;
         rows += `<td>${item._source.doc.match_authors}</td>`;
         rows += `<td>${item._source.doc.match_pub_year}</td>`;
+        rows += `<td>#</td>`;
         rows += `</tr>`;
 
     });
@@ -93,12 +94,16 @@ const citationsTable = () => {
                         currentSort.setAttribute('data-order', 'desc');
                     }
                     else {
-                        currentState.order = 'desc';
-                        currentSort.setAttribute('data-order', 'desc');
+                        currentState.order = 'asc';
+                        currentSort.setAttribute('data-order', 'asc');
                     }
                 }
-                currentSort.setAttribute('id', null);
-                e.currentTarget.setAttribute('id', 'active-sort');
+
+                else {
+                    e.currentTarget.setAttribute('data-order', 'asc');
+                    currentSort.setAttribute('id', null);
+                    e.currentTarget.setAttribute('id', 'active-sort');
+                }
                 currentState.sort = newSort;
                 getData('citations', currentState, refreshCitations);
             });

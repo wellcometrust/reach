@@ -5,6 +5,12 @@ import {
     getData
 } from './resultsCommon.js';
 
+const searchFields = [
+    'title',
+    'text',
+    'organisation',
+    'authors',
+].join(',');
 
 const getPolicyTableContent = (data) => {
     // Create the table rows to use in the policy-docs result table
@@ -12,10 +18,10 @@ const getPolicyTableContent = (data) => {
     let rows = ``;
     data.hits.hits.forEach((item) => {
         rows += `<tr>`;
-        rows += `<td>${item._source.doc.text.substring(0, 30)}...</td>`;
+        rows += `<td><a href="${item._source.doc.url}">${item._source.doc.title}</a></td>`;
         rows += `<td>${item._source.doc.organisation}</td>`;
-        rows += `<td>${item._source.doc.authors}</td>`;
-        rows += `<td>${item._source.doc.year}</td>`;
+        rows += `<td>${item._source.doc.authors?item._source.doc.authors:"Unknown" }</td>`;
+        rows += `<td>${item._source.doc.year?item._source.doc.year:"Unknown"}</td>`;
         rows += `</tr>`;
 
     });
@@ -47,7 +53,7 @@ const refreshPolicy = (data, currentState) => {
             let currentState = getCurrentState();
             let currentPage = document.getElementById('active-page');
             let pages = document.getElementsByClassName('page-item');
-            currentState.fields = 'text,organisation';
+            currentState.fields = searchFields;
             let newPage = e.currentTarget;
 
             if (newPage.innerHTML === 'Prev') {
@@ -81,8 +87,8 @@ const policyTable = () => {
                 let currentSort = document.getElementById('active-sort');
                 let currentState = getCurrentState();
 
-                currentState.fields = 'text,organisation';
-                if (newSort === currentState.sort) {
+                currentState.fields = searchFields;
+                if (newSort == currentSort.getAttribute('data-sort')) {
                     if (currentSort.getAttribute('data-order') === 'asc') {
                         currentState.order = 'desc';
                         currentSort.setAttribute('data-order', 'desc');
@@ -92,6 +98,11 @@ const policyTable = () => {
                         currentSort.setAttribute('data-order', 'asc');
                     }
                 }
+
+                else {
+                    e.currentTarget.setAttribute('data-order', 'asc');
+                }
+
                 currentSort.setAttribute('id', null);
                 e.currentTarget.setAttribute('id', 'active-sort');
                 currentState.sort = newSort;
@@ -100,7 +111,7 @@ const policyTable = () => {
         };
 
         let body = getCurrentState();
-        body.fields = 'text,organisation';
+        body.fields = searchFields;
         getData('policy-docs', body, refreshPolicy);
     }
 }
