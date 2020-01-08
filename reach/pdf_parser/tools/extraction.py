@@ -56,6 +56,8 @@ def _find_elements(pdf_file, keyword):
 
     # Get all the line of found title font size
     titles_section = pdf_file.get_lines_by_font_size(titles_font_size)
+    # Sometimes titles text can be whitespaces but happen to be in the titles_font_size, remove these
+    titles_section = [t for t in titles_section if t.text.strip() != ""]
     start_title = None
     for line in titles_section:
         if start_title:
