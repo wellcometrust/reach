@@ -53,7 +53,18 @@ def clean_es(es, es_index, org):
     mapping_body = {
         "mappings": {
             "properties": {
-                "doc.text": {"type": "text"},
+                "doc.text": {
+                    "type": "text",
+                    "fields": {"keyword": {"type": "keyword"}}
+                },
+                "doc.title": {
+                    "type": "text",
+                    "fields": {"keyword": {"type": "keyword"}}
+                },
+                "doc.authors": {
+                    "type": "text",
+                    "fields": {"keyword": {"type": "keyword"}}
+                },
                 "doc.organisation": {"type": "keyword"}
             }
         }

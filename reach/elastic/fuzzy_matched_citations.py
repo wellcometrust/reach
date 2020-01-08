@@ -43,12 +43,21 @@ def clean_es(es, es_index, org):
     mapping_body = {
         "mappings": {
             "properties": {
-                "doc.match_title": {"type": "text"},
-                "doc.policy_title": {"type": "text"},
+                "doc.match_title": {
+                    "type": "text",
+                    "fields": {"keyword": {"type": "keyword"}}
+                },
+                "doc.policy_title": {
+                    "type": "text",
+                    "fields": {"keyword": {"type": "keyword"}}
+                },
                 "doc.organisation": {"type": "keyword"},
                 "doc.match_source": {"type": "keyword"},
                 "doc.match_publication": {"type": "keyword"},
-                "doc.match_authors": {"type": "text"},
+                "doc.match_authors": {
+                    "type": "text",
+                    "fields": {"keyword": {"type": "keyword"}}
+                },
             }
         }
     }
