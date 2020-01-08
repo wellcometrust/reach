@@ -183,6 +183,11 @@ def grab_section(pdf_file, keyword):
     elements = _find_elements(pdf_file, keyword)
     for start_title, end_title in elements:
         text = ''
+        # If there is no end to this section, then get text from
+        # the start of this section until the end of the entire document.
+        # For sections where start page = end page, need
+        # to add 1 to the end page number otherwise no text will be
+        # appended in the for loop (list(range(x,x)) = [])
         if not end_title:
             end_page = len(pdf_file.pages)
         elif (start_title.page_number != end_title.page_number):
