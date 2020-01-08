@@ -178,22 +178,29 @@ def grab_section(pdf_file, keyword):
     """Given a pdf parsed file object (PdfFile) and a keyword corresponding to
     a title, returns the matching section of the pdf text.
     """
+
     result = ''
-    text = ''
     elements = _find_elements(pdf_file, keyword)
     for start_title, end_title in elements:
+        text = ''
+        # If there is no end to this section, then get text from
+        # the start of this section until the end of the entire document.
+        # For sections where start page = end page, need
+        # to add 1 to the end page number otherwise no text will be
+        # appended in the for loop (list(range(x,x)) = [])
         if not end_title:
             end_page = len(pdf_file.pages)
+        elif (start_title.page_number != end_title.page_number):
+            end_page = end_title.page_number
         else:
             end_page = end_title.page_number + 1
         for page_number in range(start_title.page_number, end_page):
             if pdf_file.get_page(page_number).get_page_text(True):
                 text += pdf_file.get_page(page_number).get_page_text()
-        if end_title and (start_title.page_number != end_title.page_number):
+        if end_title:
             result += text[
-                text.find(start_title.text):text.find(end_title.text)
-            ]
+                    text.find(start_title.text):text.find(end_title.text)
+                ]
         else:
             result += text[text.find(start_title.text):]
-        text = ''
     return result
