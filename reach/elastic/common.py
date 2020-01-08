@@ -145,7 +145,7 @@ def check_mapping(es, index_name):
 
     except (TransportError, NotFoundError) as e:
         if e.error == "index_not_found_exception":
-            pass
+            return False
         else:
             raise
 
