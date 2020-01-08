@@ -213,3 +213,8 @@ class FuzzyMatchRefsOperator(BaseOperator):
                 count, match_count
             )
 
+            logger.info(
+                    'FuzzyMatchRefsOperator: Matches saved to %s',
+                    s3.get_key(self.dst_s3_key)
+                )
+
