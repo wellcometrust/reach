@@ -161,6 +161,13 @@ class SearchApi:
             search_es = _search_policy
 
         if req.params:
+            if not req.params.get('term'):
+                resp.body = json.dumps({
+                    'status': 'error',
+                    'message': "The request doesn't contain anything to search"
+                })
+                resp.status = falcon.HTTP_400
+
             status, response = search_es(
                 self.es,
                 self.es_index,
