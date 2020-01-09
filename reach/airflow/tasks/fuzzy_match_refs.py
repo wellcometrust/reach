@@ -116,17 +116,19 @@ class ElasticsearchFuzzyMatcher:
                 'match_source': 'EPMC',
 
                 # Policy information
-                'policy_doc_id': ref_metadata.get("file_hash", None),
-                'policy_source_url': ref_metadata.get('url', None),
-                'policy_title': ref_metadata.get('title', None),
-                'policy_source_page': ref_metadata.get('source_page', None),
-                'policy_source_page_title': ref_metadata.get('source_page_title', None),
-                'policy_pdf_creator': ref_metadata.get('creator', None),
+                'policies': [{
+                    'doc_id': ref_metadata.get("file_hash", None),
+                    'source_url': ref_metadata.get('url', None),
+                    'title': ref_metadata.get('title', None),
+                    'source_page': ref_metadata.get('source_page', None),
+                    'source_page_title': ref_metadata.get('source_page_title', None),
+                    'pdf_creator': ref_metadata.get('creator', None),
+                }]
             }
+
 
 def map_author(author):
     return "%s %s" % (author.get("LastName", "Unknown"), author.get("Initials", "?"),)
-
 
 
 class FuzzyMatchRefsOperator(BaseOperator):
@@ -177,30 +179,40 @@ class FuzzyMatchRefsOperator(BaseOperator):
             self.es_index,
             self.organisation,
         )
+        refs = yield_structured_references(s3, self.src_s3_key)
+        match_count = 0
+        count = 0
+        references = {}
+        for count, structured_reference in enumerate(refs, 1):
+            if count % 500 == 0:
+                logger.info(
+                    'FuzzyMatchRefsOperator: references=%d', count
+                )
+            fuzzy_matched_reference = fuzzy_match_reference(
+                fuzzy_matcher,
+                structured_reference
+            )
+            if fuzzy_matched_reference:
+                title = fuzzy_matched_reference['match_title']
+                if title in references.keys():
+                    references[title]['policies'].append(
+                        fuzzy_matched_reference['policies'][0]
+                    )
+                else:
+                    references[title] = fuzzy_matched_reference
+
+                match_count += 1
+                if match_count % 100 == 0:
+                    logger.info(
+                        'FuzzyMatchRefsOperator: matches=%d',
+                        match_count
+                    )
 
         with tempfile.NamedTemporaryFile(mode='wb') as output_raw_f:
             with gzip.GzipFile(mode='wb', fileobj=output_raw_f) as output_f:
-                refs = yield_structured_references(s3, self.src_s3_key)
-                match_count = 0
-                count = 0
-                for count, structured_reference in enumerate(refs, 1):
-                    if count % 500 == 0:
-                        logger.info(
-                            'FuzzyMatchRefsOperator: references=%d', count
-                        )
-                    fuzzy_matched_reference = fuzzy_match_reference(
-                        fuzzy_matcher,
-                        structured_reference
-                    )
-                    if fuzzy_matched_reference:
-                        match_count += 1
-                        if match_count % 100 == 0:
-                            logger.info(
-                                'FuzzyMatchRefsOperator: matches=%d',
-                                match_count
-                            )
-                        output_f.write(json.dumps(fuzzy_matched_reference).encode('utf-8'))
-                        output_f.write(b'\n')
+                for reference in references.values():
+                    output_f.write(json.dumps(reference).encode('utf-8'))
+                    output_f.write(b'\n')
 
             output_raw_f.flush()
             s3.load_file(
@@ -217,4 +229,3 @@ class FuzzyMatchRefsOperator(BaseOperator):
                     'FuzzyMatchRefsOperator: Matches saved to %s',
                     s3.get_key(self.dst_s3_key)
                 )
-
