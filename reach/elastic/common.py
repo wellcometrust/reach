@@ -4,6 +4,7 @@ import gzip
 import logging
 import tempfile
 import time
+import json
 
 import boto3
 import elasticsearch
@@ -197,12 +198,15 @@ def insert_actions(es, actions, chunk_size):
             queue_size=QUEUE_SIZE,
             raise_on_error=False,
             )
+
         for ok, result in tups:
+            print(result)
             if not ok:
                 logging.error(
                     "insert_actions: failure results=%s",
-                    json.dumps(results))
+                    json.dumps(result))
                 raise IndexingErrorException
+
 
             total_count += 1
             if total_count % 10000 == 0:
