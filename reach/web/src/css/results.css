@@ -56,12 +56,22 @@ th {
   color: $greyLink;
 }
 
-#citations-result-table th:first-child::before {
-	content: url(../images/Icon_Research_24px.svg);
-	margin-right: 10px;
-}
-
-th::after {
+.sort::after {
 	content: url(../images/Icon_Sort-by_16px.svg);
 	margin-left: 10px;
+}
+
+.accordion-arrow {
+	color: $cyanPrimary;
+	font-weight: bold;
+	width: 3.4375rem;
+	text-align: center;
+	font-size:
+}
+.accordion-subtable {
+	width: 100%;
+}
+.accordion-subtable-container {
+	width: 100%;
+	padding-left: 3.4375rem;
 }
