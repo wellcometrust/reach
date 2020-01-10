@@ -11,8 +11,23 @@
 		border-bottom: 1px solid $greyLight;
 	}
 }
-.pagination .page-item.active a {
+.pagination .page-item#active-page {
 	background-color: $cyanPrimary;
+	color: white;
+}
+
+.pagination {
+	.page-item, .disabled-page-item {
+		cursor: pointer;
+		padding: 0 .3125rem;
+		color: $cyanPrimary;
+		display: inline-block;
+		margin: 0.2rem 0.05rem;
+	}
+
+	.disabled-page-item {
+		color: $cyanLight;
+	}
 }
 
 .pagination {
