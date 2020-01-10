@@ -101,7 +101,6 @@ class ElasticsearchFuzzyMatcher:
                 'reference_id': reference.get('Reference id', None),
                 'extracted_title': reference.get('Title', None),
                 'similarity': best_score,
-                'organisation': self.organisation,
 
                 # Matched reference information
                 'match_title': matched_reference.get('doc', {}).get('title', 'Unknown'),
@@ -123,6 +122,7 @@ class ElasticsearchFuzzyMatcher:
                     'source_page': ref_metadata.get('source_page', None),
                     'source_page_title': ref_metadata.get('source_page_title', None),
                     'pdf_creator': ref_metadata.get('creator', None),
+                    'organisation': self.organisation,
                 }]
             }
 
