@@ -36,15 +36,9 @@
     <div class="container">
         <hr class="hs">
         <div class="columns">
-            {% if status %}
                 <div class="column col-12 col-md-12">
                     <h1>Results for "{{ term }}" in policy documents</h1>
                 </div>
-            {% else %}
-                <div class="column col-12 col-md-12">
-                    <h1>No results for "{{ term }}" in policy documents</h1>
-                </div>
-            {% endif %}
             <div class="column col-12 col-md-12">
                 <p>Search by research publication title, journal, author or year of publication</p>
             </div>
@@ -110,67 +104,55 @@
                 <div class="column col-6 hide-md"></div>
             </div>
             <hr class="fs">
-        {% endif %}
         </div>
-    {% if status %}
-        <div class="results">
-            <div class="container" id="policy-docs-result-table">
-                <div class="columns">
-                    <div class="column col-6 col-md-12 text-left">
-                        <span  id="result-count">{#- Generated using JS #}</span>
-                        <span id="max-results">{{ es_response.hits.hits | length }}</span>
+        {% else %}
+            </div>
+            <div class="results">
+                <div class="container">
+                    <div class="columns">
+                        <div class="column col-6 col-md-12">
+                            <div id="page-counter">
+                                {#- Updated dynamically in JS #}
+                            </div>
+                        </div>
+                        <div class="column col-6 col-md-12">
+                            <div class="pagination-box float-right" id="pagination-box">
+                                {#- Updated dynamically in JS #}
+                            </div>
+                        </div>
                     </div>
-                    <div class="column col-6 col-md-12 text-right">
-                        {#- List.js will generate that for us #}
-                        <ul class="pagination"></ul>
-                    </div>
-                </div>
 
-                <table class="table table-light table-hover">
-                    <thead>
-                        <tr>
-                            <th class="sort" data-sort="pub-name">Policy Document</th>
-                            <th class="sort" data-sort="organisation">Organisation</th>
-                            <th class="sort" data-sort="authors">Author(s)</th>
-                            <th class="sort" data-sort="year">Year of publication</th>
-                        </tr>
-                    </thead>
-                     <tbody class="list">
-                        {% for hit in es_response.hits.hits %}
+                    <table class="table table-light table-hover"  id="policy-docs-result-table">
+                        <thead>
                             <tr>
-                                <td class="pub-name">
-                                    {% if hit._source.doc.text %}
-                                        {{ hit._source.doc.text | truncate(60) }}
-                                    {% else %}
-                                        No title
-                                    {% endif %}
-                                    </td>
-                                <td class="organisation">{{ hit._source.doc.organisation }}</td>
-                                <td class="authors">{{ hit._source.doc.get('authors', 'No authors') }}</td>
-                                <td class="year">{{ hit._source.doc.get('year', 'No year') }}</td>
+                                <th class="sort" data-sort="title.keyword">Policy Document</th>
+                                <th class="sort" data-sort="organisation" data-order="asc" id="active-sort">Organisation</th>
+                                <th class="sort" data-sort="authors.keyword">Author(s)</th>
+                                <th class="sort" data-sort="year">Year of publication</th>
                             </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
+                        </thead>
+                         <tbody id="policy-docs-results-tbody">
+                        </tbody>
+                    </table>
+                </div>
             </div>
-        </div>
 
-        <hr class="fs">
-        <div class="columns">
-            <div class="column col-6 col-md-12">
-                <div class="feedback-box">
-                    <p class="bold">About these results</p>
-                    <p>To learn more about how reach works and how it has generated these results, go to the <a href="/how-it-works">How Reach works</a> page</p>
+            <hr class="fs">
+            <div class="columns">
+                <div class="column col-6 col-md-12">
+                    <div class="feedback-box">
+                        <p class="bold">About these results</p>
+                        <p>To learn more about how reach works and how it has generated these results, go to the <a href="/how-it-works">How Reach works</a> page</p>
+                    </div>
+                </div>
+                <div class="column col-6 col-md-12">
+                    <div class="feedback-box">
+                        <p class="bold">Can't find what you're looking for?</p>
+                        <p>Can’t find what you’re looking for? We are working to continually improve Reach, if it is not working as you expect, there is an error or you have a suggestion, please <a href="mailto:engineering.datalabs@wellcome.ac.uk">send us your feedback</a></p>
+                    </div>
                 </div>
             </div>
-            <div class="column col-6 col-md-12">
-                <div class="feedback-box">
-                    <p class="bold">Can't find what you're looking for?</p>
-                    <p>Can’t find what you’re looking for? We are working to continually improve Reach, if it is not working as you expect, there is an error or you have a suggestion, please <a href="mailto:engineering.datalabs@wellcome.ac.uk">send us your feedback</a></p>
-                </div>
-            </div>
-        </div>
-        <hr class="fs">
-    {% endif %}
+            <hr class="fs">
+        {% endif %}
 </section>
 {% endblock %}
