@@ -200,7 +200,6 @@ def insert_actions(es, actions, chunk_size):
             )
 
         for ok, result in tups:
-            print(result)
             if not ok:
                 logging.error(
                     "insert_actions: failure results=%s",
