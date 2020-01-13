@@ -10,6 +10,10 @@
 		border-top: 1px solid $greyLight;
 		border-bottom: 1px solid $greyLight;
 	}
+
+	.authors-cell {
+		width: 20%;
+	}
 }
 .pagination .page-item#active-page {
 	background-color: $cyanPrimary;
@@ -55,11 +59,11 @@ th {
   letter-spacing: 0.5px;
   color: $greyLink;
 }
-
+/*
 .sort::after {
 	content: url(../images/Icon_Sort-by_16px.svg);
 	margin-left: 10px;
-}
+}*/
 
 .accordion-arrow {
 	color: $cyanPrimary;

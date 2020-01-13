@@ -17,7 +17,7 @@ function getCitationsTableContent(data) {
         rows += `<td class="accordion-arrow"><i class="icon icon-arrow-down mr-1"></i></td>`
         rows += `<td>${item._source.doc.match_title}</td>`;
         rows += `<td>${item._source.doc.match_publication}</td>`;
-        rows += `<td>${item._source.doc.match_authors}</td>`;
+        rows += `<td class="authors-cell">${item._source.doc.match_authors}</td>`;
         rows += `<td>${item._source.doc.match_pub_year}</td>`;
         rows += `<td>${item._source.doc.policies.length}</td>`;
         rows += `</tr>`;
@@ -34,7 +34,7 @@ function getCitationsTableContent(data) {
         `;
         item._source.doc.policies.forEach((item) => {
             rows += `<tr>`;
-            rows += `<td>${item.title}</td>`;
+            rows += `<td><a href="${item.source_url}">${item.title}</a></td>`;
             rows += `<td>${item.organisation}</td>`;
             rows += `<td>${item.authors}</td>`;
             rows += `<td>${item.year}</td>`;
