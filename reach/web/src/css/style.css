@@ -264,4 +264,82 @@ a, a:visited {
 .form-input:focus {
   border-color: #767676;
   box-shadow: none;
+
+/* Override Spectre default */
+.breadcrumb .breadcrumb-item:not(:last-child) a {
+    color: $cyanPrimary;
+}
+
+.table.table-hover tbody tr:hover {
+  background: $backgroundTint1;
+}
+
+.breadcrumb .breadcrumb-item:not(:first-child)::before {
+  color: $greyDark;
+  content: ">";
+  padding-right: .4rem;
+}
+
+.breadcrumb .breadcrumb-item {
+  color: $greyDark;
+}
+
+#breadcrumbs {
+  background: white;
+  border-bottom: 1px solid $greyLight;
+}
+
+
+@media screen and (min-width: 1280px) {
+   #breadcrumbs {
+     padding: 0 $guidePadding;
+   }
+}
+
+@media screen and (max-width: 1280px) {
+   #breadcrumbs {
+     padding: 0 1.375rem;
+   }
+}
+
+/* Help tooltip */
+.help {
+  width: 22px;
+  height: 22px;
+  padding: 0;
+  color: white;
+  font-size: 14px;
+  font-weight: bold;
+  border-radius: 50%;
+  line-height: 22px;
+  text-align: center;
+  background-color: $cyanPrimary;
+  margin-top: 2.7ex;
+}
+
+section#hero a.btn-primary:hover,
+section#hero .btn.help:hover {
+  border: 1px solid white;
+}
+
+.hero-button {
+    height: 3.5rem;
+    line-height: 3.5rem;
+    font-size: $baseFontSize;
+    padding: 0 $smallPadding;
+}
+.popover-container {
+  display: block;
+  opacity: 1;
+  transform: translate(-50%, -100%) scale(1);
+}
+
+.popover-container svg.arrow {
+  margin: -1em auto 0 auto;
+  width: 2em;
+  height: 1em;
+}
+
+.popover-container .card {
+  color: $greyDark;
 }
