@@ -52,7 +52,7 @@ class UnicefSpider(BaseSpider):
         @returns items 0 0
         """
 
-        title = response.css('.entry-heading h1::text').extract_first()
+        title = response.css('h1::text').extract_first()
         hrefs = response.css('a::attr("href")').extract()
         ls = list(filter(lambda x: self._is_valid_pdf_url(x), hrefs))
 
