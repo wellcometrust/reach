@@ -59,11 +59,6 @@ th {
   letter-spacing: 0.5px;
   color: $greyLink;
 }
-/*
-.sort::after {
-	content: url(../images/Icon_Sort-by_16px.svg);
-	margin-left: 10px;
-}*/
 
 .accordion-arrow {
 	color: $cyanPrimary;
