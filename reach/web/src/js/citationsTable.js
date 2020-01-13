@@ -22,9 +22,8 @@ function getCitationsTableContent(data) {
         rows += `<td>${item._source.doc.policies.length}</td>`;
         rows += `</tr>`;
 
-        rows += `<tr class="accordion-body" id="accordion-body-${item._source.doc.reference_id}" hidden="hidden">
-                    <td class="accordion-arrow"></td>
-                    <td colspan=5 class="accordion-subtable-container">
+        rows += `<tr class="accordion-body hidden" id="accordion-body-${item._source.doc.reference_id}">
+                    <td colspan=6 class="accordion-subtable-container">
                     <table class="table accordion-subtable">
                         <tr>
                             <th>Policy Document</th>
@@ -98,12 +97,10 @@ function refreshCitations(data, currentState) {
 
             let accordionBody = document.getElementById(accordionBodyId);
 
-            if (accordionBody.getAttribute('hidden')) {
-                accordionBody.removeAttribute('hidden');
-            }
-            else {
-                accordionBody.setAttribute('hidden', 'hidden');
-            }
+            accordionBody.classList.toggle('hidden');
+            e.currentTarget.classList.toggle('active-row');
+            e.currentTarget.firstChild.firstChild.classList.toggle('icon-arrow-down');
+            e.currentTarget.firstChild.firstChild.classList.toggle('icon-arrow-up');
         });
     }
 }

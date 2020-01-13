@@ -66,12 +66,30 @@ th {
 	font-weight: bold;
 	width: 3.4375rem;
 	text-align: center;
-	font-size:
 }
+
+.active-row td {
+	background-color: $backgroundTint2;
+}
+
 .accordion-subtable {
-	width: 100%;
+	tr td {
+		border: none;
+		background-color: $backgroundTint1;
+	}
+
+	tr th{
+		border: none;
+		background-color: $backgroundTint1;
+	}
 }
-.accordion-subtable-container {
-	width: 100%;
+
+.table tr .accordion-subtable-container {
+	background-color: $backgroundTint1;
+	padding: 0;
 	padding-left: 3.4375rem;
+}
+
+#citations-results-tbody .hidden {
+	display: none;
 }
