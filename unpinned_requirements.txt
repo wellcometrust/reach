@@ -1,5 +1,6 @@
 apache-airflow[crypto]
 boto3
+blinker
 cryptography
 celery
 editdistance
