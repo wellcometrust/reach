@@ -39,7 +39,7 @@ To develop for this project, you will need:
 
 To bring up the development environment using docker:
 
-1. Set your AWS credentials into your environment. (`AWS_ACCESS_KEY_ID` and `AWS_SECRET_ACCESS_KEY`)
+1. Set your AWS credentials into your environment. (`AWS_ACCESS_KEY_ID` and `AWS_SECRET_ACCESS_KEY`). These can be added to a `.env` file which will be read by docker-compose.
 1. Build and start the env with:
     ```
     make docker-build
