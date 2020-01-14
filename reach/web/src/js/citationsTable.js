@@ -3,8 +3,8 @@ import {getCurrentState, getPagination, getCounter, getData} from './resultsComm
 const size = 25;
 const searchFields = [
     'match_title',
-    'policy_title',
-    'organisation',
+    'policies.title',
+    'policies.organisation',
     'match_source',
     'match_publication',
     'match_authors'
@@ -32,13 +32,13 @@ function getCitationsTableContent(data) {
                             <th>Year of Publicaction</th>
                         </tr>
         `;
-        item._source.doc.policies.forEach((item) => {
+        for (let policy of item._source.doc.policies) {
             rows += `<tr>`;
-            rows += `<td><a href="${item.source_url}">${item.title}</a></td>`;
-            rows += `<td>${item.organisation}</td>`;
-            rows += `<td>${item.authors}</td>`;
-            rows += `<td>${item.year}</td>`;
-        });
+            rows += `<td><a href="${policy.source_url}">${policy.title}</a></td>`;
+            rows += `<td>${policy.organisation}</td>`;
+            rows += `<td>${policy.authors}</td>`;
+            rows += `<td>${item._source.doc.match_pub_year}</td>`;
+        }
         rows += `</table></td>`
         rows += `</tr>`;
     });

@@ -162,9 +162,10 @@ class CSVExport:
                 params = {
                     "term": req.params.get('term', ''),
                     "fields": ','.join([
-                        'match_title',
-                        'policy_title',
                         'organisation',
+                        'match_title',
+                        'policies.title',
+                        'policies.organisation',
                         'match_source',
                         'match_publication',
                         'match_authors'
@@ -173,7 +174,12 @@ class CSVExport:
             else:
                 params = {
                     "term": req.params.get('term', ''),
-                    "fields": "text,organisation",
+                    "fields": ','.join([
+                        'title',
+                        'text',
+                        'organisation',
+                        'authors',
+                    ]),
                 }
 
             status, response = _search_es(
@@ -234,6 +240,12 @@ class FulltextPage(template.TemplateResource):
         self.es = es
         self.es_index = es_index
         self.es_explain = es_explain
+        self.search_fields = ','.join([
+            'title',
+            'text',
+            'organisation',
+            'authors',
+        ])
 
         super(FulltextPage, self).__init__(template_dir, context)
 
@@ -241,7 +253,7 @@ class FulltextPage(template.TemplateResource):
         if req.params:
             params = {
                 "term": req.params.get('term', ''),  # es returns none on empty
-                "fields": "text,organisation",  # search_es is expects a str
+                "fields": self.search_fields,  # search_es is expects a str
                 "size": int(req.params.get('size', 1)),
                 "sort": "organisation",
             }
@@ -289,8 +301,8 @@ class CitationPage(template.TemplateResource):
         self.es_explain = es_explain
         self.search_fields = ','.join([
             'match_title',
-            'policy_title',
-            'organisation',
+            'policies.title',
+            'policies.organisation',
             'match_source',
             'match_publication',
             'match_authors'
