@@ -193,13 +193,13 @@ class FuzzyMatchRefsOperator(BaseOperator):
                 structured_reference
             )
             if fuzzy_matched_reference:
-                title = fuzzy_matched_reference['match_title']
-                if title in references.keys():
-                    references[title]['policies'].append(
+                ref_id = fuzzy_matched_reference['reference_id']
+                if ref_id in references.keys():
+                    references[ref_id]['policies'].append(
                         fuzzy_matched_reference['policies'][0]
                     )
                 else:
-                    references[title] = fuzzy_matched_reference
+                    references[ref_id] = fuzzy_matched_reference
 
                 match_count += 1
                 if match_count % 100 == 0:
