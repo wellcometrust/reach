@@ -26,15 +26,31 @@ def _search_es(es, es_index, params, explain=False):
         try:
             fields = params.get('fields', '').split(',')
             size = params.get('size', 25)
+            terms = params.get('terms', '').split(',')
+
+            if len(fields) != len(terms):
+                raise falcon.HTTPError(
+                    "Wrong number of arguments:"
+                    " number of terms and fields must be equal."
+                )
+
+            body_queries = {}
+            for i, fieldname in enumerate(fields):
+                field = "doc.{fieldname}".format(fieldname=fieldname)
+                if field in body_queries.keys():
+                    body_queries[field].append(terms[i])
+                else:
+                    body_queries[field] = [terms[i]]
+
             es.cluster.health(wait_for_status='yellow')
 
+            terms = [
+                {'terms': {key: value}} for key, value in body_queries.items()]
             es_body = {
                 'size': int(size),
                 'query': {
-                    'multi_match': {
-                        'query': params.get('term'),
-                        'type': "best_fields",
-                        'fields': ['.'.join(['doc', f]) for f in fields]
+                    'bool': {
+                        'must': terms,
                     }
                 }
             }
@@ -62,7 +78,7 @@ def _search_es(es, es_index, params, explain=False):
             return False, {'message': message}
 
         except Exception as e:
-            raise falcon.HTTPError(description=str(e))
+            raise falcon.HTTPError("400", description=str(e))
 
 
 def format_citations(es_reponse):
