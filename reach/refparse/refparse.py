@@ -183,6 +183,11 @@ def yield_structured_references(scraper_file,
             doc.section
         )
 
+        logger.info('[+] Extracted {} references from document {}'.format(
+            len(splitted_references),
+            i
+        ))
+
         # For some weird reason not using pool map
         #   in my laptop is more performant
         structured_references = pool_map(
