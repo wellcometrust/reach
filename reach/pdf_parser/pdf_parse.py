@@ -26,12 +26,12 @@ BASE_FONT_SIZE = -10
 logger = logging.getLogger(__name__)
 
 METADATA_MAP = {
-    'CreationDate': 'created',
-    'Creator': 'creator',
-    'File size': 'file_size',
-    'Page rot': 'page_rot',
-    'Title': 'title',
-    'Author': 'author'
+    'creation_date': 'created',
+    'creator': 'creator',
+    'file_size': 'file_size',
+    'page_rot': 'page_rot',
+    'title': 'title',
+    'author': 'author'
 }
 
 def get_pdf_metadata(document):
