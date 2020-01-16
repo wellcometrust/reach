@@ -98,7 +98,7 @@ class ElasticsearchFuzzyMatcher:
             # )
             ref_metadata = reference.get('metadata', {})
             return {
-                'reference_id': reference.get('Reference id', None),
+                'reference_id': reference.get('reference_id', None),
                 'extracted_title': reference.get('Title', None),
                 'similarity': best_score,
 
