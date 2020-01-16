@@ -11,3 +11,17 @@
 	margin-bottom: -4px;
 	content: url(../images/Icon_Download_16px.svg);
 }
+
+.icn.icn-research-paper::before {
+	color: black;
+	fill: black;
+	margin-bottom: -4px;
+	content: url(../images/Icon_Research_24px.svg);
+}
+
+.icn.icn-sort::before {
+	color: black;
+	fill: black;
+	margin-bottom: -4px;
+	content: url(../images/Icon_Sort-by_16px.svg);
+}

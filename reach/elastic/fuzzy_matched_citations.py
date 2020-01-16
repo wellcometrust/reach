@@ -33,11 +33,22 @@ def clean_es(es, es_index, org):
     current_mapping = common.check_mapping(es, es_index)
     if current_mapping:
         org_mapping = current_mapping[es_index][
-            'mappings']['properties']['doc']['properties']['organisation']
+            'mappings']['properties']['doc']['properties'][
+            'policies']['properties']['organisation']
 
         if org_mapping.get('type') == 'keyword':
             logging.info('current mapping is set - cleaning index for ' + org)
-            common.clear_index_by_org(es, org, es_index)
+            common.clear_index_by_query(
+                es,
+                query={
+                    'query': {
+                        'match': {
+                            'doc.policies.organisation': org,
+                        }
+                    }
+                },
+                index_name=es_index,
+            )
             return
 
     mapping_body = {
@@ -47,11 +58,11 @@ def clean_es(es, es_index, org):
                     "type": "text",
                     "fields": {"keyword": {"type": "keyword"}}
                 },
-                "doc.policy_title": {
+                "doc.policies.title": {
                     "type": "text",
                     "fields": {"keyword": {"type": "keyword"}}
                 },
-                "doc.organisation": {"type": "keyword"},
+                "doc.policies.organisation": {"type": "keyword"},
                 "doc.match_source": {"type": "keyword"},
                 "doc.match_publication": {"type": "keyword"},
                 "doc.match_authors": {

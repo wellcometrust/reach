@@ -3,8 +3,8 @@ import {getCurrentState, getPagination, getCounter, getData} from './resultsComm
 const size = 25;
 const searchFields = [
     'match_title',
-    'policy_title',
-    'organisation',
+    'policies.title',
+    'policies.organisation',
     'match_source',
     'match_publication',
     'match_authors'
@@ -13,16 +13,34 @@ const searchFields = [
 function getCitationsTableContent(data) {
     let rows = ``;
     data.hits.hits.forEach((item) => {
-        rows += `<tr class="accordion">
-            <input type="checkbox" id="accordion-${item._source.doc.match_title}" name="accordion-checkbox" hidden/>
-        `;
-        rows += `<td>${item._source.doc.match_title}...</td>`;
-        rows += `<td>${item._source.doc.organisation}</td>`;
-        rows += `<td>${item._source.doc.match_authors}</td>`;
+        rows += `<tr class="accordion-row" id="accordion-row-${item._source.doc.reference_id}">`;
+        rows += `<td class="accordion-arrow"><i class="icon icon-arrow-down mr-1"></i></td>`
+        rows += `<td>${item._source.doc.match_title}</td>`;
+        rows += `<td>${item._source.doc.match_publication}</td>`;
+        rows += `<td class="authors-cell">${item._source.doc.match_authors}</td>`;
         rows += `<td>${item._source.doc.match_pub_year}</td>`;
-        rows += `<td>#</td>`;
+        rows += `<td>${item._source.doc.policies.length}</td>`;
         rows += `</tr>`;
 
+        rows += `<tr class="accordion-body hidden" id="accordion-body-${item._source.doc.reference_id}">
+                    <td colspan=6 class="accordion-subtable-container">
+                    <table class="table accordion-subtable">
+                        <tr>
+                            <th>Policy Document</th>
+                            <th>Policy Organisation</th>
+                            <th>Authors</th>
+                            <th>Year of Publicaction</th>
+                        </tr>
+        `;
+        for (let policy of item._source.doc.policies) {
+            rows += `<tr>`;
+            rows += `<td><a href="${policy.source_url}">${policy.title}</a></td>`;
+            rows += `<td>${policy.organisation}</td>`;
+            rows += `<td>${policy.authors}</td>`;
+            rows += `<td>${item._source.doc.match_pub_year}</td>`;
+        }
+        rows += `</table></td>`
+        rows += `</tr>`;
     });
     return rows;
 }
@@ -33,6 +51,7 @@ function refreshCitations(data, currentState) {
 
     const table = document.getElementById('citations-results-tbody');
     const pages = document.getElementsByClassName('page-item');
+    const accordions = document.getElementsByClassName('accordion-row');
 
     table.innerHTML = getCitationsTableContent(data);
 
@@ -71,6 +90,19 @@ function refreshCitations(data, currentState) {
             getData('citations', currentState, refreshCitations);
         });
     };
+
+    for (let item of accordions) {
+        item.addEventListener('click', (e) => {
+            const accordionBodyId = e.currentTarget.getAttribute('id').replace('row', 'body');
+
+            let accordionBody = document.getElementById(accordionBodyId);
+
+            accordionBody.classList.toggle('hidden');
+            e.currentTarget.classList.toggle('active-row');
+            e.currentTarget.firstChild.firstChild.classList.toggle('icon-arrow-down');
+            e.currentTarget.firstChild.firstChild.classList.toggle('icon-arrow-up');
+        });
+    }
 }
 
 
