@@ -19,26 +19,42 @@
 header.navbar {
   color: white;
   background-color: $cyanDark;
-  height: 5rem;
+  height: 3.75rem;
 
   h2 {
     color: white;
+    font-weight: normal;
     margin: 0;
   }
 
   a {
     white-space: nowrap;
     text-decoration: none;
+    font-weight: normal;
   }
 
   #navbar-links a {
     margin: 0 $smallPadding;
-    line-height: 4.75rem;
+    line-height: 3.5rem;
+  }
+
+  #navbar-links a:hover {
+    color: $cyanLight;
   }
 
   #navbar-links a.active {
     border-bottom: .25rem solid white;
+    padding-top: 0.25rem;
+    line-height: 3.25rem;
+  }
 
+}
+
+header.navbar.home {
+  height: 5rem;
+
+  #navbar-links a {
+    line-height: 4.75rem;
   }
 
 }
@@ -46,7 +62,7 @@ header.navbar {
 .btn.cta-link {
   background-color: $cyanDark;
   border-radius: 28px;
-  font-size: $baseFontSize;
+  font-size: $smallFontSize;
   line-height: 2.75rem !important;
   height: 2.75rem;
   border: 1px solid white;
@@ -63,4 +79,40 @@ header.navbar {
 
 .btn.cta-link:hover {
   background-color: $cyanPrimary;
+  color: white !important;
+}
+
+/* Override Spectre default */
+.breadcrumb .breadcrumb-item:not(:last-child) a {
+    color: $cyanPrimary;
+}
+
+
+.breadcrumb .breadcrumb-item:not(:first-child)::before {
+  color: $greyDark;
+  content: ">";
+  padding-right: .4rem;
+}
+
+.breadcrumb .breadcrumb-item {
+  color: $greyDark;
+  font-size: $smallFontSize;
+}
+
+#breadcrumbs {
+  background: white;
+  border-bottom: 1px solid $greyLight;
+}
+
+
+@media screen and (min-width: 1280px) {
+   #breadcrumbs {
+     padding: 0 $guidePadding;
+   }
+}
+
+@media screen and (max-width: 1280px) {
+   #breadcrumbs {
+     padding: 0 1.375rem;
+   }
 }
