@@ -40,7 +40,7 @@
                     <h1>Results for "{{ term }}" in citations</h1>
                 </div>
             <div class="column col-12 col-md-12">
-                <p>Search by research publication title, journal, author or year of publication</p>
+                <p class="form-label">Search by research publication title, journal, author or year of publication</p>
             </div>
             <div class="column col-6 col-md-12">
                 <form action="/search/citations">
@@ -99,6 +99,24 @@
                     <div class="feedback-box">
                         <p class="bold">Can't find what you're looking for?</p>
                         <p>Can’t find what you’re looking for? We are working to continually improve Reach, if it is not working as you expect, there is an error or you have a suggestion, please <a href="mailto:engineering.datalabs@wellcome.ac.uk">send us your feedback</a></p>
+                    </div>
+                </div>
+                <div class="column col-6 hide-md"></div>
+            </div>
+            <hr class="fs">
+        {% endif %}
+    </div>
+    {% if status %}
+        <div class="results">
+            <div class="container" id="citations-result-table">
+                <div class="columns">
+                    <div class="column col-6 col-md-12 text-left">
+                        <span  id="result-count">{#- Generated using JS #}</span>
+                        <span id="max-results">{{ es_response.hits.hits | length }}</span>
+                    </div>
+                    <div class="column col-6 col-md-12 text-right">
+                        {#- List.js will generate that for us #}
+                        <ul class="pagination"></ul>
                     </div>
                 </div>
                 <div class="column col-6 hide-md"></div>
