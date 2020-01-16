@@ -264,6 +264,7 @@ a, a:visited {
 .form-input:focus {
   border-color: #767676;
   box-shadow: none;
+}
 
 /* Override Spectre default */
 .breadcrumb .breadcrumb-item:not(:last-child) a {
