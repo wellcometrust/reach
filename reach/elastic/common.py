@@ -1,5 +1,6 @@
 from argparse import ArgumentParser
 from urllib.parse import urlparse
+import json
 import gzip
 import logging
 import tempfile
