@@ -28,11 +28,12 @@ def _search_es(es, es_index, params, explain=False):
             size = params.get('size', 25)
             terms = params.get('terms', '').split(',')
 
-            if len(fields) != len(terms):
-                raise falcon.HTTPError(
-                    "Wrong number of arguments:"
-                    " number of terms and fields must be equal."
-                )
+            if len(fields) > len(terms):
+                # At the moment the frontend is still using "one term for all
+                # fields". This will change to an exception after frontend
+                # changes.
+                while len(terms) < len(fields):
+                    terms.append(terms[0])
 
             body_queries = {}
             for i, fieldname in enumerate(fields):
@@ -41,7 +42,6 @@ def _search_es(es, es_index, params, explain=False):
                     body_queries[field].append(terms[i])
                 else:
                     body_queries[field] = [terms[i]]
-
             es.cluster.health(wait_for_status='yellow')
 
             terms = [
@@ -50,7 +50,8 @@ def _search_es(es, es_index, params, explain=False):
                 'size': int(size),
                 'query': {
                     'bool': {
-                        'must': terms,
+                        'should': terms,
+                        "minimum_should_match": 1
                     }
                 }
             }
@@ -62,6 +63,8 @@ def _search_es(es, es_index, params, explain=False):
                 es_body['sort'] = {
                     f"doc.{params.get('sort')}": params.get('order', 'desc')
                 }
+
+            api.logger.info(es_body)
 
             return True, es.search(
                 index=es_index,
@@ -117,7 +120,7 @@ class SearchApi:
         """
 
         if req.params:
-            if not req.params.get('term'):
+            if not req.params.get('terms'):
                 resp.body = json.dumps({
                     'status': 'error',
                     'message': "The request doesn't contain anything to search"
@@ -176,7 +179,7 @@ class CSVExport:
         if req.params:
             if 'citations' in self.es_index:
                 params = {
-                    "term": req.params.get('term', ''),
+                    "terms": req.params.get('terms', ''),
                     "fields": ','.join([
                         'organisation',
                         'match_title',
@@ -189,7 +192,7 @@ class CSVExport:
                 }
             else:
                 params = {
-                    "term": req.params.get('term', ''),
+                    "terms": req.params.get('terms', ''),
                     "fields": ','.join([
                         'title',
                         'text',
@@ -268,7 +271,7 @@ class FulltextPage(template.TemplateResource):
     def on_get(self, req, resp):
         if req.params:
             params = {
-                "term": req.params.get('term', ''),  # es returns none on empty
+                "terms": req.params.get('terms', ''),
                 "fields": self.search_fields,  # search_es is expects a str
                 "size": int(req.params.get('size', 1)),
                 "sort": "organisation",
@@ -284,6 +287,9 @@ class FulltextPage(template.TemplateResource):
 
             self.context['es_response'] = response
             self.context['es_status'] = status
+
+            # This line will go away after frontend update
+            self.context['term'] = params['terms'].split(',')[0]
 
             if (not status) or (response.get('message')):
                 self.context.update(params)
@@ -329,7 +335,7 @@ class CitationPage(template.TemplateResource):
     def on_get(self, req, resp):
         if req.params:
             params = {
-                "term": req.params.get('term', ''),  # es returns none on empty
+                "terms": req.params.get('terms', ''),
                 "fields": self.search_fields,
                 "size": int(req.params.get('size', 1)),
             }
@@ -343,6 +349,7 @@ class CitationPage(template.TemplateResource):
 
             self.context['es_response'] = response
             self.context['es_status'] = status
+            self.context['term'] = params['terms'].split(',')[0]
 
             if (not status) or (response.get('message')):
                 self.context.update(params)
