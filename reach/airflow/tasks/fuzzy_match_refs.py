@@ -64,7 +64,7 @@ class ElasticsearchFuzzyMatcher:
             logger.info(
                 'ElasticsearchFuzzyMatcher.match: '
                 'orig-length=%d doc-id=%s truncated-title=%r',
-                title_len, reference['Document id'], title
+                title_len, reference.get('document_id', "Unkown ID"), title
             )
 
         body = {
