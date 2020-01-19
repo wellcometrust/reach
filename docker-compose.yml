@@ -208,10 +208,8 @@ services:
         limits:
           memory: "64M"
 
-
-  # TODO: run gulp watch with the right volumes in place
-  # and update the web image to serve static from build/static
-  # by either an env or complicated volumes
+  # Build static assets whenever they change, and save them into
+  # the STATIC_ROOT used by the web service above.
   gulp-watch:
     image: reach-web-build:latest
     command:
