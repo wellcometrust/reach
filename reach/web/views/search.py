@@ -6,10 +6,61 @@ from elasticsearch import ConnectionError, NotFoundError
 import falcon
 
 from reach.web.views import template
-from reach.web import api
 
 
-def _search_es(es, es_index, params, explain=False):
+def _build_es_query(params):
+    """Builds the body of the ES search query and return it as a dict.
+
+    Args:
+        params: the parameters from a web query. Should at least contain a
+                terms and a fields parameter.
+
+    Returns:
+        search_body: a dict conating the body for an ES search query.
+    """
+    size = params.get('size', 25)
+    fields = params.get('fields', '').split(',')
+    terms = params.get('terms', '').split(',')
+
+    if len(fields) > len(terms):
+        # At the moment the frontend is still using "one term for all
+        # fields". This will change to an exception after frontend
+        # changes.
+        while len(terms) < len(fields):
+            terms.append(terms[0])
+
+    body_queries = {}
+    for i, fieldname in enumerate(fields):
+        field = "doc.{fieldname}".format(fieldname=fieldname)
+        if field in body_queries.keys():
+            body_queries[field].append(terms[i])
+        else:
+            body_queries[field] = [terms[i]]
+
+    terms = [
+        {'terms': {key: value}} for key, value in body_queries.items()]
+    search_body = {
+        'size': int(size),
+        'query': {
+            'bool': {
+                'should': terms,
+                "minimum_should_match": 1
+            }
+        }
+    }
+
+    if params.get('page'):
+        search_body['from'] = (int(params.get('page')) - 1) * int(size)
+
+    if params.get('sort'):
+        search_body['sort'] = {
+            f"doc.{params.get('sort')}": params.get('order', 'asc')
+        }
+
+    return search_body
+
+
+def _search_es(es, es_index, params, explain):
         """Run a search on the elasticsearch database.
 
         Args:
@@ -24,51 +75,14 @@ def _search_es(es, es_index, params, explain=False):
                              succeeded or a string explaining why it failed
         """
         try:
-            fields = params.get('fields', '').split(',')
-            size = params.get('size', 25)
-            terms = params.get('terms', '').split(',')
 
-            if len(fields) > len(terms):
-                # At the moment the frontend is still using "one term for all
-                # fields". This will change to an exception after frontend
-                # changes.
-                while len(terms) < len(fields):
-                    terms.append(terms[0])
-
-            body_queries = {}
-            for i, fieldname in enumerate(fields):
-                field = "doc.{fieldname}".format(fieldname=fieldname)
-                if field in body_queries.keys():
-                    body_queries[field].append(terms[i])
-                else:
-                    body_queries[field] = [terms[i]]
             es.cluster.health(wait_for_status='yellow')
 
-            terms = [
-                {'terms': {key: value}} for key, value in body_queries.items()]
-            es_body = {
-                'size': int(size),
-                'query': {
-                    'bool': {
-                        'should': terms,
-                        "minimum_should_match": 1
-                    }
-                }
-            }
-
-            if params.get('page'):
-                es_body['from'] = (int(params.get('page')) - 1) * int(size)
-
-            if params.get('sort'):
-                es_body['sort'] = {
-                    f"doc.{params.get('sort')}": params.get('order', 'desc')
-                }
-
-            api.logger.info(es_body)
+            search_body = _build_es_query(params)
 
             return True, es.search(
                 index=es_index,
-                body=json.dumps(es_body),
+                body=json.dumps(search_body),
                 explain=explain
             )
 
