@@ -11,6 +11,7 @@ from reach.airflow.tasks import es_index_fuzzy_matched
 from reach.airflow.tasks import exact_match_refs_operator
 from reach.airflow.tasks import fuzzy_match_refs
 from reach.airflow.tasks import policy_name_normalizer
+from reach.airflow.tasks import evaluator
 
 from reach.airflow.tasks.spider_operator import SpiderOperator
 from reach.airflow.tasks.extract_refs_operator import ExtractRefsOperator
@@ -32,12 +33,14 @@ DEFAULT_ARGS = {
     'retry_delay': datetime.timedelta(minutes=5),
 }
 
+GOLD_DATA = "s3://datalabs-data/reach_evaluation/data/sync/2019.10.8_valid_TITLE.jsonl.gz"
+VALIDATION_DATA = "s3://datalabs-data/reach_evaluation/data/sync/2019.10.8_valid.jsonl.gz"
+
 ItemLimits = namedtuple('ItemLimits', ('spiders', 'index'))
 
 #
 # Configuration & paths
 #
-
 
 def verify_s3_prefix():
     reach_s3_prefix = conf.get("core", "reach_s3_prefix")
@@ -73,6 +76,14 @@ def to_s3_output_dir(dag, *args):
         '{{ conf.get("core", "reach_s3_prefix") }}'
         '/output/%s/%s/%s'
     ) % (dag.dag_id, path, slug)
+
+def to_s3_output_dir_short(dag, *args):
+    """ Returns the S3 URL for any output directory for the DAG. """
+    path = '/'.join(args)
+    return (
+        '{{ conf.get("core", "reach_s3_prefix") }}'
+        '/output/%s/%s'
+    ) % (dag.dag_id, path)
 
 
 EPMC_METADATA_KEY = '/'.join([
@@ -174,7 +185,55 @@ def org_fuzzy_match(dag, organisation, item_limits, parsePdf, esIndexPublication
     parsePdf >> name_normalizer >> esIndexFullTexts
     name_normalizer >> extractRefs >> fuzzyMatchRefs >> esIndexFuzzyMatched
     esIndexPublications >> fuzzyMatchRefs
-    return esIndexFuzzyMatched
+    return esIndexFuzzyMatched, fuzzyMatchRefs
+
+
+def evaluate_matches(dag, organisation):
+    """
+    Evaluate matches against a manually labelled gold dataset
+    """
+
+    combineReachFuzzyMatchRefs = evaluator.CombineReachFuzzyMatchesOperator(
+        task_id='EvaluateCombineReachFuzzyMatches',
+        organisations=ORGANISATIONS,
+        src_s3_dir_key=to_s3_output_dir_short(dag, 'fuzzy-matched-refs'),
+        dst_s3_key=to_s3_output(
+            dag, 'evaluation', 'fuzzy-matched-reach-refs', '.json.gz'),
+        es_index='-'.join([dag.dag_id, 'epmc', 'metadata']),
+        dag=dag,
+    )
+
+    extractedGoldRefs = evaluator.ExtractRefsFromGoldDataOperator(
+        task_id='EvaluateExtractRefsFromGoldData',
+        valid_s3_key=VALIDATION_DATA,
+        gold_s3_key=GOLD_DATA,
+        dst_s3_key=to_s3_output(
+            dag, 'evaluation', 'extract-gold-refs', '.json.gz'),
+        dag=dag,
+    )
+
+    fuzzyMatchGoldRefs = fuzzy_match_refs.FuzzyMatchRefsOperator(
+        task_id='EvaluateFuzzyMatchGoldRefs',
+        es_hosts=get_es_hosts(),
+        src_s3_key=extractedGoldRefs.dst_s3_key,
+        organisation=organisation,
+        dst_s3_key=to_s3_output(
+            dag, 'evaluation', 'fuzzy-matched-gold-refs', '.json.gz'),
+        es_index='-'.join([dag.dag_id, 'epmc', 'metadata']),
+        dag=dag,
+    )
+
+    evaluateRefs = evaluator.EvaluateOperator(
+        task_id='EvaluateResults',
+        gold_s3_key=fuzzyMatchGoldRefs.dst_s3_key,
+        reach_s3_key=combineReachFuzzyMatchRefs.dst_s3_key,
+        dst_s3_key=to_s3_output(
+            dag, 'evaluation', 'results', '.json.gz'),
+        dag=dag,
+    )
+
+    combineReachFuzzyMatchRefs >> extractedGoldRefs >> fuzzyMatchGoldRefs >> evaluateRefs
+    return evaluateRefs
 
 
 def create_org_pipeline_fuzzy_match(dag, organisation, item_limits, spider_years,
@@ -190,9 +249,11 @@ def create_org_pipeline_fuzzy_match(dag, organisation, item_limits, spider_years
     """
 
     parsePdf = org_refs(dag, organisation, item_limits, spider_years)
-    return parsePdf, org_fuzzy_match(
+    esIndexFuzzyMatched = org_fuzzy_match(
         dag, organisation, item_limits, parsePdf, esIndexPublications)
+    evaluatedMatches = evaluate_matches(dag, organisation)
 
+    return parsePdf, esIndexFuzzyMatched
 
 def create_org_pipeline_exact_match(dag, organisation, item_limits,
                                     spider_years, parsePdf=None,
