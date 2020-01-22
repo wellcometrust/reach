@@ -33,6 +33,12 @@ DEFAULT_ARGS = {
     'retry_delay': datetime.timedelta(minutes=5),
 }
 
+# These are used for evaluating Reach end to end. VALIDATION_DATA is the 
+# actual validation set used in the current deep_reference_parser implementation
+# which features only reference annotation. The GOLD set features title
+# annotations. The two must be merged in order to retain the metadata which 
+# includes the doc_id.
+
 GOLD_DATA = "s3://datalabs-data/reach_evaluation/data/sync/2019.10.8_valid_TITLE.jsonl.gz"
 VALIDATION_DATA = "s3://datalabs-data/reach_evaluation/data/sync/2019.10.8_valid.jsonl.gz"
 
