@@ -1,0 +1,193 @@
+
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta charset="utf-8" />
+    <title>Web API Documentation &#8212; reach-web-api 2020.01.01 documentation</title>
+    <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="_static/language_data.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="prev" title="Wellcome Reach" href="intro.html" />
+   
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <div class="section" id="web-api-documentation">
+<h1>Web API Documentation<a class="headerlink" href="#web-api-documentation" title="Permalink to this headline">¶</a></h1>
+<p>Reach web application offers an API for users. It can be accessed at:</p>
+<p><code class="docutils literal notranslate"><span class="pre">https://reach-staging.datalabs.wellcome.cloud/api/search/[INDEX]</span></code></p>
+<p>Where INDEX is <code class="docutils literal notranslate"><span class="pre">policy-docs</span></code> or <code class="docutils literal notranslate"><span class="pre">citations</span></code>.</p>
+<div class="section" id="searching-policy-documents">
+<h2>Searching policy documents<a class="headerlink" href="#searching-policy-documents" title="Permalink to this headline">¶</a></h2>
+<p>To search Policy Documents through the API:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>
+<span class="n">GET</span> <span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">reach</span><span class="o">.</span><span class="n">datalabs</span><span class="o">.</span><span class="n">wellcome</span><span class="o">.</span><span class="n">cloud</span><span class="o">/</span><span class="n">api</span><span class="o">/</span><span class="n">search</span><span class="o">/</span><span class="n">policy</span><span class="o">-</span><span class="n">docs</span>
+
+</pre></div>
+</div>
+<p>This request must contain at least one <code class="docutils literal notranslate"><span class="pre">terms</span></code> and one <code class="docutils literal notranslate"><span class="pre">fields</span></code> parameter.</p>
+<div class="section" id="parameters">
+<h3>Parameters<a class="headerlink" href="#parameters" title="Permalink to this headline">¶</a></h3>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">terms</span></code>:  (Required) A comma delimited list of terms to search. <code class="docutils literal notranslate"><span class="pre">terms=foo,bar,baz,foo</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">fields</span></code>: (Required) A comma delimited list of fields to search. This must be the same length as terms. First term will be searched in first field, second in second etc. <code class="docutils literal notranslate"><span class="pre">fields=text,organisation,text,title</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">sort</span></code>:   The field to sort the response on. <code class="docutils literal notranslate"><span class="pre">sort=title</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">order</span></code>:  The order of the sorting. <code class="docutils literal notranslate"><span class="pre">order=asc</span></code> or <code class="docutils literal notranslate"><span class="pre">order=desc</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">page</span></code>:   The page to get from the API. Responses are limited to 25 items per-response. <code class="docutils literal notranslate"><span class="pre">page=1</span></code></p></li>
+</ul>
+</div>
+<div class="section" id="fields">
+<h3>Fields<a class="headerlink" href="#fields" title="Permalink to this headline">¶</a></h3>
+<p>The following fields are available on the search API:</p>
+<ul class="simple">
+<li><p>title</p></li>
+<li><p>text</p></li>
+<li><p>organisation</p></li>
+<li><p>authors</p></li>
+</ul>
+</div>
+<div class="section" id="response">
+<h3>Response<a class="headerlink" href="#response" title="Permalink to this headline">¶</a></h3>
+<p>A json of the following format:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+   <span class="s2">&quot;took&quot;</span><span class="p">:</span> <span class="mi">7</span><span class="p">,</span>
+   <span class="s2">&quot;timed_out&quot;</span><span class="p">:</span> <span class="n">false</span><span class="p">,</span>
+   <span class="s2">&quot;_shards&quot;</span><span class="p">:</span>
+   <span class="p">{</span>
+   	<span class="s2">&quot;total&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
+   	<span class="s2">&quot;successful&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
+   	<span class="s2">&quot;skipped&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
+   	<span class="s2">&quot;failed&quot;</span><span class="p">:</span> <span class="mi">0</span>
+   <span class="p">},</span>
+   <span class="s2">&quot;hits&quot;</span><span class="p">:</span>
+   <span class="p">{</span>
+   	<span class="s2">&quot;total&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;value&quot;</span><span class="p">:</span> <span class="mi">159</span><span class="p">,</span> <span class="s2">&quot;relation&quot;</span><span class="p">:</span> <span class="s2">&quot;eq&quot;</span><span class="p">},</span>
+   	<span class="s2">&quot;max_score&quot;</span><span class="p">:</span> <span class="mf">1.0</span><span class="p">,</span>
+   	<span class="s2">&quot;hits&quot;</span><span class="p">:</span> <span class="p">[</span>
+   	<span class="p">{</span>
+   		<span class="s2">&quot;_index&quot;</span><span class="p">:</span> <span class="s2">&quot;policy-docs&quot;</span><span class="p">,</span>
+   		<span class="s2">&quot;_type&quot;</span><span class="p">:</span> <span class="s2">&quot;_doc&quot;</span><span class="p">,</span>
+   		<span class="s2">&quot;_id&quot;</span><span class="p">:</span> <span class="s2">&quot;xxxxxxxxxxxxxxxxxxxx&quot;</span><span class="p">,</span>
+   		<span class="s2">&quot;_score&quot;</span><span class="p">:</span> <span class="mf">1.0</span><span class="p">,</span>
+   		<span class="s2">&quot;_source&quot;</span><span class="p">:</span>
+   		<span class="p">{</span>
+   			<span class="s2">&quot;doc&quot;</span><span class="p">:</span>
+   			<span class="p">{</span>
+   				<span class="s2">&quot;hash&quot;</span><span class="p">:</span> <span class="s2">&quot;xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx&quot;</span><span class="p">,</span>
+   				<span class="s2">&quot;text&quot;</span><span class="p">:</span> <span class="s2">&quot;...&quot;</span><span class="p">,</span>
+   				<span class="s2">&quot;organisation&quot;</span><span class="p">:</span> <span class="s2">&quot;foo&quot;</span><span class="p">,</span>
+   				<span class="s2">&quot;title&quot;</span><span class="p">:</span> <span class="s2">&quot;foo&quot;</span><span class="p">,</span>
+   				<span class="s2">&quot;authors&quot;</span><span class="p">:</span> <span class="n">foo</span><span class="p">,</span>
+   				<span class="s2">&quot;created&quot;</span><span class="p">:</span> <span class="n">fpp</span><span class="p">,</span>
+   				<span class="s2">&quot;year&quot;</span><span class="p">:</span> <span class="mi">2019</span><span class="o">-</span><span class="mi">01</span><span class="o">-</span><span class="mi">01</span><span class="p">,</span>
+   				<span class="s2">&quot;source_page&quot;</span><span class="p">:</span> <span class="n">foo</span><span class="p">,</span>
+   				<span class="s2">&quot;url&quot;</span><span class="p">:</span> <span class="s2">&quot;https://www.foo.example.com&quot;</span>
+   			<span class="p">}</span>
+   		<span class="p">}</span>
+   	<span class="p">}</span>
+   	<span class="p">]</span>
+   <span class="p">},</span>
+   <span class="s2">&quot;status&quot;</span><span class="p">:</span> <span class="s2">&quot;success&quot;</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="section" id="searching-citations">
+<h2>Searching Citations<a class="headerlink" href="#searching-citations" title="Permalink to this headline">¶</a></h2>
+</div>
+</div>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="index.html">reach-web-api</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<p class="caption"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="intro.html">Wellcome Reach</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Web API Documentation</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#searching-policy-documents">Searching policy documents</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#searching-citations">Searching Citations</a></li>
+</ul>
+</li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="index.html">Documentation overview</a><ul>
+      <li>Previous: <a href="intro.html" title="previous chapter">Wellcome Reach</a></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2020, Datalabs.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 2.3.1</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+      |
+      <a href="_sources/api.md.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

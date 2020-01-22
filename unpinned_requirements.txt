@@ -18,5 +18,7 @@ scipy
 Scrapy
 scikit-learn
 sentry-sdk
+Sphinx
+recommonmark
 SQLAlchemy
 Unidecode
