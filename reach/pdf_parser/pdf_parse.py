@@ -59,12 +59,13 @@ def get_pdf_metadata(document):
     # regardless of metadata problems
     if result.returncode == 0:
         # info scrape succeeded
-        string_data = result.stdout.decode("utf-8")
+        # skip any non-unicode characters
+        string_data = result.stdout.decode("utf-8", 'ignore')
         data = {}
         for line in string_data.splitlines():
             if ":" in line:
                 key, value = [x.strip() for x in line.split(":", 1)]
-                data[key] = value
+                data[key.lower()] = value
 
         # Massage this into a better format
         for key, value in data.items():
