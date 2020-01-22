@@ -1,5 +1,5 @@
 """
-Operator to run the web scraper on every organisation.
+Operators for running the end-to-end evaluation of Reach.
 """
 import os
 import tempfile
@@ -24,12 +24,7 @@ def _get_fuzzy_matches(s3, src_s3_dir_key, organisations):
 
     for org in organisations:
         src_s3_key = f"{src_s3_dir_key}/{org}/{task}-{org}.json.gz"
-        with tempfile.TemporaryFile(mode='rb+') as tf:
-            valid_key = s3.get_key(src_s3_key)
-            valid_key.download_fileobj(tf)
-            tf.seek(0)
-
-            fuzzy_matches.extend(list(_yield_jsonl_from_gzip(tf)))
+        fuzzy_matches.extend(list(_read_json_gz_from_s3(s3, src_s3_key)))
 
         return fuzzy_matches
 
@@ -76,6 +71,11 @@ class ExtractRefsFromGoldDataOperator(BaseOperator):
     """Combine the original validation data and the annotation
     (gold) data
 
+    Validation data is the validation set used in the current
+    deep_reference_parser model. Gold data is the same data that has been
+    annotated with titles. The two must be merged to re-add the metadata to
+    the gold set, which is lost during the annotation process.
+
     NOTE: it may make sense to move this step elsewhere, but for
     clarity I have included it here for now.
     """
@@ -89,8 +89,6 @@ class ExtractRefsFromGoldDataOperator(BaseOperator):
     @apply_defaults
     def __init__(self, valid_s3_key, gold_s3_key, dst_s3_key,
                  aws_conn_id="aws_default", *args, **kwargs):
-        """
-        """
 
         super().__init__(*args, **kwargs)
 
@@ -237,8 +235,6 @@ class CombineReachFuzzyMatchesOperator(BaseOperator):
     @apply_defaults
     def __init__(self, organisations, src_s3_dir_key, dst_s3_key,
                  aws_conn_id="aws_default", *args, **kwargs):
-        """
-        """
 
         super().__init__(*args, **kwargs)
 
