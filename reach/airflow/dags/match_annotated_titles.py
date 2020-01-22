@@ -20,6 +20,9 @@ DEFAULT_ARGS = {
 REFERENCE_ANNOTATIONS="s3://datalabs-data/reach_evaluation/data/sync/2019.10.8_valid_TITLE.jsonl.gz"
 TITLE_ANNOTATIONS = "s3://datalabs-data/reach_evaluation/data/sync/2019.10.8_valid.jsonl.gz"
 
+# dag.id of dag which produced the EPMC ES Index
+ES_INDEX="policy"
+
 #
 # Configuration & paths
 #
@@ -102,7 +105,7 @@ def create_match_dag(dag_id, default_args):
         organisation='gold',
         dst_s3_key=to_s3_output(
             dag, 'evaluation', 'fuzzy-matched-gold-refs', '.json.gz'),
-        es_index='-'.join([dag.dag_id, 'epmc', 'metadata']),
+        es_index='-'.join([ES_INDEX, 'epmc', 'metadata']),
         dag=dag,
     )
 
