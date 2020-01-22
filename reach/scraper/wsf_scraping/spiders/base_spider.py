@@ -163,7 +163,7 @@ class BaseSpider(scrapy.Spider):
         disposition_name = None
         cd_header = response.headers.get("Content-Disposition", None)
         if cd_header:
-            cd_items = [x.split(b"=") for x in cd_header.split(b';')[1:]]
+            cd_items = [x.split(b"=") for x in cd_header.split(b';')[1:] if b"=" in x]
             cd_items = dict((item[0].lower(), item[1] or None) for item in cd_items if item[0] is not None)
             disposition_name = cd_items.get(b"name", None)
             if disposition_name is None:
