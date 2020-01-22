@@ -17,8 +17,8 @@ DEFAULT_ARGS = {
     'retry_delay': datetime.timedelta(minutes=5),
 }
 
-REFERENCE_ANNOTATIONS="s3://datalabs-data/reach_evaluation/data/sync/2019.10.8_valid_TITLE.jsonl.gz"
-TITLE_ANNOTATIONS = "s3://datalabs-data/reach_evaluation/data/sync/2019.10.8_valid.jsonl.gz"
+TITLE_ANNOTATIONS="s3://datalabs-data/reach_evaluation/data/sync/2019.10.8_valid_TITLE.jsonl.gz"
+REFERENCE_ANNOTATIONS = "s3://datalabs-data/reach_evaluation/data/sync/2019.10.8_valid.jsonl.gz"
 
 # dag.id of dag which produced the EPMC ES Index
 ES_INDEX="policy"
