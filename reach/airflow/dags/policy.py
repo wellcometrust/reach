@@ -33,14 +33,7 @@ DEFAULT_ARGS = {
     'retry_delay': datetime.timedelta(minutes=5),
 }
 
-# These are used for evaluating Reach end to end. VALIDATION_DATA is the 
-# actual validation set used in the current deep_reference_parser implementation
-# which features only reference annotation. The GOLD set features title
-# annotations. The two must be merged in order to retain the metadata which 
-# includes the doc_id.
-
-GOLD_DATA = "s3://datalabs-data/reach_evaluation/data/sync/2019.10.8_valid_TITLE.jsonl.gz"
-VALIDATION_DATA = "s3://datalabs-data/reach_evaluation/data/sync/2019.10.8_valid.jsonl.gz"
+GOLD_DATA = "s3://datalabs-data/reach_evaluation/data/sync/2019.10.8_gold_matched_references_snake.jsonl"
 
 ItemLimits = namedtuple('ItemLimits', ('spiders', 'index'))
 
@@ -209,36 +202,16 @@ def evaluate_matches(dag, fuzzyMatchRefs):
         dag=dag,
     )
 
-    extractedGoldRefs = evaluator.ExtractRefsFromGoldDataOperator(
-        task_id='EvaluateExtractRefsFromGoldData',
-        valid_s3_key=VALIDATION_DATA,
-        gold_s3_key=GOLD_DATA,
-        dst_s3_key=to_s3_output(
-            dag, 'evaluation', 'extracted-gold-refs', '.json.gz'),
-        dag=dag,
-    )
-
-    fuzzyMatchGoldRefs = fuzzy_match_refs.FuzzyMatchRefsOperator(
-        task_id='EvaluateFuzzyMatchGoldRefs',
-        es_hosts=get_es_hosts(),
-        src_s3_key=extractedGoldRefs.dst_s3_key,
-        organisation='gold',
-        dst_s3_key=to_s3_output(
-            dag, 'evaluation', 'fuzzy-matched-gold-refs', '.json.gz'),
-        es_index='-'.join([dag.dag_id, 'epmc', 'metadata']),
-        dag=dag,
-    )
-
     evaluateRefs = evaluator.EvaluateOperator(
         task_id='EvaluateResults',
-        gold_s3_key=fuzzyMatchGoldRefs.dst_s3_key,
+        gold_s3_key=GOLD_DATA,
         reach_s3_key=combineReachFuzzyMatchRefs.dst_s3_key,
         dst_s3_key=to_s3_output(
             dag, 'evaluation', 'results', '.json.gz'),
         dag=dag,
     )
 
-    fuzzyMatchRefs >> combineReachFuzzyMatchRefs >> extractedGoldRefs >> fuzzyMatchGoldRefs >> evaluateRefs
+    fuzzyMatchRefs >> combineReachFuzzyMatchRefs >> evaluateRefs
 
 
 def create_org_pipeline_fuzzy_match(dag, organisation, item_limits, spider_years,
