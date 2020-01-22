@@ -208,7 +208,7 @@ def evaluate_matches(dag, fuzzyMatchRefs):
         valid_s3_key=VALIDATION_DATA,
         gold_s3_key=GOLD_DATA,
         dst_s3_key=to_s3_output(
-            dag, 'evaluation', 'extract-gold-refs', '.json.gz'),
+            dag, 'evaluation', 'extracted-gold-refs', '.json.gz'),
         dag=dag,
     )
 
