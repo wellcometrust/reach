@@ -94,7 +94,7 @@ def create_match_dag(dag_id, default_args):
         refs_s3_key=REFERENCE_ANNOTATIONS,
         titles_s3_key=TITLE_ANNOTATIONS,
         dst_s3_key=to_s3_output(
-            dag, 'evaluation', 'extracted-gold-refs', '.json.gz'),
+            dag, 'extracted-gold-refs', '.json.gz'),
         dag=dag,
     )
 
@@ -104,7 +104,7 @@ def create_match_dag(dag_id, default_args):
         src_s3_key=extractedGoldRefs.dst_s3_key,
         organisation='gold',
         dst_s3_key=to_s3_output(
-            dag, 'evaluation', 'fuzzy-matched-gold-refs', '.json.gz'),
+            dag, 'fuzzy-matched-gold-refs', '.json.gz'),
         es_index='-'.join([ES_INDEX, 'epmc', 'metadata']),
         dag=dag,
     )
