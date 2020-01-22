@@ -71,7 +71,7 @@ EPMC_METADATA_KEY = '/'.join([
 #
 
 
-def create_dag_for_data_prep(dag_id, default_args):
+def create_match_dag(dag_id, default_args):
     """
     Creates a DAG that produces citations using both fuzzy and exact
     matchers.
@@ -107,11 +107,11 @@ def create_dag_for_data_prep(dag_id, default_args):
     )
 
     extractedGoldRefs >> fuzzyMatchGoldRefs
-    return fuzzyMatchGoldRefs
+    return dag
 
 
-test_dag = create_dag_for_data_prep(
-    'prepare_evaluation_data',
+matched_annotated_titles_dag = create_match_dag(
+    'match_annotated_titles',
     DEFAULT_ARGS,
 )
 
