@@ -8,6 +8,8 @@ LATEST_TAG := latest
 VERSION := latest
 
 REFERENCE_SPLITTER_URL := https://datalabs-public.s3.eu-west-2.amazonaws.com/references_splitter/reference_splitter-2019.8.0-py3-none-any.whl
+REACH_EVALUATOR_WHEEL := reach_evaluator-2020.1.1-py3-none-any.whl
+REACH_EVALUATOR_URL := https://datalabs-public.s3.eu-west-2.amazonaws.com/reach_evaluator/$(REACH_EVALUATOR_WHEEL)
 
 #
 # reach/web
@@ -115,6 +117,7 @@ update-requirements-txt:
 		grep -v references-splitter | \
 		sed 's/airflow/airflow[celery]/' >> requirements.txt
 	echo $(REFERENCE_SPLITTER_URL) >> requirements.txt
+	echo $(REACH_EVALUATOR_URL) >> requirements.txt
 
 
 #
