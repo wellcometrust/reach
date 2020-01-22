@@ -68,32 +68,27 @@ def _read_json_gz_from_s3(s3, key):
 
 
 class ExtractRefsFromGoldDataOperator(BaseOperator):
-    """Combine the original validation data and the annotation
-    (gold) data
+    """Extracts references from reference and title annotations.
 
-    Validation data is the validation set used in the current
-    deep_reference_parser model. Gold data is the same data that has been
-    annotated with titles. The two must be merged to re-add the metadata to
-    the gold set, which is lost during the annotation process.
-
-    NOTE: it may make sense to move this step elsewhere, but for
-    clarity I have included it here for now.
+    The title annotations needs to be re-matched to the reference annotations
+    to add in the doc_id. The resulting file can then be sent for matching
+    against EPMC.
     """
 
     template_fields = (
-        'valid_s3_key',
-        'gold_s3_key',
+        'refs_s3_key',
+        'titles_s3_key',
         'dst_s3_key',
     )
 
     @apply_defaults
-    def __init__(self, valid_s3_key, gold_s3_key, dst_s3_key,
+    def __init__(self, refs_s3_key, titles_s3_key, dst_s3_key,
                  aws_conn_id="aws_default", *args, **kwargs):
 
         super().__init__(*args, **kwargs)
 
-        self.valid_s3_key = valid_s3_key
-        self.gold_s3_key = gold_s3_key
+        self.refs_s3_key = refs_s3_key
+        self.titles_s3_key = titles_s3_key
         self.dst_s3_key = dst_s3_key
         self.aws_conn_id = aws_conn_id
 
@@ -105,27 +100,27 @@ class ExtractRefsFromGoldDataOperator(BaseOperator):
 
         # Download and open the two annotated data files.
 
-        valid = _read_json_gz_from_s3(s3, self.valid_s3_key)
-        gold = _read_json_gz_from_s3(s3, self.gold_s3_key)
+        refs = _read_json_gz_from_s3(s3, self.refs_s3_key)
+        titles = _read_json_gz_from_s3(s3, self.titles_s3_key)
 
         self.log.info(
             'ExtractRefsFromGoldDataOperator read %d lines from %s',
-            len(valid),
-            self.valid_s3_key
+            len(refs),
+            self.refs_s3_key
         )
 
         self.log.info(
             'ExtractRefsFromGoldDataOperator read %d lines from %s',
-            len(gold),
-            self.gold_s3_key
+            len(titles),
+            self.titles_s3_key
         )
 
         # Create lookup dict mapping input_hash to meta data
 
-        metas = {doc.get('_input_hash'):doc.get('meta') for doc in valid}
+        metas = {doc.get('_input_hash'):doc.get('meta') for doc in refs}
         annotated_with_meta = []
 
-        for doc in gold:
+        for doc in titles:
             doc["meta"] = metas.get(doc['_input_hash'])
             annotated_with_meta.append(doc)
 
