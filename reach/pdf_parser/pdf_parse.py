@@ -65,7 +65,7 @@ def get_pdf_metadata(document):
         for line in string_data.splitlines():
             if ":" in line:
                 key, value = [x.strip() for x in line.split(":", 1)]
-                data[key] = value
+                data[key.lower()] = value
 
         # Massage this into a better format
         for key, value in data.items():
