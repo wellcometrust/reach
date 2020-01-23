@@ -185,20 +185,30 @@ class ExtractRefsFromGoldDataOperator(BaseOperator):
 
             if meta:
                 doc_hash = meta.get("doc_hash")
-            spans = doc.get("spans")
 
-            # Get spans, and create references from them. Note that these spans
-            # need to be BI_TITLE, BE_TITLE, i.e. reference level spans, not
-            # individual token level spans!
+                # Only add the reference if there is a doc_hash, if not the
+                # reference is not useful for evaluation. This may occur when
+                # it was not possible to reconcile the _input_hash from the
+                # title annotation with the _input_hash from the reference
+                # annotation which contains the full metadata. Going forward
+                # this should not occur if the examples annotated for titles
+                # are drawn from those annotated for references.
 
-            if spans:
-                for span in spans:
-                    annotated_titles.append(
-                        {
-                            "document_id": doc_hash,
-                            "Title": _get_span_text(doc["text"], span)
-                        }
-                    )
+                if doc_hash:
+                    spans = doc.get("spans")
+
+                    # Get spans, and create references from them. Note that 
+                    # these spans need to be TITLE, i.e. reference level spans,
+                    # not individual token level spans!
+
+                    if spans:
+                        for span in spans:
+                            annotated_titles.append(
+                                {
+                                    "document_id": doc_hash,
+                                    "Title": _get_span_text(doc["text"], span)
+                                }
+                            )
 
         _write_json_gz_to_s3(s3, annotated_titles, key=self.dst_s3_key)
 
