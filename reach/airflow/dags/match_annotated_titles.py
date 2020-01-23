@@ -49,18 +49,8 @@ def to_s3_output(dag, *args):
     slug = '-'.join(components)
     return (
         '{{ conf.get("core", "reach_s3_prefix") }}'
-        '/output/%s/%s/%s%s'
-    ) % (dag.dag_id, path, slug, suffix)
-
-
-def to_s3_output_dir(dag, *args):
-    """ Returns the S3 URL for any output directory for the DAG. """
-    path = '/'.join(args)
-    slug = '-'.join(args)
-    return (
-        '{{ conf.get("core", "reach_s3_prefix") }}'
-        '/output/%s/%s/%s'
-    ) % (dag.dag_id, path, slug)
+        '/output/%s/%s%s'
+    ) % (dag.dag_id, slug, suffix)
 
 
 EPMC_METADATA_KEY = '/'.join([
@@ -89,10 +79,18 @@ def create_match_dag(dag_id, default_args):
         schedule_interval=None
     )
 
-    extractedGoldRefs = evaluator.ExtractRefsFromGoldDataOperator(
-        task_id='EvaluateExtractRefsFromGoldData',
+    matchedAnnotations = evaluator.AddDocidToTitleAnnotations(
+        task_id='EvaluateMatchAnnotations',
         refs_s3_key=REFERENCE_ANNOTATIONS,
         titles_s3_key=TITLE_ANNOTATIONS,
+        dst_s3_key=to_s3_output(
+            dag, 'matched-annotations', '.json.gz'),
+        dag=dag,
+    )
+
+    extractedGoldRefs = evaluator.ExtractRefsFromGoldDataOperator(
+        task_id='EvaluateExtractRefsFromGoldData',
+        src_s3_key=matchedAnnotations.dst_s3_key,
         dst_s3_key=to_s3_output(
             dag, 'extracted-gold-refs', '.json.gz'),
         dag=dag,
@@ -109,7 +107,7 @@ def create_match_dag(dag_id, default_args):
         dag=dag,
     )
 
-    extractedGoldRefs >> fuzzyMatchGoldRefs
+    matchedAnnotations >> extractedGoldRefs >> fuzzyMatchGoldRefs
     return dag
 
 
