@@ -12,10 +12,3 @@ Welcome to Reach's web API documentation!
 
    intro
    api
-
-
-Indices and tables
-==================
-
-* :ref:`genindex`
-* :ref:`search`
