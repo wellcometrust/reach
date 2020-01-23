@@ -11,6 +11,7 @@ from reach.airflow.tasks import es_index_fuzzy_matched
 from reach.airflow.tasks import exact_match_refs_operator
 from reach.airflow.tasks import fuzzy_match_refs
 from reach.airflow.tasks import policy_name_normalizer
+from reach.airflow.tasks import evaluator
 
 from reach.airflow.tasks.spider_operator import SpiderOperator
 from reach.airflow.tasks.extract_refs_operator import ExtractRefsOperator
@@ -32,12 +33,13 @@ DEFAULT_ARGS = {
     'retry_delay': datetime.timedelta(minutes=5),
 }
 
+GOLD_DATA = "s3://datalabs-data/reach_evaluation/data/sync/2019.10.8_gold_matched_references_snake.jsonl"
+
 ItemLimits = namedtuple('ItemLimits', ('spiders', 'index'))
 
 #
 # Configuration & paths
 #
-
 
 def verify_s3_prefix():
     reach_s3_prefix = conf.get("core", "reach_s3_prefix")
@@ -73,6 +75,14 @@ def to_s3_output_dir(dag, *args):
         '{{ conf.get("core", "reach_s3_prefix") }}'
         '/output/%s/%s/%s'
     ) % (dag.dag_id, path, slug)
+
+def to_s3_output_dir_short(dag, *args):
+    """ Returns the S3 URL for any output directory for the DAG. """
+    path = '/'.join(args)
+    return (
+        '{{ conf.get("core", "reach_s3_prefix") }}'
+        '/output/%s/%s'
+    ) % (dag.dag_id, path)
 
 
 EPMC_METADATA_KEY = '/'.join([
@@ -174,7 +184,34 @@ def org_fuzzy_match(dag, organisation, item_limits, parsePdf, esIndexPublication
     parsePdf >> name_normalizer >> esIndexFullTexts
     name_normalizer >> extractRefs >> fuzzyMatchRefs >> esIndexFuzzyMatched
     esIndexPublications >> fuzzyMatchRefs
-    return esIndexFuzzyMatched
+    return esIndexFuzzyMatched, fuzzyMatchRefs
+
+
+def evaluate_matches(dag, fuzzyMatchRefs):
+    """
+    Evaluate matches against a manually labelled gold dataset
+    """
+
+    combineReachFuzzyMatchRefs = evaluator.CombineReachFuzzyMatchesOperator(
+        task_id='EvaluateCombineReachFuzzyMatches',
+        organisations=ORGANISATIONS,
+        src_s3_dir_key=to_s3_output_dir_short(dag, 'fuzzy-matched-refs'),
+        dst_s3_key=to_s3_output(
+            dag, 'evaluation', 'fuzzy-matched-reach-refs', '.json.gz'),
+        es_index='-'.join([dag.dag_id, 'epmc', 'metadata']),
+        dag=dag,
+    )
+
+    evaluateRefs = evaluator.EvaluateOperator(
+        task_id='EvaluateResults',
+        gold_s3_key=GOLD_DATA,
+        reach_s3_key=combineReachFuzzyMatchRefs.dst_s3_key,
+        dst_s3_key=to_s3_output(
+            dag, 'evaluation', 'results', '.json.gz'),
+        dag=dag,
+    )
+
+    fuzzyMatchRefs >> combineReachFuzzyMatchRefs >> evaluateRefs
 
 
 def create_org_pipeline_fuzzy_match(dag, organisation, item_limits, spider_years,
@@ -190,14 +227,15 @@ def create_org_pipeline_fuzzy_match(dag, organisation, item_limits, spider_years
     """
 
     parsePdf = org_refs(dag, organisation, item_limits, spider_years)
-    return parsePdf, org_fuzzy_match(
+    esIndexFuzzyMatched, fuzzyMatchRefs = org_fuzzy_match(
         dag, organisation, item_limits, parsePdf, esIndexPublications)
 
+    return parsePdf, esIndexFuzzyMatched, fuzzyMatchRefs
 
 def create_org_pipeline_exact_match(dag, organisation, item_limits,
                                     spider_years, parsePdf=None,
                                     esIndexFullTexts=None):
-    """ Creates all tasks needed for producing exact matched citatinos
+    """ Creates all tasks needed for producing exact matched citations
     for a single organisation::
 
         Spider -> ParsePdf
@@ -248,13 +286,21 @@ def create_dag_fuzzy_match(dag_id, default_args, spider_years,
         schedule_interval='0 0 * * 0,3'
     )
     esIndexPublications = es_index_publications(dag, item_limits)
+    fuzzyMatchRefsOperators = []
     for organisation in ORGANISATIONS:
-        create_org_pipeline_fuzzy_match(
+        _, _, fuzzyMatchRefs = create_org_pipeline_fuzzy_match(
             dag,
             organisation,
             item_limits,
             spider_years,
             esIndexPublications)
+        fuzzyMatchRefsOperators.append(fuzzyMatchRefs)
+
+    # Run the evaluation setting all the fuzzMatchRefsOperators as upstream
+    # depdendencies.
+
+    evaluate_matches(dag, fuzzyMatchRefsOperators)
+
     return dag
 
 
@@ -277,13 +323,16 @@ def create_dag_all_match(dag_id, default_args, spider_years,
     )
     epmc_limits = ItemLimits(None, None)
     esIndexPublications = es_index_publications(dag, epmc_limits)
+    fuzzyMatchRefsOperators = []
     for organisation in ORGANISATIONS:
-        parsePdf, _ = create_org_pipeline_fuzzy_match(
+        parsePdf, _, fuzzyMatchRefs = create_org_pipeline_fuzzy_match(
             dag,
             organisation,
             item_limits,
             spider_years,
             esIndexPublications)
+
+        fuzzyMatchRefsOperators.append(fuzzyMatchRefs)
 
         create_org_pipeline_exact_match(
             dag,
@@ -292,6 +341,11 @@ def create_dag_all_match(dag_id, default_args, spider_years,
             spider_years,
             parsePdf=parsePdf,
             esIndexFullTexts=None)
+
+    # Run the evaluation setting all the fuzzMatchRefsOperators as upstream
+    # depdendencies.
+
+    evaluate_matches(dag, fuzzyMatchRefsOperators)
 
     return dag
 

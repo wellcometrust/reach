@@ -93,10 +93,10 @@ def transform_structured_references(
     for structured_reference, splitted_reference in zip(structured_references, splitted_references):
         # Don't return the structured references if no categories were found
         if any(structured_reference.values()):
-            structured_reference['Document id'] = document_id
-            structured_reference['Document uri'] = document_uri
-            structured_reference['Reference id'] = hash(splitted_reference)
-            structured_reference['metadata'] = document_metadata
+            structured_reference['document_id'] = document_id
+            structured_reference['document_url'] = document_uri
+            structured_reference['reference_id'] = hash(splitted_reference)
+            structured_reference['metadata'] = dict((key, value) for key, value in document_metadata.items() if key != 'sections')
             transformed_structured_references.append(structured_reference)
 
     return transformed_structured_references
@@ -322,8 +322,10 @@ def refparse(scraper_file, publications_file, model_file,
         get_scraped=True,
         scraping_columns=('title', 'file_hash', 'uri', 'text')
         )
+
     document_texts = transform_scraper_text_file(scraper_file)
     exact_matcher = ExactMatcher(document_texts, settings.MATCH_TITLE_LENGTH_THRESHOLD)
+
     with open(exact_matched_reference_filepath, 'w') as emrefs_f:
         for publication in publications:
             exact_matched_references = exact_match_publication(exact_matcher, publication)

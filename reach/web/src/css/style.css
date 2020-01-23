@@ -11,6 +11,7 @@ $spectre_version: 0.5.8;
  */
 
 @import "home.css";
+@import "about.css";
 @import "search.css";
 @import "results.css";
 @import "header.css";
@@ -53,11 +54,17 @@ $spectre_version: 0.5.8;
 
 .column {
   padding-right: 22px;
-}
+/*  background-color: rgba(255,0,0,0.2);
+*/}
 
 /*
  * Generic elements
  */
+
+ html,
+ body {
+    height: 100%;
+ }
 
 body {
   /* Brand guidelines say Helvetica Neue or Arial, but
@@ -84,6 +91,13 @@ body {
   line-height: normal;
   letter-spacing: normal;
   background-color: $backgroundTint1;
+  overflow-y: scroll;
+  display: flex;
+  flex-direction: column;
+
+  background-image: linear-gradient(-25deg, $backgroundTint2 20%, $backgroundTint1 calc(20% + 2px));
+  background-repeat: no-repeat;
+  background-position: bottom;
 }
 
 hr.fs, hr.hs {
@@ -93,7 +107,11 @@ hr.fs, hr.hs {
 }
 
 .content{
-  background-image: linear-gradient(-25deg, $backgroundTint2 20%, $backgroundTint1 calc(20% + 2px));
+  flex: 1 0 auto;
+}
+
+footer {
+  flex-shrink: 0;
 }
 
 section#about-page, section#how-it-works-page{
@@ -105,7 +123,7 @@ section#about-page, section#how-it-works-page{
 h1 {
   font-family: Wellcome;
   font-size: $h1FontSize;
-  font-weight: bold;
+  font-weight: normal;
   font-stretch: normal;
   font-style: normal;
   line-height: 1.5;
@@ -116,7 +134,7 @@ h1 {
 h2 {
   font-family: Wellcome;
   font-size: $h2FontSize;
-  font-weight: bold;
+  font-weight: normal;
   font-stretch: normal;
   font-style: normal;
   line-height: 1.5;
@@ -162,7 +180,7 @@ a, a:visited {
   text-decoration: underline;
   color: $cyanPrimary;
   font-family: "Helvetica Neue";
-  font-size: 0.875rem;
+  font-size: $baseFontSize;
   font-weight: normal;
   font-stretch: normal;
   font-style: normal;
@@ -187,13 +205,13 @@ a, a:visited {
 .btn.btn-xl {
   font-size: $baseFontSize;
   font-family: "Helvetica Neue";
-  height: 2.75rem;
+  height: 3rem;
   padding: 0 2rem;
   text-align: center;
   font-weight: normal;
   font-stretch: normal;
   font-style: normal;
-  line-height: 2.75rem;
+  line-height: 3rem;
   letter-spacing: normal;
 }
 
@@ -210,7 +228,13 @@ a, a:visited {
 
 .btn.btn-primary {
   border: none;
-  background: $cyanDark;
+  background: $cyanPrimary;
+  color: white;
+}
+
+.btn.btn-primary:hover {
+  border: none;
+  background: $cyanLight;
   color: white;
 }
 
@@ -232,16 +256,24 @@ a, a:visited {
 
 .form-input.input-xl {
   font-size: $baseFontSize;
+  border-color: $greyLight;
   height: 2.5rem;
   padding: .6rem .6rem;
 }
 
+.form-input:focus {
+  border-color: #767676;
+  box-shadow: none;
+}
 
 /* Override Spectre default */
 .breadcrumb .breadcrumb-item:not(:last-child) a {
     color: $cyanPrimary;
 }
 
+.table.table-hover tbody tr:hover {
+  background: $backgroundTint1;
+}
 
 .breadcrumb .breadcrumb-item:not(:first-child)::before {
   color: $greyDark;

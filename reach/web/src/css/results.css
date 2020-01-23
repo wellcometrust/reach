@@ -10,6 +10,10 @@
 		border-top: 1px solid $greyLight;
 		border-bottom: 1px solid $greyLight;
 	}
+
+	.authors-cell {
+		width: 20%;
+	}
 }
 .pagination .page-item#active-page {
 	background-color: $cyanPrimary;
@@ -56,12 +60,35 @@ th {
   color: $greyLink;
 }
 
-#citations-result-table th:first-child::before {
-	content: url(../images/Icon_Research_24px.svg);
-	margin-right: 10px;
+.accordion-arrow {
+	color: $cyanPrimary;
+	font-weight: bold;
+	width: 3.4375rem;
+	text-align: center;
 }
 
-th::after {
-	content: url(../images/Icon_Sort-by_16px.svg);
-	margin-left: 10px;
+.active-row td {
+	background-color: $backgroundTint2;
+}
+
+.accordion-subtable {
+	tr td {
+		border: none;
+		background-color: $backgroundTint1;
+	}
+
+	tr th{
+		border: none;
+		background-color: $backgroundTint1;
+	}
+}
+
+.table tr .accordion-subtable-container {
+	background-color: $backgroundTint1;
+	padding: 0;
+	padding-left: 3.4375rem;
+}
+
+#citations-results-tbody .hidden {
+	display: none;
 }

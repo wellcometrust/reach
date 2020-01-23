@@ -45,7 +45,7 @@
             <div class="column col-6 col-md-12">
                 <form action="/search/citations">
                     <div class="input-group">
-                      <input type="text" class="form-input input-xl" placeholder="Search" name="term" id="search-term" value="{{ term }}">
+                      <input type="text" class="form-input input-xl" placeholder="Search" name="terms" id="search-term" value="{{ terms }}">
                       <button type="submit" class="btn btn-primary input-group-btn input-btn-xl">Discover citations <span class="icn icn-search"></span></button>
                     </div>
                 </form>
@@ -125,14 +125,15 @@
                     <table class="table table-light table-hover"  id="citations-result-table">
                         <thead>
                             <tr>
-                                <th class="sort" data-sort="match_title.keyword" data-order="asc" id="active-sort">Research publication</th>
-                                <th class="sort" data-sort="match_publication">Journal</th>
-                                <th class="sort" data-sort="match_authors.keyword">Author(s)</th>
-                                <th class="sort" data-sort="match_pub_year">Year of publication</th>
-                                <th>Citations in policy docs</th>
+                                <th></th>
+                                <th class="sort" data-sort="match_title.keyword" data-order="asc" id="active-sort"><span class="icn icn-research-paper"></span> Research publication <span class="icn icn-sort"></th>
+                                <th class="sort" data-sort="match_publication">Journal <span class="icn icn-sort"></span></th>
+                                <th class="sort" data-sort="match_authors.keyword">Author(s) <span class="icn icn-sort"></span></th>
+                                <th class="sort" data-sort="match_pub_year">Publication Year <span class="icn icn-sort"></span></th>
+                                <th>Citations in policy&nbspdocs</th>
                             </tr>
                         </thead>
-                         <tbody id="citations-results-tbody">
+                        <tbody id="citations-results-tbody">
                         </tbody>
                     </table>
                 </div>

@@ -79,7 +79,7 @@ export function getData(type, body, callback) {
     let xhr = new XMLHttpRequest();
 
     let url = `/api/search/${type}`
-              + `?term=${body.term}`
+              + `?terms=${body.term}`
               + `&fields=${body.fields}`
               + `&size=${body.size}`
               + `&sort=${body.sort}`

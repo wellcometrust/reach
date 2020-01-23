@@ -7,6 +7,7 @@ ECR_IMAGE := 160358319781.dkr.ecr.eu-west-1.amazonaws.com/$(IMAGE)
 LATEST_TAG := latest
 VERSION := latest
 
+
 #
 # Wheel for deep_reference_parser
 #
@@ -14,8 +15,22 @@ VERSION := latest
 DEEP_REFERENCE_PARSER_WHEEL := deep_reference_parser-2019.12.1-py3-none-any.whl
 DEEP_REFERENCE_PARSER_URL := https://datalabs-public.s3.eu-west-2.amazonaws.com/deep_reference_parser/$(DEEP_REFERENCE_PARSER_WHEEL)
 
+
+#
+# Wheel for reach_evaluator
+#
+
+REACH_EVALUATOR_WHEEL := reach_evaluator-2020.1.1-py3-none-any.whl
+REACH_EVALUATOR_URL := https://datalabs-public.s3.eu-west-2.amazonaws.com/reach_evaluator/$(REACH_EVALUATOR_WHEEL)
+
+
+#
+# Other third party dependencies
+#
+
 SPACY_MODEL_URL := https://github.com/explosion/spacy-models/releases/download/en_core_web_sm-2.1.0/en_core_web_sm-2.1.0.tar.gz#egg=en_core_web_sm==2.1.0
 KERAS_CONTRIB_URL := https://github.com/keras-team/keras-contrib/tarball/master
+
 
 #
 # reach/web
@@ -127,6 +142,7 @@ update-requirements-txt:
 	echo $(SPACY_MODEL_URL) >> requirements.txt
 	echo $(KERAS_CONTRIB_URL) >> requirements.txt
 	echo $(DEEP_REFERENCE_PARSER_URL) >> requirements.txt
+  echo $(REACH_EVALUATOR_URL) >> requirements.txt
 
 
 #
