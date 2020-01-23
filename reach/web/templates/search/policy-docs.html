@@ -50,15 +50,15 @@
     <div class="columns">
       <div class="column col-3 hide-md"></div>
       <div class="column col-6 col-md-12">
-        <p>Search by publication title, journal, author or year of publication</p>
+        <p class="form-label">Search by publication title, journal, author or year of publication</p>
         <form action="/search/policy-docs">
           <div class="input-group">
-            <input type="text" class="form-input input-xl" placeholder="Search" name="term" id="search-term">
+            <input type="text" class="form-input input-xl" placeholder="Search" name="terms" id="search-term">
             <button type="submit" class="btn btn-primary input-btn-xl input-group-btn">Browse policy documents <span class="icn icn-search"></span></button>
           </div>
         </form>
         {#- Search tooltips #}
-        <div class="search-tips">
+        <div class="search-tooltips">
           <a href="#">Advanced search tips</a>
           <div class="popover popover-bottom">
             <span class="btn help">?</span>

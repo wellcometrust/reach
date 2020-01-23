@@ -32,6 +32,7 @@ $h2FontSize: 1.5rem;
 $h3FontSize: 1.25rem;
 $h4FontSize: 1rem;
 $baseFontSize: 1rem;
+$smallFontSize: 0.875rem;
 
 @font-face {
     font-family: Wellcome;

@@ -40,12 +40,12 @@
                     <h1>Results for "{{ term }}" in policy documents</h1>
                 </div>
             <div class="column col-12 col-md-12">
-                <p>Search by research publication title, journal, author or year of publication</p>
+                <p class="form-label">Search by research publication title, journal, author or year of publication</p>
             </div>
             <div class="column col-6 col-md-12">
                 <form action="/search/policy-docs">
                     <div class="input-group">
-                      <input type="text" class="form-input input-xl" placeholder="Search" name="term" id="search-term" value="{{ term }}">
+                      <input type="text" class="form-input input-xl" placeholder="Search" name="terms" id="search-term" value="{{ term }}">
                       <button type="submit" class="btn btn-primary input-group-btn input-btn-xl">Browse policy documents <span class="icn icn-search"></span></button>
                     </div>
                 </form>

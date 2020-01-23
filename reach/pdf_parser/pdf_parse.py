@@ -26,12 +26,12 @@ BASE_FONT_SIZE = -10
 logger = logging.getLogger(__name__)
 
 METADATA_MAP = {
-    'CreationDate': 'created',
-    'Creator': 'creator',
-    'File size': 'file_size',
-    'Page rot': 'page_rot',
-    'Title': 'title',
-    'Author': 'author'
+    'creation_date': 'created',
+    'creator': 'creator',
+    'file_size': 'file_size',
+    'page_rot': 'page_rot',
+    'title': 'title',
+    'author': 'author'
 }
 
 def get_pdf_metadata(document):
@@ -59,12 +59,13 @@ def get_pdf_metadata(document):
     # regardless of metadata problems
     if result.returncode == 0:
         # info scrape succeeded
-        string_data = result.stdout.decode("utf-8")
+        # skip any non-unicode characters
+        string_data = result.stdout.decode("utf-8", 'ignore')
         data = {}
         for line in string_data.splitlines():
             if ":" in line:
                 key, value = [x.strip() for x in line.split(":", 1)]
-                data[key] = value
+                data[key.lower()] = value
 
         # Massage this into a better format
         for key, value in data.items():
