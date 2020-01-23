@@ -66,9 +66,8 @@ def _read_json_gz_from_s3(s3, key):
 
         return list(_yield_jsonl_from_gzip(tf))
 
-
-class ExtractRefsFromGoldDataOperator(BaseOperator):
-    """Extracts references from reference and title annotations.
+class AddDocidToTitleAnnotations(BaseOperator):
+    """Matches reference with title annotation to re-add metadata
 
     The title annotations needs to be re-matched to the reference annotations
     to add in the doc_id. The resulting file can then be sent for matching
@@ -104,13 +103,13 @@ class ExtractRefsFromGoldDataOperator(BaseOperator):
         titles = _read_json_gz_from_s3(s3, self.titles_s3_key)
 
         self.log.info(
-            'ExtractRefsFromGoldDataOperator read %d lines from %s',
+            'AddDocidToTitleAnnotation read %d lines from %s',
             len(refs),
             self.refs_s3_key
         )
 
         self.log.info(
-            'ExtractRefsFromGoldDataOperator read %d lines from %s',
+            'AddDocidToTitleAnnotations read %d lines from %s',
             len(titles),
             self.titles_s3_key
         )
@@ -124,7 +123,56 @@ class ExtractRefsFromGoldDataOperator(BaseOperator):
             doc["meta"] = metas.get(doc['_input_hash'])
             annotated_with_meta.append(doc)
 
-        # Extract the "Title" and "document_id" from the annotated references
+        _write_json_gz_to_s3(s3, annotated_with_meta, key=self.dst_s3_key)
+
+        self.log.info(
+            'AddDocidToTitleAnnotations wrote %d lines to %s.',
+            len(annotated_with_meta),
+            self.dst_s3_key
+        )
+
+        self.log.info(
+            'AddDocidToTitleAnnotations: Done extracting refs from '
+            'annotated data.'
+        )
+
+
+class ExtractRefsFromGoldDataOperator(BaseOperator):
+    """Extracts references from reference and title annotations.
+    """
+
+    template_fields = (
+        'src_s3_key',
+        'dst_s3_key',
+    )
+
+    @apply_defaults
+    def __init__(self, src_s3_key, dst_s3_key, aws_conn_id="aws_default", 
+                 *args, **kwargs):
+
+        super().__init__(*args, **kwargs)
+
+        self.src_s3_key = src_s3_key
+        self.dst_s3_key = dst_s3_key
+        self.aws_conn_id = aws_conn_id
+
+    @report_exception
+    def execute(self, context):
+        s3 = WellcomeS3Hook(aws_conn_id=self.aws_conn_id)
+
+        results = []
+
+        # Download and open the two annotated data files.
+
+        annotated_with_meta = _read_json_gz_from_s3(s3, self.src_s3_key)
+
+        self.log.info(
+            'ExtractRefsFromGoldDataOperator read %d lines from %s',
+            len(annotated_with_meta),
+            self.src_s3_key
+        )
+
+        # Create lookup dict mapping input_hash to meta data
 
         annotated_titles = []
 
