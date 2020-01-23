@@ -188,6 +188,7 @@ services:
       AWS_SECRET_ACCESS_KEY: "${AWS_SECRET_ACCESS_KEY}"
       SENTRY_DSN: "${SENTRY_DSN}"
       STATIC_ROOT: /opt/reach/build/web/static
+      DOCS_STATIC_ROOT: /opt/reach/reach/web/docs/build/html/_static
       ELASTICSEARCH_HOST: "http://elasticsearch:9200"
       ELASTICSEARCH_POLICYDOCS_INDEX: "policy-test-docs"
       ELASTICSEARCH_CITATIONS_INDEX: "policy-test-citations"
