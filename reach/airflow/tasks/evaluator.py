@@ -247,12 +247,13 @@ class EvaluateOperator(BaseOperator):
     )
 
     @apply_defaults
-    def __init__(self, gold_s3_key, reach_s3_key, dst_s3_key, aws_conn_id='aws_default', *args, **kwargs):
+    def __init__(self, gold_s3_key, reach_s3_key, dst_s3_key, aws_conn_id='aws_default', reach_params=None, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.gold_s3_key = gold_s3_key
         self.reach_s3_key = reach_s3_key
         self.dst_s3_key = dst_s3_key
         self.aws_conn_id = aws_conn_id
+        self.reach_params = reach_params
 
     @report_exception
     def execute(self, context):
@@ -272,6 +273,7 @@ class EvaluateOperator(BaseOperator):
 
         eval_results["gold_refs"] = self.gold_s3_key
         eval_results["reach_refs"] = self.reach_s3_key
+        eval_results['reach_params'] = self.reach_params
 
         # Write the results to S3
         _write_json_gz_to_s3(s3, [eval_results], key=self.dst_s3_key)

@@ -35,6 +35,13 @@ DEFAULT_ARGS = {
 
 GOLD_DATA = "s3://datalabs-data/reach_evaluation/data/sync/2019.10.8_gold_matched_references_snake.jsonl"
 
+#
+# FuzzyMatch settings
+#
+
+SHOULD_MATCH_THRESHOLD = 80
+SCORE_THRESHOLD = 50
+
 ItemLimits = namedtuple('ItemLimits', ('spiders', 'index'))
 
 #
@@ -154,6 +161,8 @@ def org_fuzzy_match(dag, organisation, item_limits, parsePdf, esIndexPublication
         task_id='FuzzyMatchRefs.%s' % organisation,
         es_hosts=get_es_hosts(),
         src_s3_key=extractRefs.dst_s3_key,
+        score_threshold=SCORE_THRESHOLD,
+        should_match_threshold=SHOULD_MATCH_THRESHOLD,
         organisation=organisation,
         dst_s3_key=to_s3_output(
             dag, 'fuzzy-matched-refs', organisation, '.json.gz'),
@@ -202,12 +211,22 @@ def evaluate_matches(dag, fuzzyMatchRefs):
         dag=dag,
     )
 
+    # Record key parameters relevant to tracking reach success
+
+    reach_params = {
+        'FuzzyMatchRefsOperator': {
+            'should_match_threshold': SHOULD_MATCH_THRESHOLD,
+            'score_threshold': SCORE_THRESHOLD,
+        }
+    }
+
     evaluateRefs = evaluator.EvaluateOperator(
         task_id='EvaluateResults',
         gold_s3_key=GOLD_DATA,
         reach_s3_key=combineReachFuzzyMatchRefs.dst_s3_key,
         dst_s3_key=to_s3_output(
             dag, 'evaluation', 'results', '.json.gz'),
+        reach_params=reach_params,
         dag=dag,
     )
 
