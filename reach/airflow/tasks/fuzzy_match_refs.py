@@ -144,14 +144,11 @@ class FuzzyMatchRefsOperator(BaseOperator):
         'dst_s3_key'
     )
 
-    SHOULD_MATCH_THRESHOLD = 80
-    SCORE_THRESHOLD = 50
-
     @apply_defaults
     def __init__(self, es_hosts, src_s3_key, dst_s3_key, es_index,
-                 score_threshold=SCORE_THRESHOLD,
+                 score_threshold=50,
                  organisation=None,
-                 should_match_threshold=SHOULD_MATCH_THRESHOLD,
+                 should_match_threshold=80,
                  aws_conn_id='aws_default', *args, **kwargs):
         super().__init__(*args, **kwargs)
 
