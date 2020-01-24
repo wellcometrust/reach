@@ -209,8 +209,9 @@ class ExtractRefsFromGoldDataOperator(BaseOperator):
                             annotated_titles.append(
                                 {
                                     "document_id": doc_hash,
-                                    "Title": _get_span_text(doc["text"], span),
-                                    "metadata": {"file_hash": doc_hash}
+                                    "Title": title,
+                                    "metadata": {"file_hash": doc_hash},
+                                    "reference_id": hash(title)
                                 }
                             )
 
