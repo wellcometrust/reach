@@ -197,16 +197,20 @@ class ExtractRefsFromGoldDataOperator(BaseOperator):
                 if doc_hash:
                     spans = doc.get("spans")
 
-                    # Get spans, and create references from them. Note that 
+                    # Get spans, and create references from them. Note that
                     # these spans need to be TITLE, i.e. reference level spans,
-                    # not individual token level spans!
+                    # not individual token level spans! This will create a 
+                    # dict index by title with a list of doc_hashes in which
+                    # those titles were found.
 
                     if spans:
                         for span in spans:
+                            title = _get_span_text(doc["text"], span)
                             annotated_titles.append(
                                 {
                                     "document_id": doc_hash,
-                                    "Title": _get_span_text(doc["text"], span)
+                                    "Title": _get_span_text(doc["text"], span),
+                                    "metadata": {"file_hash": doc_hash}
                                 }
                             )
 
