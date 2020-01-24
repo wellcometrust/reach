@@ -33,7 +33,7 @@ DEFAULT_ARGS = {
     'retry_delay': datetime.timedelta(minutes=5),
 }
 
-GOLD_DATA = "s3://datalabs-data/reach_evaluation/data/sync/2019.10.8-fuzzy-matched-gold-refs-manually-verified.jsonl"
+GOLD_DATA = "s3://datalabs-data/reach_evaluation/data/sync/2019.10.8-fuzzy-matched-gold-refs-manually-verified.jsonl.gz"
 
 #
 # FuzzyMatch settings
