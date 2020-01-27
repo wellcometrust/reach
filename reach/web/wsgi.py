@@ -34,6 +34,13 @@ class Configuration:
                 self.static_root
             )
 
+        self.docs_static_root = os.environ.get('DOCS_STATIC_ROOT')
+        if not self.static_root or not os.path.isdir(self.static_root):
+            raise Exception(
+                "No static directory found. DOCS_STATIC_ROOT=%r" %
+                self.static_root
+            )
+
 
 config = Configuration()
 application = api.create_api(config)
