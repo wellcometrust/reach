@@ -85,8 +85,8 @@ def create_match_dag(dag_id, default_args):
         schedule_interval=None
     )
 
-    matchedAnnotations = evaluator.AddDocidToTitleAnnotations(
-        task_id='EvaluateMatchAnnotations',
+    addedDocidToTitleAnnotations = evaluator.AddDocidToTitleAnnotations(
+        task_id='EvaluateAddDocidToTitleAnnotations',
         refs_s3_key=from_s3_input(
             'data',
             '2019.10.8_valid.jsonl.gz',
@@ -102,7 +102,7 @@ def create_match_dag(dag_id, default_args):
 
     extractedGoldRefs = evaluator.ExtractRefsFromGoldDataOperator(
         task_id='EvaluateExtractRefsFromGoldData',
-        src_s3_key=matchedAnnotations.dst_s3_key,
+        src_s3_key=addedDocidToTitleAnnotations.dst_s3_key,
         dst_s3_key=to_s3_output(
             dag, 'extracted-gold-refs', '.json.gz'),
         dag=dag,
@@ -119,7 +119,7 @@ def create_match_dag(dag_id, default_args):
         dag=dag,
     )
 
-    matchedAnnotations >> extractedGoldRefs >> fuzzyMatchGoldRefs
+    addedDocidToTitleAnnotations >> extractedGoldRefs >> fuzzyMatchGoldRefs
     return dag
 
 
