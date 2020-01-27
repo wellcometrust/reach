@@ -17,8 +17,9 @@ DEFAULT_ARGS = {
     'retry_delay': datetime.timedelta(minutes=5),
 }
 
-REFERENCE_ANNOTATIONS="s3://datalabs-data/reach_evaluation/data/sync/2019.10.8_valid_TITLE.jsonl.gz"
-TITLE_ANNOTATIONS = "s3://datalabs-data/reach_evaluation/data/sync/2019.10.8_valid.jsonl.gz"
+
+# dag.id of dag which produced the EPMC ES Index
+ES_INDEX="policy"
 
 #
 # Configuration & paths
@@ -39,6 +40,14 @@ def get_es_hosts():
     return [x.strip().split(':') for x in result.split(',')]
 
 
+def from_s3_input(slug, file):
+    """ Returns the S3 URL for an input fiule required by the DAG. """
+    return (
+        '{{ conf.get("core", "reach_s3_prefix") }}'
+        '/%s/%s'
+    ) % (slug, file)
+
+
 def to_s3_output(dag, *args):
     """ Returns the S3 URL for any output file for the DAG. """
     components, suffix = args[:-1], args[-1]
@@ -46,18 +55,8 @@ def to_s3_output(dag, *args):
     slug = '-'.join(components)
     return (
         '{{ conf.get("core", "reach_s3_prefix") }}'
-        '/output/%s/%s/%s%s'
-    ) % (dag.dag_id, path, slug, suffix)
-
-
-def to_s3_output_dir(dag, *args):
-    """ Returns the S3 URL for any output directory for the DAG. """
-    path = '/'.join(args)
-    slug = '-'.join(args)
-    return (
-        '{{ conf.get("core", "reach_s3_prefix") }}'
-        '/output/%s/%s/%s'
-    ) % (dag.dag_id, path, slug)
+        '/output/%s/%s%s'
+    ) % (dag.dag_id, slug, suffix)
 
 
 EPMC_METADATA_KEY = '/'.join([
@@ -86,12 +85,26 @@ def create_match_dag(dag_id, default_args):
         schedule_interval=None
     )
 
+    addedDocidToTitleAnnotations = evaluator.AddDocidToTitleAnnotations(
+        task_id='EvaluateAddDocidToTitleAnnotations',
+        refs_s3_key=from_s3_input(
+            'data',
+            '2019.10.8_valid.jsonl.gz',
+        ),
+        titles_s3_key=from_s3_input(
+            'data',
+            '2019.10.8_valid_TITLE.jsonl.gz',
+        ),
+        dst_s3_key=to_s3_output(
+            dag, 'matched-annotations', '.json.gz'),
+        dag=dag,
+    )
+
     extractedGoldRefs = evaluator.ExtractRefsFromGoldDataOperator(
         task_id='EvaluateExtractRefsFromGoldData',
-        refs_s3_key=REFERENCE_ANNOTATIONS,
-        titles_s3_key=TITLE_ANNOTATIONS,
+        src_s3_key=addedDocidToTitleAnnotations.dst_s3_key,
         dst_s3_key=to_s3_output(
-            dag, 'evaluation', 'extracted-gold-refs', '.json.gz'),
+            dag, 'extracted-gold-refs', '.json.gz'),
         dag=dag,
     )
 
@@ -101,12 +114,12 @@ def create_match_dag(dag_id, default_args):
         src_s3_key=extractedGoldRefs.dst_s3_key,
         organisation='gold',
         dst_s3_key=to_s3_output(
-            dag, 'evaluation', 'fuzzy-matched-gold-refs', '.json.gz'),
-        es_index='-'.join([dag.dag_id, 'epmc', 'metadata']),
+            dag, 'fuzzy-matched-gold-refs', '.json.gz'),
+        es_index='-'.join([ES_INDEX, 'epmc', 'metadata']),
         dag=dag,
     )
 
-    extractedGoldRefs >> fuzzyMatchGoldRefs
+    addedDocidToTitleAnnotations >> extractedGoldRefs >> fuzzyMatchGoldRefs
     return dag
 
 

@@ -33,7 +33,13 @@ DEFAULT_ARGS = {
     'retry_delay': datetime.timedelta(minutes=5),
 }
 
-GOLD_DATA = "s3://datalabs-data/reach_evaluation/data/sync/2019.10.8_gold_matched_references_snake.jsonl"
+
+#
+# FuzzyMatch settings
+#
+
+SHOULD_MATCH_THRESHOLD = 80
+SCORE_THRESHOLD = 50
 
 ItemLimits = namedtuple('ItemLimits', ('spiders', 'index'))
 
@@ -54,6 +60,14 @@ def get_es_hosts():
     result = conf.get("core", "elasticsearch_hosts")
     assert result
     return [x.strip().split(':') for x in result.split(',')]
+
+
+def from_s3_input(slug, file):
+    """ Returns the S3 URL for an input fiule required by the DAG. """
+    return (
+        '{{ conf.get("core", "reach_s3_prefix") }}'
+        '/%s/%s'
+    ) % (slug, file)
 
 
 def to_s3_output(dag, *args):
@@ -154,6 +168,8 @@ def org_fuzzy_match(dag, organisation, item_limits, parsePdf, esIndexPublication
         task_id='FuzzyMatchRefs.%s' % organisation,
         es_hosts=get_es_hosts(),
         src_s3_key=extractRefs.dst_s3_key,
+        score_threshold=SCORE_THRESHOLD,
+        should_match_threshold=SHOULD_MATCH_THRESHOLD,
         organisation=organisation,
         dst_s3_key=to_s3_output(
             dag, 'fuzzy-matched-refs', organisation, '.json.gz'),
@@ -202,12 +218,25 @@ def evaluate_matches(dag, fuzzyMatchRefs):
         dag=dag,
     )
 
+    # Record key parameters relevant to tracking reach success
+
+    reach_params = {
+        'FuzzyMatchRefsOperator': {
+            'should_match_threshold': SHOULD_MATCH_THRESHOLD,
+            'score_threshold': SCORE_THRESHOLD,
+        }
+    }
+
     evaluateRefs = evaluator.EvaluateOperator(
         task_id='EvaluateResults',
-        gold_s3_key=GOLD_DATA,
+        gold_s3_key=from_s3_input(
+            'data',
+            '2019.10.8-fuzzy-matched-gold-refs-manually-verified.jsonl.gz',
+        ),
         reach_s3_key=combineReachFuzzyMatchRefs.dst_s3_key,
         dst_s3_key=to_s3_output(
             dag, 'evaluation', 'results', '.json.gz'),
+        reach_params=reach_params,
         dag=dag,
     )
 
