@@ -17,8 +17,6 @@ DEFAULT_ARGS = {
     'retry_delay': datetime.timedelta(minutes=5),
 }
 
-TITLE_ANNOTATIONS="s3://datalabs-data/reach_evaluation/data/sync/2019.10.8_valid_TITLE.jsonl.gz"
-REFERENCE_ANNOTATIONS = "s3://datalabs-data/reach_evaluation/data/sync/2019.10.8_valid.jsonl.gz"
 
 # dag.id of dag which produced the EPMC ES Index
 ES_INDEX="policy"
@@ -40,6 +38,14 @@ def get_es_hosts():
     result = conf.get("core", "elasticsearch_hosts")
     assert result
     return [x.strip().split(':') for x in result.split(',')]
+
+
+def from_s3_input(slug, file):
+    """ Returns the S3 URL for an input fiule required by the DAG. """
+    return (
+        '{{ conf.get("core", "reach_s3_prefix") }}'
+        '/%s/%s'
+    ) % (slug, file)
 
 
 def to_s3_output(dag, *args):
@@ -81,8 +87,14 @@ def create_match_dag(dag_id, default_args):
 
     matchedAnnotations = evaluator.AddDocidToTitleAnnotations(
         task_id='EvaluateMatchAnnotations',
-        refs_s3_key=REFERENCE_ANNOTATIONS,
-        titles_s3_key=TITLE_ANNOTATIONS,
+        refs_s3_key=from_s3_input(
+            'data',
+            '2019.10.8_valid.jsonl.gz',
+        ),
+        titles_s3_key=from_s3_input(
+            'data',
+            '2019.10.8_valid_TITLE.jsonl.gz',
+        ),
         dst_s3_key=to_s3_output(
             dag, 'matched-annotations', '.json.gz'),
         dag=dag,
