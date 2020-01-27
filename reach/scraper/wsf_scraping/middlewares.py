@@ -141,9 +141,3 @@ class ReachDisallowedHostMiddleware(object):
             else:
                 # Not a request, yield it
                 yield x
-
-
-
-
-
-
