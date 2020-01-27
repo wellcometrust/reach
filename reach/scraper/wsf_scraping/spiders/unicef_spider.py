@@ -36,11 +36,23 @@ class UnicefSpider(BaseSpider):
         @returns requests 1
         """
 
-        for href in response.css('h3 a::attr(href)').extract():
+        for href in response.css(
+            '.block--card__body__text h3 a::attr(href)'
+        ).extract():
             yield Request(
                 url=response.urljoin(href),
                 callback=self.parse_article,
                 errback=self.on_error,
+            )
+
+        for href in response.css(
+            '.pagination .next::attr(href)'
+        ).extract():
+            yield Request(
+                url=response.urljoin(href),
+                callback=self.parse,
+                errback=self.on_error,
+                dont_filter=True,
             )
 
     def parse_article(self, response):
