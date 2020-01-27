@@ -3,6 +3,7 @@ import scrapy
 
 
 class Article(scrapy.Item):
+
     def __repr__(self):
         return repr({
             'title': self.get('title'),
@@ -27,5 +28,3 @@ class Article(scrapy.Item):
     link_title = scrapy.Field()
     page_headings = scrapy.Field()
     path = scrapy.Field()
-
-
