@@ -4,7 +4,6 @@ Operator for scraping articles from every organisation.
 
 import json
 import os
-import logging
 
 from airflow.models import BaseOperator
 from airflow.utils.decorators import apply_defaults
@@ -129,12 +128,12 @@ class SpiderOperator(BaseOperator):
 
         if self.scraper_errors:
             scraper_errors = self.scraper_errors  # put into local for sentry
-            self.logger.error(
-                'DummySpiderOperator: scrapy signaled %d errors:',
+            self.log.error(
+                'SpiderOperator: scrapy signaled %d errors:',
                 len(scraper_errors)
             )
             for tup in self.scraper_errors:
-                logging.error('DummySpiderOperator: %r', tup)
+                self.log.error('DummySpiderOperator: %r', tup)
             raise Exception(
                 "%d errors occurred during scrape" %
                 len(scraper_errors)
