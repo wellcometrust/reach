@@ -27,7 +27,9 @@ class CSVExport:
         params['page'] = 0
         params['size'] = size
         for i in range(0, int(total / size) + 1):
-            params['page'] = i
+
+            # Query builder starts page count at 1
+            params['page'] = i + 1
             status, response = search._search_es(
                 self.es,
                 self.es_index,
