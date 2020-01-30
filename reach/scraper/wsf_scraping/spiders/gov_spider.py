@@ -8,9 +8,6 @@ from .base_spider import BaseSpider
 
 class GovSpider(BaseSpider):
     name = 'gov_uk'
-    custom_settings = {
-        'JOBDIR': BaseSpider.jobdir(name)
-    }
 
     disallowed_hosts = [
         'beta.hfea.gov.uk', # Site no longer exists but gov links off to it
@@ -43,7 +40,6 @@ class GovSpider(BaseSpider):
         self.logger.info('Initial url: %s', url)
         yield Request(
             url=url,
-            dont_filter=True,
             callback=self.parse,
             errback=self.on_error,
         )
