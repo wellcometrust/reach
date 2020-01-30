@@ -28,3 +28,4 @@ class Article(scrapy.Item):
     link_title = scrapy.Field()
     page_headings = scrapy.Field()
     path = scrapy.Field()
+    did = scrapy.Field()
