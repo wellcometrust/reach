@@ -1,13 +1,14 @@
 import json
 import csv
 import tempfile
+import datetime
 
 import falcon
 
 from reach.web.views import search
 
 
-class CSVExport:
+class ResultsExport:
     """Let you search for terms in publications fulltexts. Returns a json.
 
     Args:
@@ -39,7 +40,7 @@ class CSVExport:
 
             yield response
 
-    def on_get(self, req, resp):
+    def on_get(self, req, resp, ftype):
         """Returns the result of a search on the elasticsearch cluster.
 
         Args:
@@ -79,36 +80,57 @@ class CSVExport:
                 "404",
                 description="No results found for this query"
             )
-
-        headers, policy_headers = self.get_headers(response)
-        csv_file = None
-        es_items = self.yield_es_items(params, total)
+        response_file = None
         try:
-            csv_file = tempfile.TemporaryFile(mode="w+")
-            writer = csv.DictWriter(
-                csv_file,
-                fieldnames=headers + policy_headers
-            )
-            writer.writeheader()
-            for r in es_items:
-                for item in self.yield_rows(headers, policy_headers, r):
-                    writer.writerow(item)
+            es_items = self.yield_es_items(params, total)
+            response_file = tempfile.TemporaryFile(mode="w+")
 
-            csv_file.seek(0)
-
-            resp.content_type = 'text/csv'
-            resp.append_header(
-                'Content-Disposition',
-                'attachment; filename="{filename}.csv"'.format(
-                    filename='reach_export'
+            if ftype == 'csv':
+                headers, policy_headers = self.get_headers(response)
+                writer = csv.DictWriter(
+                    response_file,
+                    fieldnames=headers + policy_headers
                 )
-            )
-            # Falcon will call resp.stream.close()
-            resp.stream = csv_file
+                writer.writeheader()
+                for r in es_items:
+                    for item in self.yield_rows(headers, policy_headers, r):
+                        writer.writerow(item)
+
+                response_file.seek(0)
+
+                resp.content_type = 'text/csv'
+                resp.append_header(
+                    'Content-Disposition',
+                    'attachment; filename="{filename}.csv"'.format(
+                        filename=self.file_name
+                    )
+                )
+                # Falcon will call resp.stream.close()
+                resp.stream = response_file
+            else:
+                # Assumes everything else is json. Safer & memory effective
+
+                for rows in es_items:
+                    for row in rows['hits']['hits']:
+                        response_file.write(
+                            json.dumps(row['_source']['doc'])
+                        )
+
+                response_file.seek(0)
+
+                resp.content_type = 'text/jsonl'
+                resp.append_header(
+                    'Content-Disposition',
+                    'attachment; filename="{filename}.jsonl"'.format(
+                        filename=self.file_name
+                    )
+                )
+                # Falcon will call resp.stream.close()
+                resp.stream = response_file
         except Exception as e:  # noqa
             raise(e)
-            if csv_file is not None:
-                csv_file.close()
+            if response_file is not None:
+                response_file.close()
 
             else:
                 resp.body = json.dumps({
@@ -117,7 +139,7 @@ class CSVExport:
                 })
 
 
-class CitationsCSVExport(CSVExport):
+class CitationsExport(ResultsExport):
 
     def __init__(self, es, es_index, es_explain):
         self.search_fields = ','.join([
@@ -129,7 +151,11 @@ class CitationsCSVExport(CSVExport):
             'match_authors'
         ])
 
-        super(CitationsCSVExport, self).__init__(es, es_index, es_explain)
+        self.file_name = "reach-citations-export-{isodate}".format(
+            isodate=datetime.datetime.now().isoformat()
+        )
+
+        super(CitationsExport, self).__init__(es, es_index, es_explain)
 
     def get_headers(self, response):
         doc = response['hits']['hits'][0]['_source']['doc']
@@ -157,7 +183,7 @@ class CitationsCSVExport(CSVExport):
                 yield row
 
 
-class PolicyDocsCSVExport(CSVExport):
+class PolicyDocsExport(ResultsExport):
 
     def __init__(self, es, es_index, es_explain):
         self.search_fields = ','.join([
@@ -167,7 +193,11 @@ class PolicyDocsCSVExport(CSVExport):
             'authors',
         ])
 
-        super(PolicyDocsCSVExport, self).__init__(es, es_index, es_explain)
+        self.file_name = "reach-policy-docs-export-{isodate}".format(
+            isodate=datetime.datetime.now().isoformat()
+        )
+
+        super(PolicyDocsExport, self).__init__(es, es_index, es_explain)
 
     def get_headers(self, response):
         return list(response['hits']['hits'][0]['_source']['doc'].keys()), []

@@ -115,16 +115,16 @@ def create_api(conf):
     )
     api.add_static_route('/api/docs/_static', conf.docs_static_root)
     api.add_route(
-        '/search/citations/csv',
-        search_exports.CitationsCSVExport(
+        '/search/citations/{ftype}',
+        search_exports.CitationsExport(
             es,
             conf.es_citations_index,
             conf.es_explain
         )
     )
     api.add_route(
-        '/search/policy-docs/csv',
-        search_exports.PolicyDocsCSVExport(
+        '/search/policy-docs/{ftype}',
+        search_exports.PolicyDocsExport(
             es,
             conf.es_policy_docs_index,
             conf.es_explain
