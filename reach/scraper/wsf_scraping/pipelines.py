@@ -3,7 +3,7 @@ import os
 import logging
 from urllib.parse import urlparse
 from scrapy.utils.project import get_project_settings
-from .file_system import S3FileSystem, LocalFileSystem, get_file_hash
+from .file_system import S3FileSystem, LocalFileSystem, get_file_hash, get_pdf_id
 from scrapy.exceptions import DropItem
 
 
@@ -86,6 +86,7 @@ class WsfScrapingPipeline(object):
                 'Empty filename, could not parse the pdf.'
             )
         item['hash'] = get_file_hash(item['pdf'])
+        item['did'] = get_pdf_id(item['pdf'])
 
         in_manifest = self.is_in_manifest(item['hash'])
 
