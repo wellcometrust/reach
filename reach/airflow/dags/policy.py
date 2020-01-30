@@ -80,6 +80,17 @@ def to_s3_output(dag, *args):
         '/output/%s/%s/%s%s'
     ) % (dag.dag_id, path, slug, suffix)
 
+def to_s3_output_ts(dag, *args):
+    """ Returns the S3 URL for any output file for the DAG with a timestamp
+    """
+    components, suffix = args[:-1], args[-1]
+    path = '/'.join(components)
+    slug = '-'.join(components)
+
+    return (
+        '{{ conf.get("core", "reach_s3_prefix") }}'
+        '/output/%s/%s/{{ ts_nodash }}-%s%s'
+    ) % (dag.dag_id, path, slug, suffix)
 
 def to_s3_output_dir(dag, *args):
     """ Returns the S3 URL for any output directory for the DAG. """
@@ -212,7 +223,7 @@ def evaluate_matches(dag, fuzzyMatchRefs):
         task_id='EvaluateCombineReachFuzzyMatches',
         organisations=ORGANISATIONS,
         src_s3_dir_key=to_s3_output_dir_short(dag, 'fuzzy-matched-refs'),
-        dst_s3_key=to_s3_output(
+        dst_s3_key=to_s3_output_ts(
             dag, 'evaluation', 'fuzzy-matched-reach-refs', '.json.gz'),
         es_index='-'.join([dag.dag_id, 'epmc', 'metadata']),
         dag=dag,
@@ -234,7 +245,7 @@ def evaluate_matches(dag, fuzzyMatchRefs):
             '2019.10.8-fuzzy-matched-gold-refs-manually-verified.jsonl.gz',
         ),
         reach_s3_key=combineReachFuzzyMatchRefs.dst_s3_key,
-        dst_s3_key=to_s3_output(
+        dst_s3_key=to_s3_output_ts(
             dag, 'evaluation', 'results', '.json.gz'),
         reach_params=reach_params,
         dag=dag,
