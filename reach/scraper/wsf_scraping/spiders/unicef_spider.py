@@ -6,9 +6,6 @@ from .base_spider import BaseSpider
 class UnicefSpider(BaseSpider):
     name = 'unicef'
 
-    custom_settings = {
-        'JOBDIR': BaseSpider.jobdir(name)
-    }
 
     def start_requests(self):
         """ This sets up the urls to scrape for each years.
@@ -25,7 +22,6 @@ class UnicefSpider(BaseSpider):
                 url=url,
                 callback=self.parse,
                 errback=self.on_error,
-                dont_filter=True,
             )
 
     def parse(self, response):
@@ -52,7 +48,6 @@ class UnicefSpider(BaseSpider):
                 url=response.urljoin(href),
                 callback=self.parse,
                 errback=self.on_error,
-                dont_filter=True,
             )
 
     def parse_article(self, response):
