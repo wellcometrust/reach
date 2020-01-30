@@ -354,22 +354,14 @@ def create_dag_all_match(dag_id, default_args, spider_years,
     esIndexPublications = es_index_publications(dag, epmc_limits)
     fuzzyMatchRefsOperators = []
     for organisation in ORGANISATIONS:
-        parsePdf, _, fuzzyMatchRefs = create_org_pipeline_fuzzy_match(
+        _, _, fuzzyMatchRefs = create_org_pipeline_fuzzy_match(
             dag,
             organisation,
             item_limits,
             spider_years,
             esIndexPublications)
-
         fuzzyMatchRefsOperators.append(fuzzyMatchRefs)
 
-        create_org_pipeline_exact_match(
-            dag,
-            organisation,
-            item_limits,
-            spider_years,
-            parsePdf=parsePdf,
-            esIndexFullTexts=None)
 
     # Run the evaluation setting all the fuzzMatchRefsOperators as upstream
     # depdendencies.
