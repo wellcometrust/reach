@@ -135,8 +135,9 @@ def parse_pdf_document(document):
 
             return None, None, None, [ERR_FILE_TOO_LARGE]
 
+        parser = lxml.etree.XMLParser(encoding="utf-8", recover=True)
         try:
-            tree = lxml.etree.parse(io.BytesIO(tf.read()))
+            tree = lxml.etree.parse(io.BytesIO(tf.read()), parser)
         except XMLSyntaxError:
             return None, None, None, [ERR_XML_SYNTAX]
 

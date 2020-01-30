@@ -5,9 +5,6 @@ from .base_spider import BaseSpider
 class MsfSpider(BaseSpider):
     name = 'msf'
 
-    custom_settings = {
-        'JOBDIR': BaseSpider.jobdir(name)
-    }
 
     def start_requests(self):
         """Set up the initial request to the website to scrape."""
@@ -26,7 +23,6 @@ class MsfSpider(BaseSpider):
             yield scrapy.Request(
                 url=url,
                 errback=self.on_error,
-                dont_filter=True,
                 callback=callback,
             )
 
@@ -57,7 +53,6 @@ class MsfSpider(BaseSpider):
                     url=response.urljoin(url),
                     errback=self.on_error,
                     callback=self.save_pdf,
-                    dont_filter=True,
                     meta={'data_dict': data_dict}
                 )
 

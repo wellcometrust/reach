@@ -9,9 +9,6 @@ class AcmeSpider(BaseSpider):
     name = 'acme'
     data = {}
 
-    custom_settings = {
-        'JOBDIR': BaseSpider.jobdir(name)
-    }
 
     def start_requests(self):
         """ This sets up the urls to scrape for each years.
@@ -25,7 +22,6 @@ class AcmeSpider(BaseSpider):
                 url=url,
                 callback=self.parse,
                 errback=self.on_error,
-                dont_filter=True,
                 meta={'year': 2018}
             )
 
