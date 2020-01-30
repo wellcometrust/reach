@@ -55,15 +55,21 @@ function refreshCitations(data, currentState) {
 
     table.innerHTML = getCitationsTableContent(data);
 
-    document.getElementById('pagination-box').innerHTML = getPagination(
-        currentState.page,
-        data,
-    );
+    for (let htmlElement of document.getElementsByClassName('pagination-box'))
+    {
+            htmlElement.innerHTML = getPagination(
+            currentState.page,
+            data,
+        );
+    }
 
-    document.getElementById('page-counter').innerHTML = getCounter(
-        currentState.page,
-        data,
-    );
+    for (let htmlElement of document.getElementsByClassName('page-counter'))
+    {
+            htmlElement.innerHTML = getCounter(
+            currentState.page,
+            data,
+        );
+    }
 
     for (let item of pages) {
         item.addEventListener('click', (e) => {
