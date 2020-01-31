@@ -13,7 +13,8 @@ const searchFields = [
 function getCitationsTableContent(data) {
     let rows = ``;
     data.hits.hits.forEach((item) => {
-        let authors = item._source.doc.match_authors;
+        let authors = item._source.doc.match_authors?item._source.doc.match_authors:"Unknown";
+
         rows += `<tr class="accordion-row" id="accordion-row-${item._source.doc.reference_id}">`;
         rows += `<td class="accordion-arrow"><i class="icon icon-arrow-down mr-1"></i></td>`
         rows += `<td>${item._source.doc.match_title.toTitleCase()}</td>`;
@@ -43,7 +44,7 @@ function getCitationsTableContent(data) {
                rel="noreferrer noopener"
             >${policy.title.toTitleCase()}</a></td>`;
             rows += `<td>${policy.organisation}</td>`;
-            rows += `<td>${policy.authors}</td>`;
+            rows += `<td>${policy.authors?policy.authors:"Unknown"}</td>`;
             rows += `<td>${item._source.doc.match_pub_year}</td>`;
         }
         rows += `</table></td>`
