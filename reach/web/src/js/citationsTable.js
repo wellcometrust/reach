@@ -15,7 +15,7 @@ function getCitationsTableContent(data) {
     data.hits.hits.forEach((item) => {
         rows += `<tr class="accordion-row" id="accordion-row-${item._source.doc.reference_id}">`;
         rows += `<td class="accordion-arrow"><i class="icon icon-arrow-down mr-1"></i></td>`
-        rows += `<td>${item._source.doc.match_title}</td>`;
+        rows += `<td>${item._source.doc.match_title.toTitleCase()}</td>`;
         rows += `<td>${item._source.doc.match_publication}</td>`;
         rows += `<td class="authors-cell">${item._source.doc.match_authors}</td>`;
         rows += `<td>${item._source.doc.match_pub_year}</td>`;
@@ -38,7 +38,7 @@ function getCitationsTableContent(data) {
                href="${policy.source_url}"
                target="_blank"
                rel="noreferrer noopener"
-            >${policy.title}</a></td>`;
+            >${policy.title.toTitleCase()}</a></td>`;
             rows += `<td>${policy.organisation}</td>`;
             rows += `<td>${policy.authors}</td>`;
             rows += `<td>${item._source.doc.match_pub_year}</td>`;
