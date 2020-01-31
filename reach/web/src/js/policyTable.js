@@ -17,6 +17,7 @@ const getPolicyTableContent = (data) => {
 
     let rows = ``;
     data.hits.hits.forEach((item) => {
+        let authors = item._source.doc.authors?item._source.doc.authors:"Unknown";
         rows += `<tr>`;
         rows += `<td><a
             href="${item._source.doc.url}"
@@ -24,7 +25,9 @@ const getPolicyTableContent = (data) => {
             rel="noreferrer noopener"
         >${item._source.doc.title.toTitleCase()}</a></td>`;
         rows += `<td>${item._source.doc.organisation}</td>`;
-        rows += `<td>${item._source.doc.authors?item._source.doc.authors:"Unknown" }</td>`;
+        rows += `<td class="authors-cell" title="${authors}">
+            ${(authors.length > 50)? (authors.slice(0, 50) + "...") : authors}
+        </td>`;
         rows += `<td>${item._source.doc.year?item._source.doc.year:"Unknown"}</td>`;
         rows += `</tr>`;
 

@@ -13,11 +13,14 @@ const searchFields = [
 function getCitationsTableContent(data) {
     let rows = ``;
     data.hits.hits.forEach((item) => {
+        let authors = item._source.doc.match_authors;
         rows += `<tr class="accordion-row" id="accordion-row-${item._source.doc.reference_id}">`;
         rows += `<td class="accordion-arrow"><i class="icon icon-arrow-down mr-1"></i></td>`
         rows += `<td>${item._source.doc.match_title.toTitleCase()}</td>`;
         rows += `<td>${item._source.doc.match_publication}</td>`;
-        rows += `<td class="authors-cell">${item._source.doc.match_authors}</td>`;
+        rows += `<td class="authors-cell" title="${authors}">
+            ${(authors.length > 50)? (authors.slice(0, 50) + "...") : authors}
+        </td>`;
         rows += `<td>${item._source.doc.match_pub_year}</td>`;
         rows += `<td>${item._source.doc.policies.length}</td>`;
         rows += `</tr>`;
