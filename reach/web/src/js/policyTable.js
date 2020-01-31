@@ -18,7 +18,11 @@ const getPolicyTableContent = (data) => {
     let rows = ``;
     data.hits.hits.forEach((item) => {
         rows += `<tr>`;
-        rows += `<td><a href="${item._source.doc.url}">${item._source.doc.title}</a></td>`;
+        rows += `<td><a
+            href="${item._source.doc.url}"
+            target="_blank"
+            rel="noreferrer noopener"
+        >${item._source.doc.title}</a></td>`;
         rows += `<td>${item._source.doc.organisation}</td>`;
         rows += `<td>${item._source.doc.authors?item._source.doc.authors:"Unknown" }</td>`;
         rows += `<td>${item._source.doc.year?item._source.doc.year:"Unknown"}</td>`;

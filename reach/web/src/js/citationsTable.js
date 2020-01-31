@@ -34,7 +34,11 @@ function getCitationsTableContent(data) {
         `;
         for (let policy of item._source.doc.policies) {
             rows += `<tr>`;
-            rows += `<td><a href="${policy.source_url}">${policy.title}</a></td>`;
+            rows += `<td><a
+               href="${policy.source_url}"
+               target="_blank"
+               rel="noreferrer noopener"
+            >${policy.title}</a></td>`;
             rows += `<td>${policy.organisation}</td>`;
             rows += `<td>${policy.authors}</td>`;
             rows += `<td>${item._source.doc.match_pub_year}</td>`;
