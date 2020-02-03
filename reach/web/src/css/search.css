@@ -4,10 +4,6 @@
     background: $backgroundTint1;
 }
 
-.search-tooltips {
-	margin-top: 0.5rem;
-}
-
 .search-tips {
     margin: $mediumPadding 0;
 }
