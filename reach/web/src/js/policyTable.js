@@ -2,7 +2,8 @@ import {
     getCurrentState,
     getPagination,
     getCounter,
-    getData
+    getData,
+    toDisplayOrg,
 } from './resultsCommon.js';
 
 const searchFields = [
@@ -16,23 +17,26 @@ const getPolicyTableContent = (data) => {
     // Create the table rows to use in the policy-docs result table
 
     let rows = ``;
-    data.hits.hits.forEach((item) => {
+    for(let item of data.hits.hits) {
+        if (!item._source.doc.url) {
+            continue;
+        }
         let authors = item._source.doc.authors?item._source.doc.authors:"Unknown";
         let title = (item._source.doc.title)? item._source.doc.title.toTitleCase():"Title unavailable";
         rows += `<tr>`;
-        rows += `<td><a
+        rows += `<td title="${title}"><a
             href="${item._source.doc.url}"
             target="_blank"
             rel="noreferrer noopener"
-        >${title}</a></td>`;
-        rows += `<td>${item._source.doc.organisation.toUpperCase()}</td>`;
+        >${(title.length > 50) ? (title.slice(0, 50) + "...") : title}</a></td>`;
+        rows += `<td>${toDisplayOrg(item._source.doc.organisation)}</td>`;
         rows += `<td class="authors-cell" title="${authors}">
             ${(authors.length > 50)? (authors.slice(0, 50) + "...") : authors}
         </td>`;
         rows += `<td>${item._source.doc.year?item._source.doc.year:"Unknown"}</td>`;
         rows += `</tr>`;
 
-    });
+    }
     return rows;
 }
 
