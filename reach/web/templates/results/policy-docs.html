@@ -67,7 +67,10 @@
             </div>
             {% if status %}
             <div class="column col-6 col-md-12 text-right">
-                <a class="btn btn-primary btn-xl" href="/search/policy-docs/csv?term={{ term }}" >Download results as .csv <span class="icn icn-download"></span></a>
+                <a class="btn btn-primary btn-xl btn-download" href="/search/policy-docs/csv?terms={{ term }}" >Download results as .csv <span class="icn icn-download"></span></a>
+                <!-- To be uncommented with further UI updates
+                <a class="btn btn-primary btn-xl btn-download" href="/search/policy-docs/json?terms={{ term }}" >Download results as .json <span class="icn icn-download"></span></a>
+                -->
             </div>
             {% else %}
             <div class="column col-6 hide-md"></div>

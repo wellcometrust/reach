@@ -17,6 +17,7 @@ from reach.sentry import report_exception
 from reach.web.views import template
 from reach.web.views import apidocs
 from reach.web.views import search
+from reach.web.views import search_exports
 from reach.web.views import robotstxt
 
 TEMPLATE_ROOT = os.path.join(os.path.dirname(__file__), 'templates')
@@ -114,12 +115,20 @@ def create_api(conf):
     )
     api.add_static_route('/api/docs/_static', conf.docs_static_root)
     api.add_route(
-        '/search/citations/csv',
-        search.CSVExport(es, conf.es_citations_index, conf.es_explain)
+        '/search/citations/{ftype}',
+        search_exports.CitationsExport(
+            es,
+            conf.es_citations_index,
+            conf.es_explain
+        )
     )
     api.add_route(
-        '/search/policy-docs/csv',
-        search.CSVExport(es, conf.es_policy_docs_index, conf.es_explain)
+        '/search/policy-docs/{ftype}',
+        search_exports.PolicyDocsExport(
+            es,
+            conf.es_policy_docs_index,
+            conf.es_explain
+        )
     )
     api.add_static_route('/static', conf.static_root)
     return api
