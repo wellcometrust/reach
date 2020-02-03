@@ -1,5 +1,19 @@
 const SIZE = 25;
 
+const ORGS = {
+    'who_iris': 'WHO IRIS',
+    'nice': 'NICE',
+    'parliament': 'Parliament',
+    'unicef': 'UNICEF',
+    'msf': 'MSF',
+    'gov_uk': 'Gov.co.uk',
+};
+
+export function toDisplayOrg(org) {
+    // Returns an organisation in a display appropriate format.
+    return ORGS[org];
+}
+
 export function getPagination(currentPage, data) {
     // Create the pagination list relative to the current state
 

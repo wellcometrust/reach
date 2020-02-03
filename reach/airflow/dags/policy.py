@@ -33,7 +33,13 @@ DEFAULT_ARGS = {
     'retry_delay': datetime.timedelta(minutes=5),
 }
 
-GOLD_DATA = "s3://datalabs-data/reach_evaluation/data/sync/2019.10.8_gold_matched_references_snake.jsonl"
+
+#
+# FuzzyMatch settings
+#
+
+SHOULD_MATCH_THRESHOLD = 80
+SCORE_THRESHOLD = 50
 
 ItemLimits = namedtuple('ItemLimits', ('spiders', 'index'))
 
@@ -56,6 +62,14 @@ def get_es_hosts():
     return [x.strip().split(':') for x in result.split(',')]
 
 
+def from_s3_input(slug, file):
+    """ Returns the S3 URL for an input fiule required by the DAG. """
+    return (
+        '{{ conf.get("core", "reach_s3_prefix") }}'
+        '/%s/%s'
+    ) % (slug, file)
+
+
 def to_s3_output(dag, *args):
     """ Returns the S3 URL for any output file for the DAG. """
     components, suffix = args[:-1], args[-1]
@@ -66,6 +80,17 @@ def to_s3_output(dag, *args):
         '/output/%s/%s/%s%s'
     ) % (dag.dag_id, path, slug, suffix)
 
+def to_s3_output_ts(dag, *args):
+    """ Returns the S3 URL for any output file for the DAG with a timestamp
+    """
+    components, suffix = args[:-1], args[-1]
+    path = '/'.join(components)
+    slug = '-'.join(components)
+
+    return (
+        '{{ conf.get("core", "reach_s3_prefix") }}'
+        '/output/%s/%s/{{ ts_nodash }}-%s%s'
+    ) % (dag.dag_id, path, slug, suffix)
 
 def to_s3_output_dir(dag, *args):
     """ Returns the S3 URL for any output directory for the DAG. """
@@ -154,6 +179,8 @@ def org_fuzzy_match(dag, organisation, item_limits, parsePdf, esIndexPublication
         task_id='FuzzyMatchRefs.%s' % organisation,
         es_hosts=get_es_hosts(),
         src_s3_key=extractRefs.dst_s3_key,
+        score_threshold=SCORE_THRESHOLD,
+        should_match_threshold=SHOULD_MATCH_THRESHOLD,
         organisation=organisation,
         dst_s3_key=to_s3_output(
             dag, 'fuzzy-matched-refs', organisation, '.json.gz'),
@@ -196,18 +223,31 @@ def evaluate_matches(dag, fuzzyMatchRefs):
         task_id='EvaluateCombineReachFuzzyMatches',
         organisations=ORGANISATIONS,
         src_s3_dir_key=to_s3_output_dir_short(dag, 'fuzzy-matched-refs'),
-        dst_s3_key=to_s3_output(
+        dst_s3_key=to_s3_output_ts(
             dag, 'evaluation', 'fuzzy-matched-reach-refs', '.json.gz'),
         es_index='-'.join([dag.dag_id, 'epmc', 'metadata']),
         dag=dag,
     )
 
+    # Record key parameters relevant to tracking reach success
+
+    reach_params = {
+        'FuzzyMatchRefsOperator': {
+            'should_match_threshold': SHOULD_MATCH_THRESHOLD,
+            'score_threshold': SCORE_THRESHOLD,
+        }
+    }
+
     evaluateRefs = evaluator.EvaluateOperator(
         task_id='EvaluateResults',
-        gold_s3_key=GOLD_DATA,
+        gold_s3_key=from_s3_input(
+            'data',
+            '2019.10.8-fuzzy-matched-gold-refs-manually-verified.jsonl.gz',
+        ),
         reach_s3_key=combineReachFuzzyMatchRefs.dst_s3_key,
-        dst_s3_key=to_s3_output(
+        dst_s3_key=to_s3_output_ts(
             dag, 'evaluation', 'results', '.json.gz'),
+        reach_params=reach_params,
         dag=dag,
     )
 
@@ -325,22 +365,14 @@ def create_dag_all_match(dag_id, default_args, spider_years,
     esIndexPublications = es_index_publications(dag, epmc_limits)
     fuzzyMatchRefsOperators = []
     for organisation in ORGANISATIONS:
-        parsePdf, _, fuzzyMatchRefs = create_org_pipeline_fuzzy_match(
+        _, _, fuzzyMatchRefs = create_org_pipeline_fuzzy_match(
             dag,
             organisation,
             item_limits,
             spider_years,
             esIndexPublications)
-
         fuzzyMatchRefsOperators.append(fuzzyMatchRefs)
 
-        create_org_pipeline_exact_match(
-            dag,
-            organisation,
-            item_limits,
-            spider_years,
-            parsePdf=parsePdf,
-            esIndexFullTexts=None)
 
     # Run the evaluation setting all the fuzzMatchRefsOperators as upstream
     # depdendencies.

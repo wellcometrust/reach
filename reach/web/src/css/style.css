@@ -303,21 +303,6 @@ a, a:visited {
    }
 }
 
-/* Help tooltip */
-.help {
-  width: 22px;
-  height: 22px;
-  padding: 0;
-  color: white;
-  font-size: 14px;
-  font-weight: bold;
-  border-radius: 50%;
-  line-height: 22px;
-  text-align: center;
-  background-color: $cyanPrimary;
-  margin-top: 2.7ex;
-}
-
 section#hero a.btn-primary:hover,
 section#hero .btn.help:hover {
   border: 1px solid white;
@@ -328,19 +313,4 @@ section#hero .btn.help:hover {
     line-height: 3.5rem;
     font-size: $baseFontSize;
     padding: 0 $smallPadding;
-}
-.popover-container {
-  display: block;
-  opacity: 1;
-  transform: translate(-50%, -100%) scale(1);
-}
-
-.popover-container svg.arrow {
-  margin: -1em auto 0 auto;
-  width: 2em;
-  height: 1em;
-}
-
-.popover-container .card {
-  color: $greyDark;
 }

@@ -102,7 +102,6 @@ class BaseSpider(scrapy.Spider):
 
         return (is_pdf_type, is_octet_type)
 
-
     def _is_valid_pdf_url(self, url):
         """ Check if a URL represents a valid URL path
 
@@ -170,6 +169,9 @@ class BaseSpider(scrapy.Spider):
                 disposition_name = cd_items.get(b"filename", None)
             if disposition_name is None:
                 disposition_name = cd_items.get(b'filename*', None)
+
+        if disposition_name:
+            disposition_name = disposition_name.decode('utf-8', 'ignore')
 
         max_article = self.settings.getint('MAX_ARTICLE')
         current_item_count = self.crawler.stats.get_value('item_scraped_count')
