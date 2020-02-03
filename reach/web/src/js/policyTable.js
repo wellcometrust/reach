@@ -18,13 +18,14 @@ const getPolicyTableContent = (data) => {
     let rows = ``;
     data.hits.hits.forEach((item) => {
         let authors = item._source.doc.authors?item._source.doc.authors:"Unknown";
+        let title = (item._source.doc.title)? item._source.doc.title.toTitleCase():"Title unavailable";
         rows += `<tr>`;
         rows += `<td><a
             href="${item._source.doc.url}"
             target="_blank"
             rel="noreferrer noopener"
-        >${item._source.doc.title.toTitleCase()}</a></td>`;
-        rows += `<td>${item._source.doc.organisation}</td>`;
+        >${title}</a></td>`;
+        rows += `<td>${item._source.doc.organisation.toUpperCase()}</td>`;
         rows += `<td class="authors-cell" title="${authors}">
             ${(authors.length > 50)? (authors.slice(0, 50) + "...") : authors}
         </td>`;

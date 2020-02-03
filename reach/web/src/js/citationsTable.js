@@ -13,11 +13,11 @@ const searchFields = [
 function getCitationsTableContent(data) {
     let rows = ``;
     data.hits.hits.forEach((item) => {
-        let authors = item._source.doc.match_authors?item._source.doc.match_authors:"Unknown";
-
+        let authors = item._source.doc.match_authors?item._source.doc.match_authors:"Authors unavailable";
+        let match_title = item._source.doc.match_title? item._source.doc.match_title.toTitleCase():"Title unavailable";
         rows += `<tr class="accordion-row" id="accordion-row-${item._source.doc.reference_id}">`;
         rows += `<td class="accordion-arrow"><i class="icon icon-arrow-down mr-1"></i></td>`
-        rows += `<td>${item._source.doc.match_title.toTitleCase()}</td>`;
+        rows += `<td>${match_title}</td>`;
         rows += `<td>${item._source.doc.match_publication}</td>`;
         rows += `<td class="authors-cell" title="${authors}">
             ${(authors.length > 50)? (authors.slice(0, 50) + "...") : authors}
@@ -37,13 +37,14 @@ function getCitationsTableContent(data) {
                         </tr>
         `;
         for (let policy of item._source.doc.policies) {
+            let policy_title = policy.title ? policy.title.toTitleCase() : "Title unavailable";
             rows += `<tr>`;
             rows += `<td><a
                href="${policy.source_url}"
                target="_blank"
                rel="noreferrer noopener"
-            >${policy.title.toTitleCase()}</a></td>`;
-            rows += `<td>${policy.organisation}</td>`;
+            >${policy_title}</a></td>`;
+            rows += `<td>${policy.organisation.toUpperCase()}</td>`;
             rows += `<td>${policy.authors?policy.authors:"Unknown"}</td>`;
             rows += `<td>${item._source.doc.match_pub_year}</td>`;
         }
