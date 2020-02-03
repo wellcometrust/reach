@@ -1,6 +1,4 @@
 import json
-import csv
-import tempfile
 
 from elasticsearch import ConnectionError, NotFoundError
 import falcon
@@ -75,7 +73,6 @@ def _search_es(es, es_index, params, explain):
                              succeeded or a string explaining why it failed
         """
         try:
-
             es.cluster.health(wait_for_status='yellow')
 
             search_body = _build_es_query(params)
@@ -96,18 +93,6 @@ def _search_es(es, es_index, params, explain):
 
         except Exception as e:
             raise falcon.HTTPError("400", description=str(e))
-
-
-def format_citations(es_reponse):
-    """Format a citations index ES reponse dict to output grouped citations.
-
-    Args:
-      es_reponse: A search response from ES citations index
-
-    Returns:
-      formatted response: A dict containing grouped citations
-    """
-    pass
 
 
 class SearchApi:
@@ -155,98 +140,6 @@ class SearchApi:
                     pass
                 response['status'] = 'success'
                 resp.body = json.dumps(response)
-            else:
-                resp.body = json.dumps({
-                    'status': 'error',
-                    'message': response
-                })
-        else:
-            resp.body = json.dumps({
-                'status': 'error',
-                'message': "The request doesn't contain any parameters"
-            })
-            resp.status = falcon.HTTP_400
-
-
-class CSVExport:
-    """Let you search for terms in publications fulltexts. Returns a json.
-
-    Args:
-        es: An elasticsearch connection
-        es_index: The index to search on
-        es_explain: A boolean to enable|disable elasticsearch's explain.
-
-    """
-
-    def __init__(self, es, es_index, es_explain):
-        self.es = es
-        self.es_index = es_index
-        self.es_explain = es_explain
-
-    def on_get(self, req, resp):
-        """Returns the result of a search on the elasticsearch cluster.
-
-        Args:
-            req: The request passed to this controller
-            resp: The reponse object to be returned
-        """
-        if req.params:
-            if 'citations' in self.es_index:
-                params = {
-                    "terms": req.params.get('terms', ''),
-                    "fields": ','.join([
-                        'organisation',
-                        'match_title',
-                        'policies.title',
-                        'policies.organisation',
-                        'match_source',
-                        'match_publication',
-                        'match_authors'
-                    ]),
-                }
-            else:
-                params = {
-                    "terms": req.params.get('terms', ''),
-                    "fields": ','.join([
-                        'title',
-                        'text',
-                        'organisation',
-                        'authors',
-                    ]),
-                }
-
-            status, response = _search_es(
-                self.es,
-                self.es_index,
-                params,
-                self.es_explain
-            )
-            if status:
-                response['status'] = 'success'
-                headers = response['hits']['hits'][0]['_source']['doc'].keys()
-                csv_file = None
-                try:
-                    csv_file = tempfile.TemporaryFile(mode="w+")
-                    writer = csv.DictWriter(csv_file, fieldnames=headers)
-                    writer.writeheader()
-                    for item in response['hits']['hits']:
-                        writer.writerow(item['_source']['doc'])
-
-                    csv_file.seek(0)
-
-                    resp.content_type = 'text/csv'
-                    resp.append_header(
-                        'Content-Disposition',
-                        'attachment; filename="{filename}.csv"'.format(
-                            filename='reach_export'
-                        )
-                    )
-                    # Falcon will call resp.stream.close()
-                    resp.stream = csv_file
-                except:  # noqa
-                    if csv_file is not None:
-                        csv_file.close()
-
             else:
                 resp.body = json.dumps({
                     'status': 'error',

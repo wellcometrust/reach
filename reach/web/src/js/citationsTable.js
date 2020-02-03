@@ -1,4 +1,10 @@
-import {getCurrentState, getPagination, getCounter, getData} from './resultsCommon.js';
+import {
+    getCurrentState,
+    getPagination,
+    getCounter,
+    getData,
+    toDisplayOrg,
+} from './resultsCommon.js';
 
 const size = 25;
 const searchFields = [
@@ -13,11 +19,15 @@ const searchFields = [
 function getCitationsTableContent(data) {
     let rows = ``;
     data.hits.hits.forEach((item) => {
+        let authors = item._source.doc.match_authors ? item._source.doc.match_authors : "Authors unavailable";
+        let match_title = item._source.doc.match_title ? item._source.doc.match_title.toTitleCase() : "Title unavailable";
         rows += `<tr class="accordion-row" id="accordion-row-${item._source.doc.reference_id}">`;
         rows += `<td class="accordion-arrow"><i class="icon icon-arrow-down mr-1"></i></td>`
-        rows += `<td>${item._source.doc.match_title}</td>`;
+        rows += `<td title="${match_title}">${(match_title.length > 50) ? match_title.slice(0, 50) + "..." : match_title}</td>`;
         rows += `<td>${item._source.doc.match_publication}</td>`;
-        rows += `<td class="authors-cell">${item._source.doc.match_authors}</td>`;
+        rows += `<td class="authors-cell" title="${authors}">
+            ${(authors.length > 50) ? (authors.slice(0, 50) + "...") : authors}
+        </td>`;
         rows += `<td>${item._source.doc.match_pub_year}</td>`;
         rows += `<td>${item._source.doc.policies.length}</td>`;
         rows += `</tr>`;
@@ -33,10 +43,15 @@ function getCitationsTableContent(data) {
                         </tr>
         `;
         for (let policy of item._source.doc.policies) {
+            let policy_title = policy.title ? policy.title.toTitleCase() : "Title unavailable";
             rows += `<tr>`;
-            rows += `<td><a href="${policy.source_url}">${policy.title}</a></td>`;
-            rows += `<td>${policy.organisation}</td>`;
-            rows += `<td>${policy.authors}</td>`;
+            rows += `<td title="${policy_title}"><a
+               href="${policy.source_url}"
+               target="_blank"
+               rel="noreferrer noopener"
+            >${(policy_title.length > 50) ? (policy_title.slice(0, 50) + "...") : policy_title}</a></td>`;
+            rows += `<td>${toDisplayOrg(policy.organisation)}</td>`;
+            rows += `<td>${policy.authors?policy.authors:"Authors unavailable"}</td>`;
             rows += `<td>${item._source.doc.match_pub_year}</td>`;
         }
         rows += `</table></td>`
@@ -55,15 +70,21 @@ function refreshCitations(data, currentState) {
 
     table.innerHTML = getCitationsTableContent(data);
 
-    document.getElementById('pagination-box').innerHTML = getPagination(
-        currentState.page,
-        data,
-    );
+    for (let htmlElement of document.getElementsByClassName('pagination-box'))
+    {
+            htmlElement.innerHTML = getPagination(
+            currentState.page,
+            data,
+        );
+    }
 
-    document.getElementById('page-counter').innerHTML = getCounter(
-        currentState.page,
-        data,
-    );
+    for (let htmlElement of document.getElementsByClassName('page-counter'))
+    {
+            htmlElement.innerHTML = getCounter(
+            currentState.page,
+            data,
+        );
+    }
 
     for (let item of pages) {
         item.addEventListener('click', (e) => {

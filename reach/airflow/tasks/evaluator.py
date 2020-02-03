@@ -38,7 +38,7 @@ def _yield_jsonl_from_gzip(fileobj):
 def _get_span_text(text, span):
     """Get the text that is demarcated by a span in a prodigy dict
     """
-    return text[span["start"]:span["end"]]
+    return text[span['start']:span['end']]
 
 def _write_json_gz_to_s3(s3, data, key):
     """Write a list of jsons to json.gz on s3
@@ -47,7 +47,7 @@ def _write_json_gz_to_s3(s3, data, key):
         with gzip.GzipFile(mode='wb', fileobj=output_raw_f) as output_f:
             for item in data:
                 output_f.write(json.dumps(item).encode('utf-8'))
-                output_f.write(b"\n")
+                output_f.write(b'\n')
 
         output_raw_f.flush()
         s3.load_file(
@@ -66,9 +66,8 @@ def _read_json_gz_from_s3(s3, key):
 
         return list(_yield_jsonl_from_gzip(tf))
 
-
-class ExtractRefsFromGoldDataOperator(BaseOperator):
-    """Extracts references from reference and title annotations.
+class AddDocidToTitleAnnotations(BaseOperator):
+    """Matches reference with title annotation to re-add metadata
 
     The title annotations needs to be re-matched to the reference annotations
     to add in the doc_id. The resulting file can then be sent for matching
@@ -83,7 +82,7 @@ class ExtractRefsFromGoldDataOperator(BaseOperator):
 
     @apply_defaults
     def __init__(self, refs_s3_key, titles_s3_key, dst_s3_key,
-                 aws_conn_id="aws_default", *args, **kwargs):
+                 aws_conn_id='aws_default', *args, **kwargs):
 
         super().__init__(*args, **kwargs)
 
@@ -104,13 +103,13 @@ class ExtractRefsFromGoldDataOperator(BaseOperator):
         titles = _read_json_gz_from_s3(s3, self.titles_s3_key)
 
         self.log.info(
-            'ExtractRefsFromGoldDataOperator read %d lines from %s',
+            'AddDocidToTitleAnnotation read %d lines from %s',
             len(refs),
             self.refs_s3_key
         )
 
         self.log.info(
-            'ExtractRefsFromGoldDataOperator read %d lines from %s',
+            'AddDocidToTitleAnnotations read %d lines from %s',
             len(titles),
             self.titles_s3_key
         )
@@ -121,36 +120,100 @@ class ExtractRefsFromGoldDataOperator(BaseOperator):
         annotated_with_meta = []
 
         for doc in titles:
-            doc["meta"] = metas.get(doc['_input_hash'])
+            doc['meta'] = metas.get(doc['_input_hash'])
             annotated_with_meta.append(doc)
 
-        # Extract the "Title" and "document_id" from the annotated references
+        _write_json_gz_to_s3(s3, annotated_with_meta, key=self.dst_s3_key)
+
+        self.log.info(
+            'AddDocidToTitleAnnotations wrote %d lines to %s.',
+            len(annotated_with_meta),
+            self.dst_s3_key
+        )
+
+        self.log.info(
+            'AddDocidToTitleAnnotations: Done extracting refs from '
+            'annotated data.'
+        )
+
+
+class ExtractRefsFromGoldDataOperator(BaseOperator):
+    """Extracts references from reference and title annotations.
+    """
+
+    template_fields = (
+        'src_s3_key',
+        'dst_s3_key',
+    )
+
+    @apply_defaults
+    def __init__(self, src_s3_key, dst_s3_key, aws_conn_id='aws_default', 
+                 *args, **kwargs):
+
+        super().__init__(*args, **kwargs)
+
+        self.src_s3_key = src_s3_key
+        self.dst_s3_key = dst_s3_key
+        self.aws_conn_id = aws_conn_id
+
+    @report_exception
+    def execute(self, context):
+        s3 = WellcomeS3Hook(aws_conn_id=self.aws_conn_id)
+
+        results = []
+
+        # Download and open the two annotated data files.
+
+        annotated_with_meta = _read_json_gz_from_s3(s3, self.src_s3_key)
+
+        self.log.info(
+            'ExtractRefsFromGoldDataOperator read %d lines from %s',
+            len(annotated_with_meta),
+            self.src_s3_key
+        )
+
+        # Create lookup dict mapping input_hash to meta data
 
         annotated_titles = []
 
         for doc in annotated_with_meta:
             doc_hash = None
-            meta = doc.get("meta", dict())
+            meta = doc.get('meta', dict())
 
             # Get metadata if it exists (this will contain the document hash -
             # the unique id for the downloaded document assigned by Reach.
 
             if meta:
-                doc_hash = meta.get("doc_hash")
-            spans = doc.get("spans")
+                doc_hash = meta.get('doc_hash')
 
-            # Get spans, and create references from them. Note that these spans
-            # need to be BI_TITLE, BE_TITLE, i.e. reference level spans, not
-            # individual token level spans!
+                # Only add the reference if there is a doc_hash, if not the
+                # reference is not useful for evaluation. This may occur when
+                # it was not possible to reconcile the _input_hash from the
+                # title annotation with the _input_hash from the reference
+                # annotation which contains the full metadata. Going forward
+                # this should not occur if the examples annotated for titles
+                # are drawn from those annotated for references.
 
-            if spans:
-                for span in spans:
-                    annotated_titles.append(
-                        {
-                            "document_id": doc_hash,
-                            "Title": _get_span_text(doc["text"], span)
-                        }
-                    )
+                if doc_hash:
+                    spans = doc.get('spans')
+
+                    # Get spans, and create references from them. Note that
+                    # these spans need to be TITLE, i.e. reference level spans,
+                    # not individual token level spans! This will create a 
+                    # dict index by title with a list of doc_hashes in which
+                    # those titles were found.
+
+                    if spans:
+                        for span in spans:
+                            title = _get_span_text(doc['text'], span)
+                            annotated_titles.append(
+                                {
+                                    'document_id': doc_hash,
+                                    'Title': title,
+                                    'metadata': {'file_hash': doc_hash},
+                                    'reference_id': hash(title)
+                                }
+                            )
 
         _write_json_gz_to_s3(s3, annotated_titles, key=self.dst_s3_key)
 
@@ -184,12 +247,13 @@ class EvaluateOperator(BaseOperator):
     )
 
     @apply_defaults
-    def __init__(self, gold_s3_key, reach_s3_key, dst_s3_key, aws_conn_id='aws_default', *args, **kwargs):
+    def __init__(self, gold_s3_key, reach_s3_key, dst_s3_key, aws_conn_id='aws_default', reach_params=None, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.gold_s3_key = gold_s3_key
         self.reach_s3_key = reach_s3_key
         self.dst_s3_key = dst_s3_key
         self.aws_conn_id = aws_conn_id
+        self.reach_params = reach_params
 
     @report_exception
     def execute(self, context):
@@ -207,8 +271,9 @@ class EvaluateOperator(BaseOperator):
 
         # Add additional metadata
 
-        eval_results["gold_refs"] = self.gold_s3_key
-        eval_results["reach_refs"] = self.reach_s3_key
+        eval_results['gold_refs'] = self.gold_s3_key
+        eval_results['reach_refs'] = self.reach_s3_key
+        eval_results['reach_params'] = self.reach_params
 
         # Write the results to S3
         _write_json_gz_to_s3(s3, [eval_results], key=self.dst_s3_key)
@@ -229,7 +294,7 @@ class CombineReachFuzzyMatchesOperator(BaseOperator):
 
     @apply_defaults
     def __init__(self, organisations, src_s3_dir_key, dst_s3_key,
-                 aws_conn_id="aws_default", *args, **kwargs):
+                 aws_conn_id='aws_default', *args, **kwargs):
 
         super().__init__(*args, **kwargs)
 

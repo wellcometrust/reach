@@ -14,9 +14,6 @@ class NiceSpider(BaseSpider):
 
     name = 'nice'
 
-    custom_settings = {
-        'JOBDIR': BaseSpider.jobdir(name)
-    }
 
     def start_requests(self):
         """Set up the initial request to the website to scrape."""
@@ -30,7 +27,6 @@ class NiceSpider(BaseSpider):
         yield scrapy.Request(
             url=url,
             errback=self.on_error,
-            dont_filter=True,
             callback=self.parse,
         )
 

@@ -4,12 +4,24 @@ import hashlib
 import logging
 import json
 import datetime
+import subprocess
+import re
+
+from lxml import etree
 from abc import ABC, abstractmethod
 from botocore.exceptions import ClientError
 
 
 def get_file_hash(file_path):
-    """Return the md5 hash of a file."""
+    """ Return both possible IDs for a given document
+    in the form (<pdf DocumentId>, <file hash>)
+    """
+
+    #did = get_pdf_id(file_path)
+
+    #if did:
+    #    return did
+
     BLOCKSIZE = 65536
     hasher = hashlib.md5()
     with open(file_path, 'rb') as f:
@@ -18,8 +30,57 @@ def get_file_hash(file_path):
             if not buf:
                 break
             hasher.update(buf)
+
     return hasher.hexdigest()
 
+def get_pdf_id(document):
+    """ Get PDF metadata/document data using
+    the `pdfinfo` command line utility in poppler
+
+    Args:
+        document: (file) the file to parse
+    """
+    cmd = [
+        'pdfinfo',
+        '-meta',
+        document
+    ]
+
+    result = subprocess.run(
+        cmd,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+    )
+
+
+    reg_xmp = re.compile("<xmpMM:DocumentID>(.*)<\/xmpMM:DocumentID>")
+    reg_xap = re.compile("<xapMM:DocumentID>(.*)<\/xapMM:DocumentID>")
+
+
+
+    if result.returncode == 0:
+        # info scrape succeeded
+        # skip any non-unicode characters
+        string_data = result.stdout.decode("utf-8", 'ignore')
+
+
+        item = reg_xmp.search(string_data)
+
+        # key prefixes can exist as xapMM or xmpMM; not sure why
+        # TODO: Look into this
+        if item is None:
+            item = reg_xap.search(string_data)
+
+        if item is not None:
+            if item.group(1) is not None:
+                ident = item.group(1)
+                return ident.split(":")[-1]
+            else:
+                return None
+        else:
+            return None
+
+    return None
 
 class FileSystem(ABC):
 
@@ -59,6 +120,7 @@ class FileSystem(ABC):
             - file_hash: The md5 digest of the file to retrieve.
         """
         pass
+
 
 
 class S3FileSystem(FileSystem):
@@ -142,8 +204,9 @@ class S3FileSystem(FileSystem):
             else:
                 content[item['hash'][:2]] = [item['hash']]
 
-            if not data.get(item['hash']):
-                data[item['hash']] = dict(item)
+            # Update the hash entry with any new information
+            # coming from the page
+            data[item['hash']] = dict(item)
 
         key = os.path.join(
             self.prefix,

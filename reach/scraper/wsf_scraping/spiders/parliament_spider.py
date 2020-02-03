@@ -7,7 +7,6 @@ class ParliamentSpider(BaseSpider):
     name = 'parliament'
 
     custom_settings = {
-        'JOBDIR': BaseSpider.jobdir(name),
         'ROBOTSTXT_OBEY': False
     }
 
@@ -45,7 +44,6 @@ class ParliamentSpider(BaseSpider):
             url=url,
             callback=self.parse,
             errback=self.on_error,
-            dont_filter=True,
         )
 
     def parse(self, response):

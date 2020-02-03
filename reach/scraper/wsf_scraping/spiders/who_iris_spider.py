@@ -9,10 +9,6 @@ class WhoIrisSpider(BaseSpider):
     name = 'who_iris'
     data = {}
 
-    custom_settings = {
-        'JOBDIR': BaseSpider.jobdir(name)
-    }
-
     def start_requests(self):
         """ This sets up the urls to scrape for each years.
         """
@@ -45,7 +41,6 @@ class WhoIrisSpider(BaseSpider):
                 url=url[0],
                 callback=self.parse,
                 errback=self.on_error,
-                dont_filter=True,
                 meta={'year': url[1]}
             )
 
@@ -77,7 +72,6 @@ class WhoIrisSpider(BaseSpider):
                     url=response.urljoin(next_page),
                     callback=self.parse,
                     errback=self.on_error,
-                    dont_filter=True,
                     meta={'year': year}
                 )
 
