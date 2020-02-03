@@ -49,21 +49,6 @@
                       <button type="submit" class="btn btn-primary input-group-btn input-btn-xl">Discover citations <span class="icn icn-search"></span></button>
                     </div>
                 </form>
-                <div class="search-tips">
-                    <a href="#">Advanced search tips</a>
-                    <div class="popover popover-bottom">
-                      <span class="btn help">?</span>
-                      <div class="popover-container">
-                        <div class="card">
-                          {{ uparrow() }}
-                          <div class="card-body">
-                            Wellcome Reach regularly loads the PDFs of WHO, MSF, UNICEF, NICE, and other
-                            organizations. Click this button to search the citations in those documents.
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                </div>
             </div>
             {% if status %}
             <div class="column col-6 col-md-12 text-right">
@@ -110,6 +95,7 @@
         </div>
         {% else %}
             </div>
+            <div class="fs"></div>
             <div class="results">
                 <div class="container">
                     <div class="columns">
