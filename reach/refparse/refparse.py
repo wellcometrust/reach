@@ -204,6 +204,12 @@ def yield_structured_references(scraper_file,
             doc.uri,
             doc.metadata
         )
+
+        splitted_references = {
+            "doc_id": doc.id,
+            "doc_url": doc.uri,
+            "references": splitted_references
+        }
         yield splitted_references, structured_references
 
         nb_references += len(splitted_references)
