@@ -55,15 +55,13 @@ class ExtractRefsOperator(BaseOperator):
 
         with tempfile.NamedTemporaryFile() as split_rawf, tempfile.NamedTemporaryFile() as parsed_rawf:
             with gzip.GzipFile(mode='wb', fileobj=split_rawf) as split_f, gzip.GzipFile(mode='wb', fileobj=parsed_rawf) as parsed_f:
-                split_refs, parsed_refs = yield_structured_references(
+                refs = yield_structured_references(
                     self.src_s3_key,
                     pool_map,
                     logger)
-                for structured_references in split_refs:
-                    for ref in structured_references:
-                        split_f.write(json.dumps(ref).encode('utf-8'))
-                        split_f.write(b'\n')
-                for parsed_references in parsed_refs:
+                for split_references, parsed_references in refs:
+                    split_f.write(json.dumps(split_references).encode('utf-8'))
+                    split_f.write(b'\n')
                     for ref in parsed_references:
                         parsed_f.write(json.dumps(ref).encode('utf-8'))
                         parsed_f.write(b'\n')
