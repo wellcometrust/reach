@@ -30,54 +30,50 @@
 
 <hr class="fs">
 <section id="how-it-works-page">
-    <div class="container">
-      <div class="columns">
-        <div class="column col-3 hide-md"></div>
-        <div class="column col-6 col-md-12 text-center">
-          <h1>How Reach works</h1>
-          <h3>Reach searches through thousands pf policy documents, extracts the references, and checks them against scientific publications.</h3>
-        </div>
-        <div class="column col-3 hide-md"></div>
+  <div class="container">
+    <div class="columns">
+      <div class="column col-3 hide-md"></div>
+      <div class="column col-6 col-md-12 text-center">
+        <h1>How Reach works</h1>
+        <h3>Reach uses machine learning to search through thousands of policy documents, extract the references and match them with scientific publications.</h3>
       </div>
-      <hr class="fs">
-      <hr class="fs">
-      <div class="columns">
-        <div class="column col-3 col-md-12 text-center">
-          <img src="/static/images/Icon_How_Download_160px.svg" alt="">
-        </div>
-        <div class="column col-6 col-md-12">
-          <h3 class="category-title">1. Download</h3>
-          <p>A piece of software called a ‘scraper’ is used to extract documents from the websites of the organisations we have selected. The scraper navigates through a website and clicks on all the links. Where a link leads to a PDF it is downloaded and the text is extracted and stored in the cloud.</p>
-        </div>
-        <div class="column col-3 hide-md"></div>
-      </div>
-      <hr class="fs">
-      <div class="columns">
-        <div class="column col-3 col-md-12 text-center">
-          <img src="/static/images/Icon_How_Extract_160px.svg" alt="">
-        </div>
-        <div class="column col-6 col-md-12">
-          <h3 class="category-title">2. Extract</h3>
-          <p>The text extracted from each PDF is divided into sections and the references section is extracted. An algorithm identifies sections by looking for titles in the text. When the titles have been identified, they are scanned for words like ‘references’, ‘bibliography’ or ‘end notes’. Sections of text with titles containing these words are selected for the next stage.</p>
-
-          <p>The extracted references sections are split into individual references using machine learning. A machine learning algorithm identifies the start and end of a reference and divides the reference section into individual references.</p>
-
-          <p>This step converts the raw text data into a structured form by extracting the individual parts of a reference. A reference is made up of a number of parts, such as the author, publication date, journal and the title of the publication. A machine learning algorithm identifies each part of each reference and adds it to a structured data set. </p>
-        </div>
-        <div class="column col-3 hide-md"></div>
-      </div>
-      <hr class="fs">
-      <div class="columns">
-        <div class="column col-3 col-md-12 text-center">
-          <img src="/static/images/Icon_How_Match_160px.svg" alt="">
-        </div>
-        <div class="column col-6 col-md-12">
-          <h3 class="category-title">3. Match</h3>
-          <p>Once the parts of each reference have been extracted into a structured data set, that data set is compared with the EPMC database of scientific publications. References with the same title as a publication in EPMC are matched. This step checks that Reach has identified scientific publications from the downloaded PDFs. </p>
-        </div>
-        <div class="column col-3 hide-md"></div>
-      </div>
+      <div class="column col-3 hide-md"></div>
     </div>
+    <hr class="fs">
+    <hr class="fs">
+    <div class="columns">
+      <div class="column col-3 col-md-12 text-center">
+        <img src="/static/images/Icon_How_Download_160px.svg" alt="">
+      </div>
+      <div class="column col-6 col-md-12">
+        <h3 class="category-title">1. Download</h3>
+        <p>A piece of software called a ‘scraper’ is used to extract documents from the websites of policy organisations. The scraper navigates through a website and clicks on all the links. Where a link leads to a PDF, it is downloaded and the text is extracted. You can browse our collection of 129k policy documents <a href="/search/policy-docs">here</a>.</p>
+      </div>
+      <div class="column col-3 hide-md"></div>
+    </div>
+    <hr class="fs">
+    <div class="columns">
+      <div class="column col-3 col-md-12 text-center">
+        <img src="/static/images/Icon_How_Extract_160px.svg" alt="">
+      </div>
+      <div class="column col-6 col-md-12">
+        <h3 class="category-title">2. Extract</h3>
+        <p>An algorithm scans the text from each PDF and identifies sections that contain references. It does this by identifying headings such as ‘References’, ‘Bibliography’ or ‘End Notes’. Individual references are extracted from the sections when the algorithm identifies the start and the end of each reference. The references are then split into individual parts like author, publication date, journal and title.</p>
+      </div>
+      <div class="column col-3 hide-md"></div>
+    </div>
+    <hr class="fs">
+    <div class="columns">
+      <div class="column col-3 col-md-12 text-center">
+        <img src="/static/images/Icon_How_Match_160px.svg" alt="">
+      </div>
+      <div class="column col-6 col-md-12">
+        <h3 class="category-title">3. Match</h3>
+        <p>Once the parts of each reference have been extracted, they are compared with a database of scientific publications. References with the same title as a publication in the database are matched. This checks that the algorithm has identified scientific publications from the downloaded PDFs.</p>
+      </div>
+      <div class="column col-3 hide-md"></div>
+    </div>
+  </div>
 </section>
 <hr class="fs">
 
