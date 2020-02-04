@@ -204,7 +204,7 @@ def yield_structured_references(scraper_file,
             doc.uri,
             doc.metadata
         )
-        yield structured_references
+        yield splitted_references, structured_references
 
         nb_references += len(splitted_references)
 
