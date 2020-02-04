@@ -31,9 +31,9 @@ def _build_es_query(params):
     for i, fieldname in enumerate(fields):
         field = "doc.{fieldname}".format(fieldname=fieldname)
         if field in body_queries.keys():
-            body_queries[field].append(terms[i])
+            body_queries[field] = body_queries[field] + terms[i].split(' ')
         else:
-            body_queries[field] = [terms[i]]
+            body_queries[field] = terms[i].split(' ')
 
     terms = [
         {'terms': {key: value}} for key, value in body_queries.items()]
