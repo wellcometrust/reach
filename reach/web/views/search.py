@@ -36,7 +36,15 @@ def _build_es_query(params):
             body_queries[field] = terms[i].split(' ')
 
     terms = [
-        {'terms': {key: value}} for key, value in body_queries.items()]
+        {'terms_set': {
+            key: {
+                "terms": value,
+                "minimum_should_match_script": {
+                    "source": str(len(value))
+                }
+            }
+        }} for key, value in body_queries.items()
+    ]
     search_body = {
         'size': int(size),
         'query': {
