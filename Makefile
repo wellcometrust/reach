@@ -7,30 +7,9 @@ ECR_IMAGE := 160358319781.dkr.ecr.eu-west-1.amazonaws.com/$(IMAGE)
 LATEST_TAG := latest
 VERSION := latest
 
-
-#
-# Wheel for deep_reference_parser
-#
-
-DEEP_REFERENCE_PARSER_WHEEL := deep_reference_parser-2019.12.1-py3-none-any.whl
-DEEP_REFERENCE_PARSER_URL := https://datalabs-public.s3.eu-west-2.amazonaws.com/deep_reference_parser/$(DEEP_REFERENCE_PARSER_WHEEL)
-
-
-#
-# Wheel for reach_evaluator
-#
-
+REFERENCE_SPLITTER_URL := https://datalabs-public.s3.eu-west-2.amazonaws.com/references_splitter/reference_splitter-2019.8.0-py3-none-any.whl
 REACH_EVALUATOR_WHEEL := reach_evaluator-2020.1.1-py3-none-any.whl
 REACH_EVALUATOR_URL := https://datalabs-public.s3.eu-west-2.amazonaws.com/reach_evaluator/$(REACH_EVALUATOR_WHEEL)
-
-
-#
-# Other third party dependencies
-#
-
-SPACY_MODEL_URL := https://github.com/explosion/spacy-models/releases/download/en_core_web_sm-2.1.0/en_core_web_sm-2.1.0.tar.gz#egg=en_core_web_sm==2.1.0
-KERAS_CONTRIB_URL := https://github.com/keras-team/keras-contrib/tarball/master
-
 
 #
 # reach/web
@@ -102,13 +81,12 @@ docker-push: docker-test
 # build/virtualenv (for docker-less dev)
 #
 
-$(VIRTUALENV)/.installed: requirements.txt test_requirements.txt $(REFERENCE_SPLITTER_WHEEL)
+$(VIRTUALENV)/.installed: requirements.txt test_requirements.txt
 	@if [ -d $(VIRTUALENV) ]; then rm -rf $(VIRTUALENV); fi
 	@mkdir -p $(VIRTUALENV)
 	virtualenv --python python3 $(VIRTUALENV)
 	AIRFLOW_GPL_UNIDECODE=yes $(VIRTUALENV)/bin/pip3 install -r requirements.txt
 	$(VIRTUALENV)/bin/pip3 install -r test_requirements.txt
-	$(VIRTUALENV)/bin/pip3 install $(DEEP_REFERENCE_PARSER_URL)
 	$(VIRTUALENV)/bin/python setup.py develop --no-deps
 	touch $@
 
@@ -124,25 +102,22 @@ virtualenv: $(VIRTUALENV)/.installed
 
 .PHONY: update-requirements-txt
 update-requirements-txt: VIRTUALENV := /tmp/update-requirements-txt
-update-requirements-txt: 
+update-requirements-txt:
 	if [ -d $(VIRTUALENV) ]; then \
 		rm -rf $(VIRTUALENV); \
 	fi
 	virtualenv --python python3 $(VIRTUALENV)
 	$(VIRTUALENV)/bin/pip3 install -r unpinned_requirements.txt
-	# Install deep_reference_parser here so that we can track the
+	# Install reference splitter here so that we can track the
 	# dependencies it pulls in.
-	$(VIRTUALENV)/bin/pip3 install $(DEEP_REFERENCE_PARSER_URL)
+	$(VIRTUALENV)/bin/pip3 install $(REFERENCE_SPLITTER_URL)
 	echo "# Created by 'make update-requirements-txt'. DO NOT EDIT!" > requirements.txt
 	# ... and then make sure its full URL is used in the output
 	$(VIRTUALENV)/bin/pip freeze | grep -v pkg-resources==0.0.0 | \
-		grep -v deep-reference-parser | grep -v en-core-web-sm | \
-		grep -v keras-contrib | \
-		sed 's/airflow/airflow[celery]/' >> requirements.txt 
-	echo $(SPACY_MODEL_URL) >> requirements.txt
-	echo $(KERAS_CONTRIB_URL) >> requirements.txt
-	echo $(DEEP_REFERENCE_PARSER_URL) >> requirements.txt
-  echo $(REACH_EVALUATOR_URL) >> requirements.txt
+		grep -v references-splitter | \
+		sed 's/airflow/airflow[celery]/' >> requirements.txt
+	echo $(REFERENCE_SPLITTER_URL) >> requirements.txt
+	echo $(REACH_EVALUATOR_URL) >> requirements.txt
 
 
 #

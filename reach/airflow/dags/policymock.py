@@ -121,9 +121,7 @@ def create_e2e_test(dag_id, default_args, spider_years, item_limits):
     extractRefs = ExtractRefsOperator(
         task_id='ExtractRefs.acme',
         src_s3_key=name_normalizer.dst_s3_key,
-        split_s3_key=to_s3_output(
-            dag, 'split-refs', 'acme', '.json.gz'),
-        parsed_s3_key=to_s3_output(
+        dst_s3_key=to_s3_output(
             dag, 'extracted-refs', 'acme', '.json.gz'),
         dag=dag
     )
@@ -140,7 +138,7 @@ def create_e2e_test(dag_id, default_args, spider_years, item_limits):
     fuzzyMatchRefs = fuzzy_match_refs.FuzzyMatchRefsOperator(
         task_id='FuzzyMatchRefs.acme',
         es_hosts=get_es_hosts(),
-        src_s3_key=extractRefs.parsed_s3_key,
+        src_s3_key=extractRefs.dst_s3_key,
         organisation="acme",
         dst_s3_key=to_s3_output(
             dag, 'fuzzy-matched-refs', 'acme', '.json.gz'),
