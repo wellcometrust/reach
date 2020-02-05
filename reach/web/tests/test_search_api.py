@@ -11,10 +11,38 @@ def test_query_builder():
         "query": {
             "bool": {
                 "should": [
-                    {"terms": {"doc.text": ["bar", "baz"]}},
-                    {"terms": {"doc.title": ["foo"]}},
-                    {"terms": {"doc.organisation": ["nice"]}},
-                    {"terms": {"doc.authors": ["J.Doe"]}}
+                    {"terms_set": {
+                        "doc.text": {
+                            "terms":  ["bar", "baz"],
+                            "minimum_should_match_script": {
+                                "source": "2"
+                            }
+                        }
+                    }},
+                    {"terms_set": {
+                        "doc.title": {
+                            "terms":  ["foo"],
+                            "minimum_should_match_script": {
+                                "source": "1"
+                            }
+                        }
+                    }},
+                    {"terms_set": {
+                        "doc.organisation": {
+                            "terms":  ["nice"],
+                            "minimum_should_match_script": {
+                                "source": "1"
+                            }
+                        }
+                    }},
+                    {"terms_set": {
+                        "doc.authors": {
+                            "terms":  ["J.Doe"],
+                            "minimum_should_match_script": {
+                                "source": "1"
+                            }
+                        }
+                    }},
                 ],
                 "minimum_should_match": 1
             }
@@ -53,7 +81,14 @@ def test_sentence_query_builder():
         "query": {
             "bool": {
                 "should": [
-                    {"terms": {"doc.text": ["bar", "baz", "foo", "kix"]}},
+                    {"terms_set": {
+                        "doc.text": {
+                            "terms":  ["bar", "baz", "foo", "kix"],
+                            "minimum_should_match_script": {
+                                "source": "4"
+                            }
+                        }
+                    }},
                 ],
                 "minimum_should_match": 1
             }
@@ -82,13 +117,28 @@ def test_multi_sentences_query_builder():
         "query": {
             "bool": {
                 "should": [
-                    {"terms": {"doc.text": ["bar", "baz", "foo", "kix"]}},
-                    {"terms": {"doc.title": [
-                        "pizza",
-                        "celery",
-                        "brocoli",
-                        "mayo",
-                    ]}},
+                    {"terms_set": {
+                        "doc.text": {
+                            "terms":  ["bar", "baz", "foo", "kix"],
+                            "minimum_should_match_script": {
+                                "source": "4"
+                            }
+                        }
+                    }},
+
+                    {"terms_set": {
+                        "doc.title": {
+                            "terms":  [
+                                "pizza",
+                                "celery",
+                                "brocoli",
+                                "mayo",
+                            ],
+                            "minimum_should_match_script": {
+                                "source": "4"
+                            }
+                        }
+                    }},
                 ],
                 "minimum_should_match": 1
             }
