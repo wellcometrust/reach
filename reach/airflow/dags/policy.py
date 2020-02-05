@@ -170,9 +170,7 @@ def org_fuzzy_match(dag, organisation, item_limits, parsePdf, esIndexPublication
     extractRefs = ExtractRefsOperator(
         task_id='ExtractRefs.%s' % organisation,
         src_s3_key=name_normalizer.dst_s3_key,
-        split_s3_key=to_s3_output(
-            dag, 'split-refs', organisation, '.json.gz'),
-        parsed_s3_key=to_s3_output(
+        dst_s3_key=to_s3_output(
             dag, 'extracted-refs', organisation, '.json.gz'),
         dag=dag
     )
@@ -180,7 +178,7 @@ def org_fuzzy_match(dag, organisation, item_limits, parsePdf, esIndexPublication
     fuzzyMatchRefs = fuzzy_match_refs.FuzzyMatchRefsOperator(
         task_id='FuzzyMatchRefs.%s' % organisation,
         es_hosts=get_es_hosts(),
-        src_s3_key=extractRefs.parsed_s3_key,
+        src_s3_key=extractRefs.dst_s3_key,
         score_threshold=SCORE_THRESHOLD,
         should_match_threshold=SHOULD_MATCH_THRESHOLD,
         organisation=organisation,

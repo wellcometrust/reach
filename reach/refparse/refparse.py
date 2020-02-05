@@ -17,11 +17,10 @@ import pandas as pd
 
 from .utils import (FileManager,
                    FuzzyMatcher,
+                   split_section,
                    structure_reference,
                    ExactMatcher)
 from .settings import settings
-
-from deep_reference_parser.split_section import SplitSection
 
 
 SectionedDocument = namedtuple(
@@ -168,10 +167,6 @@ def yield_structured_references(scraper_file,
 
     sectioned_documents = transform_scraper_file(scraper_file)
 
-    # Instantiate deep_reference_parser model here (not in loop!)
-
-    section_splitter = SplitSection()
-
     t0 = time.time()
     nb_references = 0
     for i, doc in enumerate(sectioned_documents):
@@ -179,14 +174,9 @@ def yield_structured_references(scraper_file,
             i
         ))
 
-        splitted_references = section_splitter.split(
+        splitted_references = split_section(
             doc.section
         )
-
-        logger.info('[+] Extracted {} references from document {}'.format(
-            len(splitted_references),
-            i
-        ))
 
         # For some weird reason not using pool map
         #   in my laptop is more performant
@@ -204,13 +194,7 @@ def yield_structured_references(scraper_file,
             doc.uri,
             doc.metadata
         )
-
-        splitted_references = {
-            "doc_id": doc.id,
-            "doc_url": doc.uri,
-            "references": splitted_references
-        }
-        yield splitted_references, structured_references
+        yield structured_references
 
         nb_references += len(splitted_references)
 
