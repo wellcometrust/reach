@@ -1,6 +1,6 @@
 import pandas as pd 
 import numpy as np
-from deep_reference_parser.split_section import SplitSection
+from reference_splitter import split_section
 
 def calc_num_metric(predicted_number, actual_number):
     """
@@ -69,9 +69,8 @@ def evaluate_split_section(evaluate_split_section_data, threshold):
     """
 
     actual_pred_num_references = []
-    section_splitter = SplitSection()
     for references_section in evaluate_split_section_data['Reference section']:
-        references = section_splitter.split(references_section)
+        references = split_section(references_section)
         actual_pred_num_references.append({
             "Predicted references" : references,
             "Predicted number of references" : len(references)
