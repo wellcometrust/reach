@@ -25,7 +25,7 @@ export function getPagination(currentPage, data) {
         pages += `<li class="disabled-page-item" id="page-previous">Prev</li>`;
     }
 
-    const maxPages = parseInt(Math.ceil(229 / SIZE));
+    const maxPages = parseInt(Math.ceil(data.hits.total.value / SIZE));
 
     if (currentPage > 2) {
         pages += `<li class="page-item" data-page="0">1</li>`;
