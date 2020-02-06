@@ -6,7 +6,7 @@ const ORGS = {
     'parliament': 'Parliament',
     'unicef': 'UNICEF',
     'msf': 'MSF',
-    'gov_uk': 'Gov.co.uk',
+    'gov_uk': 'Gov.uk',
 };
 
 export function toDisplayOrg(org) {
