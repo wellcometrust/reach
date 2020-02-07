@@ -13,6 +13,8 @@ const searchFields = [
     'authors',
 ].join(',');
 
+const TITLE_LENGTH = 75;
+
 const getPolicyTableContent = (data) => {
     // Create the table rows to use in the policy-docs result table
 
@@ -28,10 +30,10 @@ const getPolicyTableContent = (data) => {
             href="${item._source.doc.url}"
             target="_blank"
             rel="noreferrer noopener"
-        >${(title.length > 50) ? (title.slice(0, 50) + "...") : title}</a></td>`;
+        >${(title.length > TITLE_LENGTH) ? (title.slice(0, TITLE_LENGTH) + "...") : title}</a></td>`;
         rows += `<td>${toDisplayOrg(item._source.doc.organisation)}</td>`;
         rows += `<td class="authors-cell" title="${authors}">
-            ${(authors.length > 50)? (authors.slice(0, 50) + "...") : authors}
+            ${(authors.length > 50)? (authors.slice(0, TITLE_LENGTH) + "...") : authors}
         </td>`;
         rows += `<td>${item._source.doc.year?item._source.doc.year:"Unknown"}</td>`;
         rows += `</tr>`;
