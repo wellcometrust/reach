@@ -6,7 +6,8 @@ import {
     toDisplayOrg,
 } from './resultsCommon.js';
 
-const size = 25;
+const TITLE_LENGTH = 75;
+
 const searchFields = [
     'match_title',
     'policies.title',
@@ -23,10 +24,10 @@ function getCitationsTableContent(data) {
         let match_title = item._source.doc.match_title ? item._source.doc.match_title.toTitleCase() : "Title unavailable";
         rows += `<tr class="accordion-row" id="accordion-row-${item._source.doc.reference_id}">`;
         rows += `<td class="accordion-arrow"><i class="icon icon-arrow-down mr-1"></i></td>`
-        rows += `<td title="${match_title}">${(match_title.length > 50) ? match_title.slice(0, 50) + "..." : match_title}</td>`;
+        rows += `<td title="${match_title}">${(match_title.length > TITLE_LENGTH) ? match_title.slice(0, TITLE_LENGTH) + "..." : match_title}</td>`;
         rows += `<td>${item._source.doc.match_publication}</td>`;
         rows += `<td class="authors-cell" title="${authors}">
-            ${(authors.length > 50) ? (authors.slice(0, 50) + "...") : authors}
+            ${(authors.length > TITLE_LENGTH) ? (authors.slice(0, TITLE_LENGTH) + "...") : authors}
         </td>`;
         rows += `<td>${item._source.doc.match_pub_year}</td>`;
         rows += `<td>${item._source.doc.policies.length}</td>`;
@@ -38,8 +39,7 @@ function getCitationsTableContent(data) {
                         <tr>
                             <th>Policy Document</th>
                             <th>Policy Organisation</th>
-                            <th>Authors</th>
-                            <th>Year of Publicaction</th>
+                            <th>Publication Year</th>
                         </tr>
         `;
         for (let policy of item._source.doc.policies) {
@@ -49,9 +49,8 @@ function getCitationsTableContent(data) {
                href="${policy.source_url}"
                target="_blank"
                rel="noreferrer noopener"
-            >${(policy_title.length > 50) ? (policy_title.slice(0, 50) + "...") : policy_title}</a></td>`;
+            >${(policy_title.length > TITLE_LENGTH) ? (policy_title.slice(0, TITLE_LENGTH) + "...") : policy_title}</a></td>`;
             rows += `<td>${toDisplayOrg(policy.organisation)}</td>`;
-            rows += `<td>${policy.authors?policy.authors:"Authors unavailable"}</td>`;
             rows += `<td>${item._source.doc.match_pub_year}</td>`;
         }
         rows += `</table></td>`
