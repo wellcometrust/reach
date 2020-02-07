@@ -48,7 +48,7 @@ section#hero {
 }
 
 section#hero h1 {
-  font-family: Wellcome;
+  font-family: Wellcome, Helvetica, Arial, sans-serif;
 }
 
 
@@ -67,5 +67,3 @@ section#about-us {
 	background-repeat: no-repeat;
 	background-size: cover;
 }
-
-

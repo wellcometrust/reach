@@ -83,7 +83,7 @@ body {
    */
   color: $greyDark;
   font-size: $baseFontSize;
-  font-family: "Helvetica Neue";
+  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
   line-height: normal;
   font-weight: normal;
   font-stretch: normal;
@@ -121,7 +121,7 @@ section#about-page, section#how-it-works-page{
 /* Titles */
 
 h1 {
-  font-family: Wellcome;
+  font-family: Wellcome, Helvetica, Arial, sans-serif;;
   font-size: $h1FontSize;
   font-weight: normal;
   font-stretch: normal;
@@ -132,7 +132,7 @@ h1 {
 }
 
 h2 {
-  font-family: Wellcome;
+  font-family: Wellcome, Helvetica, Arial, sans-serif;;
   font-size: $h2FontSize;
   font-weight: normal;
   font-stretch: normal;
@@ -143,7 +143,7 @@ h2 {
 }
 
 h3 {
-  font-family: Helvetica;
+  font-family: Helvetica, Arial, sans-serif;;
   font-size: $h3FontSize;
   font-weight: normal;
   font-stretch: normal;
@@ -154,7 +154,7 @@ h3 {
 }
 
 h4 {
-  font-family: "Helvetica Neue";
+  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
   font-size: $h4FontSize;
   font-weight: bold;
   font-stretch: normal;
@@ -166,7 +166,7 @@ h4 {
 }
 
 p {
-  font-family: "Helvetica Neue";
+  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
   font-size: $baseFontSize;
   font-weight: normal;
   font-stretch: normal;
@@ -179,7 +179,7 @@ p {
 a, a:visited {
   text-decoration: underline;
   color: $cyanPrimary;
-  font-family: "Helvetica Neue";
+  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
   font-size: $baseFontSize;
   font-weight: normal;
   font-stretch: normal;
@@ -204,7 +204,7 @@ a, a:visited {
 /* btn-lg is still a bit too small for us, make btn-xl from spectre class */
 .btn.btn-xl {
   font-size: $baseFontSize;
-  font-family: "Helvetica Neue";
+  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
   height: 3rem;
   padding: 0 2rem;
   text-align: center;
