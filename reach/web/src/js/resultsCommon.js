@@ -6,7 +6,7 @@ const ORGS = {
     'parliament': 'Parliament',
     'unicef': 'UNICEF',
     'msf': 'MSF',
-    'gov_uk': 'Gov.co.uk',
+    'gov_uk': 'Gov.uk',
 };
 
 export function toDisplayOrg(org) {
@@ -25,7 +25,7 @@ export function getPagination(currentPage, data) {
         pages += `<li class="disabled-page-item" id="page-previous">Prev</li>`;
     }
 
-    const maxPages = (data.hits.total.value / SIZE);
+    const maxPages = parseInt(Math.ceil(data.hits.total.value / SIZE));
 
     if (currentPage > 2) {
         pages += `<li class="page-item" data-page="0">1</li>`;
