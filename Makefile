@@ -2,7 +2,12 @@
 
 VIRTUALENV := build/virtualenv
 
+ifndef IMAGE_REPO_NAME
+IMAGE := ${IMAGE_REPO_NAME}
+else
 IMAGE := uk.ac.wellcome/reach
+endif
+
 ECR_IMAGE := 160358319781.dkr.ecr.eu-west-1.amazonaws.com/$(IMAGE)
 LATEST_TAG := latest
 VERSION := latest
