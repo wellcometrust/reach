@@ -2,7 +2,7 @@
 
 VIRTUALENV := build/virtualenv
 
-ifndef IMAGE_REPO_NAME
+ifdef IMAGE_REPO_NAME
 IMAGE := ${IMAGE_REPO_NAME}
 else
 IMAGE := uk.ac.wellcome/reach
