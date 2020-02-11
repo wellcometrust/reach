@@ -37,9 +37,9 @@ def test_query_builder():
                     }},
                     {"terms_set": {
                         "doc.authors": {
-                            "terms":  ["J.Doe"],
+                            "terms":  ["j", "doe"],
                             "minimum_should_match_script": {
-                                "source": "1"
+                                "source": "2"
                             }
                         }
                     }},
