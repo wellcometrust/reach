@@ -1,4 +1,5 @@
 import json
+import re
 
 from elasticsearch import ConnectionError, NotFoundError
 import falcon
@@ -30,10 +31,13 @@ def _build_es_query(params):
     body_queries = {}
     for i, fieldname in enumerate(fields):
         field = "doc.{fieldname}".format(fieldname=fieldname)
+        new_terms = terms[i].lower()
+        new_terms = re.sub(r'[^\w\s]', ' ', new_terms).split(' ')
+        new_terms = list(filter(lambda x: len(x.strip()) > 0, new_terms))
         if field in body_queries.keys():
-            body_queries[field] = body_queries[field] + terms[i].split(' ')
+            body_queries[field] = body_queries[field] + new_terms
         else:
-            body_queries[field] = terms[i].split(' ')
+            body_queries[field] = new_terms
 
     terms = [
         {'terms_set': {
