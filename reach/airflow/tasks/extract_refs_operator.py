@@ -26,19 +26,23 @@ class ExtractRefsOperator(BaseOperator):
 
     Args:
         src_s3_key: S3 URL for input
-        dst_s3_key: S3 URL for output
+        split_s3_key: S3 URL for split references
+        parsed_s3_key: S3 URL for parsed references
     """
 
     template_fields = (
         'src_s3_key',
-        'dst_s3_key',
+        'split_s3_key',
+        'parsed_s3_key',
     )
 
     @apply_defaults
-    def __init__(self, src_s3_key, dst_s3_key, aws_conn_id='aws_default', *args, **kwargs):
+    def __init__(self, src_s3_key, split_s3_key, parsed_s3_key,
+                 aws_conn_id='aws_default', *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.src_s3_key = src_s3_key
-        self.dst_s3_key = dst_s3_key
+        self.split_s3_key = split_s3_key
+        self.parsed_s3_key = parsed_s3_key
         self.aws_conn_id = aws_conn_id
 
     @report_exception
@@ -49,23 +53,31 @@ class ExtractRefsOperator(BaseOperator):
         pool_map = map
         s3 = WellcomeS3Hook(aws_conn_id=self.aws_conn_id)
 
-        with tempfile.NamedTemporaryFile() as dst_rawf:
-            with gzip.GzipFile(mode='wb', fileobj=dst_rawf) as dst_f:
+        with tempfile.NamedTemporaryFile() as split_rawf, tempfile.NamedTemporaryFile() as parsed_rawf:
+            with gzip.GzipFile(mode='wb', fileobj=split_rawf) as split_f, gzip.GzipFile(mode='wb', fileobj=parsed_rawf) as parsed_f:
                 refs = yield_structured_references(
                     self.src_s3_key,
                     pool_map,
                     logger)
-                for structured_references in refs:
-                    for ref in structured_references:
-                        dst_f.write(json.dumps(ref).encode('utf-8'))
-                        dst_f.write(b'\n')
+                for split_references, parsed_references in refs:
+                    split_f.write(json.dumps(split_references).encode('utf-8'))
+                    split_f.write(b'\n')
+                    for ref in parsed_references:
+                        parsed_f.write(json.dumps(ref).encode('utf-8'))
+                        parsed_f.write(b'\n')
 
-            dst_rawf.flush()
+            split_rawf.flush()
+            parsed_rawf.flush()
 
             s3.load_file(
-                filename=dst_rawf.name,
-                key=self.dst_s3_key,
+                filename=split_rawf.name,
+                key=self.split_s3_key,
                 replace=True,
             )
 
+            s3.load_file(
+                filename=parsed_rawf.name,
+                key=self.parsed_s3_key,
+                replace=True,
+            )
 
