@@ -37,9 +37,9 @@ function getCitationsTableContent(data) {
                     <td colspan=6 class="accordion-subtable-container">
                     <table class="table accordion-subtable">
                         <tr>
-                            <th>Policy Document</th>
-                            <th>Policy Organisation</th>
-                            <th>Publication Year</th>
+                            <th width="45%">Policy Document</th>
+                            <th width="30%">Policy Organisation</th>
+                            <th width="20%">Publication Year</th>
                         </tr>
         `;
         for (let policy of item._source.doc.policies) {
