@@ -6,7 +6,7 @@ import {
     toDisplayOrg,
 } from './resultsCommon.js';
 
-const TITLE_LENGTH = 75;
+const TITLE_LENGTH = 140;
 
 const searchFields = [
     'match_title',

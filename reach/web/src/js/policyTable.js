@@ -13,7 +13,7 @@ const searchFields = [
     'authors',
 ].join(',');
 
-const TITLE_LENGTH = 75;
+const TITLE_LENGTH = 140;
 
 const getPolicyTableContent = (data) => {
     // Create the table rows to use in the policy-docs result table
@@ -33,7 +33,7 @@ const getPolicyTableContent = (data) => {
         >${(title.length > TITLE_LENGTH) ? (title.slice(0, TITLE_LENGTH) + "...") : title}</a></td>`;
         rows += `<td>${toDisplayOrg(item._source.doc.organisation)}</td>`;
         rows += `<td class="authors-cell" title="${authors}">
-            ${(authors.length > 50)? (authors.slice(0, TITLE_LENGTH) + "...") : authors}
+            ${(authors.length > TITLE_LENGTH)? (authors.slice(0, TITLE_LENGTH) + "...") : authors}
         </td>`;
         rows += `<td>${item._source.doc.year?item._source.doc.year:"Unknown"}</td>`;
         rows += `</tr>`;
