@@ -32,9 +32,6 @@ const getPolicyTableContent = (data) => {
             rel="noreferrer noopener"
         >${(title.length > TITLE_LENGTH) ? (title.slice(0, TITLE_LENGTH) + "...") : title}</a></td>`;
         rows += `<td>${toDisplayOrg(item._source.doc.organisation)}</td>`;
-        rows += `<td class="authors-cell" title="${authors}">
-            ${(authors.length > TITLE_LENGTH)? (authors.slice(0, TITLE_LENGTH) + "...") : authors}
-        </td>`;
         rows += `<td>${item._source.doc.year?item._source.doc.year:"Unknown"}</td>`;
         rows += `</tr>`;
 
