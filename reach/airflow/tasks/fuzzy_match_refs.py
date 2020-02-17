@@ -113,6 +113,7 @@ class ElasticsearchFuzzyMatcher:
                 'match_doi': matched_reference.get('doc', {}).get('doi', None),
                 'match_issn': matched_reference.get('doc', {}).get('journalISSN', None),
                 'match_source': 'EPMC',
+                'associated_policies_count': 1,
 
                 # Policy information
                 'policies': [{
@@ -192,6 +193,10 @@ class FuzzyMatchRefsOperator(BaseOperator):
             if fuzzy_matched_reference:
                 ref_id = fuzzy_matched_reference['reference_id']
                 if ref_id in references.keys():
+
+                    references[ref_id]['policies'][
+                        'associated_policies_count'] += 1
+
                     references[ref_id]['policies'].append(
                         fuzzy_matched_reference['policies'][0]
                     )
