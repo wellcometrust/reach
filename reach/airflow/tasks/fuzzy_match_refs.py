@@ -194,7 +194,7 @@ class FuzzyMatchRefsOperator(BaseOperator):
                 ref_id = fuzzy_matched_reference['reference_id']
                 if ref_id in references.keys():
 
-                    references[ref_id]['policies'][
+                    references[ref_id][
                         'associated_policies_count'] += 1
 
                     references[ref_id]['policies'].append(
