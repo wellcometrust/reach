@@ -6,7 +6,7 @@ from twisted.internet import reactor
 from twisted.internet import threads
 
 from .file_system import S3FileSystem, LocalFileSystem
-from reach.sentry import report_exception
+from sentry import report_exception
 
 manifest_storage_error = object()
 

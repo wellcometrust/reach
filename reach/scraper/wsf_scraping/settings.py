@@ -7,27 +7,27 @@ from datetime import datetime
 FEED_CONFIG = os.environ.get('SCRAPY_FEED_CONFIG', 'DEBUG')
 BOT_NAME = 'wsf_scraper'
 
-SPIDER_MODULES = ['reach.scraper.wsf_scraping.spiders']
-NEWSPIDER_MODULE = 'reach.scraper.wsf_scraping.spiders'
+SPIDER_MODULES = ['wsf_scraping.spiders']
+NEWSPIDER_MODULE = 'wsf_scraping.spiders'
 
 # Custom contrats for spider testing
 SPIDER_CONTRACTS = {
-    'reach.scraper.wsf_scraping.contracts.AjaxContract': 10,
+    'wsf_scraping.contracts.AjaxContract': 10,
 }
 ITEM_PIPELINES = {
-    'reach.scraper.wsf_scraping.pipelines.WsfScrapingPipeline': 10,
+    'wsf_scraping.pipelines.WsfScrapingPipeline': 10,
 }
 FEED_STORAGES = {
-    'manifests3': 'reach.scraper.wsf_scraping.feed_storage.ManifestFeedStorage',
-    'local': 'reach.scraper.wsf_scraping.feed_storage.ManifestFeedStorage',
+    'manifests3': 'wsf_scraping.feed_storage.ManifestFeedStorage',
+    'local': 'wsf_scraping.feed_storage.ManifestFeedStorage',
 }
 
 SPIDER_MIDDLEWARES = {
-    'reach.scraper.wsf_scraping.middlewares.ReachDisallowedHostMiddleware': 450,
+    'wsf_scraping.middlewares.ReachDisallowedHostMiddleware': 450,
 }
 
 LOG_LEVEL = 'INFO'
-LOG_FORMATTER = 'reach.scraper.wsf_scraping.middlewares.PoliteLogFormatter'
+LOG_FORMATTER = 'wsf_scraping.middlewares.PoliteLogFormatter'
 
 # Set pdfminer log to WARNING
 logging.getLogger("pdfminer").setLevel(logging.WARNING)
