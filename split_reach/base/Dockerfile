@@ -26,3 +26,4 @@ apt-get install -yqq --no-install-recommends \
 
 
 COPY ./hooks /opt/reach/hooks
+COPY ./elastic /opt/reach/elastic
