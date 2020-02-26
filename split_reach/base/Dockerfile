@@ -25,4 +25,4 @@ apt-get install -yqq --no-install-recommends \
     apt-get remove --purge -y build-essential
 
 
-COPY ./sentry.py /opt/reach/sentry.py
+COPY ./hooks /opt/reach/hooks

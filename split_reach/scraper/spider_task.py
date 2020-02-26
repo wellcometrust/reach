@@ -23,7 +23,7 @@ from wsf_scraping.spiders.parliament_spider import ParliamentSpider
 from wsf_scraping.spiders.acme_spider import AcmeSpider
 import wsf_scraping.settings
 
-from sentry import report_exception
+from hooks.sentry import report_exception
 
 
 SPIDERS = {
@@ -141,22 +141,33 @@ class SpiderOperator:
 
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(
+    arg_parser = argparse.ArgumentParser(
         description='Run a web scraper for a given organisation and writes the'
                     ' results to the given S3 path.'
     )
-    parser.add_argument('dst_s3_dir',
-                        help='The destination path to s3.')
-    parser.add_argument('organisation', choices=SPIDERS.keys(),
-                        help='The organisation to scrape.')
+    arg_parser.add_argument(
+        'dst_s3_dir',
+        help='The destination path to s3.'
+    )
+    arg_parser.add_argument(
+        'organisation',
+        choices=SPIDERS.keys(),
+        help='The organisation to scrape.'
+    )
+    arg_parser.add_argument(
+        '--max-items',
+        type=int,
+        help='The number of documents to scrape.',
+        default=None
+    )
 
-    args = parser.parse_args()
+    args = arg_parser.parse_args()
 
     spider = SpiderOperator(
         args.organisation,
         args.dst_s3_dir,
         list(range(2012, datetime.datetime.now().year + 1)),
-        10,
+        args.max_items,
     )
 
     spider.execute()

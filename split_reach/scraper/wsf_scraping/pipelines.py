@@ -3,7 +3,7 @@ import os
 import logging
 from urllib.parse import urlparse
 from scrapy.utils.project import get_project_settings
-from .file_system import S3FileSystem, LocalFileSystem, get_file_hash, get_pdf_id
+from hooks.s3hook import S3Hook, get_file_hash, get_pdf_id
 from scrapy.exceptions import DropItem
 
 
@@ -41,17 +41,11 @@ class WsfScrapingPipeline(object):
             - url: A string reprensenting the location to store the pdf files.
         """
         parsed_url = urlparse(url)
-        scheme = parsed_url.scheme
-        if scheme == 'manifests3':
-            self.logger.debug('Using S3 File system')
-            self.storage = S3FileSystem(
-                parsed_url.path,
-                organisation,
-                parsed_url.netloc
-            )
-        else:
-            self.logger.debug('Using Local File System')
-            self.storage = LocalFileSystem(parsed_url.path, organisation)
+        self.storage = S3Hook(
+            parsed_url.path,
+            organisation,
+            parsed_url.netloc
+        )
 
     def is_in_manifest(self, hash):
         """Check if a file hash is in the current manifest.

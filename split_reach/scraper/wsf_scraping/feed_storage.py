@@ -5,10 +5,11 @@ from scrapy.extensions.feedexport import BlockingFeedStorage
 from twisted.internet import reactor
 from twisted.internet import threads
 
-from .file_system import S3FileSystem, LocalFileSystem
-from sentry import report_exception
+from hooks.s3hook import S3Hook
+from hooks.sentry import report_exception
 
 manifest_storage_error = object()
+
 
 class ManifestFeedStorage(BlockingFeedStorage):
     """This FeedStorage is given the informations about the pdf files scraped
@@ -31,14 +32,11 @@ class ManifestFeedStorage(BlockingFeedStorage):
         """
         self.spider = spider
         path = self.parsed_url.path.replace('%(name)s', spider.name)
-        if self.parsed_url.scheme == 'manifests3':
-            self.file_system = S3FileSystem(
-                path,
-                spider.name,
-                self.parsed_url.netloc
-            )
-        else:
-            self.file_system = LocalFileSystem(path, spider.name)
+        self.file_system = S3Hook(
+            path,
+            spider.name,
+            self.parsed_url.netloc
+        )
         return super(ManifestFeedStorage, self).open(spider)
 
     @report_exception

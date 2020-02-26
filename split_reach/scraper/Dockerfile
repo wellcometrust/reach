@@ -1,16 +1,18 @@
 FROM reach.base
 
-WORKDIR /opt/scraper
+WORKDIR /opt/reach
 
-COPY ./requirements.txt /opt/scraper/requirements.txt
-COPY ./scrapy.cfg /etc/scraper/scrapy.cfg
-COPY ./spider_task.py /opt/scraper/spider_task.py
-COPY ./wsf_scraping /opt/scraper/wsf_scraping
+COPY ./requirements.txt /opt/reach/requirements.scraper.txt
 
-# Put the generic sentry.py file in the right module
-RUN mv /opt/reach/sentry.py /opt/scraper/sentry.py
+RUN pip install -U pip && \
+        python3 -m pip install -r /opt/reach/requirements.scraper.txt
+
+
+COPY ./scrapy.cfg /etc/reach/scrapy.cfg
+COPY ./spider_task.py /opt/reach/spider_task.py
+COPY ./wsf_scraping /opt/reach/wsf_scraping
 
 # Give execution rights to the entrypoint Python script
-RUN chmod +x /opt/scraper/spider_task.py
+RUN chmod +x /opt/reach/spider_task.py
 
-ENTRYPOINT ["/opt/scraper/spider_task.py"]
+ENTRYPOINT ["/opt/reach/spider_task.py"]

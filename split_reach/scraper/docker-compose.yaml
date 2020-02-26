@@ -11,10 +11,10 @@ x-env: &env
   SENTRY_DSN: "${SENTRY_DSN}"
 
 services:
-  scraper_nice:
+  scraper_msf:
     image: uk.ac.wellcome/reach/scraper:latest
     environment: *env
     entrypoint:
       - /opt/scraper/spider_task.py
-      - "s3://datalabs-dev/split-scraper/results"
-      - nice
+      - s3://datalabs-dev/scraper/split-container/
+      - msf
