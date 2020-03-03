@@ -38,18 +38,12 @@ class ParsePdfOperator:
         super(ParsePdfOperator, self).__init__(*args, **kwargs)
         self.organisation = organisation
         self.src_s3_dir = src_s3_dir
-        self.dst_s3_key = dst_s3_key
+        self.dst_s3_key = os.path.join(dst_s3_key, f"{organisation}.json.gz")
 
-        parsed_url = urlparse(self.dst_s3_dir)
-
-        self.client = S3Hook(
-            parsed_url.netloc,
-            organisation,
-            parsed_url.path,
-        )
+        self.client = S3Hook()
 
     @report_exception
-    def execute(self, context):
+    def execute(self):
         os.environ.setdefault(
             'SCRAPY_SETTINGS_MODULE',
             'scraper.wsf_scraping.settings'
@@ -59,17 +53,10 @@ class ParsePdfOperator:
         if not self.dst_s3_key.startswith('s3://'):
             raise ValueError
 
-        pdf_manifest = pdf_parser_main.parse_all_pdf(
+        pdf_parser_main.parse_all_pdf(
             self.organisation,
             self.src_s3_dir,
             self.dst_s3_key,
-        )
-
-        parsed_url = urlparse(self.dst_s3_dir)
-        self.client.save(
-            self.dst_s3_dir,
-            parsed_url.netloc,
-            pdf_manifest,
         )
 
 
@@ -79,31 +66,25 @@ if __name__ == '__main__':
                     ' results to the given S3 path.'
     )
     arg_parser.add_argument(
-        'dst_s3_key',
-        help='The destination path to s3.'
-    )
-    arg_parser.add_argument(
         'src_s3_dir',
         help='The source path to s3.'
+    )
+    arg_parser.add_argument(
+        'dst_s3_key',
+        help='The destination path to s3.'
     )
     arg_parser.add_argument(
         'organisation',
         choices=ORGS,
         help='The organisation to scrape.'
     )
-    arg_parser.add_argument(
-        '--max-items',
-        type=int,
-        help='The number of documents to scrape.',
-        default=None
-    )
 
     args = arg_parser.parse_args()
 
-    spider = ParsePdfOperator(
+    parser = ParsePdfOperator(
         args.organisation,
         args.src_s3_dir,
         args.dst_s3_key,
     )
 
-    spider.execute()
+    parser.execute()

@@ -33,7 +33,7 @@ def default_resources_dir():
     """ Returns path to resources/ within our repo. """
     return os.path.join(
         os.path.dirname(__file__),
-        '../resources'
+        'resources'
     )
 
 
@@ -45,13 +45,8 @@ def write_to_file(output_url, items, organisation):
         item: A dictionnary containing the results of the parsing for a pdf.
     """
     parsed_url = urlparse(output_url)
-    dirname = os.path.dirname(parsed_url.path)
     fname = os.path.basename(parsed_url.path)
-    file_system = S3Hook(
-        dirname,
-        organisation,  # not used
-        parsed_url.netloc  # bucket
-    )
+    s3_hook = S3Hook()
     if fname.endswith('.json.gz'):
         with tempfile.TemporaryFile(mode='w+b') as raw_f:
             with gzip.GzipFile(fileobj=raw_f, mode='w') as f:
@@ -61,7 +56,7 @@ def write_to_file(output_url, items, organisation):
                     f.write(b"\n")
             raw_f.flush()
             raw_f.seek(0)
-            file_system.save_fileobj(raw_f, '', fname)
+            s3_hook.save_fileobj(raw_f, output_url, organisation)
     else:
         raise ValueError(
             'Unsupported output_url: %s' % output_url)
@@ -191,10 +186,12 @@ def create_argparser(description):
     return parser
 
 
-def _yield_items(file_system, words, titles, context):
-    content = file_system.get_manifest()['content']
+def _yield_items(s3_hook, words, titles, context, src_url, organisation):
+    content = s3_hook.get_manifest(src_url, organisation)['content']
     # Load data about individual documents
-    data = file_system.get_manifest()['data']
+    data = s3_hook.get_manifest(src_url, organisation)['data']
+
+    parsed_src_url = urlparse(src_url)
     # Create lookup dict for retrieving an individual docs information
     metadata_lookup = dict(
         (doc_id, metadata) for doc_id, metadata in data.items()
@@ -202,8 +199,19 @@ def _yield_items(file_system, words, titles, context):
     # Iterate through directories parsing individual PDFs
     for directory in content:
         for item in content[directory]:
-            logger.info(item + '  --- ' + directory)
-            pdf = file_system.get(item)
+            item_key = os.path.join(
+                parsed_src_url.path[:-1],
+                'pdf',
+                item[:2],
+                item + '.pdf'
+            )
+            logger.info(item_key + '  --- ' + directory)
+
+            pdf = s3_hook.get(
+                parsed_src_url.netloc,
+                item_key
+            )
+
             with tempfile.NamedTemporaryFile() as tf:
                 shutil.copyfileobj(pdf, tf)
                 tf.seek(0)
@@ -253,13 +261,9 @@ def parse_all_pdf(organisation, input_url, output_url,
     words = parse_keywords_files(keywords_file)
     titles = parse_keywords_files(sections_file)
 
-    parsed_url = urlparse(input_url)
-    file_system = S3Hook(
-        parsed_url.path,
-        organisation,
-        parsed_url.netloc,
-    )
-    parsed_items = _yield_items(file_system, words, titles, context)
+    s3_hook = S3Hook()
+    parsed_items = _yield_items(s3_hook, words, titles, context,
+                                input_url, organisation)
 
     write_to_file(output_url, parsed_items, organisation)
 

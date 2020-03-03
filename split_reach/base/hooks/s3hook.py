@@ -79,6 +79,7 @@ class S3Hook(object):
     (Blocking!) wrapper for writing things to S3.
     """
     def __init__(self):
+        logging.basicConfig()
         self.logger = logging.getLogger(__name__)
         self.logger.setLevel(logging.INFO)
         self.client = boto3.client('s3')
@@ -98,7 +99,6 @@ class S3Hook(object):
 
     def save_fileobj(self, fileobj, dst_key, organisation=''):
         parsed_dst = urlparse(dst_key)
-        self.logger.info('FileSystem.save_fileobj: {key}', dst_key)
         self.client.upload_fileobj(
             Fileobj=fileobj,
             Bucket=parsed_dst.netloc,
@@ -114,9 +114,10 @@ class S3Hook(object):
             ),
         )
         try:
+            self.logger.info('Trying to get {manifest_key}'.format(manifest_key=manifest_key))
             response = self.client.get_object(
                 Bucket=parsed_src.netloc,
-                Key=manifest_key,
+                Key=manifest_key[1:],
             )
             if response.get('Body'):
                 return json.loads(response['Body'].read())
@@ -164,6 +165,7 @@ class S3Hook(object):
                 organisation=organisation,
             ),
         )
+        self.logger.info('Writing {manifest} to s3'.format(manifest=key))
         self.client.put_object(
             Bucket=parsed_dst.netloc,
             Key=key[1:],  # remove first /
@@ -172,13 +174,12 @@ class S3Hook(object):
             ).encode('utf-8')
         )
 
-    def get(self, bucket, prefix, file_hash):
+    def get(self, bucket, key):
         try:
-            key = os.path.join(
-                prefix, 'pdf', file_hash[:2], file_hash + '.pdf')
+            self.logger.info(key)
             response = self.client.get_object(
                 Bucket=bucket,
-                Key=key,
+                Key=key[1:],
             )
             if response.get('Body'):
                 return response['Body']
