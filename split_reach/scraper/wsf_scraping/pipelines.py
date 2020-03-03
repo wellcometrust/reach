@@ -14,7 +14,7 @@ class WsfScrapingPipeline(object):
         """
 
         self.settings = get_project_settings()
-        uri = self.settings['FEED_URI'].replace('%(name)s', organisation)
+        self.uri = self.settings['FEED_URI'].replace('%(name)s', organisation)
 
         # Initialize logging
         self.logger = logging.getLogger(__name__)
@@ -23,29 +23,12 @@ class WsfScrapingPipeline(object):
             'Pipeline initialized FEED_CONFIG=%s',
             self.settings.get('FEED_CONFIG'),
         )
-        self.setup_storage(uri, organisation)
-        self.manifest = self.storage.get_manifest()
+        self.storage = S3Hook()
+        self.manifest = self.storage.get_manifest(self.uri, organisation)
 
     @classmethod
     def from_crawler(cls, crawler):
         return cls(crawler.spider.name)
-
-    def setup_storage(self, url, organisation):
-        """Take the output url and set the right feed storage for the pdf.
-
-        Sets the storage system in use for the pipeline in the following:
-          * S3FileSystem: Store the pdfs in Amazon S3.
-          * LocalFileSystem: Store the pdfs in a local directory.
-
-        Args:
-            - url: A string reprensenting the location to store the pdf files.
-        """
-        parsed_url = urlparse(url)
-        self.storage = S3Hook(
-            parsed_url.path,
-            organisation,
-            parsed_url.netloc
-        )
 
     def is_in_manifest(self, hash):
         """Check if a file hash is in the current manifest.
@@ -85,12 +68,14 @@ class WsfScrapingPipeline(object):
         in_manifest = self.is_in_manifest(item['hash'])
 
         if not in_manifest:
-            path = os.path.join(
+            dst_key = os.path.join(
+                self.uri,
                 'pdf',
                 item['hash'][:2],
+                item['hash'] + '.pdf',
             )
             with open(item['pdf'], 'rb') as pdf:
-                self.storage.save(pdf, path, item['hash'] + '.pdf')
+                self.storage.save(pdf, dst_key)
 
         # Remove the file to save storage
         os.unlink(item['pdf'])
