@@ -25,5 +25,6 @@ apt-get install -yqq --no-install-recommends \
     apt-get remove --purge -y build-essential
 
 
+COPY ./safe_import.py /opt/reach/safe_import.py
 COPY ./hooks /opt/reach/hooks
 COPY ./elastic /opt/reach/elastic

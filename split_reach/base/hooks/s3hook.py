@@ -6,6 +6,7 @@ import json
 import datetime
 import subprocess
 import re
+from urllib.parse import urlparse
 
 from botocore.exceptions import ClientError
 
@@ -77,48 +78,45 @@ class S3Hook(object):
     """
     (Blocking!) wrapper for writing things to S3.
     """
-    def __init__(self, path, organisation, bucket):
+    def __init__(self):
         self.logger = logging.getLogger(__name__)
         self.logger.setLevel(logging.INFO)
         self.client = boto3.client('s3')
-        self.bucket = bucket
-        self.prefix = path[1:]
-        self.organisation = organisation
         self.start_time = datetime.datetime.now()
 
-    def save(self, body, path, filename):
-        key = os.path.join(self.prefix, path, filename)
-        self.logger.debug('Writing {key} to S3'.format(key=key))
+    def save(self, body, dst_key, organisation=''):
+        parsed_dst = urlparse(dst_key)
+        self.logger.debug('Writing {key} to S3'.format(key=dst_key))
         try:
             self.client.put_object(
-                Bucket=self.bucket,
-                Key=key,
+                Bucket=parsed_dst.netloc,
+                Key=parsed_dst.path[1:],  # remove first /
                 Body=body,
             )
         except ClientError as e:
             raise e
 
-    def save_fileobj(self, fileobj, path, filename):
-        key = os.path.join(self.prefix, path, filename)
-        self.logger.info('FileSystem.save_fileobj: s3://%s/%s',
-                         self.bucket, key)
+    def save_fileobj(self, fileobj, dst_key, organisation=''):
+        parsed_dst = urlparse(dst_key)
+        self.logger.info('FileSystem.save_fileobj: {key}', dst_key)
         self.client.upload_fileobj(
             Fileobj=fileobj,
-            Bucket=self.bucket,
-            Key=key,
+            Bucket=parsed_dst.netloc,
+            Key=parsed_dst.path[1:],  # remove first /
         )
 
-    def get_manifest(self):
-        key = os.path.join(
-            self.prefix,
+    def get_manifest(self, src_key, organisation):
+        parsed_src = urlparse(src_key)
+        manifest_key = os.path.join(
+            parsed_src.path,
             'reach-scrape--scraper-{organisation}.json'.format(
-                organisation=self.organisation,
+                organisation=organisation,
             ),
         )
         try:
             response = self.client.get_object(
-                Bucket=self.bucket,
-                Key=key,
+                Bucket=parsed_src.netloc,
+                Key=manifest_key,
             )
             if response.get('Body'):
                 return json.loads(response['Body'].read())
@@ -130,11 +128,11 @@ class S3Hook(object):
             else:
                 raise
 
-    def update_manifest(self, data_file):
-        current_manifest = self.get_manifest()
+    def update_manifest(self, data_file, dst_key, organisation=""):
+        current_manifest = self.get_manifest(dst_key, organisation)
 
         metadata = {}
-        metadata['organisation'] = self.organisation
+        metadata['organisation'] = organisation
         metadata['start-time'] = \
             self.start_time.isoformat()
         metadata['stop-time'] = \
@@ -158,26 +156,28 @@ class S3Hook(object):
             # coming from the page
             data[item['hash']] = dict(item)
 
+        parsed_dst = urlparse(dst_key)
         key = os.path.join(
-            self.prefix,
+            parsed_dst.netloc,
+            parsed_dst.path,
             'reach-scrape--scraper-{organisation}.json'.format(
-                organisation=self.organisation,
+                organisation=organisation,
             ),
         )
         self.client.put_object(
-            Bucket=self.bucket,
-            Key=key,
+            Bucket=parsed_dst.netloc,
+            Key=key[1:],  # remove first /
             Body=json.dumps(
                 {'metadata': metadata, 'content': content, 'data': data}
             ).encode('utf-8')
         )
 
-    def get(self, file_hash):
+    def get(self, bucket, prefix, file_hash):
         try:
             key = os.path.join(
-                self.prefix, 'pdf', file_hash[:2], file_hash + '.pdf')
+                prefix, 'pdf', file_hash[:2], file_hash + '.pdf')
             response = self.client.get_object(
-                Bucket=self.bucket,
+                Bucket=bucket,
                 Key=key,
             )
             if response.get('Body'):
