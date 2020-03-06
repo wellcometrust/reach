@@ -1,0 +1,6 @@
+boto3
+editdistance
+numpy
+pandas
+scikit-learn
+sentry-sdk
