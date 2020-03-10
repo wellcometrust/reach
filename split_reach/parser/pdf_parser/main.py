@@ -12,7 +12,7 @@ Example:
 
 """
 from argparse import ArgumentParser
-from urllib.parse import urlparse
+from urllib.parse import urlparse, urljoin
 import gzip
 import json
 import logging
@@ -56,7 +56,7 @@ def write_to_file(output_url, items, organisation):
                     f.write(b"\n")
             raw_f.flush()
             raw_f.seek(0)
-            s3_hook.save_fileobj(raw_f, output_url, organisation)
+            s3_hook.save_fileobj(raw_f, output_url)
     else:
         raise ValueError(
             'Unsupported output_url: %s' % output_url)
@@ -161,7 +161,7 @@ def create_argparser(description):
 
     parser.add_argument(
         'input_url',
-        help='URL to the manifest file (file://... | manifests3://...)',
+        help='URL to the manifest file (file://... | s3://...)',
     )
 
     parser.add_argument(
@@ -191,7 +191,6 @@ def _yield_items(s3_hook, words, titles, context, src_url, organisation):
     # Load data about individual documents
     data = s3_hook.get_manifest(src_url, organisation)['data']
 
-    parsed_src_url = urlparse(src_url)
     # Create lookup dict for retrieving an individual docs information
     metadata_lookup = dict(
         (doc_id, metadata) for doc_id, metadata in data.items()
@@ -200,7 +199,7 @@ def _yield_items(s3_hook, words, titles, context, src_url, organisation):
     for directory in content:
         for item in content[directory]:
             item_key = os.path.join(
-                parsed_src_url.path[:-1],
+                src_url,
                 'pdf',
                 item[:2],
                 item + '.pdf'
@@ -208,7 +207,6 @@ def _yield_items(s3_hook, words, titles, context, src_url, organisation):
             logger.info(item_key + '  --- ' + directory)
 
             pdf = s3_hook.get(
-                parsed_src_url.netloc,
                 item_key
             )
 

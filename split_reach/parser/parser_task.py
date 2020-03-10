@@ -5,13 +5,14 @@ Operator to run the web scraper on every organisation.
 import os
 import logging
 import argparse
-from urllib.parse import urlparse
 
 from hooks.sentry import report_exception
 from hooks.s3hook import S3Hook
 
+from normalizer.title_normalizer import PolicyNameNormalizerOperator
 from pdf_parser import main as pdf_parser_main
 
+logging.basicConfig()
 logger = logging.getLogger(__name__)
 
 
@@ -34,11 +35,10 @@ class ParsePdfOperator:
         organisation: The organisation to pull documents from.
     """
 
-    def __init__(self, organisation, src_s3_dir, dst_s3_key, *args, **kwargs):
-        super(ParsePdfOperator, self).__init__(*args, **kwargs)
+    def __init__(self, organisation, src_s3_dir, dst_s3_key):
         self.organisation = organisation
         self.src_s3_dir = src_s3_dir
-        self.dst_s3_key = os.path.join(dst_s3_key, f"{organisation}.json.gz")
+        self.dst_s3_key = dst_s3_key
 
         self.client = S3Hook()
 
@@ -81,10 +81,24 @@ if __name__ == '__main__':
 
     args = arg_parser.parse_args()
 
+    # Create an intermediate folder in s3 for raw parser output
+    parser_dst_key = os.path.join(
+        args.dst_s3_key,
+        'parsed',
+        f"{args.organisation}_raw.json.gz"
+    )
+
     parser = ParsePdfOperator(
         args.organisation,
         args.src_s3_dir,
-        args.dst_s3_key,
+        parser_dst_key
+    )
+    parser.execute()
+
+    normalizer = PolicyNameNormalizerOperator(
+        args.organisation,
+        parser_dst_key,
+        args.dst_s3_key
     )
 
-    parser.execute()
+    normalizer.normalize()

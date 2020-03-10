@@ -82,54 +82,68 @@ class S3Hook(object):
         logging.basicConfig()
         self.logger = logging.getLogger(__name__)
         self.logger.setLevel(logging.INFO)
-        self.client = boto3.client('s3')
+        self.client = boto3.resource('s3')
         self.start_time = datetime.datetime.now()
 
-    def save(self, body, dst_key, organisation=''):
-        parsed_dst = urlparse(dst_key)
+    def parse_s3_url(self, key):
+        """Takes a url to an s3 location and returns the bucket and the path"""
+        parsed_key = urlparse(key)
+        # Scrapy need to use manifests3 style urls because s3:// is a defaut
+        # value for its non-overridable S3FeedStorage.
+        if parsed_key.scheme not in ["s3", 'manifests3']:
+            raise ValueError
+        return parsed_key.netloc, parsed_key.path[1:]  # Remove leading `/`
+
+    def save(self, body, dst_key):
+        """Save a given body to an S3 location."""
+        bucket, path = self.parse_s3_url(dst_key)
         self.logger.debug('Writing {key} to S3'.format(key=dst_key))
         try:
-            self.client.put_object(
-                Bucket=parsed_dst.netloc,
-                Key=parsed_dst.path[1:],  # remove first /
-                Body=body,
+            bucket = self.client.Bucket(bucket)
+            bucket.put_object(
+                Key=path,
+                Body=body
             )
         except ClientError as e:
             raise e
 
-    def save_fileobj(self, fileobj, dst_key, organisation=''):
-        parsed_dst = urlparse(dst_key)
-        self.client.upload_fileobj(
-            Fileobj=fileobj,
-            Bucket=parsed_dst.netloc,
-            Key=parsed_dst.path[1:],  # remove first /
-        )
+    def save_fileobj(self, fileobj, dst_key):
+        """Save a fileobj to an S3 location."""
+        bucket, path = self.parse_s3_url(dst_key)
+        try:
+            bucket = self.client.Bucket(bucket)
+            bucket.upload_fileobj(
+                Key=path,
+                Fileobj=fileobj
+            )
+        except ClientError as e:
+            raise e
 
     def get_manifest(self, src_key, organisation):
-        parsed_src = urlparse(src_key)
+        """Get the current manifest for an organisation at a given key in s3.
+        """
+        bucket, path = self.parse_s3_url(src_key)
         manifest_key = os.path.join(
-            parsed_src.path,
+            path,
             'reach-scrape--scraper-{organisation}.json'.format(
                 organisation=organisation,
             ),
         )
         try:
-            self.logger.info('Trying to get {manifest_key}'.format(manifest_key=manifest_key))
-            response = self.client.get_object(
-                Bucket=parsed_src.netloc,
-                Key=manifest_key[1:],
+            self.logger.info(
+                'Trying to get {manifest_key}'.format(
+                    manifest_key=manifest_key
+                )
             )
-            if response.get('Body'):
-                return json.loads(response['Body'].read())
-            else:
-                return {}
+            s3_object = self.client.Object(bucket, manifest_key)
+            response = s3_object.get()
+            return json.loads(response['Body'].read())
+
         except ClientError as e:
-            if e.response['Error']['Code'] == 'NoSuchKey':
-                return {}
-            else:
-                raise
+            raise e
 
     def update_manifest(self, data_file, dst_key, organisation=""):
+        """Update an organisation's manifest at a given S3 location."""
         current_manifest = self.get_manifest(dst_key, organisation)
 
         metadata = {}
@@ -157,33 +171,48 @@ class S3Hook(object):
             # coming from the page
             data[item['hash']] = dict(item)
 
-        parsed_dst = urlparse(dst_key)
+        bucket, path = self.parse_s3_url(dst_key)
         key = os.path.join(
-            parsed_dst.netloc,
-            parsed_dst.path,
+            path,
             'reach-scrape--scraper-{organisation}.json'.format(
                 organisation=organisation,
             ),
         )
         self.logger.info('Writing {manifest} to s3'.format(manifest=key))
-        self.client.put_object(
-            Bucket=parsed_dst.netloc,
-            Key=key[1:],  # remove first /
+        bucket = self.client.Bucket(bucket)
+        bucket.put_object(
+            Key=key,
             Body=json.dumps(
                 {'metadata': metadata, 'content': content, 'data': data}
             ).encode('utf-8')
         )
 
-    def get(self, bucket, key):
+    def get(self, src_key):
+        """Get the object at the specified location in S3"""
         try:
-            self.logger.info(key)
-            response = self.client.get_object(
-                Bucket=bucket,
-                Key=key[1:],
-            )
+            self.logger.info(src_key)
+            bucket, path = self.parse_s3_url(src_key)
+            s3_object = self.client.Object(bucket, path)
+            response = s3_object.get()
             if response.get('Body'):
                 return response['Body']
         except ClientError as e:
             raise e
 
         return None
+
+    def get_s3_object(self, src_key):
+        """Return a raw S3 object from a given location."""
+        try:
+            self.logger.info(src_key)
+            bucket, path = self.parse_s3_url(src_key)
+            return self.client.Object(bucket, path)
+        except ClientError as e:
+            raise e
+
+        return None
+
+    def load_file(self, filename, dst_key, replace=False):
+        bucket, path = self.parse_s3_url(dst_key)
+        s3_object = self.client.Object(bucket, path)
+        s3_object.upload_file(filename)

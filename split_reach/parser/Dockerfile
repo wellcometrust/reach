@@ -10,6 +10,7 @@ RUN pip install -U pip && \
 
 COPY ./parser_task.py /opt/reach/parser_task.py
 COPY ./pdf_parser /opt/reach/pdf_parser
+COPY ./normalizer /opt/reach/normalizer
 
 # Give execution rights to the entrypoint Python script
 RUN chmod +x /opt/reach/parser_task.py
