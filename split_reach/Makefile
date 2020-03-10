@@ -1,6 +1,16 @@
 .DEFAULT_GOAL := all
 
-SCRAPER_DST := s3://datalabs-dev/scraper/split-container/msf/
+# ORG input default to the shortest one to run
+ORG ?= msf
+
+SCRAPER_DST := s3://datalabs-dev/scraper/split-container/${ORG}/
+PARSER_DST := s3://datalabs-dev/parser/split-container/${ORG}/
+
+
+# _____________
+# TODO:
+# When we're done with testing the splitter, we should run docker tasks demonized.
+# _____________
 
 .PHONY: base-image
 base-image:
@@ -34,27 +44,43 @@ extracter-image:
 docker-build: base-image scraper-image parser-image
 
 
-.PHONY: docker-run-scraper
-docker-run-scraper: docker-build
+.PHONY: run-scraper
+run-scraper: docker-build
 	docker run \
 	    -e AWS_ACCESS_KEY_ID="${AWS_ACCESS_KEY_ID}" \
 		-e AWS_SECRET_ACCESS_KEY="${AWS_SECRET_ACCESS_KEY}" \
 		-e SENTRY_DSN="${SENTRY_DSN}" \
 	    uk.ac.wellcome/reach/scraper \
 		${SCRAPER_DST} \
-		msf
+		${ORG}
 
 
-.PHONY: docker-run-parser
-docker-run-parser: docker-build
+.PHONY: run-parser
+run-parser: docker-build
 	docker run \
 	    -e AWS_ACCESS_KEY_ID="${AWS_ACCESS_KEY_ID}" \
 		-e AWS_SECRET_ACCESS_KEY="${AWS_SECRET_ACCESS_KEY}" \
 		-e SENTRY_DSN="${SENTRY_DSN}" \
 	    uk.ac.wellcome/reach/parser \
 		${SCRAPER_DST} \
-		s3://datalabs-dev/parser/split-container/msf/ \
-		msf
+		${PARSER_DST} \
+		${ORG}
+
+
+.PHONY: run-extracter
+run-extracter: extracter-image
+	docker run \
+	    -e AWS_ACCESS_KEY_ID="${AWS_ACCESS_KEY_ID}" \
+		-e AWS_SECRET_ACCESS_KEY="${AWS_SECRET_ACCESS_KEY}" \
+		-e SENTRY_DSN="${SENTRY_DSN}" \
+	    uk.ac.wellcome/reach/extracter \
+		${PARSER_DST} \
+		s3://datalabs-dev/extracter/split-container/msf/ \
+		s3://datalabs-dev/extracter-split/split-container/msf/ \
+
+
+.PHONY: docker-run
+docker-run: docker-build run-scraper run-parser
 
 .PHONY: all
 all: docker-build
