@@ -5,11 +5,11 @@ from collections import Counter
 import pandas as pd
 from sklearn.metrics import classification_report, f1_score, recall_score, precision_score
 
-from reach.refparse.utils import FuzzyMatcher
+from refparse.utils import FuzzyMatcher
 
 def predict_match_data(matcher, match_data):
     """
-    Input: 
+    Input:
         matcher: A matcher object initialised
                 on a corpus of references (e.g. all of EPMC)
         match_data: A pandas dataframe with the
@@ -21,11 +21,11 @@ def predict_match_data(matcher, match_data):
     Output:
         predictions: A dataframe of the reference matches found using
                 the matcher function. Each line will have 'Reference id'
-                from the match_data references, and if it matched a 
+                from the match_data references, and if it matched a
                 reference from the corpus references then the 'Matched publication id'
                 of this reference will be given. If there was no match
                 the Matched publication id column will be None. The 'Cosine Similarity'
-                column gives the score of how similar the matched 
+                column gives the score of how similar the matched
                 reference titles are.
     """
 
@@ -101,7 +101,7 @@ def evaluate_match_references(
     ):
 
     # Take a random sample of the evaluation references to find matches for
-    match_data = evaluation_references.sample(n = sample_N*2, random_state = 0).reset_index() 
+    match_data = evaluation_references.sample(n = sample_N*2, random_state = 0).reset_index()
     match_data['Title'] = match_data['title']
 
     match_data_positive = match_data.iloc[0:sample_N]

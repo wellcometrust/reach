@@ -6,7 +6,7 @@ import numpy as np
 import os.path
 import sys
 
-from reach.pdf_parser.pdf_parse import parse_pdf_document, grab_section
+from pdf_parser.pdf_parse import parse_pdf_document, grab_section
 
 
 def pretty_confusion_matrix(actual_data, predict_data, labels):
@@ -37,7 +37,7 @@ def evaluate_metric_scraped(actual, predicted, sections, files, providers):
         'Actual' : actual,
         'Predicted' : predicted,
         'Section' : sections,
-        'Files' : files, 
+        'Files' : files,
         'Provider' : providers
         })
 
@@ -54,7 +54,7 @@ def evaluate_metric_scraped(actual, predicted, sections, files, providers):
             ),
         3
         )
-    
+
     grouped_provider = combined_data.groupby("Provider")
 
     n_by_prov = grouped_provider.apply(get_num_pdfs)
@@ -179,7 +179,7 @@ def evaluate_metric_quality(scrape_data, levenshtein_threshold):
     """
 
     # Get rid of times when there is no section
-    
+
     scrape_data = list(filter(lambda x: x['Actual text'] != '', scrape_data))
 
     hashes = [s['File'] for s in scrape_data]
@@ -197,7 +197,7 @@ def evaluate_metric_quality(scrape_data, levenshtein_threshold):
 
     # Which sections were found exactly?
     equal = [lev_distance == 0 for lev_distance in lev_distances]
-    
+
     # Which sections were found roughly the same?
     quite_equal = [
         lev_distance<levenshtein_threshold  for lev_distance in lev_distances
@@ -240,7 +240,7 @@ def evaluate_metric_quality(scrape_data, levenshtein_threshold):
                 levenshtein_threshold, section_name
                 )
             ] = lenient_acc_section
-    
+
     return {k:round(v,3) for k,v in metrics.items()}, lev_distances_hash
 
 def scrape_process_pdf(
@@ -314,4 +314,3 @@ def evaluate_find_section(
         df.to_csv("./algo_evaluation/results/scrape_data.csv")
 
     return eval_scores_find
-

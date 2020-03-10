@@ -7,7 +7,7 @@ import tempfile
 import json
 
 from .s3 import S3
-from reach.refparse.settings import settings
+from refparse.settings import settings
 
 
 class FileManager():

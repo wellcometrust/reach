@@ -2,7 +2,7 @@ import os.path
 import unittest
 import pickle
 
-from reach.refparse.utils import \
+from refparse.utils import \
     predict_components, merge_components, split_reference
 
 MODELS_DIR = os.path.join(os.path.dirname(__file__), '..', 'reference_parser_models')

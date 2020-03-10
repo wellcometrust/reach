@@ -1,5 +1,5 @@
 import boto3
-from reach.refparse.settings import settings
+from refparse.settings import settings
 from botocore.exceptions import ClientError
 
 

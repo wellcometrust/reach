@@ -1,6 +1,6 @@
 
 from deep_reference_parser.split_section import SplitSection
-from reach.refparse.refparse import SectionedDocument
+from refparse.refparse import SectionedDocument
 
 import pytest
 

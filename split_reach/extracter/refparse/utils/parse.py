@@ -1,7 +1,7 @@
 import datetime
 import re
 
-from reach.refparse.settings import settings
+from refparse.settings import settings
 
 
 VALID_YEARS = (1800, datetime.date.today().year + 1)
@@ -41,7 +41,7 @@ def merge_components(reference_components):
         if next_comp['Predicted Category'] != comp['Predicted Category']:
             group_index += 1
     reference_components[-1]['Group'] = group_index
-    
+
     structured_reference = {}
     categories =  settings.REF_CLASSES
     for category in categories:
@@ -63,7 +63,7 @@ def merge_components(reference_components):
             merged_component = ", ".join([
                 comp['Reference component'] for comp in group_components
             ])
-            
+
         structured_reference.update({category: merged_component})
 
     return structured_reference
@@ -92,7 +92,7 @@ def predict_components(model, reference_components):
     component_predictions_probs = [
         p.max() for p in model.predict_proba(reference_components)
     ]
-    
+
     predicted_components = []
     for i, component in enumerate(reference_components):
         if is_year(component):
@@ -120,5 +120,5 @@ def structure_reference(model, reference):
     )
 
     structured_reference = merge_components(predicted_components)
-    
+
     return structured_reference

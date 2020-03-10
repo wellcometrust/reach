@@ -1,7 +1,7 @@
 import pandas as pd
 import pytest
 from pandas.util.testing import assert_frame_equal
-from reach.refparse.utils import FuzzyMatcher
+from refparse.utils import FuzzyMatcher
 
 
 @pytest.fixture

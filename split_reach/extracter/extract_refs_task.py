@@ -6,13 +6,15 @@ import logging
 import tempfile
 import json
 import gzip
+import argparse
+import os
 
 from hooks.s3hook import S3Hook
 from hooks.sentry import report_exception
 from safe_import import safe_import
 
 
-logging.baseConfig()
+logging.basicConfig()
 logger = logging.getLogger(__name__)
 
 
@@ -28,15 +30,13 @@ class ExtractRefsOperator(object):
         parsed_s3_key: S3 URL for parsed references
     """
 
-    def __init__(self, src_s3_key, split_s3_key, parsed_s3_key,
-                 aws_conn_id='aws_default'):
+    def __init__(self, src_s3_key, split_s3_key, parsed_s3_key):
         self.src_s3_key = src_s3_key
         self.split_s3_key = split_s3_key
         self.parsed_s3_key = parsed_s3_key
-        self.aws_conn_id = aws_conn_id
 
     @report_exception
-    def execute(self, context):
+    def execute(self):
         with safe_import():
             from refparse.refparse import yield_structured_references
 
@@ -63,14 +63,47 @@ class ExtractRefsOperator(object):
             split_rawf.flush()
             parsed_rawf.flush()
 
-            s3.client.load_file(
-                filename=split_rawf.name,
-                key=self.split_s3_key,
+            s3.load_file(
+                split_rawf.name,
+                self.split_s3_key,
                 replace=True,
             )
 
-            s3.client.load_file(
-                filename=parsed_rawf.name,
-                key=self.parsed_s3_key,
+            s3.load_file(
+                parsed_rawf.name,
+                self.parsed_s3_key,
                 replace=True,
             )
+
+
+if __name__ == '__main__':
+    arg_parser = argparse.ArgumentParser(
+        description='Run a web scraper for a given organisation and writes the'
+                    ' results to the given S3 path.'
+    )
+    arg_parser.add_argument(
+        'src_s3_dir',
+        help='The source path to s3.'
+    )
+    arg_parser.add_argument(
+        'dst_s3_key',
+        help='The destination path to s3.'
+    )
+    arg_parser.add_argument(
+        'dst_split_s3_key',
+        help='The destination path to s3 for split refs.'
+    )
+
+    args = arg_parser.parse_args()
+
+    normalized_key = os.path.join(
+        args.src_s3_dir,
+        'policy_docs_normalized.json.gz',
+    )
+
+    extracter = ExtractRefsOperator(
+        normalized_key,
+        args.dst_s3_key,
+        args.dst_split_s3_key
+    )
+    extracter.execute()

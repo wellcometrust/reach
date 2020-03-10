@@ -1,5 +1,5 @@
 import os
-from reach.refparse.settings import BaseSettings
+from refparse.settings import BaseSettings
 
 class TestSettings(BaseSettings):
 

@@ -4,7 +4,7 @@ import editdistance
 import numpy as np
 import pandas as pd
 
-from reach.refparse.utils.parse import structure_reference
+from refparse.utils.parse import structure_reference
 
 def calc_lev_distance(s1, s2):
 
