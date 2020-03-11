@@ -75,8 +75,8 @@ run-extracter: extracter-image
 		-e SENTRY_DSN="${SENTRY_DSN}" \
 	    uk.ac.wellcome/reach/extracter \
 		${PARSER_DST} \
-		s3://datalabs-dev/extracter/split-container/msf/ \
-		s3://datalabs-dev/extracter-split/split-container/msf/ \
+		s3://datalabs-dev/extracter/split-container/msf/extracted-refs-${ORG}.json.gz \
+		s3://datalabs-dev/extracter-split/split-container/msf/split-refs-${ORG}.json.gz \
 
 
 .PHONY: docker-run
