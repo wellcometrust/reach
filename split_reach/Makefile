@@ -40,6 +40,13 @@ extracter-image:
 		-f extracter/Dockerfile \
 		./extracter
 
+.PHONY: indexer-image
+indexer-image:
+	docker build \
+		-t uk.ac.wellcome/reach/indexer \
+		-f es_indexer/Dockerfile \
+		./es_indexer
+
 .PHONY: docker-build
 docker-build: base-image scraper-image parser-image
 
@@ -77,6 +84,18 @@ run-extracter: extracter-image
 		${PARSER_DST} \
 		s3://datalabs-dev/extracter/split-container/msf/extracted-refs-${ORG}.json.gz \
 		s3://datalabs-dev/extracter-split/split-container/msf/split-refs-${ORG}.json.gz \
+
+.PHONY: run-indexer-fulltexts
+run-indexer-fulltexts: indexer-image
+	docker run \
+	    -e AWS_ACCESS_KEY_ID="${AWS_ACCESS_KEY_ID}" \
+		-e AWS_SECRET_ACCESS_KEY="${AWS_SECRET_ACCESS_KEY}" \
+		-e SENTRY_DSN="${SENTRY_DSN}" \
+		-e ES_HOST=localhost
+		${PARSER_DST} \
+		${ORG} \
+		fulltexts
+		s3://datalabs-dev/indexer/split-container/msf/extracted-refs-${ORG}.json.gz \
 
 
 .PHONY: docker-run

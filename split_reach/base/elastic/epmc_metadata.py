@@ -28,7 +28,7 @@ def clean_es(es, es_index):
     common.recreate_index(es, es_index)
 
 
-def insert_file(f, es, es_index, max_items=None):
+def insert_file(f, es, es_index, organisation, max_items=None):
     """
     Inserts EPMC metadata from a json.gz file into Elasticsearch.
 

@@ -71,7 +71,7 @@ def clean_es(es, es_index, org):
     common.recreate_index(es, es_index, mapping_body)
 
 
-def insert_file(f, es, org, es_index, max_items=None):
+def insert_file(f, es, es_index, org, max_items=None):
     """
     Inserts the policy documents' fulltexts from a json.gz file
     into Elasticsearch.
