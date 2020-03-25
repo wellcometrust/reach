@@ -7,24 +7,13 @@ import logging
 import argparse
 
 from hooks.sentry import report_exception
-from hooks.s3hook import S3Hook
+from hooks.s3hook import S3Hook, ORGS
 
 from normalizer.title_normalizer import PolicyNameNormalizerOperator
 from pdf_parser import main as pdf_parser_main
 
 logging.basicConfig()
 logger = logging.getLogger(__name__)
-
-
-ORGS = [
-    'who_iris',
-    'nice',
-    'gov_uk',
-    'msf',
-    'unicef',
-    'parliament',
-    'acme',
-]
 
 
 class ParsePdfOperator:

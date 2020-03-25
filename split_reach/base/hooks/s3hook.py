@@ -11,6 +11,17 @@ from urllib.parse import urlparse
 from botocore.exceptions import ClientError
 
 
+ORGS = [
+    'who_iris',
+    'nice',
+    'gov_uk',
+    'msf',
+    'unicef',
+    'parliament',
+    'acme',
+]
+
+
 def get_file_hash(file_path):
     """ Return both possible IDs for a given document
     in the form (<pdf DocumentId>, <file hash>)
