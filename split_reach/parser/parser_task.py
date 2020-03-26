@@ -7,8 +7,7 @@ import logging
 import argparse
 
 from hooks.sentry import report_exception
-from hooks.s3hook import S3Hook, ORGS
-
+from hooks import s3hook
 from normalizer.title_normalizer import PolicyNameNormalizerOperator
 from pdf_parser import main as pdf_parser_main
 
@@ -29,7 +28,7 @@ class ParsePdfOperator:
         self.src_s3_dir = src_s3_dir
         self.dst_s3_key = dst_s3_key
 
-        self.client = S3Hook()
+        self.client = s3hook.S3Hook()
 
     @report_exception
     def execute(self):
@@ -64,17 +63,16 @@ if __name__ == '__main__':
     )
     arg_parser.add_argument(
         'organisation',
-        choices=ORGS,
+        choices=s3hook.ORGS,
         help='The organisation to scrape.'
     )
 
     args = arg_parser.parse_args()
 
     # Create an intermediate folder in s3 for raw parser output
-    parser_dst_key = os.path.join(
-        args.dst_s3_key,
-        'parsed',
-        f"{args.organisation}_raw.json.gz"
+    parser_dst_key = args.dst_s3_key.replace(
+        "_normalized",
+        "_raw",
     )
 
     parser = ParsePdfOperator(

@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 """
 Operator to run to index files from a given S3 location to a running
 Elasticsearch instance.
@@ -5,12 +6,14 @@ Elasticsearch instance.
 import os
 import tempfile
 import argparse
+import logging
 
-from hooks.s3hook import S3Hook, ORGS
+from hooks import s3hook
 from elastic import fulltext_docs, epmc_metadata, fuzzy_matched_citations
 
 import elastic.common
 
+logging.basicConfig()
 
 INDEX_METHODS = {
     'epmc': epmc_metadata,
@@ -44,10 +47,11 @@ class ESIndex(object):
         self.organisation = organisation
         self.max_items = max_items
         self.es_index = es_index
+        self.log = logging.getLogger(__name__)
 
     def execute(self, index_method):
         es = elastic.common.connect(self.es_hosts)
-        s3 = S3Hook()
+        s3 = s3hook.S3Hook()
 
         # TODO: implement skipping mechanism
         index_method.clean_es(es, self.es_index, self.organisation)
@@ -65,7 +69,7 @@ class ESIndex(object):
                 self.src_s3_key,
             )
 
-        s3_object = s3.get_key(self.src_s3_key)
+        s3_object = s3.get_s3_object(self.src_s3_key)
         with tempfile.NamedTemporaryFile() as tf:
             s3_object.download_fileobj(tf)
             tf.seek(0)
@@ -83,6 +87,7 @@ if __name__ == '__main__':
     es_host = os.environ['ES_HOST']
     es_port = os.environ.get('ES_PORT', 9200)
 
+    es_hosts = [(es_host, es_port)]
     arg_parser = argparse.ArgumentParser(
         description='Run a web scraper for a given organisation and writes the'
                     ' results to the given S3 path.'
@@ -93,7 +98,7 @@ if __name__ == '__main__':
     )
     arg_parser.add_argument(
         'organisation',
-        choices=ORGS,
+        choices=s3hook.ORGS,
         default=None,
         help='The organisation to scrape.'
     )
@@ -102,8 +107,8 @@ if __name__ == '__main__':
         choices=INDEX_METHODS.keys(),
         help='The type of data to index.'
     )
-    arg_parser.add_parameter(
-        'max_items',
+    arg_parser.add_argument(
+        '--max_items',
         default=None,
         help="The maximum number of items to index."
     )
@@ -117,11 +122,11 @@ if __name__ == '__main__':
 
     indexer = ESIndex(
         args.src_s3_key,
-        es_host,
+        es_hosts,
         args.organisation,
         es_port,
         es_index_name,
         args.max_items,
     )
 
-    indexer.execute()
+    indexer.execute(INDEX_METHODS[args.index_method])

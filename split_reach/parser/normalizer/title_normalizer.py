@@ -73,10 +73,7 @@ class PolicyNameNormalizerOperator(object):
         # XXX: This is currently a dummy placeholder, it's output is the
         # same as it's input until this operator is wired up.
         self.src_s3_key = src_s3_key
-        self.dst_s3_key = os.path.join(
-            dst_s3_key,
-            'policy_docs_normalized.json.gz',
-        )
+        self.dst_s3_key = dst_s3_key
 
     @report_exception
     def normalize(self):

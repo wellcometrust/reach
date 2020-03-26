@@ -11,8 +11,6 @@ import elasticsearch
 import elasticsearch.helpers
 from elasticsearch.exceptions import NotFoundError, TransportError
 
-import reach.logging
-
 MAX_RETRIES = 10
 MAX_CHUNKS_PER_POOL = 50
 
@@ -20,6 +18,7 @@ WORKER_COUNT = 6
 QUEUE_SIZE = 6
 
 # ES logs excessively by default. Don't let it do that.
+logging.basicConfig()
 es_logger = logging.getLogger('elasticsearch')
 es_logger.setLevel(logging.WARNING)
 
@@ -240,7 +239,6 @@ def create_argument_parser(description):
 
 def connect(hosts):
     hosts_dict = [{'host': host, 'port': port} for host, port in hosts]
-    es_logger.info(hosts_dict)
     return elasticsearch.Elasticsearch(
         hosts_dict,
         timeout=60,
@@ -263,8 +261,6 @@ def insert_from_argv(description, clean_es, insert_file):
                         type=int,
                         help='Number of record to insert. Default: all.')
     args = parser.parse_args()
-
-    reach.logging.basicConfig()
 
     es = es_from_args(args)
 
