@@ -11,7 +11,7 @@ import argparse
 
 import elastic.common
 from hooks import s3hook
-from sentry import report_exception
+from hooks.sentry import report_exception
 
 
 logger = logging.getLogger(__name__)
@@ -19,7 +19,7 @@ logger = logging.getLogger(__name__)
 
 def yield_structured_references(s3, structured_references_path):
     with tempfile.TemporaryFile(mode='rb+') as tf:
-        key = s3.get_key(structured_references_path)
+        key = s3.get_s3_object(structured_references_path)
         key.download_fileobj(tf)
         tf.seek(0)
         with gzip.GzipFile(mode='rb', fileobj=tf) as f:
@@ -48,6 +48,9 @@ class ElasticsearchFuzzyMatcher:
         self.organisation = organisation
 
     def match(self, reference):
+        if not reference.get('Title'):
+            return
+
         title = reference['Title']
         title_len = len(title)
 
@@ -209,9 +212,8 @@ class FuzzyMatchRefsOperator(object):
 
             output_raw_f.flush()
             s3.load_file(
-                filename=output_raw_f.name,
-                key=self.dst_s3_key,
-                replace=True,
+                output_raw_f.name,
+                self.dst_s3_key,
             )
             logger.info(
                 'FuzzyMatchRefsOperator: references=%d matches=%d',
@@ -220,7 +222,7 @@ class FuzzyMatchRefsOperator(object):
 
             logger.info(
                     'FuzzyMatchRefsOperator: Matches saved to %s',
-                    s3.get_key(self.dst_s3_key)
+                    s3.get_s3_object(self.dst_s3_key)
                 )
 
 
@@ -252,7 +254,7 @@ if __name__ == '__main__':
         help='The index where EPMC data is stored.'
     )
     arg_parser.add_argument(
-        '--scrore_threshold',
+        '--score_threshold',
         default=None,
         help="The maximum number of items to index."
     )
@@ -263,11 +265,6 @@ if __name__ == '__main__':
     )
 
     args = arg_parser.parse_args()
-
-    normalized_key = os.path.join(
-        args.src_s3_dir,
-        'policy_docs_normalized.json.gz',
-    )
 
     fuzzy_matcher = FuzzyMatchRefsOperator(
         es_hosts,
