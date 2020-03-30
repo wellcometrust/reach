@@ -23,7 +23,7 @@ def to_es_action(es_index, line):
     }
 
 
-def clean_es(es, es_index):
+def clean_es(es, es_index, organisation):
     """ Ensure an empty index exists. """
     common.recreate_index(es, es_index)
 
