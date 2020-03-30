@@ -125,11 +125,11 @@ run-indexer-epmc: indexer-image
 		uk.ac.wellcome/reach/indexer \
 		${EPMC_METADATA_KEY} \
 		${ORG} \
-		epmc
-		--max-items=10000
+		epmc \
+		--max_items=20
 
 .PHONY: run-fuzzymatcher
-run-fuzzymatcher: indexer-image
+run-fuzzymatcher: fuzzymatcher-image
 	docker run \
 	    -e AWS_ACCESS_KEY_ID="${AWS_ACCESS_KEY_ID}" \
 		-e AWS_SECRET_ACCESS_KEY="${AWS_SECRET_ACCESS_KEY}" \

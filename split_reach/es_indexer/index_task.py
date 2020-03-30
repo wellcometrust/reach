@@ -110,6 +110,7 @@ if __name__ == '__main__':
     arg_parser.add_argument(
         '--max_items',
         default=None,
+        type=int,
         help="The maximum number of items to index."
     )
 
