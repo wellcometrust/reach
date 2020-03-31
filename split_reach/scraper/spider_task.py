@@ -46,8 +46,8 @@ class SpiderOperator:
     """
 
     def __init__(self, organisation, dst_s3_dir,
-                 item_years, item_max, *args, **kwargs):
-        super().__init__(*args, **kwargs)
+                 item_years, item_max):
+
         self.organisation = organisation
         self.dst_s3_dir = dst_s3_dir
 

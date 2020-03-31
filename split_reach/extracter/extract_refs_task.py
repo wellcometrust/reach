@@ -82,7 +82,7 @@ if __name__ == '__main__':
                     ' results to the given S3 path.'
     )
     arg_parser.add_argument(
-        'src_s3_dir',
+        'src_s3_key',
         help='The source path to s3.'
     )
     arg_parser.add_argument(
@@ -96,13 +96,8 @@ if __name__ == '__main__':
 
     args = arg_parser.parse_args()
 
-    normalized_key = os.path.join(
-        args.src_s3_dir,
-        'policy_docs_normalized.json.gz',
-    )
-
     extracter = ExtractRefsOperator(
-        normalized_key,
+        args.src_s3_key,
         args.dst_s3_key,
         args.dst_split_s3_key
     )

@@ -68,7 +68,7 @@ docker-build: base-image scraper-image parser-image
 
 
 .PHONY: run-scraper
-run-scraper: docker-build
+run-scraper: scraper-image
 	docker run \
 	    -e AWS_ACCESS_KEY_ID="${AWS_ACCESS_KEY_ID}" \
 		-e AWS_SECRET_ACCESS_KEY="${AWS_SECRET_ACCESS_KEY}" \
@@ -79,7 +79,7 @@ run-scraper: docker-build
 
 
 .PHONY: run-parser
-run-parser: docker-build
+run-parser: parser-image
 	docker run \
 	    -e AWS_ACCESS_KEY_ID="${AWS_ACCESS_KEY_ID}" \
 		-e AWS_SECRET_ACCESS_KEY="${AWS_SECRET_ACCESS_KEY}" \
@@ -126,7 +126,7 @@ run-indexer-epmc: indexer-image
 		${EPMC_METADATA_KEY} \
 		${ORG} \
 		epmc \
-		--max_items=20
+		--max_items=10000
 
 .PHONY: run-fuzzymatcher
 run-fuzzymatcher: fuzzymatcher-image

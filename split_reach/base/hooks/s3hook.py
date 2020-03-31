@@ -151,6 +151,9 @@ class S3Hook(object):
             return json.loads(response['Body'].read())
 
         except ClientError as e:
+            # If no manifest is found, just sends an empty dict to fill
+            if e.response['Error']['Code'] == 'NoSuchKey':
+                return {}
             raise e
 
     def update_manifest(self, data_file, dst_key, organisation=""):
