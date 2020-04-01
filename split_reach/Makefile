@@ -143,8 +143,38 @@ run-fuzzymatcher: fuzzymatcher-image
 		fulltexts
 
 
+.PHONY: run-indexer-citations
+run-indexer-fulltexts: indexer-image
+	docker run \
+	    -e AWS_ACCESS_KEY_ID="${AWS_ACCESS_KEY_ID}" \
+		-e AWS_SECRET_ACCESS_KEY="${AWS_SECRET_ACCESS_KEY}" \
+		-e SENTRY_DSN="${SENTRY_DSN}" \
+		-e ES_HOST=${DOCKER_LOCALHOST} \
+		--network=host \
+		uk.ac.wellcome/reach/indexer \
+		${FUZZYMATCHER_DST} \
+		${ORG} \
+		citations
+
+
 .PHONY: docker-run
-docker-run: docker-build run-scraper run-parser
+docker-run: docker-build run-scraper run-parser run-extracter run-indexer-epmc run-indexer-citations
+
+
+
+# Testing
+.PHONY: tests-image
+tests-image: base-image
+	docker build \
+		-t uk.ac.wellcome/reach/testing \
+		-f Dockerfile.tests \
+		.
+
+.PHONY: docker-test
+docker-test: tests-image
+	docker run -u root -v $$(pwd)/requirements.tests.txt:/requirements.tests.txt \
+		--rm $(ECR_IMAGE):$(VERSION) \
+		sh -c "pip3 install -r /requirements.tests.txt && pytest /opt/reach"
 
 .PHONY: all
 all: docker-build

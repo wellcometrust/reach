@@ -1,6 +1,17 @@
+pytest
+
+# Extracter requirements
 editdistance
 numpy
 pandas
 scikit-learn
 sentry-sdk
 https://datalabs-public.s3.eu-west-2.amazonaws.com/deep_reference_parser/deep_reference_parser-2019.12.1-py3-none-any.whl
+
+# Parser requirements
+attrs
+lxml
+pyahocorasick
+
+# Scraper requirements
+scrapy
