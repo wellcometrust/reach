@@ -146,7 +146,7 @@ text-unidecode==1.2
 thinc==7.0.8
 thrift==0.13.0
 tqdm==4.42.1
-Twisted==19.10.0
+Twisted>=20.3.0
 typing==3.7.4.1
 typing-extensions==3.7.4.1
 tzlocal==1.5.1
