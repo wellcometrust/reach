@@ -10,6 +10,9 @@ build/*
 !package.json
 *.pdf
 *.txt
+!keywords.txt
+!section_keywords.txt
+!**/requirements.*
 *.png
 !Image_Product-shot.png
 !package.json

@@ -30,6 +30,7 @@ LOG_LEVEL = 'INFO'
 LOG_FORMATTER = 'wsf_scraping.middlewares.PoliteLogFormatter'
 
 # Set pdfminer log to WARNING
+logging.basicConfig()
 logging.getLogger("pdfminer").setLevel(logging.WARNING)
 
 DUPEFILTER_CLASS = 'scrapy.dupefilters.RFPDupeFilter'
