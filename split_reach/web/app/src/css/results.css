@@ -1,0 +1,94 @@
+@import "variables.css";
+
+.table-light {
+    table-layout: fixed;
+	border: 1px solid $greyLight;
+	tr {
+		background: white;
+	}
+
+	td, th {
+		border-top: 1px solid $greyLight;
+		border-bottom: 1px solid $greyLight;
+	}
+}
+.pagination .page-item#active-page {
+	background-color: $cyanPrimary;
+	color: white;
+}
+
+.pagination {
+	.page-item, .disabled-page-item {
+		cursor: pointer;
+		padding: 0 .3125rem;
+		color: $cyanPrimary;
+		display: inline-block;
+		margin: 0.2rem 0.05rem;
+	}
+
+	.disabled-page-item {
+		color: $cyanLight;
+	}
+}
+
+.pagination {
+	float: right;
+
+	li a {
+		padding: 0.3rem;
+		text-decoration: none;
+	}
+
+	li.active a {
+		background-color: $cyanPrimary;
+		color: white;
+	}
+}
+
+th {
+  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+  font-size: 0.75rem;
+  font-weight: bold;
+  font-stretch: normal;
+  font-style: normal;
+  text-transform: uppercase;
+  line-height: 1.5;
+  letter-spacing: 0.5px;
+  color: $greyLink;
+
+}
+
+.accordion-arrow {
+	color: $cyanPrimary;
+	font-weight: bold;
+	width: 5%;
+	text-align: center;
+}
+
+.active-row td {
+	background-color: $backgroundTint2;
+}
+
+.accordion-subtable {
+    table-layout: fixed;
+
+	tr td {
+		border: none;
+		background-color: $backgroundTint1;
+	}
+
+	tr th{
+		border: none;
+		background-color: $backgroundTint1;
+	}
+}
+
+.table tr .accordion-subtable-container {
+	background-color: $backgroundTint1;
+	padding: 0;
+	padding-left: 5%;
+}
+
+#citations-results-tbody .hidden {
+	display: none;
+}

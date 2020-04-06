@@ -1,0 +1,5 @@
+elasticsearch
+falcon
+gunicorn
+jinja2
+sentry-sdk
