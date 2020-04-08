@@ -87,31 +87,109 @@
             <div class="fs"></div>
             <div class="results">
                 <div class="container">
-                    <div class="columns">
-                        <div class="column col-6 col-md-12">
-                            <div class="page-counter">
-                                {#- Updated dynamically in JS #}
+                    <div class="results-pages">
+                        <div class="columns">
+                            <div class="column col-6 col-md-12">
+                                <div class="page-counter">
+                                    {#- Updated dynamically in JS #}
+                                </div>
                             </div>
-                        </div>
-                        <div class="column col-6 col-md-12">
-                            <div class="pagination-box float-right" id="pagination-box">
-                                {#- Updated dynamically in JS #}
+                            <div class="column col-6 col-md-12">
+                                <div class="pagination-box float-right" id="pagination-box">
+                                    {#- Updated dynamically in JS #}
+                                </div>
                             </div>
                         </div>
                     </div>
 
-                    <table class="table table-light table-hover"  id="citations-result-table">
+                    <table class="table table-light table-striped table-hover"  id="citations-result-table">
+                        <colgroup>
+                            <col class="colgroup-accordion-col">
+                            <col class="colgroup-large-col">
+                            <col class="colgroup-medium-col">
+                            <col class="colgroup-medium-col">
+                            <col class="colgroup-small-col">
+                            <col class="colgroup-small-col">
+                        </colgroup>
                         <thead>
                             <tr>
-                                <th width="5%""></th>
-                                <th width="45%" class="sort" data-sort="match_title.keyword" data-order="asc" id="active-sort"><span class="icn icn-research-paper"></span> Research publication <span class="icn icn-sort"></th>
-                                <th width="10%" class="sort" data-sort="match_publication">Journal <span class="icn icn-sort"></span></th>
-                                <th width="20%" >Author(s)</span></th>
-                                <th width="10%" class="sort" data-sort="match_pub_year">Publication Year <span class="icn icn-sort"></span></th>
-                                <th width="10%" class="sort" data-sort="associated_policies_count">Citations in policy docs  <span class="icn icn-sort"></span></th>
+                                <th></th>
+                                <th class="sort" data-sort="match_title.keyword" data-order="asc" id="active-sort"><span class="icn icn-research-paper"></span> Research publication <span class="icn icn-sort"></th>
+                                <th class="sort" data-sort="match_publication">Journal <span class="icn icn-sort"></span></th>
+                                <th>Author(s)</th>
+                                <th class="sort" data-sort="match_pub_year">Publication Year <span class="icn icn-sort"></span></th>
+                                <th class="sort" data-sort="associated_policies_count">Citations in policy docs  <span class="icn icn-sort"></span></th>
                             </tr>
                         </thead>
                         <tbody id="citations-results-tbody">
+
+
+<!--
+                            <tr class="accordion-row active-row" id="accordion-row-${item._source.doc.reference_id}">
+                            <td class="accordion-arrow"><i class="icon icon-arrow-down mr-1"></i></td>
+                            <td title="${match_title}">Foo</td>
+                            <td>Bar</td>
+                            <td class="authors-cell" title="${authors}">
+                                Foo, Bar, Baz
+                            </td>
+                            <td>2020</td>
+                            <td>1</td>
+                            </tr>
+
+                            <tr class="accordion-body" id="accordion-body-${item._source.doc.reference_id}">
+                                        <td colspan=6 class="accordion-subtable-container">
+                                        <table class="table accordion-subtable">
+                                            <colgroup>
+                                                <col class="colgroup-xl-col">
+                                                <col class="colgroup-medium-col">
+                                                <col>
+                                            </colgroup>
+                                            <tr>
+                                                <th>Cited in the following Policy Document(s)</th>
+                                                <th>Policy Organisation</th>
+                                                <th></th>
+                                            </tr>
+
+                                <tr>
+                                <td title="${policy_title}"><a
+                                   href="${policy.source_url}"
+                                   target="_blank"
+                                   rel="noreferrer noopener"
+                                >Foo</a></td>
+                                <td>Bar</td>
+                                <td>2020</td>
+                            </table></td>
+                            </tr>
+                            <tr class="accordion-row" id="accordion-row-${item._source.doc.reference_id}">
+                            <td class="accordion-arrow"><i class="icon icon-arrow-down mr-1"></i></td>
+                            <td title="${match_title}">Foo</td>
+                            <td>Bar</td>
+                            <td class="authors-cell" title="${authors}">
+                                Foo, Bar, Baz
+                            </td>
+                            <td>2020</td>
+                            <td>1</td>
+                            </tr>
+                            <tr class="accordion-row" id="accordion-row-${item._source.doc.reference_id}">
+                            <td class="accordion-arrow"><i class="icon icon-arrow-down mr-1"></i></td>
+                            <td title="${match_title}">Foo</td>
+                            <td>Bar</td>
+                            <td class="authors-cell" title="${authors}">
+                                Foo, Bar, Baz
+                            </td>
+                            <td>2020</td>
+                            <td>1</td>
+                            </tr>
+                            <tr class="accordion-row" id="accordion-row-${item._source.doc.reference_id}">
+                            <td class="accordion-arrow"><i class="icon icon-arrow-down mr-1"></i></td>
+                            <td title="${match_title}">Foo</td>
+                            <td>Bar</td>
+                            <td class="authors-cell" title="${authors}">
+                                Foo, Bar, Baz
+                            </td>
+                            <td>2020</td>
+                            <td>1</td>
+                            </tr> -->
                         </tbody>
                     </table>
                     <div class="columns">

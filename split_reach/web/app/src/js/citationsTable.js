@@ -36,10 +36,15 @@ function getCitationsTableContent(data) {
         rows += `<tr class="accordion-body hidden" id="accordion-body-${item._source.doc.reference_id}">
                     <td colspan=6 class="accordion-subtable-container">
                     <table class="table accordion-subtable">
+                        <colgroup>
+                            <col class="colgroup-xl-col">
+                            <col class="colgroup-medium-col">
+                            <col>
+                        </colgroup>
                         <tr>
-                            <th width="45%">Policy Document</th>
-                            <th width="30%">Policy Organisation</th>
-                            <th width="20%">Publication Year</th>
+                            <th>Policy Document</th>
+                            <th>Policy Organisation</th>
+                            <th>Publication Year</th>
                         </tr>
         `;
         for (let policy of item._source.doc.policies) {
