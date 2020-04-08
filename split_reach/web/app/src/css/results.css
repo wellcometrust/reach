@@ -11,38 +11,88 @@
 		border-top: 1px solid $greyLight;
 		border-bottom: 1px solid $greyLight;
 	}
+
+    tr:hover {
+        td {
+            background-color: $cyanFocused;
+        }
+    }
+
+    .accordion-arrow {
+    	color: $cyanPrimary;
+    	font-weight: bold;
+    	width: 3.5rem;
+    	text-align: center;
+    }
+
+    .active-row td {
+    	background-color: $cyanFocused;
+    }
+
+    .accordion-subtable {
+        table-layout: fixed;
+
+    	tr td {
+    		border: none;
+    		background-color: $backgroundTint1;
+    	}
+
+    	tr th{
+    		border: none;
+    		background-color: $backgroundTint1;
+    	}
+    }
 }
-.pagination .page-item#active-page {
-	background-color: $cyanPrimary;
-	color: white;
+.pages .page-item#active-page {
+	color: $cyanPrimary;
+    text-decoration: underline;
 }
 
-.pagination {
-	.page-item, .disabled-page-item {
-		cursor: pointer;
-		padding: 0 .3125rem;
-		color: $cyanPrimary;
-		display: inline-block;
-		margin: 0.2rem 0.05rem;
-	}
+.pages {
 
-	.disabled-page-item {
-		color: $cyanLight;
-	}
-}
-
-.pagination {
-	float: right;
+    font-size: $smallFontSize;
+    margin: 0;
+    padding: 0;
 
 	li a {
 		padding: 0.3rem;
 		text-decoration: none;
 	}
 
-	li.active a {
-		background-color: $cyanPrimary;
-		color: white;
+	.page-item, .disabled-page-item {
+		cursor: pointer;
+		padding: 0 .3125rem;
+		color: $cyanPrimary;
+		display: inline-block;
 	}
+
+    button {
+        border: 1px solid #ccc;
+        border-radius: 2px;
+        background-color: white;
+        color: $cyanPrimary;
+        font-size: $baseFontSize;
+        font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+        height: 2.75rem;
+        padding: 0 .75rem;
+        text-align: center;
+        font-weight: normal;
+        font-stretch: normal;
+        font-style: normal;
+        line-height: 2.75rem;
+        letter-spacing: normal;
+    }
+
+
+	.disabled-page-item button{
+		color: $greyLight !important;
+	}
+}
+
+.page-counter {
+    font-size: .875rem;
+    margin-left: 3.5rem;
+    padding: 0 .4rem;
 }
 
 th {
@@ -58,37 +108,41 @@ th {
 
 }
 
-.accordion-arrow {
-	color: $cyanPrimary;
-	font-weight: bold;
-	width: 5%;
-	text-align: center;
-}
-
-.active-row td {
-	background-color: $backgroundTint2;
-}
-
-.accordion-subtable {
-    table-layout: fixed;
-
-	tr td {
-		border: none;
-		background-color: $backgroundTint1;
-	}
-
-	tr th{
-		border: none;
-		background-color: $backgroundTint1;
-	}
-}
-
 .table tr .accordion-subtable-container {
 	background-color: $backgroundTint1;
 	padding: 0;
-	padding-left: 5%;
+	padding-left: 3.5rem;
 }
 
 #citations-results-tbody .hidden {
 	display: none;
+}
+
+.results-filters, .results-pages {
+    background-color: white;
+    border: 1px solid $greyLight;
+}
+
+.results-pages {
+    line-height: 4.75rem;
+}
+
+
+.colgroup-accordion-col {
+    width: 3.5rem;
+}
+
+.colgroup-small-col {
+    /* width: 6.875rem; */
+    width: 10%;
+}
+.colgroup-medium-col {
+    /* width: 14.375rem; */
+    width: 20%;
+}
+.colgroup-large-col {
+    width: 40%;
+}
+.colgroup-xl-col {
+    width: 60%;
 }

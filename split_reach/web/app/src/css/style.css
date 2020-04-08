@@ -314,3 +314,7 @@ section#hero .btn.help:hover {
     font-size: $baseFontSize;
     padding: 0 $smallPadding;
 }
+
+ul li {
+    margin-top: 0 !important;
+}
