@@ -26,8 +26,8 @@ services:
         STATIC_ROOT: /opt/reach/build/web/static
         DOCS_STATIC_ROOT: /opt/reach/web/docs/build/html/_static
         ELASTICSEARCH_HOST: "http://elasticsearch:9200"
-        ELASTICSEARCH_POLICYDOCS_INDEX: "policy-test-docs"
-        ELASTICSEARCH_CITATIONS_INDEX: "policy-test-citations"
+        ELASTICSEARCH_POLICYDOCS_INDEX: "reach-fulltexts"
+        ELASTICSEARCH_CITATIONS_INDEX: "reach-citations"
         # DATABASE_URL: "postgres://postgres:postgres@articles-db:5432/wsf_scraping"
 
       command:
