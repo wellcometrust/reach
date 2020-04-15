@@ -42,6 +42,10 @@
     		background-color: $backgroundTint1;
     	}
     }
+
+    tbody tr:nth-of-type(4n-1) {
+        background-color: #f8f8f8;
+    }
 }
 .pages .page-item#active-page {
 	color: $cyanPrimary;
@@ -64,9 +68,10 @@
 		padding: 0 .3125rem;
 		color: $cyanPrimary;
 		display: inline-block;
+        margin: 0 10px;
 	}
 
-    button {
+    #page-previous, #page-next {
         border: 1px solid #ccc;
         border-radius: 2px;
         background-color: white;
@@ -84,7 +89,7 @@
     }
 
 
-	.disabled-page-item button{
+	.disabled-page-item {
 		color: $greyLight !important;
 	}
 }
@@ -102,7 +107,7 @@ th {
   font-stretch: normal;
   font-style: normal;
   text-transform: uppercase;
-  line-height: 1.5;
+  line-height: 1.5rem;
   letter-spacing: 0.5px;
   color: $greyLink;
 
@@ -127,7 +132,6 @@ th {
     line-height: 4.75rem;
 }
 
-
 .colgroup-accordion-col {
     width: 3.5rem;
 }
@@ -145,4 +149,17 @@ th {
 }
 .colgroup-xl-col {
     width: 60%;
+}
+
+.table-header {
+    display: flex;
+    height: 100%;
+    .table-header-text, .table-header-icon {
+        display: inline-block;
+    }
+
+    .table-header-icon {
+        line-height: 1.5rem;
+        padding-top: 0.75rem;
+    }
 }

@@ -92,18 +92,19 @@ function refreshCitations(data, currentState) {
 
     for (let item of pages) {
         item.addEventListener('click', (e) => {
+            e.preventDefault();
             let currentState = getCurrentState();
             let currentPage = document.getElementById('active-page');
             let pages = document.getElementsByClassName('page-item')
             currentState.fields = searchFields;
              let newPage = e.currentTarget;
 
-            if (newPage.innerHTML === 'Prev') {
+            if (newPage.getAttribute('id') == 'page-previous') {
                 currentState.page -= 1;
                 newPage = pages[currentState.page];
             }
 
-            else if (newPage.innerHTML === 'Next') {
+            else if (newPage.getAttribute('id') == 'page-next') {
                 currentState.page += 1;
                 newPage = pages[currentState.page];
             }

@@ -19,10 +19,10 @@ export function getPagination(currentPage, data) {
 
     let pages = ``;
     if (currentPage > 0) {
-        pages += `<li class="page-item" id="page-previous"><button class="btn">&lt Prev</button></li>`;
+        pages += `<li class="page-item btn" id="page-previous">&lt Prev</li>`;
     }
     else {
-        pages += `<li class="disabled-page-item" id="page-previous"><button class="btn">&lt Prev</button></li>`;
+        pages += `<li class="btn disabled-page-item" id="page-previous">&lt Prev</li>`;
     }
 
     const maxPages = parseInt(Math.ceil(data.hits.total.value / SIZE));
@@ -56,10 +56,10 @@ export function getPagination(currentPage, data) {
     }
 
     if (currentPage < maxPages - 1) {
-        pages += `<li class="page-item" id="page-next"><button class="btn">Next &gt</button></li>`;
+        pages += `<li class="page-item btn" id="page-next">Next &gt</li>`;
     }
     else {
-        pages += `<li class="disabled-page-item" id="page-next"><button class="btn">Next &gt</button></li>`;
+        pages += `<li class="disabled-page-item btn" id="page-next">Next &gt</li>`;
     }
     return `<ul class="pages">${pages}</ul>`;
 
@@ -72,7 +72,7 @@ export function getCounter(currentPage, data) {
     let currentMin = SIZE * currentPage + 1;
     let currentMax = Math.min(currentMin + SIZE, data.hits.total.value);
 
-    return `<p>${currentMin} to ${currentMax} of ${data.hits.total.value}</p>`;
+    return `<span>Showing ${currentMin} - ${currentMax} of ${data.hits.total.value} results</span>`;
 }
 
 export function getData(type, body, callback) {
