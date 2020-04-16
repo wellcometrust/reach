@@ -20,12 +20,18 @@ const getPolicyTableContent = (data) => {
 
     let rows = ``;
     for(let item of data.hits.hits) {
+        console.log(item);
         if (!item._source.doc.url) {
             continue;
         }
         let authors = item._source.doc.authors?item._source.doc.authors:"Unknown";
         let title = (item._source.doc.title)? item._source.doc.title.toTitleCase():"Title unavailable";
         rows += `<tr>`;
+        rows += `<td><a
+            href="${item._source.doc.url}"
+            target="_blank"
+            rel="noreferrer noopener"
+        ><span class="icn icn-new-page"></span></td>`;
         rows += `<td title="${title}"><a
             href="${item._source.doc.url}"
             target="_blank"
@@ -36,6 +42,7 @@ const getPolicyTableContent = (data) => {
         rows += `</tr>`;
 
     }
+    console.log("returning rows");
     return rows;
 }
 
@@ -47,6 +54,7 @@ const refreshPolicy = (data, currentState) => {
     const table = document.getElementById('policy-docs-results-tbody');
     const pages = document.getElementsByClassName('page-item');
 
+    console.log("Refreshing table body");
     table.innerHTML = getPolicyTableContent(data);
 
     for (let htmlElement of document.getElementsByClassName('pagination-box'))
