@@ -16,9 +16,9 @@ FUZZYMATCHER_DST := s3://datalabs-dev/fuzzymatcher/split-container/${ORG}/fuzzym
 # This is only available on Mac at the time, linux users need to change it to localhost
 DOCKER_LOCALHOST := host.docker.internal
 
-ECR_ARN := 160358319781.dkr.ecr.eu-west-1.amazonaws.com
-VERSION := latest
-
+ECR_ARN := 160358319781.dkr.ecr.eu-west-1.amazonaws.com/uk.ac.wellcome
+VERSION := build-$(shell date +%Y%m%dT%H%M%SZ)
+LATEST_TAG := latest
 
 # _____________
 # TODO:
@@ -33,43 +33,102 @@ base-image:
 		-f base/Dockerfile \
 		./base
 
+#################
+# Reach Scraper #
+#################
+
 .PHONY: scraper-image
 scraper-image: base-image
 	docker build \
-		-t ${ECR_ARN}/reach/scraper \
+		-t $(ECR_ARN)/reach-scraper:$(VERSION) \
+		-t $(ECR_ARN)/reach-scraper:$(LATEST_TAG) \
 		-f scraper/Dockerfile \
 		./scraper
+
+.PHONY: push-scraper
+push-scraper: scraper-image
+	$$(aws ecr get-login --no-include-email --region eu-west-1) && \
+		docker push $(ECR_ARN)/reach-scraper:$(LATEST_TAG) && \
+		docker push $(ECR_ARN)/reach-scraper:$(VERSION)
+
+################
+# Reach Parser #
+################
 
 .PHONY: parser-image
 parser-image: base-image
 	docker build \
-		-t ${ECR_ARN}/reach/parser \
+		-t $(ECR_ARN)/reach-parser:$(VERSION) \
+		-t $(ECR_ARN)/reach-parser:$(LATEST_TAG) \
 		-f parser/Dockerfile \
 		./parser
 
-.PHONY: extracter-image
-extracter-image: base-image
+.PHONY: push-parser
+push-parser: parser-image
+	$$(aws ecr get-login --no-include-email --region eu-west-1) && \
+		docker push $(ECR_ARN)/reach-parser:$(LATEST_TAG) && \
+		docker push $(ECR_ARN)/reach-parser:$(VERSION)
+
+###################
+# Reach Extractor #
+###################
+
+.PHONY: es-extracter-image
+es-extracter-image: base-image
 	docker build \
-		-t ${ECR_ARN}/reach/extracter \
+		-t $(ECR_ARN)/reach-es-extractor:$(VERSION) \
+		-t $(ECR_ARN)/reach-es-extractor:$(LATEST_TAG) \
 		-f extracter/Dockerfile \
 		./extracter
+
+.PHONY: push-extracter
+push-extracter: es-extracter-image
+	$$(aws ecr get-login --no-include-email --region eu-west-1) && \
+		docker push $(ECR_ARN)/reach-es-extractor:$(LATEST_TAG) && \
+		docker push $(ECR_ARN)/reach-es-extractor:$(VERSION)
+
+#################
+# Reach Indexer #
+#################
 
 .PHONY: indexer-image
 indexer-image: base-image
 	docker build \
-		-t ${ECR_ARN}/reach/indexer \
+		-t $(ECR_ARN)/reach-es-indexer:$(VERSION) \
+		-t $(ECR_ARN)/reach-es-indexer:$(LATEST_TAG) \
 		-f es_indexer/Dockerfile \
 		./es_indexer
+
+.PHONY: push-indexer
+push-indexer: indexer-image
+	$$(aws ecr get-login --no-include-email --region eu-west-1) && \
+		docker push $(ECR_ARN)/reach-es-indexer:$(LATEST_TAG) && \
+		docker push $(ECR_ARN)/reach-es-indexer:$(VERSION)
+
+
+######################
+# Reach FuzzyMatcher #
+######################
 
 .PHONY: fuzzymatcher-image
 fuzzymatcher-image: base-image
 	docker build \
-		-t ${ECR_ARN}/reach/fuzzymatcher \
+		-t $(ECR_ARN)/reach-fuzzymatcher:$(VERSION) \
+		-t $(ECR_ARN)/reach-fuzzymatcher:$(LATEST_TAG) \
 		-f fuzzymatcher/Dockerfile \
 		./fuzzymatcher
 
+.PHONY: push-fuzzymatcher
+push-fuzzymatcher: fuzzymatcher-image
+	$$(aws ecr get-login --no-include-email --region eu-west-1) && \
+		docker push $(ECR_ARN)/reach-fuzzymatcher:$(LATEST_TAG) && \
+		docker push $(ECR_ARN)/reach-fuzzymatcher:$(VERSION)
+
 .PHONY: docker-build
 docker-build: base-image scraper-image parser-image extracter-image indexer-image fuzzymatcher-image
+
+.PHONY: docker-push-all
+docker-push-all: base-image push-fuzzymatcher push-extracter push-indexer push-parser push-scraper
 
 
 .PHONY: run-scraper
@@ -78,7 +137,7 @@ run-scraper: scraper-image
 	    -e AWS_ACCESS_KEY_ID="${AWS_ACCESS_KEY_ID}" \
 		-e AWS_SECRET_ACCESS_KEY="${AWS_SECRET_ACCESS_KEY}" \
 		-e SENTRY_DSN="${SENTRY_DSN}" \
-	    ${ECR_ARN}/reach/scraper \
+	    ${ECR_ARN}/reach-scraper \
 		${SCRAPER_DST} \
 		${ORG}
 
@@ -89,7 +148,7 @@ run-parser: parser-image
 	    -e AWS_ACCESS_KEY_ID="${AWS_ACCESS_KEY_ID}" \
 		-e AWS_SECRET_ACCESS_KEY="${AWS_SECRET_ACCESS_KEY}" \
 		-e SENTRY_DSN="${SENTRY_DSN}" \
-	    ${ECR_ARN}/reach/parser \
+	    ${ECR_ARN}/reach-parser \
 		${SCRAPER_DST} \
 		${PARSER_DST} \
 		${ORG}
@@ -101,7 +160,7 @@ run-extracter: extracter-image
 	    -e AWS_ACCESS_KEY_ID="${AWS_ACCESS_KEY_ID}" \
 		-e AWS_SECRET_ACCESS_KEY="${AWS_SECRET_ACCESS_KEY}" \
 		-e SENTRY_DSN="${SENTRY_DSN}" \
-	    ${ECR_ARN}/reach/extracter \
+	    ${ECR_ARN}/reach-extracter \
 		${PARSER_DST} \
 		${EXTRACTER_PARSED_DST} \
 		${EXTRACTER_SPLIT_DST}
@@ -114,7 +173,7 @@ run-indexer-fulltexts: indexer-image
 		-e SENTRY_DSN="${SENTRY_DSN}" \
 		-e ES_HOST=${DOCKER_LOCALHOST} \
 		--network=host \
-		${ECR_ARN}/reach/indexer \
+		${ECR_ARN}/reach-es-indexer \
 		${PARSER_DST} \
 		${ORG} \
 		fulltexts
@@ -127,7 +186,7 @@ run-indexer-epmc: indexer-image
 		-e SENTRY_DSN="${SENTRY_DSN}" \
 		-e ES_HOST=${DOCKER_LOCALHOST} \
 		--network=host \
-		${ECR_ARN}/reach/indexer \
+		${ECR_ARN}/reach-indexer \
 		${EPMC_METADATA_KEY} \
 		${ORG} \
 		epmc \
@@ -141,7 +200,7 @@ run-fuzzymatcher: fuzzymatcher-image
 		-e SENTRY_DSN="${SENTRY_DSN}" \
 		-e ES_HOST=${DOCKER_LOCALHOST} \
 		--network=host \
-		${ECR_ARN}/reach/fuzzymatcher \
+		${ECR_ARN}/reach-fuzzymatcher \
 		${EXTRACTER_PARSED_DST} \
 		${FUZZYMATCHER_DST} \
 		${ORG} \
@@ -156,7 +215,7 @@ run-indexer-citations: indexer-image
 		-e SENTRY_DSN="${SENTRY_DSN}" \
 		-e ES_HOST=${DOCKER_LOCALHOST} \
 		--network=host \
-		${ECR_ARN}/reach/indexer \
+		${ECR_ARN}/reach-es-indexer \
 		${FUZZYMATCHER_DST} \
 		${ORG} \
 		citations
@@ -193,3 +252,5 @@ web-image:
 
 .PHONY: all
 all: docker-build
+
+

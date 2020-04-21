@@ -7,6 +7,7 @@ import json
 import os
 import argparse
 import datetime
+import sys
 import logging
 
 from scrapy.crawler import CrawlerProcess
@@ -80,7 +81,6 @@ class SpiderOperator:
             ('manifest_storage_error', exception)
         )
 
-    @report_exception
     def execute(self):
         # Initialise settings for a limited scraping
         os.environ.setdefault(
@@ -171,3 +171,5 @@ if __name__ == "__main__":
     )
 
     spider.execute()
+
+    sys.exit(0)
