@@ -16,9 +16,14 @@ FUZZYMATCHER_DST := s3://datalabs-dev/fuzzymatcher/split-container/${ORG}/fuzzym
 # This is only available on Mac at the time, linux users need to change it to localhost
 DOCKER_LOCALHOST := host.docker.internal
 
+ECR_ARN := 160358319781.dkr.ecr.eu-west-1.amazonaws.com
+VERSION := latest
+
+
 # _____________
 # TODO:
 # When we're done with testing the splitter, we should run docker tasks demonized.
+# Also all the pipeline related images are meant to be run in Argo, not just like that.
 # _____________
 
 .PHONY: base-image
@@ -31,40 +36,40 @@ base-image:
 .PHONY: scraper-image
 scraper-image: base-image
 	docker build \
-		-t uk.ac.wellcome/reach/scraper \
+		-t ${ECR_ARN}/reach/scraper \
 		-f scraper/Dockerfile \
 		./scraper
 
 .PHONY: parser-image
 parser-image: base-image
 	docker build \
-		-t uk.ac.wellcome/reach/parser \
+		-t ${ECR_ARN}/reach/parser \
 		-f parser/Dockerfile \
 		./parser
 
 .PHONY: extracter-image
 extracter-image: base-image
 	docker build \
-		-t uk.ac.wellcome/reach/extracter \
+		-t ${ECR_ARN}/reach/extracter \
 		-f extracter/Dockerfile \
 		./extracter
 
 .PHONY: indexer-image
 indexer-image: base-image
 	docker build \
-		-t uk.ac.wellcome/reach/indexer \
+		-t ${ECR_ARN}/reach/indexer \
 		-f es_indexer/Dockerfile \
 		./es_indexer
 
 .PHONY: fuzzymatcher-image
 fuzzymatcher-image: base-image
 	docker build \
-		-t uk.ac.wellcome/reach/fuzzymatcher \
+		-t ${ECR_ARN}/reach/fuzzymatcher \
 		-f fuzzymatcher/Dockerfile \
 		./fuzzymatcher
 
 .PHONY: docker-build
-docker-build: base-image scraper-image parser-image
+docker-build: base-image scraper-image parser-image extracter-image indexer-image fuzzymatcher-image
 
 
 .PHONY: run-scraper
@@ -73,7 +78,7 @@ run-scraper: scraper-image
 	    -e AWS_ACCESS_KEY_ID="${AWS_ACCESS_KEY_ID}" \
 		-e AWS_SECRET_ACCESS_KEY="${AWS_SECRET_ACCESS_KEY}" \
 		-e SENTRY_DSN="${SENTRY_DSN}" \
-	    uk.ac.wellcome/reach/scraper \
+	    ${ECR_ARN}/reach/scraper \
 		${SCRAPER_DST} \
 		${ORG}
 
@@ -84,7 +89,7 @@ run-parser: parser-image
 	    -e AWS_ACCESS_KEY_ID="${AWS_ACCESS_KEY_ID}" \
 		-e AWS_SECRET_ACCESS_KEY="${AWS_SECRET_ACCESS_KEY}" \
 		-e SENTRY_DSN="${SENTRY_DSN}" \
-	    uk.ac.wellcome/reach/parser \
+	    ${ECR_ARN}/reach/parser \
 		${SCRAPER_DST} \
 		${PARSER_DST} \
 		${ORG}
@@ -96,7 +101,7 @@ run-extracter: extracter-image
 	    -e AWS_ACCESS_KEY_ID="${AWS_ACCESS_KEY_ID}" \
 		-e AWS_SECRET_ACCESS_KEY="${AWS_SECRET_ACCESS_KEY}" \
 		-e SENTRY_DSN="${SENTRY_DSN}" \
-	    uk.ac.wellcome/reach/extracter \
+	    ${ECR_ARN}/reach/extracter \
 		${PARSER_DST} \
 		${EXTRACTER_PARSED_DST} \
 		${EXTRACTER_SPLIT_DST}
@@ -109,7 +114,7 @@ run-indexer-fulltexts: indexer-image
 		-e SENTRY_DSN="${SENTRY_DSN}" \
 		-e ES_HOST=${DOCKER_LOCALHOST} \
 		--network=host \
-		uk.ac.wellcome/reach/indexer \
+		${ECR_ARN}/reach/indexer \
 		${PARSER_DST} \
 		${ORG} \
 		fulltexts
@@ -122,7 +127,7 @@ run-indexer-epmc: indexer-image
 		-e SENTRY_DSN="${SENTRY_DSN}" \
 		-e ES_HOST=${DOCKER_LOCALHOST} \
 		--network=host \
-		uk.ac.wellcome/reach/indexer \
+		${ECR_ARN}/reach/indexer \
 		${EPMC_METADATA_KEY} \
 		${ORG} \
 		epmc \
@@ -136,7 +141,7 @@ run-fuzzymatcher: fuzzymatcher-image
 		-e SENTRY_DSN="${SENTRY_DSN}" \
 		-e ES_HOST=${DOCKER_LOCALHOST} \
 		--network=host \
-		uk.ac.wellcome/reach/fuzzymatcher \
+		${ECR_ARN}/reach/fuzzymatcher \
 		${EXTRACTER_PARSED_DST} \
 		${FUZZYMATCHER_DST} \
 		${ORG} \
@@ -144,14 +149,14 @@ run-fuzzymatcher: fuzzymatcher-image
 
 
 .PHONY: run-indexer-citations
-run-indexer-fulltexts: indexer-image
+run-indexer-citations: indexer-image
 	docker run \
 	    -e AWS_ACCESS_KEY_ID="${AWS_ACCESS_KEY_ID}" \
 		-e AWS_SECRET_ACCESS_KEY="${AWS_SECRET_ACCESS_KEY}" \
 		-e SENTRY_DSN="${SENTRY_DSN}" \
 		-e ES_HOST=${DOCKER_LOCALHOST} \
 		--network=host \
-		uk.ac.wellcome/reach/indexer \
+		${ECR_ARN}/reach/indexer \
 		${FUZZYMATCHER_DST} \
 		${ORG} \
 		citations
@@ -166,7 +171,7 @@ docker-run: docker-build run-scraper run-parser run-extracter run-indexer-epmc r
 .PHONY: tests-image
 tests-image: base-image
 	docker build \
-		-t uk.ac.wellcome/reach/testing \
+		-t ${ECR_ARN}/reach/testing \
 		-f Dockerfile.tests \
 		.
 
@@ -175,6 +180,16 @@ docker-test: tests-image
 	docker run -u root -v $$(pwd)/requirements.tests.txt:/requirements.tests.txt \
 		--rm $(ECR_IMAGE):$(VERSION) \
 		sh -c "pip3 install -r /requirements.tests.txt && pytest /opt/reach"
+
+
+
+# Web application
+.PHONY: web-image
+web-image:
+	docker build \
+	    -t ${ECR_ARN}/reach/web \
+		-f web/Dockerfile \
+		web
 
 .PHONY: all
 all: docker-build
