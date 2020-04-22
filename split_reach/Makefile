@@ -113,16 +113,16 @@ push-indexer: indexer-image
 .PHONY: fuzzymatcher-image
 fuzzymatcher-image: base-image
 	docker build \
-		-t $(ECR_ARN)/reach-fuzzymatcher:$(VERSION) \
-		-t $(ECR_ARN)/reach-fuzzymatcher:$(LATEST_TAG) \
+		-t $(ECR_ARN)/reach-fuzzy-matcher:$(VERSION) \
+		-t $(ECR_ARN)/reach-fuzzy-matcher:$(LATEST_TAG) \
 		-f fuzzymatcher/Dockerfile \
 		./fuzzymatcher
 
 .PHONY: push-fuzzymatcher
 push-fuzzymatcher: fuzzymatcher-image
 	$$(aws ecr get-login --no-include-email --region eu-west-1) && \
-		docker push $(ECR_ARN)/reach-fuzzymatcher:$(LATEST_TAG) && \
-		docker push $(ECR_ARN)/reach-fuzzymatcher:$(VERSION)
+		docker push $(ECR_ARN)/reach-fuzzy-matcher:$(LATEST_TAG) && \
+		docker push $(ECR_ARN)/reach-fuzzy-matcher:$(VERSION)
 
 .PHONY: docker-build
 docker-build: base-image scraper-image parser-image extracter-image indexer-image fuzzymatcher-image
