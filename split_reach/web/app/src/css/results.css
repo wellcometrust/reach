@@ -35,6 +35,7 @@
     	tr td {
     		border: none;
     		background-color: $backgroundTint1;
+            min-height: 3.5rem;
     	}
 
     	tr th{
@@ -43,7 +44,20 @@
     	}
     }
 
+    tr.load{
+        height: 4.5rem;
+
+    }
+}
+
+#citations-result-table {
     tbody tr:nth-of-type(4n-1) {
+        background-color: #f8f8f8;
+    }
+}
+
+#citations-result-table.load, #policy-docs-result-table {
+    tbody tr:nth-of-type(2n + 1) {
         background-color: #f8f8f8;
     }
 }
@@ -130,6 +144,7 @@ th {
 
 .results-pages {
     line-height: 4.75rem;
+    min-height: 4.75rem;
 }
 
 .colgroup-accordion-col {
@@ -162,4 +177,17 @@ th {
         line-height: 1.5rem;
         padding-top: 0.75rem;
     }
+}
+
+.load th {
+    border-bottom-color: rgba(255, 255, 255, 0);
+}
+
+.progress-row, .progress-row th {
+    margin: 0;
+    padding: 0;
+    border: 0;
+    height: 2px;
+    line-height: 2px;
+    border-top-color: rgba(255, 255, 255, 0);
 }
