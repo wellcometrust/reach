@@ -69,7 +69,7 @@
             <div class="column col-6 hide-md"></div>
             {% endif %}
             <div class="column col-12">
-                <span class="icn icn-info"></span><a href="">Learn about these results</a>
+                <span class="icn icn-info"></span><a href="/how-it-works">Learn about these results</a>
             </div>
         </div>
         {% if not status %}
@@ -113,7 +113,7 @@
                         </div>
                     </div>
 
-                    <table class="table table-light table-hover"  id="policy-docs-result-table"nowrap>
+                    <table class="table table-light table-hover load"  id="policy-docs-result-table"nowrap>
                         <colgroup>
                             <col class="colgroup-accordion-col">
                             <col class="colgroup-xl-col">
@@ -127,8 +127,18 @@
                                 <th class="sort" data-sort="organisation" data-order="asc" id="active-sort">Organisation <span class="icn icn-sort"></th>
                                 <th class="sort" data-sort="year">Year of publication <span class="icn icn-sort"></th>
                             </tr>
+                            <tr class="progress-row" id="loading-row">
+                                <th colspan=7>
+                                    <progress class="progress" max="100"></progress>
+                                </th>
+                            </tr>
                         </thead>
                          <tbody id="policy-docs-results-tbody">
+                         {% for i in range(0, 10) %}
+                             <tr class="load">
+                                 <td colspan=7></td>
+                             </tr>
+                         {% endfor %}
                         </tbody>
                     </table>
                     <div class="results-pages">

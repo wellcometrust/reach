@@ -69,10 +69,14 @@ function refreshCitations(data, currentState) {
     // to query Elasticsearch
 
     const table = document.getElementById('citations-results-tbody');
+    const loadingRow = document.getElementById('loading-row');
     const pages = document.getElementsByClassName('page-item');
     const accordions = document.getElementsByClassName('accordion-row');
 
     table.innerHTML = getCitationsTableContent(data);
+
+    table.parentElement.classList.toggle("load");
+    loadingRow.classList.toggle("d-none");
 
     for (let htmlElement of document.getElementsByClassName('pagination-box'))
     {
@@ -97,6 +101,10 @@ function refreshCitations(data, currentState) {
             let currentPage = document.getElementById('active-page');
             let pages = document.getElementsByClassName('page-item')
             currentState.fields = searchFields;
+
+            document.getElementById('citations-result-table').classList.toggle("load");
+            document.getElementById('loading-row').classList.toggle("d-none");
+
              let newPage = e.currentTarget;
 
             if (newPage.getAttribute('id') == 'page-previous') {
@@ -145,22 +153,34 @@ const citationsTable = () => {
                 let currentSort = document.getElementById('active-sort');
                 let currentState = getCurrentState();
 
+                document.getElementById('citations-result-table').classList.toggle("load");
+                document.getElementById('loading-row').classList.toggle("d-none");
+
                 currentState.fields = searchFields;
                 if (newSort === currentState.sort) {
                     if (currentSort.getAttribute('data-order') === 'asc') {
                         currentState.order = 'desc';
                         currentSort.setAttribute('data-order', 'desc');
+
+                        currentSort.querySelector('.icn').setAttribute('class', 'icn icn-sorted icn-sorted-asc');
                     }
                     else {
                         currentState.order = 'asc';
                         currentSort.setAttribute('data-order', 'asc');
+
+                        currentSort.querySelector('.icn').setAttribute('class', 'icn icn-sorted');
                     }
                 }
 
                 else {
                     e.currentTarget.setAttribute('data-order', 'asc');
+
                     currentSort.setAttribute('id', null);
                     e.currentTarget.setAttribute('id', 'active-sort');
+
+                    currentSort.querySelector('.icn').setAttribute('class', 'icn icn-sort');
+                    e.currentTarget.querySelector('.icn').setAttribute('class', 'icn icn-sorted');
+
                 }
                 currentState.sort = newSort;
                 getData('citations', currentState, refreshCitations);

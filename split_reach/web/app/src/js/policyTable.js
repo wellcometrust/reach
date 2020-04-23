@@ -20,7 +20,6 @@ const getPolicyTableContent = (data) => {
 
     let rows = ``;
     for(let item of data.hits.hits) {
-        console.log(item);
         if (!item._source.doc.url) {
             continue;
         }
@@ -42,7 +41,6 @@ const getPolicyTableContent = (data) => {
         rows += `</tr>`;
 
     }
-    console.log("returning rows");
     return rows;
 }
 
@@ -52,10 +50,14 @@ const refreshPolicy = (data, currentState) => {
     // to query Elasticsearch
 
     const table = document.getElementById('policy-docs-results-tbody');
+    const loadingRow = document.getElementById('loading-row');
     const pages = document.getElementsByClassName('page-item');
 
-    console.log("Refreshing table body");
     table.innerHTML = getPolicyTableContent(data);
+
+
+    table.parentElement.classList.toggle("load");
+    loadingRow.classList.toggle("d-none");
 
     for (let htmlElement of document.getElementsByClassName('pagination-box'))
     {
@@ -78,6 +80,10 @@ const refreshPolicy = (data, currentState) => {
             let currentState = getCurrentState();
             let currentPage = document.getElementById('active-page');
             let pages = document.getElementsByClassName('page-item');
+
+            document.getElementById('policy-docs-result-table').classList.toggle("load");
+            document.getElementById('loading-row').classList.toggle("d-none");
+
             currentState.fields = searchFields;
             let newPage = e.currentTarget;
 
@@ -112,20 +118,30 @@ const policyTable = () => {
                 let currentSort = document.getElementById('active-sort');
                 let currentState = getCurrentState();
 
+                document.getElementById('policy-docs-result-table').classList.toggle("load");
+                document.getElementById('loading-row').classList.toggle("d-none");
+
                 currentState.fields = searchFields;
                 if (newSort == currentSort.getAttribute('data-sort')) {
                     if (currentSort.getAttribute('data-order') === 'asc') {
                         currentState.order = 'desc';
                         currentSort.setAttribute('data-order', 'desc');
+
+                        currentSort.querySelector('.icn').setAttribute('class', 'icn icn-sorted  icn-sorted-asc');
                     }
                     else {
                         currentState.order = 'asc';
                         currentSort.setAttribute('data-order', 'asc');
+
+                        currentSort.querySelector('.icn').setAttribute('class', 'icn icn-sorted');
                     }
                 }
 
                 else {
                     e.currentTarget.setAttribute('data-order', 'asc');
+
+                    currentSort.querySelector('.icn').setAttribute('class', 'icn icn-sort');
+                    e.currentTarget.querySelector('.icn').setAttribute('class', 'icn icn-sorted');
                 }
 
                 currentSort.setAttribute('id', null);
