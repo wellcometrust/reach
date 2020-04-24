@@ -1,0 +1,326 @@
+$spectre_version: 0.5.8;
+@import "../vendor/spectre-$(spectre_version)/spectre.css";
+@import "../vendor/spectre-$(spectre_version)/spectre-exp.css";
+@import "../vendor/spectre-$(spectre_version)/spectre-icons.css";
+@import "variables.css";
+@import "icons.css";
+
+/* @import "vendor/spectre-$(spectre_version)/spectre-exp.css"; */
+
+/*
+ * Page specific file imports
+ */
+
+@import "home.css";
+@import "about.css";
+@import "search.css";
+@import "results.css";
+@import "header.css";
+@import "footer.css";
+
+/*  Offsets the grid */
+@media screen and (min-width: 1280px) {
+   .container {
+     padding: 0 92px;
+   }
+
+  /* Full spaces */
+  .fs {
+    height: 4rem;
+    width: 4rem;
+  }
+
+  /* Half spaces */
+  .hs {
+    height: 2rem;
+    width: 2rem;
+  }
+}
+
+@media screen and (max-width: 1280px) {
+   .container {
+     padding: 0 22px;
+   }
+
+  .fs {
+    height: 2rem;
+    width: 2rem;
+  }
+
+  .hs {
+    height: 1rem;
+    width: 1rem;
+  }
+}
+
+.column {
+  padding-right: 22px;
+/*  background-color: rgba(255,0,0,0.2);
+*/}
+
+/*
+ * Generic elements
+ */
+
+ html,
+ body {
+    min-height: 100vh;
+ }
+
+body {
+  /* Brand guidelines say Helvetica Neue or Arial, but
+   * we're using Spectre's default of:
+   *
+   *  -apple-system,
+   *  system-ui,
+   *  Segoe UI,
+   *  Roboto,
+   *  Ubuntu,
+   *  Cantarell,
+   *  Noto Sans,
+   *  sans-serif,
+   *  BlinkMacSystemFont,
+   *  Helvetica Neue
+   */
+  color: $greyDark;
+  font-size: $baseFontSize;
+  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+  line-height: normal;
+  font-weight: normal;
+  font-stretch: normal;
+  font-style: normal;
+  line-height: normal;
+  letter-spacing: normal;
+  background-color: $backgroundTint1;
+  overflow-y: scroll;
+  display: flex;
+  flex-direction: column;
+
+  background-image: linear-gradient(-25deg, $backgroundTint2 20%, $backgroundTint1 calc(20% + 2px));
+  background-repeat: no-repeat;
+  background-position: bottom;
+}
+
+hr.fs, hr.hs {
+  border: none;
+  margin: 0;
+  padding: 0;
+}
+
+.content{
+  flex: 1 0 auto;
+}
+
+footer {
+  flex-shrink: 0;
+}
+
+section#about-page, section#how-it-works-page{
+  min-height: 600px;
+}
+
+/* Titles */
+
+h1 {
+  font-family: Wellcome, Helvetica, Arial, sans-serif;;
+  font-size: $h1FontSize;
+  font-weight: normal;
+  font-stretch: normal;
+  font-style: normal;
+  line-height: 1.5;
+  letter-spacing: -0.45px;
+  color: $greyDark;
+}
+
+h2 {
+  font-family: Wellcome, Helvetica, Arial, sans-serif;;
+  font-size: $h2FontSize;
+  font-weight: normal;
+  font-stretch: normal;
+  font-style: normal;
+  line-height: 1.5;
+  letter-spacing: normal;
+  color: $greyDark;
+}
+
+h3 {
+  font-family: Helvetica, Arial, sans-serif;;
+  font-size: $h3FontSize;
+  font-weight: normal;
+  font-stretch: normal;
+  font-style: normal;
+  line-height: 1.53;
+  letter-spacing:  0.56px;
+  color: $greyDark;
+}
+
+h4 {
+  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+  font-size: $h4FontSize;
+  font-weight: bold;
+  font-stretch: normal;
+  font-style: normal;
+  text-transform: uppercase;
+  line-height: 1.5;
+  letter-spacing: 0.5px;
+  color: $greyLink;
+}
+
+p {
+  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+  font-size: $baseFontSize;
+  font-weight: normal;
+  font-stretch: normal;
+  font-style: normal;
+  line-height: 1.5;
+  letter-spacing: 0.5px;
+  color: $greyDark;
+}
+
+a, a:visited {
+  text-decoration: underline;
+  color: $cyanPrimary;
+  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+  font-size: $baseFontSize;
+  font-weight: normal;
+  font-stretch: normal;
+  font-style: normal;
+  line-height: 1.71;
+  letter-spacing: normal;
+  cursor: pointer;
+}
+
+ a:hover {
+     color: $cyanLight;
+ }
+
+ a.a-light {
+   color: white;
+ }
+
+ .bold {
+  font-weight: bold;
+ }
+
+/* btn-lg is still a bit too small for us, make btn-xl from spectre class */
+.btn.btn-xl {
+  font-size: $baseFontSize;
+  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+  height: 3rem;
+  padding: 0 2rem;
+  text-align: center;
+  font-weight: normal;
+  font-stretch: normal;
+  font-style: normal;
+  line-height: 3rem;
+  letter-spacing: normal;
+}
+
+.btn.btn-round {
+  border-radius: 1.75rem;
+}
+
+.input-btn-xl {
+  border-radius: none !important;
+  font-size: $baseFontSize;
+  height: 2.5rem;
+  padding: .6rem .6rem;
+}
+
+.btn.btn-primary {
+  border: none;
+  background: $cyanPrimary;
+  color: white;
+}
+
+.btn.btn-primary:hover {
+  border: none;
+  background: $cyanLight;
+  color: white;
+}
+
+.btn.btn-light {
+  border: 1px solid $cyanDark;
+  color: $cyanDark;
+  background: $backgroundTint2;
+}
+
+.btn.btn-white {
+  border: 1px solid $cyanDark;
+  color: $cyanDark;
+  background: white;
+}
+
+.btn.btn-outline-light {
+  border: 1px solid white;
+}
+
+.form-input.input-xl {
+  font-size: $baseFontSize;
+  border-color: $greyLight;
+  height: 2.5rem;
+  padding: .6rem .6rem;
+}
+
+.form-input:focus {
+  border-color: #767676;
+  box-shadow: none;
+}
+
+/* Override Spectre default */
+.breadcrumb .breadcrumb-item:not(:last-child) a {
+    color: $cyanPrimary;
+}
+
+.table.table-hover tbody tr:hover {
+  background: $backgroundTint1;
+}
+
+.breadcrumb .breadcrumb-item:not(:first-child)::before {
+  color: $greyDark;
+  content: ">";
+  padding-right: .4rem;
+}
+
+.breadcrumb .breadcrumb-item {
+  color: $greyDark;
+}
+
+#breadcrumbs {
+  background: white;
+  border-bottom: 1px solid $greyLight;
+}
+
+
+@media screen and (min-width: 1280px) {
+   #breadcrumbs {
+     padding: 0 $guidePadding;
+   }
+}
+
+@media screen and (max-width: 1280px) {
+   #breadcrumbs {
+     padding: 0 1.375rem;
+   }
+}
+
+section#hero a.btn-primary:hover,
+section#hero .btn.help:hover {
+  border: 1px solid white;
+}
+
+.hero-button {
+    height: 3.5rem;
+    line-height: 3.5rem;
+    font-size: $baseFontSize;
+    padding: 0 $smallPadding;
+}
+
+ul li {
+    margin-top: 0 !important;
+}
+
+.progress:indeterminate {
+  animation: progress-indeterminate 1.5s linear infinite;
+  background: #BEEBF4 linear-gradient(to right, #006272 30%, #BEEBF4 30%) top left/150% 150% no-repeat;
+}

@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="100px" height="100px" viewBox="0 0 100 100" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <!-- Generator: Sketch 59.1 (86144) - https://sketch.com -->
+    <title>Icon_About_Transparent_100px</title>
+    <desc>Created with Sketch.</desc>
+    <g id="Icon_About_Transparent_100px" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <g id="Group" transform="translate(1.000000, 20.000000)" stroke="#009BB2" stroke-width="3">
+            <path d="M73.1569113,16.2727292 C58.8762176,7.36557843 40.8072361,7.21751731 26.3824956,15.8894496 L19.2485502,20.1782679 C17.6421895,21.1439873 16.2972119,22.4889649 15.3314925,24.0953256 C12.0704309,29.5197185 13.8241574,36.5606705 19.2485502,39.8217321 L26.3824956,44.1105504 C40.8072361,52.7824827 58.8762176,52.6344216 73.1569113,43.7272708 L79.5758509,39.7236513 C81.0584432,38.7989292 82.3099467,37.5474257 83.2346688,36.0648334 C86.5841838,30.6946091 84.9460753,23.6258637 79.5758509,20.2763487 L73.1569113,16.2727292 Z" id="Rectangle"></path>
+            <rect id="Rectangle" x="33.5" y="13.5" width="32" height="32" rx="16"></rect>
+            <rect id="Rectangle-Copy-9" x="44.5" y="24.5" width="10" height="10" rx="5"></rect>
+            <line x1="58.6279376" y1="35.2978601" x2="61.2470624" y2="38.819787" id="Path-5-Copy" opacity="0.9" stroke-linecap="round" stroke-linejoin="round" transform="translate(59.937500, 37.058824) rotate(-15.000000) translate(-59.937500, -37.058824) "></line>
+            <line x1="37.6260611" y1="23.8259168" x2="41.9989389" y2="26.4682009" id="Path-5-Copy-2" stroke-linecap="round" stroke-linejoin="round" transform="translate(39.812500, 25.147059) rotate(-7.000000) translate(-39.812500, -25.147059) "></line>
+            <line x1="60" y1="30" x2="65" y2="30" id="Path-5" stroke-linecap="round" stroke-linejoin="round"></line>
+        </g>
+    </g>
+</svg>
