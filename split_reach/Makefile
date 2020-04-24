@@ -252,5 +252,3 @@ web-image:
 
 .PHONY: all
 all: docker-build
-
-

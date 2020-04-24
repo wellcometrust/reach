@@ -1,0 +1,193 @@
+@import "variables.css";
+
+.table-light {
+    table-layout: fixed;
+	border: 1px solid $greyLight;
+	tr {
+		background: white;
+	}
+
+	td, th {
+		border-top: 1px solid $greyLight;
+		border-bottom: 1px solid $greyLight;
+	}
+
+    tr:hover {
+        td {
+            background-color: $cyanFocused;
+        }
+    }
+
+    .accordion-arrow {
+    	color: $cyanPrimary;
+    	font-weight: bold;
+    	width: 3.5rem;
+    	text-align: center;
+    }
+
+    .active-row td {
+    	background-color: $cyanFocused;
+    }
+
+    .accordion-subtable {
+        table-layout: fixed;
+
+    	tr td {
+    		border: none;
+    		background-color: $backgroundTint1;
+            min-height: 3.5rem;
+    	}
+
+    	tr th{
+    		border: none;
+    		background-color: $backgroundTint1;
+    	}
+    }
+
+    tr.load{
+        height: 4.5rem;
+
+    }
+}
+
+#citations-result-table {
+    tbody tr:nth-of-type(4n-1) {
+        background-color: #f8f8f8;
+    }
+}
+
+#citations-result-table.load, #policy-docs-result-table {
+    tbody tr:nth-of-type(2n + 1) {
+        background-color: #f8f8f8;
+    }
+}
+.pages .page-item#active-page {
+	color: $cyanPrimary;
+    text-decoration: underline;
+}
+
+.pages {
+
+    font-size: $smallFontSize;
+    margin: 0;
+    padding: 0;
+
+	li a {
+		padding: 0.3rem;
+		text-decoration: none;
+	}
+
+	.page-item, .disabled-page-item {
+		cursor: pointer;
+		padding: 0 .3125rem;
+		color: $cyanPrimary;
+		display: inline-block;
+        margin: 0 10px;
+	}
+
+    #page-previous, #page-next {
+        border: 1px solid #ccc;
+        border-radius: 2px;
+        background-color: white;
+        color: $cyanPrimary;
+        font-size: $baseFontSize;
+        font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+        height: 2.75rem;
+        padding: 0 .75rem;
+        text-align: center;
+        font-weight: normal;
+        font-stretch: normal;
+        font-style: normal;
+        line-height: 2.75rem;
+        letter-spacing: normal;
+    }
+
+
+	.disabled-page-item {
+		color: $greyLight !important;
+	}
+}
+
+.page-counter {
+    font-size: .875rem;
+    margin-left: 3.5rem;
+    padding: 0 .4rem;
+}
+
+th {
+  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+  font-size: 0.75rem;
+  font-weight: bold;
+  font-stretch: normal;
+  font-style: normal;
+  text-transform: uppercase;
+  line-height: 1.5rem;
+  letter-spacing: 0.5px;
+  color: $greyLink;
+
+}
+
+.table tr .accordion-subtable-container {
+	background-color: $backgroundTint1;
+	padding: 0;
+	padding-left: 3.5rem;
+}
+
+#citations-results-tbody .hidden {
+	display: none;
+}
+
+.results-filters, .results-pages {
+    background-color: white;
+    border: 1px solid $greyLight;
+}
+
+.results-pages {
+    line-height: 4.75rem;
+    min-height: 4.75rem;
+}
+
+.colgroup-accordion-col {
+    width: 3.5rem;
+}
+
+.colgroup-small-col {
+    /* width: 6.875rem; */
+    width: 10%;
+}
+.colgroup-medium-col {
+    /* width: 14.375rem; */
+    width: 20%;
+}
+.colgroup-large-col {
+    width: 40%;
+}
+.colgroup-xl-col {
+    width: 70%;
+}
+
+.table-header {
+    display: flex;
+    height: 100%;
+    .table-header-text, .table-header-icon {
+        display: inline-block;
+    }
+
+    .table-header-icon {
+        line-height: 1.5rem;
+        padding-top: 0.75rem;
+    }
+}
+
+.load th {
+    border-bottom-color: rgba(255, 255, 255, 0);
+}
+
+.progress-row, .progress-row th {
+    margin: 0;
+    padding: 0;
+    border: 0;
+    height: 2px;
+    line-height: 2px;
+    border-top-color: rgba(255, 255, 255, 0);
+}

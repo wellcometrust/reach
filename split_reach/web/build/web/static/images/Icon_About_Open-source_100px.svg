@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="100px" height="100px" viewBox="0 0 100 100" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <!-- Generator: Sketch 59.1 (86144) - https://sketch.com -->
+    <title>Icon_About_Open-source_100px</title>
+    <desc>Created with Sketch.</desc>
+    <g id="Icon_About_Open-source_100px" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <g id="Iconography-/-Open-source" transform="translate(19.000000, 23.000000)" stroke="#009BB2" stroke-width="3">
+            <rect id="Rectangle" x="1.5" y="11.5" width="59" height="40"></rect>
+            <rect id="Rectangle-Copy-4" x="1.5" y="1.5" width="59" height="10" rx="1.728"></rect>
+            <polyline id="Path-3" stroke-linecap="round" stroke-linejoin="round" points="43.2 25.616 51.84 30.8 43.2 35.984"></polyline>
+            <polyline id="Path-3-Copy" stroke-linecap="round" stroke-linejoin="round" transform="translate(14.112000, 30.800000) scale(-1, 1) translate(-14.112000, -30.800000) " points="9.792 25.616 18.432 30.8 9.792 35.984"></polyline>
+            <line x1="24.768" y1="40.7187218" x2="36.6981737" y2="21.008" id="Path-4" stroke-linecap="round" stroke-linejoin="round"></line>
+        </g>
+    </g>
+</svg>

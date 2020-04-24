@@ -1,0 +1,65 @@
+{% extends 'base.html' %}
+
+
+{% block header %}
+
+<header class="navbar">
+  <section class="navbar-section">
+        <a href="/" class="navbar-brand"><h2>Reach</h2></a>
+  </section>
+  <section class="navbar-section hide-md" id="navbar-links">
+    <a href="/about" class="a-light">About Reach</a>
+    <a href="/how-it-works" class="a-light">How Reach works</a>
+    <a href="/search/citations" class="a-light">Discover citations</a>
+    <a href="/search/policy-docs" class="a-light active">Browse policy documents</a>
+  </section>
+</header>
+
+{% endblock %}
+
+{% block main %}
+
+<section id="breadcrumbs">
+    <div class="breadcrumb-box">
+        <ul class="breadcrumb">
+            <li class="breadcrumb-item"><a href="/">Home</a></li>
+            <li class="breadcrumb-item">Browse policy documents</li>
+        </ul>
+    </div>
+</section>
+
+<section class="search-policy-docs">
+  <div class="container">
+    <hr class="fs">
+    <hr class="fs">
+    <div class="columns">
+      <div class="column col-3 hide-md"></div>
+      <div class="column col-6 col-md-12 text-center">
+          <h1>Browse our collection of over 129k policy documents</h1>
+      </div>
+      <div class="column col-3 hide-md"></div>
+    </div>
+    <div class="columns">
+      <div class="column col-4 hide-md"></div>
+      <div class="column col-4 col-md-12 text-center">
+        <h3>We source policy documents from UNICEF, Médecins Sans Frontières (MSF), National Institute of Clinical Excellence (NICE), the World Health Organisation (WHO), the UK government and the UK parliament.</h3>
+      </div>
+      <div class="column col-4 hide-md"></div>
+    </div>
+    <hr class="fs">
+    <div class="columns">
+      <div class="column col-3 hide-md"></div>
+      <div class="column col-6 col-md-12">
+        <p class="form-label">Search by policy document title, policy organisation or topic</p>
+        <form action="/search/policy-docs">
+          <div class="input-group">
+            <input type="text" class="form-input input-xl" placeholder="Search" name="terms" id="search-term">
+            <button type="submit" class="btn btn-primary input-btn-xl input-group-btn">Browse policy documents <span class="icn icn-search"></span></button>
+          </div>
+        </form>
+      </div>
+      <div class="column col-3 hide-md"></div>
+    </div>
+  </div>
+</section>
+{% endblock %}
