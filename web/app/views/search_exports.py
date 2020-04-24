@@ -18,10 +18,9 @@ class ResultsExport:
 
     """
 
-    def __init__(self, es, es_index, es_explain):
-        self.es = es
-        self.es_index = es_index
-        self.es_explain = es_explain
+    def __init__(self, db, source):
+        self.db = db
+        self.source = source
 
     def yield_es_items(self, params, total, size=25):
 
@@ -31,14 +30,14 @@ class ResultsExport:
 
             # Query builder starts page count at 1
             params['page'] = i + 1
-            status, response = search._search_es(
-                self.es,
-                self.es_index,
+            status, response = search._search_db(
+                self.db,
                 params,
-                self.es_explain,
+                self.source
             )
 
             yield response
+
 
     def on_get(self, req, resp, ftype):
         """Returns the result of a search on the elasticsearch cluster.

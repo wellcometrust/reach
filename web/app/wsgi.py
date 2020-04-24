@@ -14,18 +14,12 @@ class Configuration:
         - STATIC_ROOT
         """
 
-        self.es_host = os.environ['ELASTICSEARCH_HOST']
-        if not self.es_host:
-            raise Exception('No elasticsearch host')
-        self.es_explain = os.environ.get('ELASTICSEARCH_EXPLAIN', False)
-        self.es_policy_docs_index = os.environ.get(
-            'ELASTICSEARCH_POLICYDOCS_INDEX',
-            'policy-test-docs'
-        )
-        self.es_citations_index = os.environ.get(
-            'ELASTICSEARCH_CITATIONS_INDEX',
-            'policy-test-citations'
-        )
+        self.database_url = os.environ['DATABASE_URL']
+        if not self.database_url or not os.path.isdir(self.database_url):
+            raise Exception(
+                "Database URL not found. DATABASE_URL=%r" %
+                self.database_url
+            )
 
         self.static_root = os.environ.get('STATIC_ROOT')
         if not self.static_root or not os.path.isdir(self.static_root):
@@ -35,10 +29,12 @@ class Configuration:
             )
 
         self.docs_static_root = os.environ.get('DOCS_STATIC_ROOT')
-        if not self.static_root or not os.path.isdir(self.static_root):
+        if not self.docs_static_root or not os.path.isdir(
+            self.docs_static_root
+        ):
             raise Exception(
-                "No static directory found. DOCS_STATIC_ROOT=%r" %
-                self.static_root
+                "No docs static directory found. DOCS_STATIC_ROOT=%r" %
+                self.docs_static_root
             )
 
 

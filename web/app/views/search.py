@@ -1,5 +1,4 @@
 import json
-import re
 
 from elasticsearch import ConnectionError, NotFoundError
 import falcon
@@ -7,70 +6,55 @@ import falcon
 from web.views import template
 
 
-def _build_es_query(params):
-    """Builds the body of the ES search query and return it as a dict.
+DEFAULT_SORTING = {
+    "citation": "match_title",
+    "policy_doc": "title",
+}
+
+
+def _build_psql_query(params, source):
+    """Prepare the query and arguments to be sent to PostgreSQL.
 
     Args:
         params: the parameters from a web query. Should at least contain a
                 terms and a fields parameter.
 
+        source: the table to query.
+
     Returns:
-        search_body: a dict conating the body for an ES search query.
+        query: a dict containing the results for a PSQL search query.
+        terms: the args to send to postgres
     """
     size = params.get('size', 25)
     fields = params.get('fields', '').split(',')
     terms = params.get('terms', '').split(',')
 
-    if len(fields) > len(terms):
-        # At the moment the frontend is still using "one term for all
-        # fields". This will change to an exception after frontend
-        # changes.
-        while len(terms) < len(fields):
-            terms.append(terms[0])
+    query = """
+        SELECT {fields}
+        FROM {source}
+        WHERE {where_query}
+        ORDER BY {order}
+        {is_asc}
+        LIMIT {size}
+        OFFSET {offset};
+    """
 
-    body_queries = {}
-    for i, fieldname in enumerate(fields):
-        field = "doc.{fieldname}".format(fieldname=fieldname)
-        new_terms = terms[i].lower()
-        new_terms = re.sub(r'[^\w\s]', ' ', new_terms).split(' ')
-        new_terms = list(filter(lambda x: len(x.strip()) > 0, new_terms))
-        if field in body_queries.keys():
-            body_queries[field] = body_queries[field] + new_terms
-        else:
-            body_queries[field] = new_terms
+    query.format(
+        fields=', '.join(fields),
+        source=source,
+        where_query='=%d OR '.join(fields),
+        order=params.get('sort', DEFAULT_SORTING[source]),
+        is_asc=params.get('order', 'ASC'),
+        size=size,
+        offset=(int(params.get('page')) - 1) * int(size)
+    )
 
-    terms = [
-        {'terms_set': {
-            key: {
-                "terms": value,
-                "minimum_should_match_script": {
-                    "source": str(len(value))
-                }
-            }
-        }} for key, value in body_queries.items()
-    ]
-    search_body = {
-        'size': int(size),
-        'query': {
-            'bool': {
-                'should': terms,
-                "minimum_should_match": 1
-            }
-        }
-    }
-
-    if params.get('page'):
-        search_body['from'] = (int(params.get('page')) - 1) * int(size)
-
-    if params.get('sort'):
-        search_body['sort'] = {
-            f"doc.{params.get('sort')}": params.get('order', 'asc')
-        }
-
-    return search_body
+    return query, terms
 
 
-def _search_es(es, es_index, params, explain):
+
+# TODO: Docstring
+def _search_db(db, params, source):
         """Run a search on the elasticsearch database.
 
         Args:
@@ -85,23 +69,10 @@ def _search_es(es, es_index, params, explain):
                              succeeded or a string explaining why it failed
         """
         try:
-            es.cluster.health(wait_for_status='yellow')
 
-            search_body = _build_es_query(params)
+            search_query, args = _build_psql_query(params, source)
 
-            return True, es.search(
-                index=es_index,
-                body=json.dumps(search_body),
-                explain=explain
-            )
-
-        except ConnectionError:
-            message = 'Could not join the elasticsearch server.'
-            raise falcon.HTTPServiceUnavailable(description=message)
-
-        except NotFoundError:
-            message = 'No results found.'
-            return False, {'message': message}
+            return True, db.get(search_query, args)
 
         except Exception as e:
             raise falcon.HTTPError("400", description=str(e))
@@ -117,10 +88,9 @@ class SearchApi:
 
     """
 
-    def __init__(self, es, es_index, es_explain):
-        self.es = es
-        self.es_index = es_index
-        self.es_explain = es_explain
+    def __init__(self, db, source):
+        self.db = db
+        self.source = source
 
     def on_get(self, req, resp):
         """Returns the result of a search on the elasticsearch cluster.
@@ -138,12 +108,7 @@ class SearchApi:
                 })
                 resp.status = falcon.HTTP_400
 
-            status, response = _search_es(
-                self.es,
-                self.es_index,
-                req.params,
-                self.es_explain
-            )
+            status, response = _search_db(self.db, req.params, self.source)
             if status:
 
                 if 'citation' in self.es_index:
@@ -174,10 +139,9 @@ class FulltextPage(template.TemplateResource):
 
     """
 
-    def __init__(self, template_dir, es, es_index, es_explain, context=None):
-        self.es = es
-        self.es_index = es_index
-        self.es_explain = es_explain
+    def __init__(self, template_dir, db, source, context=None):
+        self.db = db
+        self.source = source
         self.search_fields = ','.join([
             'title',
             'text',
@@ -191,18 +155,13 @@ class FulltextPage(template.TemplateResource):
         if req.params:
             params = {
                 "terms": req.params.get('terms', ''),
-                "fields": self.search_fields,  # search_es is expects a str
+                "fields": self.search_fields,  # search_db is expects a str
                 "size": int(req.params.get('size', 1)),
                 "sort": "organisation",
             }
 
             # Still query on the backend to ensure some results are found
-            status, response = _search_es(
-                self.es,
-                self.es_index,
-                params,
-                True
-            )
+            status, response = _search_db(self.db, params, self.source)
 
             self.context['es_response'] = response
             self.context['es_status'] = status
@@ -236,10 +195,9 @@ class CitationPage(template.TemplateResource):
 
     """
 
-    def __init__(self, template_dir, es, es_index, es_explain, context=None):
-        self.es = es
-        self.es_index = es_index
-        self.es_explain = es_explain
+    def __init__(self, template_dir, db, source, context=None):
+        self.db = db
+        self.source = source
         self.search_fields = ','.join([
             'match_title',
             'policies.title',
@@ -259,12 +217,7 @@ class CitationPage(template.TemplateResource):
                 "size": int(req.params.get('size', 1)),
             }
 
-            status, response = _search_es(
-                self.es,
-                self.es_index,
-                params,
-                False
-            )
+            status, response = _search_db(self.db, params, self.source)
 
             self.context['es_response'] = response
             self.context['es_status'] = status

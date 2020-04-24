@@ -8,10 +8,8 @@ Entrypoint for web UI & API. Run with:
 import logging
 import os
 import os.path
-from urllib.parse import urlparse
 
 import falcon
-from elasticsearch import Elasticsearch
 
 from hooks.sentry import report_exception
 from web.views import template
@@ -19,6 +17,7 @@ from web.views import apidocs
 from web.views import search
 from web.views import search_exports
 from web.views import robotstxt
+from db_storage import DatabaseStorage
 
 TEMPLATE_ROOT = os.path.join(os.path.dirname(__file__), 'templates')
 API_DOCS_ROOT = os.path.join(os.path.dirname(__file__), 'docs/build/html')
@@ -55,17 +54,12 @@ def create_api(conf):
     Returns:
         WSGI application
     """
-    parsed_url = urlparse(conf.es_host)
 
     logger.info('Connecting to {elastic_host}'.format(
         elastic_host=conf.es_host
     ))
-    es = Elasticsearch([{
-            'host': parsed_url.hostname,
-            'port': parsed_url.port
-        }],
-    )
 
+    db = DatabaseStorage(conf.postgres_url)
     # Routes (are LIFO)
     api = falcon.API()
     api.add_route(
@@ -86,9 +80,8 @@ def create_api(conf):
         '/search/citations',
         search.CitationPage(
             TEMPLATE_ROOT,
-            es,
-            conf.es_citations_index,
-            conf.es_explain,
+            db,
+            'citation',
             get_context(os.environ)
         )
     )
@@ -96,18 +89,17 @@ def create_api(conf):
         '/search/policy-docs',
         search.FulltextPage(
             TEMPLATE_ROOT,
-            es,
-            conf.es_policy_docs_index,
-            conf.es_explain,
+            db,
+            'policy_doc',
             get_context(os.environ))
     )
     api.add_route(
         '/api/search/policy-docs',
-        search.SearchApi(es, conf.es_policy_docs_index, conf.es_explain)
+        search.SearchApi(db, 'policy_doc')
     )
     api.add_route(
         '/api/search/citations',
-        search.SearchApi(es, conf.es_citations_index, conf.es_explain)
+        search.SearchApi(db, 'citation')
     )
     api.add_route(
         '/api/docs/{name}',
@@ -116,19 +108,11 @@ def create_api(conf):
     api.add_static_route('/api/docs/_static', conf.docs_static_root)
     api.add_route(
         '/search/citations/{ftype}',
-        search_exports.CitationsExport(
-            es,
-            conf.es_citations_index,
-            conf.es_explain
-        )
+        search_exports.CitationsExport(db, 'citation')
     )
     api.add_route(
         '/search/policy-docs/{ftype}',
-        search_exports.PolicyDocsExport(
-            es,
-            conf.es_policy_docs_index,
-            conf.es_explain
-        )
+        search_exports.PolicyDocsExport(db, 'policy_doc')
     )
     api.add_static_route('/static', conf.static_root)
     return api
