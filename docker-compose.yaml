@@ -27,10 +27,7 @@ services:
         SENTRY_DSN: "${SENTRY_DSN}"
         STATIC_ROOT: /opt/reach/build/web/static
         DOCS_STATIC_ROOT: /opt/reach/web/docs/build/html/_static
-        ELASTICSEARCH_HOST: "http://elasticsearch:9200"
-        ELASTICSEARCH_POLICYDOCS_INDEX: "reach-fulltexts"
-        ELASTICSEARCH_CITATIONS_INDEX: "reach-citations"
-        # DATABASE_URL: "postgres://postgres:postgres@articles-db:5432/wsf_scraping"
+        DATABASE_URL: "postgresql://postgres:development@postgres:5432/reach"
 
       command:
         - gunicorn
@@ -66,22 +63,6 @@ services:
         resources:
           limits:
             memory: "96M"
-
-
-
-    elasticsearch:
-        image: docker.elastic.co/elasticsearch/elasticsearch:7.2.1
-        environment:
-          - discovery.type=single-node
-          - "ES_JAVA_OPTS=-Xms512m -Xmx2g"
-        ports:
-          - 127.0.0.1:9200:9200
-        volumes:
-          - esdata:/usr/share/elasticsearch/data
-        deploy:
-          resources:
-            limits:
-              memory: "2560M"
 
 volumes:
   esdata:
