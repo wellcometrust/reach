@@ -1,5 +1,5 @@
-elasticsearch
 falcon
 gunicorn
 jinja2
 sentry-sdk
+psycopg2-binary
