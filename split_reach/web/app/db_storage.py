@@ -5,9 +5,12 @@ from psycopg2.extras import RealDictCursor
 
 class StorageEngine():
 
-    def __init__(self, db_url):
+    def __init__(self, database_url):
         """Builds a connection object to the given PSQL database."""
-        self.conn = psycopg2.connect(db_url, cursor_factory=RealDictCursor)
+        self.conn = psycopg2.connect(
+            database_url,
+            cursor_factory=RealDictCursor
+        )
 
     def get(self, query, params):
         """Returns all PSQL rows from a given query and its arguments."""

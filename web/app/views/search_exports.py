@@ -18,9 +18,8 @@ class ResultsExport:
 
     """
 
-    def __init__(self, db, source):
+    def __init__(self, db):
         self.db = db
-        self.source = source
 
     def yield_es_items(self, params, total, size=25):
 
@@ -33,7 +32,7 @@ class ResultsExport:
             status, response = search._search_db(
                 self.db,
                 params,
-                self.source
+                self.source,
             )
 
             yield response
@@ -140,7 +139,7 @@ class ResultsExport:
 
 class CitationsExport(ResultsExport):
 
-    def __init__(self, es, es_index, es_explain):
+    def __init__(self, db):
         self.search_fields = ','.join([
             'match_title',
             'policies.title',
@@ -154,7 +153,7 @@ class CitationsExport(ResultsExport):
             isodate=datetime.datetime.now().isoformat()
         )
 
-        super(CitationsExport, self).__init__(es, es_index, es_explain)
+        super(CitationsExport, self).__init__(db)
 
     def get_headers(self, response):
         doc = response['hits']['hits'][0]['_source']['doc']
@@ -184,7 +183,7 @@ class CitationsExport(ResultsExport):
 
 class PolicyDocsExport(ResultsExport):
 
-    def __init__(self, es, es_index, es_explain):
+    def __init__(self, db):
         self.search_fields = ','.join([
             'title',
             'text',
@@ -196,7 +195,7 @@ class PolicyDocsExport(ResultsExport):
             isodate=datetime.datetime.now().isoformat()
         )
 
-        super(PolicyDocsExport, self).__init__(es, es_index, es_explain)
+        super(PolicyDocsExport, self).__init__(db)
 
     def get_headers(self, response):
         return list(response['hits']['hits'][0]['_source']['doc'].keys()), []

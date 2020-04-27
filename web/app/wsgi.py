@@ -15,7 +15,7 @@ class Configuration:
         """
 
         self.database_url = os.environ['DATABASE_URL']
-        if not self.database_url or not os.path.isdir(self.database_url):
+        if not self.database_url:
             raise Exception(
                 "Database URL not found. DATABASE_URL=%r" %
                 self.database_url

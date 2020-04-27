@@ -1,6 +1,5 @@
 import json
 
-from elasticsearch import ConnectionError, NotFoundError
 import falcon
 
 from web.views import template
@@ -52,16 +51,14 @@ def _build_psql_query(params, source):
     return query, terms
 
 
-
-# TODO: Docstring
 def _search_db(db, params, source):
-        """Run a search on the elasticsearch database.
+        """Run a search on the postgresql database.
 
         Args:
-            es: An Elasticsearch active connection.
+            db: A PostgreSQL active connection.
             params: The request's parameters. Shoud include 'term' and at
                     least a field ([text|title|organisation]).
-            explain: A boolean to enable|disable elasticsearch's explain.
+            source: the table to query.
 
         Returns:
             True|False: The search success status
