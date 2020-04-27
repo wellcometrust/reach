@@ -4,7 +4,10 @@ version: '3.4'
 
 services:
     postgres:
-        image: postgres:11.2-alpine
+        container_name: reach-db
+        build:
+            context: ./db/
+            dockerfile: Dockerfile
         ports:
           - 127.0.0.1:5432:5432
         environment:
@@ -63,7 +66,3 @@ services:
         resources:
           limits:
             memory: "96M"
-
-volumes:
-  esdata:
-    driver: local
