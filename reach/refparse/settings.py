@@ -22,7 +22,11 @@ class BaseSettings:
     MIN_CHAR_LIMIT = 20
     MATCH_TITLE_LENGTH_THRESHOLD = 40
 
-    REF_CLASSES = ['Authors', 'Journal', 'Volume', 'Issue', 'Pagination', 'Title','PubYear']
+    REF_CLASSES = ['Authors', 'Journal', 'Volume', 'Issue', 'Pagination', 'Title', 'PubYear']
+    DRP_REF_COMPONENTS = ['title', 'year', 'author']
+    # This map is between the Deep Reference Parser component names and the legacy names
+    # I thought it best to use the legacy names for possible downstream errors
+    COMPONENT_NAME_MAP = {'title': 'Title', 'year': 'PubYear', 'author': 'Authors'}
 
 
 class ProdSettings(BaseSettings):
