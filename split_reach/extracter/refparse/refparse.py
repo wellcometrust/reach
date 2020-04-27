@@ -21,18 +21,13 @@ from .utils import (FileManager,
                    ExactMatcher)
 from .settings import settings
 
-from deep_reference_parser.split_section import SplitSection
+from deep_reference_parser.split_parse import SplitParser
+from deep_reference_parser.common import MULTITASK_CFG
 
 
 SectionedDocument = namedtuple(
     'SectionedDocument',
     ['section', 'uri', 'id', 'metadata']
-)
-
-DEFAULT_MODEL_FILE = os.path.join(
-    os.path.dirname(__file__),
-    'reference_parser_models',
-    'reference_parser_pipeline.pkl'
 )
 
 def check_publications_file(publications, publications_file):
@@ -144,9 +139,9 @@ def get_file(
 
 
 def yield_structured_references(scraper_file,
-                pool_map, logger, model_file=DEFAULT_MODEL_FILE):
+                pool_map, logger):
     """
-    Parsers references using a (potentially parallelized) map()
+    Split and parse references using a (potentially parallelized) map()
     implementation, yielding back a list of reference dicts for each
     document in scraper_file.
 
@@ -154,8 +149,6 @@ def yield_structured_references(scraper_file,
         scraper_file: path / S3 url to scraper results file
         pool_map: (possibly parallel) implementation of map() builtin
         logger: logging configuration name
-        model_file: path/S3 url to model pickle file.
-            Defaults to model within our source tree.
     """
 
     logger.info("[+] Reading input files")
@@ -163,14 +156,11 @@ def yield_structured_references(scraper_file,
     # Loading the scraper results
     scraper_file = get_file(scraper_file, "", get_scraped=True)
 
-    # Loading the pipeline
-    model = get_file(model_file, 'pickle')
-
     sectioned_documents = transform_scraper_file(scraper_file)
 
     # Instantiate deep_reference_parser model here (not in loop!)
 
-    section_splitter = SplitSection()
+    splitter_parser = SplitParser(config_file=MULTITASK_CFG)
 
     t0 = time.time()
     nb_references = 0
@@ -179,23 +169,18 @@ def yield_structured_references(scraper_file,
             i
         ))
 
-        splitted_references = section_splitter.split(
+        reference_predictions = splitter_parser.split_parse(
             doc.section
-        )
+            )
 
         logger.info('[+] Extracted {} references from document {}'.format(
-            len(splitted_references),
+            len(reference_predictions),
             i
         ))
 
-        # For some weird reason not using pool map
-        #   in my laptop is more performant
-        structured_references = pool_map(
-            # A better name would be parse_reference
-            #   here but we use it differently here
-            partial(structure_reference, model),
-            splitted_references
-        )
+        splitted_references = [reference['Reference'] for reference in reference_predictions]
+        reference_components = [reference['Attributes'] for reference in reference_predictions]
+        structured_references = pool_map(structure_reference, reference_components)
 
         structured_references = transform_structured_references(
             splitted_references,
@@ -224,14 +209,13 @@ def yield_structured_references(scraper_file,
     )
 
 
-def parse_references(scraper_file, model_file, num_workers, logger):
+def parse_references(scraper_file, num_workers, logger):
 
     """
     Entry point for reference parser.
 
     Args:
         scraper_file: path / S3 url to scraper results file
-        model_file: path/S3 url to model pickle file (three formats FTW!)
         num_workers: number of workers to use, or None for multiprocessing's
             default (number of cores).
         logger: logging configuration name
@@ -244,7 +228,7 @@ def parse_references(scraper_file, model_file, num_workers, logger):
         pool_map = pool.map
 
     yield from yield_structured_references(
-        scraper_file, pool_map, logger, model_file)
+        scraper_file, pool_map, logger)
 
     if pool is not None:
         pool.terminate()
@@ -280,7 +264,7 @@ def exact_match_publication(exact_matcher, publication):
 # CLI functions
 #
 
-def refparse(scraper_file, publications_file, model_file,
+def refparse(scraper_file, publications_file,
               output_dir, num_workers, logger):
 
     # Loading the references file
@@ -310,7 +294,7 @@ def refparse(scraper_file, publications_file, model_file,
         with open(fuzzy_matched_references_filepath, 'w') as fmrefs_f:
 
             refs = parse_references(
-                scraper_file, model_file, num_workers, logger)
+                scraper_file, num_workers, logger)
             for structured_references in refs:
                 for structured_reference in structured_references:
 
@@ -340,21 +324,20 @@ def refparse(scraper_file, publications_file, model_file,
                     emrefs_f.write(json.dumps(exact_matched_reference)+'\n')
 
 def refparse_profile(scraper_file, references_file,
-                             model_file, output_dir, logger):
+                        output_dir, logger):
     """
     Entry point for reference parser, single worker, with profiling.
 
     Args:
         scraper_file: path / S3 url to scraper results file
         references_file: path/S3 url to references CSV file
-        model_file: path/S3 url to model pickle file (three formats FTW!)
         output_dir: file/S3 url for output files
     """
     import cProfile
     cProfile.run(
         ''.join([
             'refparse(scraper_file, references_file,',
-            'model_file, output_dir, 1, logger)'
+            'output_dir, 1, logger)'
         ]),
         'stats_dumps'
     )
@@ -423,7 +406,6 @@ if __name__ == '__main__':
             refparse_profile(
                 args.scraper_file,
                 args.references_file,
-                args.model_file,
                 args.output_dir,
                 logger
             )
@@ -431,7 +413,6 @@ if __name__ == '__main__':
             refparse(
                 args.scraper_file,
                 args.references_file,
-                args.model_file,
                 args.output_dir,
                 args.num_workers,
                 logger
