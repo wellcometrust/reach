@@ -81,7 +81,6 @@ def create_api(conf):
         search.CitationPage(
             TEMPLATE_ROOT,
             db,
-            'citation',
             get_context(os.environ)
         )
     )
@@ -90,7 +89,6 @@ def create_api(conf):
         search.FulltextPage(
             TEMPLATE_ROOT,
             db,
-            'policy_doc',
             get_context(os.environ))
     )
     api.add_route(
@@ -99,7 +97,7 @@ def create_api(conf):
     )
     api.add_route(
         '/api/search/citations',
-        search.SearchApi(db, 'citation')
+        search.SearchApi(db, 'citations')
     )
     api.add_route(
         '/api/docs/{name}',

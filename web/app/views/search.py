@@ -1,13 +1,15 @@
 import json
+import logging
 
 import falcon
 
 from web.views import template
 
+logger = logging.getLogger(__name__)
 
 DEFAULT_SORTING = {
-    "citation": "match_title",
-    "policy_doc": "title",
+    "citations": "match_title",
+    "policies": "title",
 }
 
 
@@ -38,15 +40,20 @@ def _build_psql_query(params, source):
         OFFSET {offset};
     """
 
-    query.format(
+    query = query.format(
         fields=', '.join(fields),
-        source=source,
-        where_query='=%d OR '.join(fields),
+        source='warehouse.reach_' + source,
+        where_query='=%s OR '.join(fields) + '=%s ',
         order=params.get('sort', DEFAULT_SORTING[source]),
         is_asc=params.get('order', 'ASC'),
         size=size,
-        offset=(int(params.get('page')) - 1) * int(size)
+        offset=(int(params.get('page', 1)) - 1) * int(size)
     )
+
+    terms = (terms[0],) * len(fields)
+
+    logger.info(query)
+    logger.info(terms)
 
     return query, terms
 
@@ -65,14 +72,9 @@ def _search_db(db, params, source):
             es.search()|str: A dict containing the result of the search if it
                              succeeded or a string explaining why it failed
         """
-        try:
+        search_query, args = _build_psql_query(params, source)
 
-            search_query, args = _build_psql_query(params, source)
-
-            return True, db.get(search_query, args)
-
-        except Exception as e:
-            raise falcon.HTTPError("400", description=str(e))
+        return True, db.get(search_query, args)
 
 
 class SearchApi:
@@ -107,8 +109,7 @@ class SearchApi:
 
             status, response = _search_db(self.db, req.params, self.source)
             if status:
-
-                if 'citation' in self.es_index:
+                if 'citations' in self.source:
                     # Clean dataset a bit before using in JS
                     # response = format_citation(response)
                     pass
@@ -136,9 +137,8 @@ class FulltextPage(template.TemplateResource):
 
     """
 
-    def __init__(self, template_dir, db, source, context=None):
+    def __init__(self, template_dir, db, context=None):
         self.db = db
-        self.source = source
         self.search_fields = ','.join([
             'title',
             'text',
@@ -158,7 +158,7 @@ class FulltextPage(template.TemplateResource):
             }
 
             # Still query on the backend to ensure some results are found
-            status, response = _search_db(self.db, params, self.source)
+            status, response = _search_db(self.db, params, 'policies')
 
             self.context['es_response'] = response
             self.context['es_status'] = status
@@ -192,9 +192,8 @@ class CitationPage(template.TemplateResource):
 
     """
 
-    def __init__(self, template_dir, db, source, context=None):
+    def __init__(self, template_dir, db, context=None):
         self.db = db
-        self.source = source
         self.search_fields = ','.join([
             'match_title',
             'policies.title',
@@ -207,6 +206,7 @@ class CitationPage(template.TemplateResource):
         super(CitationPage, self).__init__(template_dir, context)
 
     def on_get(self, req, resp):
+        logger.info('Requesting some citations')
         if req.params:
             params = {
                 "terms": req.params.get('terms', ''),
@@ -214,7 +214,8 @@ class CitationPage(template.TemplateResource):
                 "size": int(req.params.get('size', 1)),
             }
 
-            status, response = _search_db(self.db, params, self.source)
+            logger.info('initiating search...')
+            status, response = _search_db(self.db, params, 'citations')
 
             self.context['es_response'] = response
             self.context['es_status'] = status
