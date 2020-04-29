@@ -18,7 +18,7 @@ VERSION := latest
 #
 
 DEEP_REFERENCE_PARSER_WHEEL := deep_reference_parser-2020.4.5-py3-none-any.whl
-DEEP_REFERENCE_PARSER_URL := https://github.com/wellcometrust/deep_reference_parser/releases/download/2020.4.23/$(DEEP_REFERENCE_PARSER_WHEEL)
+DEEP_REFERENCE_PARSER_URL := https://github.com/wellcometrust/deep_reference_parser/releases/download/2020.4.29/$(DEEP_REFERENCE_PARSER_WHEEL)
 
 
 #
