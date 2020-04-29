@@ -8,7 +8,9 @@ from refparse.utils import structure_reference
 from refparse.refparse import SectionedDocument
 from deep_reference_parser.split_parse import SplitParser
 
-splitter_parser = SplitParser(config_file='tests/test_config_multitask.ini')
+splitter_parser = SplitParser(config_file=os.path.join(
+    os.path.dirname(__file__), 'test_config_multitask.ini')
+)
 
 class TestSplitParse(unittest.TestCase):
 
