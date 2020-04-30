@@ -180,7 +180,7 @@ def yield_structured_references(scraper_file,
         ))
 
         splitted_references = section_splitter.split(
-            doc.section
+            doc.section[0:1000000]
         )
 
         logger.info('[+] Extracted {} references from document {}'.format(
