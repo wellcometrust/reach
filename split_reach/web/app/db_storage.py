@@ -19,3 +19,6 @@ class StorageEngine():
             results = cursor.fetchall()
 
         return results
+
+    def _get_cur(self):
+        return self.conn.cursor()
