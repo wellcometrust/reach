@@ -28,3 +28,4 @@ apt-get install -yqq --no-install-recommends \
 COPY ./safe_import.py /opt/reach/safe_import.py
 COPY ./hooks /opt/reach/hooks
 COPY ./elastic /opt/reach/elastic
+COPY ./tests /opt/reach/tests
