@@ -308,3 +308,14 @@ spec:
         image: argoproj/workflow-controller:v2.6.3
         name: workflow-controller
       serviceAccountName: argo
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: argo-pvc
+  namespace: argo
+spec:
+  accessModes: [ "ReadWriteOnce" ]
+  resources:
+    requests:
+      storage: 25Gi
