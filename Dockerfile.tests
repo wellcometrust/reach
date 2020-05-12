@@ -1,0 +1,14 @@
+FROM reach.base
+
+WORKDIR /opt/reach
+
+COPY ./requirements.tests.txt /opt/reach/requirements.tests.txt
+
+
+RUN pip install -U pip && \
+        python3 -m pip install -r /opt/reach/requirements.tests.txt
+
+
+COPY ./pipeline/reach-scraper /opt/reach/scraper
+COPY ./pipeline/reach-parser /opt/reach/parser
+COPY ./pipeline/reach-es-extractor /opt/reach/extractor
