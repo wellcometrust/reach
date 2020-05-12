@@ -8,8 +8,8 @@ import tempfile
 import lxml.etree
 from lxml.etree import XMLSyntaxError
 
-from .objects.PdfObjects import PdfFile, PdfLine, PdfPage
-from .tools.extraction import (_find_elements, _flatten_text,
+from pdf_parser.objects.PdfObjects import PdfFile, PdfLine, PdfPage
+from pdf_parser.tools.extraction import (_find_elements, _flatten_text,
                                _flatten_fontspec)
 
 MAX_HTML_SIZE = 64 * 1024 * 1024

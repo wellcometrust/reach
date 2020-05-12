@@ -2,11 +2,11 @@ import unittest
 
 from lxml import etree
 
-from reach.pdf_parser.pdf_parse import parse_pdf_document
-from reach.pdf_parser.tools.extraction import (_find_elements,
+from pdf_parser.pdf_parse import parse_pdf_document
+from pdf_parser.tools.extraction import (_find_elements,
                                                     _flatten_text,
                                                     _flatten_fontspec)
-from reach.scraper.tests.common import TEST_PDF, TEST_XML
+from tests.common import TEST_PDF, TEST_XML
 
 
 class TestTools(unittest.TestCase):

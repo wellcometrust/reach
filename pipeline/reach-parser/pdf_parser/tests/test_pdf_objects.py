@@ -3,10 +3,10 @@ import pytest
 import sys
 import unittest
 
-from reach.pdf_parser.objects.PdfObjects import PdfFile
-from reach.pdf_parser.pdf_parse import parse_pdf_document, grab_section
-from reach.scraper.tests.common import (TEST_PDF, TEST_PDF_MULTIPAGE,
-                                             TEST_PDF_PAGE_NUMBER)
+from pdf_parser.objects.PdfObjects import PdfFile
+from pdf_parser.pdf_parse import parse_pdf_document
+from tests.common import (TEST_PDF, TEST_PDF_MULTIPAGE,
+                                       TEST_PDF_PAGE_NUMBER)
 
 """Test file content (html transcription):
 <h1>Test</h1>
@@ -192,4 +192,3 @@ class TestPdfObjectsPageNumber(unittest.TestCase):
         """
         self.assertEqual(self.lines[4], '99')
         self.assertEqual(self.lines[8], '99')
-
