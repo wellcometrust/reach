@@ -1,4 +1,6 @@
 version: '3.4'
+# This will handle the deployment of a local web application, postgresql
+# database and elasticsearch single-node cluster
 
 services:
     postgres:
@@ -14,7 +16,7 @@ services:
 
     web:
       build:
-          context: ./
+          context: ./web
           dockerfile: Dockerfile
       image: uk.ac.wellcome/reach/web:latest
       ports:
@@ -36,8 +38,8 @@ services:
         - --reload
         - web.wsgi:application
       volumes:
-        - ./app:/opt/reach/web/
-        - ./build/web:/opt/reach/build/web
+        - ./web/app:/opt/reach/web/
+        - ./web/build/web:/opt/reach/build/web
       depends_on: ['elasticsearch']
       deploy:
         resources:
@@ -47,14 +49,17 @@ services:
     # Build static assets whenever they change, and save them into
     # the STATIC_ROOT used by the web service above.
     gulp-watch:
+      build:
+          context: ./web
+          dockerfile: Dockerfile.node
       image: reach-web-build:latest
       command:
         - gulp
         - watch
       volumes:
-        - ./build/web/static:/opt/reach/build/web/static
-        - ./gulpfile.js:/opt/reach/build/web/gulpfile.js
-        - ./app/src:/opt/reach/build/web/src
+        - ./web/build/web/static:/opt/reach/build/web/static
+        - ./web/gulpfile.js:/opt/reach/build/web/gulpfile.js
+        - ./web/app/src:/opt/reach/build/web/src
       # Signal handling in gulp? Not so much...
       stop_signal: SIGKILL
       deploy:
