@@ -12,6 +12,7 @@ SectionedDocument = namedtuple(
     ['section', 'id']
 )
 
+
 class TestExactMatcherInit(unittest.TestCase):
 
     def test_no_section(self):
@@ -39,6 +40,7 @@ class TestExactMatcherInit(unittest.TestCase):
         self.assertEqual(
             exact_matcher.title_length_threshold, threshold
         )
+
 
 class TestExactMatch(unittest.TestCase):
     def init_exact_matcher(self):
