@@ -3,7 +3,7 @@ from scrapy.http import Response, Request
 from scrapy.utils.project import get_project_settings
 from wsf_scraping.spiders.base_spider import BaseSpider
 
-from .common import TEST_PDF
+from tests.common import TEST_PDF
 
 
 class Crawler:

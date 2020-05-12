@@ -1,9 +1,10 @@
 import unittest
 from scrapy.http import Response, Request, HtmlResponse
-from scrapy.utils.project import get_project_settings
-from wsf_scraping.spiders.msf_spider import MsfSpider
 
-from .common import get_path, TEST_PDF
+from scrapy.utils.project import get_project_settings
+from wsf_scraping.spiders.gov_spider import GovSpider
+
+from tests.common import get_path, TEST_PDF
 
 
 class Crawler:
@@ -15,11 +16,11 @@ class Crawler:
     stats = Stats()
 
 
-class TestMsfSpider(unittest.TestCase):
+class TestGovSpider(unittest.TestCase):
 
     def setUp(self):
         self.test_file = open(TEST_PDF, 'rb')
-        self.spider = MsfSpider()
+        self.spider = GovSpider()
         self.spider.settings = get_project_settings()
         self.spider.crawler = Crawler()
 
@@ -61,7 +62,7 @@ class TestMsfSpider(unittest.TestCase):
         parse_article function.
         """
 
-        with open(get_path('mock_sites/msf/1.html'), 'rb') as html_site:
+        with open(get_path('mock_sites/gov/1.html'), 'rb') as html_site:
             request = Request('http://foo.bar')
             response = HtmlResponse(
                 'http://foo.bar',
@@ -74,4 +75,27 @@ class TestMsfSpider(unittest.TestCase):
             # Check if something is returned
             self.assertTrue(res)
 
+            # Check the name of the function called in callback
+            self.assertEqual(res.callback.__name__, 'parse_article')
+
+    def test_parse_article(self):
+        """Test if given an publication listing page of the who website,
+        the spider yields a request to a publication, parsed by the
+        parse_article function.
+        """
+
+        with open(get_path('mock_sites/gov/3.html'), 'rb') as html_site:
+            request = Request('http://foo.bar')
+            response = HtmlResponse(
+                'http://foo.bar',
+                body=html_site.read(),
+                request=request
+            )
+
+            res = next(self.spider.parse_article(response))
+
+            # Check if something is returned
+            self.assertTrue(res)
+
+            # Check the name of the function called in callback
             self.assertEqual(res.callback.__name__, 'save_pdf')
