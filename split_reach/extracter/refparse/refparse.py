@@ -4,7 +4,6 @@ and a list of publication.
 
 from argparse import ArgumentParser
 from collections import namedtuple
-from multiprocessing import Pool
 from urllib.parse import urlparse
 from functools import partial
 import os
@@ -138,8 +137,7 @@ def get_file(
     return file
 
 
-def yield_structured_references(scraper_file,
-                pool_map, logger):
+def yield_structured_references(scraper_file, logger):
     """
     Split and parse references using a (potentially parallelized) map()
     implementation, yielding back a list of reference dicts for each
@@ -147,7 +145,6 @@ def yield_structured_references(scraper_file,
 
     Args:
         scraper_file: path / S3 url to scraper results file
-        pool_map: (possibly parallel) implementation of map() builtin
         logger: logging configuration name
     """
 
@@ -180,7 +177,7 @@ def yield_structured_references(scraper_file,
 
         splitted_references = [reference['Reference'] for reference in reference_predictions]
         reference_components = [reference['Attributes'] for reference in reference_predictions]
-        structured_references = pool_map(structure_reference, reference_components)
+        structured_references = map(structure_reference, reference_components)
 
         structured_references = transform_structured_references(
             splitted_references,
@@ -209,30 +206,18 @@ def yield_structured_references(scraper_file,
     )
 
 
-def parse_references(scraper_file, num_workers, logger):
+def parse_references(scraper_file, logger):
 
     """
     Entry point for reference parser.
 
     Args:
         scraper_file: path / S3 url to scraper results file
-        num_workers: number of workers to use, or None for multiprocessing's
-            default (number of cores).
         logger: logging configuration name
     """
-    if num_workers == 1:
-        pool = None
-        pool_map = map
-    else:
-        pool = Pool(num_workers)
-        pool_map = pool.map
 
     yield from yield_structured_references(
-        scraper_file, pool_map, logger)
-
-    if pool is not None:
-        pool.terminate()
-        pool.join()
+        scraper_file, logger)
 
 #
 # Module entry points
@@ -265,7 +250,7 @@ def exact_match_publication(exact_matcher, publication):
 #
 
 def refparse(scraper_file, publications_file,
-              output_dir, num_workers, logger):
+              output_dir, logger):
 
     # Loading the references file
     publications_df = get_file(publications_file, 'csv')
@@ -294,7 +279,7 @@ def refparse(scraper_file, publications_file,
         with open(fuzzy_matched_references_filepath, 'w') as fmrefs_f:
 
             refs = parse_references(
-                scraper_file, num_workers, logger)
+                scraper_file, logger)
             for structured_references in refs:
                 for structured_reference in structured_references:
 
@@ -337,7 +322,7 @@ def refparse_profile(scraper_file, references_file,
     cProfile.run(
         ''.join([
             'refparse(scraper_file, references_file,',
-            'output_dir, 1, logger)'
+            'output_dir, logger)'
         ]),
         'stats_dumps'
     )
@@ -401,7 +386,6 @@ if __name__ == '__main__':
         args = parser.parse_args()
 
         if args.profile:
-            assert args.num_workers is None or args.num_workers == 1
 
             refparse_profile(
                 args.scraper_file,
@@ -414,7 +398,6 @@ if __name__ == '__main__':
                 args.scraper_file,
                 args.references_file,
                 args.output_dir,
-                args.num_workers,
                 logger
             )
 
