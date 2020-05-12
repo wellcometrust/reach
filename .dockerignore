@@ -16,6 +16,7 @@ build/*
 reach/refparse/algo_evaluation/data_evaluate/*
 **/node_modules
 
+env
 docs
 pull_request_template.md
 CONTRIBUTING.md

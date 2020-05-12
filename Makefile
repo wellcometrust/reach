@@ -148,7 +148,7 @@ run-scraper: scraper-image
 .PHONY: run-parser
 run-parser: parser-image
 	docker run \
-	    -e AWS_ACCESS_KEY_ID="${AWS_ACCESS_KEY_ID}" \
+	  -e AWS_ACCESS_KEY_ID="${AWS_ACCESS_KEY_ID}" \
 		-e AWS_SECRET_ACCESS_KEY="${AWS_SECRET_ACCESS_KEY}" \
 		-e SENTRY_DSN="${SENTRY_DSN}" \
 	    ${ECR_ARN}/reach-parser \
@@ -160,7 +160,7 @@ run-parser: parser-image
 .PHONY: run-extracter
 run-extracter: extracter-image
 	docker run \
-	    -e AWS_ACCESS_KEY_ID="${AWS_ACCESS_KEY_ID}" \
+	  -e AWS_ACCESS_KEY_ID="${AWS_ACCESS_KEY_ID}" \
 		-e AWS_SECRET_ACCESS_KEY="${AWS_SECRET_ACCESS_KEY}" \
 		-e SENTRY_DSN="${SENTRY_DSN}" \
 	    ${ECR_ARN}/reach-extracter \
@@ -171,7 +171,7 @@ run-extracter: extracter-image
 .PHONY: run-indexer-fulltexts
 run-indexer-fulltexts: indexer-image
 	docker run \
-	    -e AWS_ACCESS_KEY_ID="${AWS_ACCESS_KEY_ID}" \
+	  -e AWS_ACCESS_KEY_ID="${AWS_ACCESS_KEY_ID}" \
 		-e AWS_SECRET_ACCESS_KEY="${AWS_SECRET_ACCESS_KEY}" \
 		-e SENTRY_DSN="${SENTRY_DSN}" \
 		-e ES_HOST=${DOCKER_LOCALHOST} \
@@ -184,7 +184,7 @@ run-indexer-fulltexts: indexer-image
 .PHONY: run-indexer-epmc
 run-indexer-epmc: indexer-image
 	docker run \
-	    -e AWS_ACCESS_KEY_ID="${AWS_ACCESS_KEY_ID}" \
+	  -e AWS_ACCESS_KEY_ID="${AWS_ACCESS_KEY_ID}" \
 		-e AWS_SECRET_ACCESS_KEY="${AWS_SECRET_ACCESS_KEY}" \
 		-e SENTRY_DSN="${SENTRY_DSN}" \
 		-e ES_HOST=${DOCKER_LOCALHOST} \
@@ -198,7 +198,7 @@ run-indexer-epmc: indexer-image
 .PHONY: run-fuzzymatcher
 run-fuzzymatcher: fuzzymatcher-image
 	docker run \
-	    -e AWS_ACCESS_KEY_ID="${AWS_ACCESS_KEY_ID}" \
+	  -e AWS_ACCESS_KEY_ID="${AWS_ACCESS_KEY_ID}" \
 		-e AWS_SECRET_ACCESS_KEY="${AWS_SECRET_ACCESS_KEY}" \
 		-e SENTRY_DSN="${SENTRY_DSN}" \
 		-e ES_HOST=${DOCKER_LOCALHOST} \
@@ -213,7 +213,7 @@ run-fuzzymatcher: fuzzymatcher-image
 .PHONY: run-indexer-citations
 run-indexer-citations: indexer-image
 	docker run \
-	    -e AWS_ACCESS_KEY_ID="${AWS_ACCESS_KEY_ID}" \
+	  -e AWS_ACCESS_KEY_ID="${AWS_ACCESS_KEY_ID}" \
 		-e AWS_SECRET_ACCESS_KEY="${AWS_SECRET_ACCESS_KEY}" \
 		-e SENTRY_DSN="${SENTRY_DSN}" \
 		-e ES_HOST=${DOCKER_LOCALHOST} \
@@ -229,21 +229,51 @@ docker-run: docker-build run-scraper run-parser run-extracter run-indexer-epmc r
 
 
 
-# Testing
-.PHONY: tests-image
-tests-image: base-image
+# Testing images
+.PHONY: scraper-tests-image
+scraper-tests-image: base-image
 	docker build \
-		-t ${ECR_ARN}/reach/testing:latest \
-		-f Dockerfile.tests \
-		.
+		-t $(ECR_ARN)/test-reach-scraper:$(LATEST_TAG) \
+		-f pipeline/reach-scraper/Dockerfile.test \
+		./pipeline/reach-scraper
+
+.PHONY: test-scraper
+test-scraper: scraper-tests-image
+	docker run -u root \
+		-e SENTRY_DSN="${SENTRY_DSN}" \
+		--rm $(ECR_ARN)/test-reach-scraper:latest \
+		sh -c "pip install pytest && pytest /opt/reach/"
+
+.PHONY: parser-tests-image
+parser-tests-image: base-image
+	docker build \
+		-t $(ECR_ARN)/test-reach-parser:$(LATEST_TAG) \
+		-f pipeline/reach-parser/Dockerfile.test \
+		./pipeline/reach-parser
+
+.PHONY: test-parser
+test-parser: parser-tests-image
+	docker run -u root \
+		-e SENTRY_DSN="${SENTRY_DSN}" \
+		--rm $(ECR_ARN)/test-reach-parser:latest \
+		sh -c "pip install pytest && pytest /opt/reach/"
+
+.PHONY: extractor-tests-image
+extractor-tests-image: base-image
+	docker build \
+		-t $(ECR_ARN)/test-reach-extractor:$(LATEST_TAG) \
+		-f pipeline/reach-es-extractor/Dockerfile.test \
+		./pipeline/reach-es-extractor
+
+.PHONY: test-extractor
+test-extractor: extractor-tests-image
+	docker run -u root \
+		-e SENTRY_DSN="${SENTRY_DSN}" \
+		--rm $(ECR_ARN)/test-reach-extractor:latest \
+		sh -c "pip install pytest && pytest /opt/reach/"
 
 .PHONY: docker-test
-docker-test: tests-image
-	docker run -u root \
-		--rm $(ECR_ARN)/reach/testing:latest \
-		sh -c "pytest /opt/reach"
-
-
+docker-test: test-scraper test-parser test-extractor
 
 # Web application
 .PHONY: web-image
