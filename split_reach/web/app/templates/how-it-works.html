@@ -1,0 +1,80 @@
+{% extends 'base.html' %}
+
+
+{% block header %}
+
+<header class="navbar">
+  <section class="navbar-section">
+        <a href="/" class="navbar-brand"><h2>Reach</h2></a>
+  </section>
+  <section class="navbar-section hide-md" id="navbar-links">
+    <a href="/about" class="a-light">About Reach</a>
+    <a href="/how-it-works" class="a-light active">How Reach works</a>
+    <a href="/search/citations" class="a-light">Discover citations</a>
+    <a href="/search/policy-docs" class="a-light">Browse policy documents</a>
+  </section>
+</header>
+
+{% endblock %}
+
+{% block main %}
+
+<section id="breadcrumbs">
+  <div class="breadcrumb-box">
+    <ul class="breadcrumb">
+        <li class="breadcrumb-item"><a href="/">Home</a></li>
+        <li class="breadcrumb-item">How Reach works</li>
+    </ul>
+  </div>
+</section>
+
+<hr class="fs">
+<section id="how-it-works-page">
+  <div class="container">
+    <div class="columns">
+      <div class="column col-3 hide-md"></div>
+      <div class="column col-6 col-md-12 text-center">
+        <h1>How Reach works</h1>
+        <h3>Reach uses machine learning to search through thousands of policy documents, extract the references and match them with scientific publications.</h3>
+      </div>
+      <div class="column col-3 hide-md"></div>
+    </div>
+    <hr class="fs">
+    <hr class="fs">
+    <div class="columns">
+      <div class="column col-3 col-md-12 text-center">
+        <img src="/static/images/Icon_How_Download_160px.svg" alt="">
+      </div>
+      <div class="column col-6 col-md-12">
+        <h3 class="category-title">1. Download</h3>
+        <p>A piece of software called a ‘scraper’ is used to extract documents from the websites of policy organisations. The scraper navigates through a website and clicks on all the links. Where a link leads to a PDF, it is downloaded and the text is extracted. You can browse our collection of 129k policy documents <a href="/search/policy-docs">here</a>.</p>
+      </div>
+      <div class="column col-3 hide-md"></div>
+    </div>
+    <hr class="fs">
+    <div class="columns">
+      <div class="column col-3 col-md-12 text-center">
+        <img src="/static/images/Icon_How_Extract_160px.svg" alt="">
+      </div>
+      <div class="column col-6 col-md-12">
+        <h3 class="category-title">2. Extract</h3>
+        <p>An algorithm scans the text from each PDF and identifies sections that contain references. It does this by identifying headings such as ‘References’, ‘Bibliography’ or ‘End Notes’. Individual references are extracted from the sections when the algorithm identifies the start and the end of each reference. The references are then split into individual parts like author, publication date, journal and title.</p>
+      </div>
+      <div class="column col-3 hide-md"></div>
+    </div>
+    <hr class="fs">
+    <div class="columns">
+      <div class="column col-3 col-md-12 text-center">
+        <img src="/static/images/Icon_How_Match_160px.svg" alt="">
+      </div>
+      <div class="column col-6 col-md-12">
+        <h3 class="category-title">3. Match</h3>
+        <p>Once the parts of each reference have been extracted, they are compared with a database of scientific publications. References with the same title as a publication in the database are matched. This checks that the algorithm has identified scientific publications from the downloaded PDFs.</p>
+      </div>
+      <div class="column col-3 hide-md"></div>
+    </div>
+  </div>
+</section>
+<hr class="fs">
+
+{% endblock %}

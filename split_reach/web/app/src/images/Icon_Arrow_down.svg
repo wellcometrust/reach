@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="8px" height="12px" viewBox="0 0 8 12" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <!-- Generator: Sketch 64 (93537) - https://sketch.com -->
+    <title>Icon/Arrow/down</title>
+    <desc>Created with Sketch.</desc>
+    <defs>
+        <polygon id="path-1" points="3.34375 0 4.65625 0 4.65625 9.4375 7.0625 7.0625 8 8 4 12 0 8 0.9375 7.0625 3.34375 9.4375"/>
+    </defs>
+    <g id="Page-1" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <g id="Citations-Results_No-filters" transform="translate(-306.000000, -557.000000)">
+            <g id="Group" transform="translate(92.000000, 459.000000)">
+                <g id="Column-header" transform="translate(0.000000, 76.000000)">
+                    <g id="Icon/Arrow/down" transform="translate(206.000000, 16.000000)">
+                        <g id="Group" transform="translate(8.000000, 6.000000)">
+                            <mask id="mask-2" fill="white">
+                                <use xlink:href="#path-1"/>
+                            </mask>
+                            <use id="Mask" fill="#333333" xlink:href="#path-1"/>
+                            <g id="↳🎨icon-color" mask="url(#mask-2)" fill="#006272">
+                                <g transform="translate(-32.000000, -30.000000)" id="Icon-Shade">
+                                    <rect x="0" y="0" width="72" height="72"/>
+                                </g>
+                            </g>
+                        </g>
+                    </g>
+                </g>
+            </g>
+        </g>
+    </g>
+</svg>
