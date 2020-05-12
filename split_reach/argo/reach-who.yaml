@@ -1,0 +1,306 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Workflow
+metadata:
+  name: wkflw-reach-who
+  generateName: wkflw-reach-who-
+  namespace: argo
+spec:
+  activeDeadlineSeconds: 216000
+  entrypoint: scraper
+  serviceAccountName: argo
+  volumes:
+  - name: workdir
+    persistentVolumeClaim:
+      claimName: argo-pvc
+
+  arguments:
+    parameters:
+    - name: es_host
+      value: "elasticsearch.elastic.svc.cluster.local"
+    - name: pg_host
+      value: "localhost"
+    - name: pg_user
+      value: postgres
+
+  templates:
+  - name: scraper
+    dag:
+      tasks:
+      # - name: scrape-pdfs
+      #   template: op-scraper
+      # - name: parse-pdfs
+      #   template: op-parser
+      #   dependencies: [scrape-pdfs]
+      # - name: extract-pdfs
+      #   template: op-extractor
+      #   dependencies: [parse-pdfs]
+
+      - name: clear-artifacts
+        template: op-clear-artifacts
+        # dependencies: [fuzzymatcher, parse-pdfs]
+
+      # FULLTEXT path
+      # - name: fulltext-indexer
+      #   template: op-es-indexer
+      #   dependencies: [extract-pdfs]
+      - name: fulltext-pg
+        template: op-pg-fulltext-import
+        dependencies: [clear-artifacts]
+
+      # MATCHING PATH
+      # - name: fuzzymatcher
+      #   template: op-fuzzymatcher
+      #   dependencies: [extract-pdfs]
+      # - name: citations-indexer
+      #   template: op-citation-indexer
+      #   dependencies: [fuzzymatcher]
+      - name: citations-pg
+        template: op-pg-citations-import
+        dependencies: [fulltext-pg]
+
+      - name: ls-artifacts
+        template: op-ls-artifacts
+        dependencies: [citations-pg]
+
+  # Scrapes data from a given target
+  - name: op-scraper
+    activeDeadlineSeconds: 216000
+    container:
+      imagePullPolicy: Never
+      image: 160358319781.dkr.ecr.eu-west-1.amazonaws.com/uk.ac.wellcome/reach-scraper:latest
+      command: [sh, -c]
+      workingDir: /opt/reach
+      imagePullPolicy: Always
+      args: [
+        "./spider_task.py s3://datalabs-staging/test/who_iris who_iris"
+      ]
+      env:
+      - name: SENTRY_DSN
+        value: "https://11ce70f14c0b448892a26afba992ea85@o197854.ingest.sentry.io/5208136"
+      - name: AWS_ACCESS_KEY_ID
+        valueFrom:
+          secretKeyRef:
+            name: aws
+            key: staging_aws_access_key_id
+      - name: AWS_SECRET_ACCESS_KEY
+        valueFrom:
+          secretKeyRef:
+            name: aws
+            key: staging_aws_secret_key
+
+
+  - name: op-parser
+    activeDeadlineSeconds: 216000
+    container:
+      imagePullPolicy: Never
+      image: 160358319781.dkr.ecr.eu-west-1.amazonaws.com/uk.ac.wellcome/reach-parser:latest
+      command: [sh, -c]
+      workingDir: /opt/reach
+      args: [
+        "./parser_task.py s3://datalabs-staging/test/who_iris s3://datalabs-staging/test/who_iris/parsed_result.json.gz who_iris"
+      ]
+      env:
+      - name: SENTRY_DSN
+        value: "https://11ce70f14c0b448892a26afba992ea85@o197854.ingest.sentry.io/5208136"
+      - name: AWS_ACCESS_KEY_ID
+        valueFrom:
+          secretKeyRef:
+            name: aws
+            key: staging_aws_access_key_id
+      - name: AWS_SECRET_ACCESS_KEY
+        valueFrom:
+          secretKeyRef:
+            name: aws
+            key: staging_aws_secret_key
+
+  - name: op-extractor
+    activeDeadlineSeconds: 216000
+    container:
+      imagePullPolicy: Never
+      image: 160358319781.dkr.ecr.eu-west-1.amazonaws.com/uk.ac.wellcome/reach-es-extractor:latest
+      command: [sh, -c]
+      workingDir: /opt/reach
+      args: [
+        "./extract_refs_task.py s3://datalabs-staging/test/who_iris/parsed_result.json.gz s3://datalabs-staging/test/who_iris/extracted-refs-who_iris.json.gz s3://datalabs-staging/test/who_iris/split-refs-who_iris.json.gz"
+      ]
+      env:
+      - name: SENTRY_DSN
+        value: "https://11ce70f14c0b448892a26afba992ea85@o197854.ingest.sentry.io/5208136"
+      - name: AWS_ACCESS_KEY_ID
+        valueFrom:
+          secretKeyRef:
+            name: aws
+            key: staging_aws_access_key_id
+      - name: AWS_SECRET_ACCESS_KEY
+        valueFrom:
+          secretKeyRef:
+            name: aws
+            key: staging_aws_secret_key
+
+  - name: op-es-indexer
+    activeDeadlineSeconds: 216000
+    container:
+      imagePullPolicy: Never
+      image: 160358319781.dkr.ecr.eu-west-1.amazonaws.com/uk.ac.wellcome/reach-es-indexer:latest
+      command: [sh, -c]
+      workingDir: /opt/reach
+      args: [
+        "./index_task.py s3://datalabs-staging/test/who_iris/parsed_result.json.gz who_iris fulltexts"
+      ]
+      env:
+      - name: ES_HOST
+        value: "elasticsearch.elastic.svc.cluster.local"
+      - name: SENTRY_DSN
+        value: "https://11ce70f14c0b448892a26afba992ea85@o197854.ingest.sentry.io/5208136"
+      - name: AWS_ACCESS_KEY_ID
+        valueFrom:
+          secretKeyRef:
+            name: aws
+            key: staging_aws_access_key_id
+      - name: AWS_SECRET_ACCESS_KEY
+        valueFrom:
+          secretKeyRef:
+            name: aws
+            key: staging_aws_secret_key
+
+  - name: op-fuzzymatcher
+    activeDeadlineSeconds: 216000
+    container:
+      imagePullPolicy: Never
+      image: 160358319781.dkr.ecr.eu-west-1.amazonaws.com/uk.ac.wellcome/reach-fuzzy-matcher:latest
+      command: [sh, -c]
+      workingDir: /opt/reach
+      args: [
+        "./fuzzymatcher_task.py s3://datalabs-staging/test/who_iris/extracted-refs-who_iris.json.gz s3://datalabs-staging/test/who_iris/fuzzymatched-refs-who_iris.json.gz who_iris epmc_metadata"
+      ]
+      env:
+      - name: ES_HOST
+        value: "elasticsearch.elastic.svc.cluster.local"
+      - name: SENTRY_DSN
+        value: "https://11ce70f14c0b448892a26afba992ea85@o197854.ingest.sentry.io/5208136"
+      - name: AWS_ACCESS_KEY_ID
+        valueFrom:
+          secretKeyRef:
+            name: aws
+            key: staging_aws_access_key_id
+      - name: AWS_SECRET_ACCESS_KEY
+        valueFrom:
+          secretKeyRef:
+            name: aws
+            key: staging_aws_secret_key
+
+
+  - name: op-citation-indexer
+    activeDeadlineSeconds: 216000
+    container:
+      imagePullPolicy: Never
+      image: 160358319781.dkr.ecr.eu-west-1.amazonaws.com/uk.ac.wellcome/reach-es-indexer:latest
+      command: [sh, -c]
+      workingDir: /opt/reach
+      args: [
+        "./index_task.py s3://datalabs-staging/test/who_iris/fuzzymatched-refs-who_iris.json.gz who_iris citations"
+      ]
+      env:
+      - name: ES_HOST
+        value: "elasticsearch.elastic.svc.cluster.local"
+      - name: SENTRY_DSN
+        value: "https://11ce70f14c0b448892a26afba992ea85@o197854.ingest.sentry.io/5208136"
+      - name: AWS_ACCESS_KEY_ID
+        valueFrom:
+          secretKeyRef:
+            name: aws
+            key: staging_aws_access_key_id
+      - name: AWS_SECRET_ACCESS_KEY
+        valueFrom:
+          secretKeyRef:
+            name: aws
+            key: staging_aws_secret_key
+
+
+  - name: op-pg-citations-import
+    activeDeadlineSeconds: 216000
+    inputs:
+      artifacts:
+      - name: reach-citations
+        path: /mnt/vol/who_iris-matched-result.json.gz
+        s3:
+          endpoint: s3.amazonaws.com
+          bucket: datalabs-staging
+          key: reach/who_iris/fuzzymatched-refs-who_iris.json.gz
+          accessKeySecret:
+            name: aws
+            key: staging_aws_access_key_id
+          secretKeySecret:
+            name: aws
+            key: staging_aws_secret_key
+    container:
+      imagePullPolicy: Never
+      image: 160358319781.dkr.ecr.eu-west-1.amazonaws.com/uk.ac.wellcome/datalabs-infra-utils:latest
+      imagePullPolicy: Always
+      workingDir: /opt/pipelines/reach
+      command: [sh, -c]
+      args: [
+          "python load-citations-pg.py --pg-host {{workflow.parameters.pg_host}} --pg-user {{workflow.parameters.pg_user}} --import-file /mnt/vol/who_iris-matched-result.json --pg-port 5432 --pg-pass $PG_PASSWORD --org who_iris"
+      ]
+      volumeMounts:
+      - mountPath: /mnt/vol
+        name: workdir
+      env:
+      - name: PG_PASSWORD
+        value: development
+
+  - name: op-pg-fulltext-import
+    activeDeadlineSeconds: 216000
+    inputs:
+      artifacts:
+      - name: reach-fulltexts
+        path: /mnt/vol/who_iris-parsed-result.json.gz
+        s3:
+          endpoint: s3.amazonaws.com
+          bucket: datalabs-staging
+          key: test/who_iris/parsed_result.json.gz
+          accessKeySecret:
+            name: aws
+            key: staging_aws_access_key_id
+          secretKeySecret:
+            name: aws
+            key: staging_aws_secret_key
+    container:
+      imagePullPolicy: Never
+      image: 160358319781.dkr.ecr.eu-west-1.amazonaws.com/uk.ac.wellcome/datalabs-infra-utils:latest
+      imagePullPolicy: Always
+      workingDir: /opt/pipelines/reach
+      command: [sh, -c]
+      args: [
+          "python load-policies-pg.py --pg-host {{workflow.parameters.pg_host}} --pg-user {{workflow.parameters.pg_user}} --import-file /mnt/vol/who_iris-parsed-result.json.gz --pg-port 5432 --pg-pass $PG_PASSWORD --org who_iris"
+      ]
+      volumeMounts:
+      - mountPath: /mnt/vol
+        name: workdir
+      env:
+      - name: PG_PASSWORD
+        value: development
+
+
+  # Clear previously loaded artifacts from persistant volume
+  - name: op-clear-artifacts
+    container:
+      image: alpine:3.11.5
+      command: [sh, -c]
+      args: [
+        "ls -lth /mnt/vol/ && rm -rf /mnt/vol/who_iris-matched-result.json.gz && rm -rf /mnt/vol/who_iris-parsed-result.json.gz && ls -lth /mnt/vol/"
+      ]
+      volumeMounts:
+      - mountPath: /mnt/vol
+        name: workdir
+
+  - name: op-ls-artifacts
+    container:
+      image: alpine:3.11.5
+      command: [sh, -c]
+      args: [
+          "ls -l /mnt/vol/who_iris-matched-result.json && head -n10 /mnt/vol/who_iris-matched-result.json"
+      ]
+      volumeMounts:
+      - mountPath: /mnt/vol
+        name: workdir
