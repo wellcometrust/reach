@@ -21,10 +21,10 @@
   
     
       <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
-        <script type="text/javascript" src="_static/jquery.js"></script>
-        <script type="text/javascript" src="_static/underscore.js"></script>
-        <script type="text/javascript" src="_static/doctools.js"></script>
-        <script type="text/javascript" src="_static/language_data.js"></script>
+        <script src="_static/jquery.js"></script>
+        <script src="_static/underscore.js"></script>
+        <script src="_static/doctools.js"></script>
+        <script src="_static/language_data.js"></script>
     
     <script type="text/javascript" src="_static/js/theme.js"></script>
 
@@ -87,12 +87,14 @@
 <li class="toctree-l3"><a class="reference internal" href="#parameters">Parameters</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#fields">Fields</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#response">Response</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#try-it">Try it:</a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="#searching-citations">Searching Citations</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#id1">Parameters</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#id2">Fields</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#id3">Response</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#id4">Try it:</a></li>
 </ul>
 </li>
 </ul>
@@ -164,13 +166,13 @@
   <div class="section" id="web-api-documentation">
 <h1>Web API Documentation<a class="headerlink" href="#web-api-documentation" title="Permalink to this headline">¶</a></h1>
 <p>Reach web application offers an API for users. It can be accessed at:</p>
-<p><code class="docutils literal notranslate"><span class="pre">https://reach-staging.datalabs.wellcome.cloud/api/search/[INDEX]</span></code></p>
+<p><code class="docutils literal notranslate"><span class="pre">https://reach.wellcomedatalabs.org/api/search/[INDEX]</span></code></p>
 <p>Where INDEX is <code class="docutils literal notranslate"><span class="pre">policy-docs</span></code> or <code class="docutils literal notranslate"><span class="pre">citations</span></code>.</p>
 <div class="section" id="searching-policy-documents">
 <h2>Searching policy documents<a class="headerlink" href="#searching-policy-documents" title="Permalink to this headline">¶</a></h2>
 <p>To search Policy Documents through the API:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>
-<span class="n">GET</span> <span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">reach</span><span class="o">.</span><span class="n">datalabs</span><span class="o">.</span><span class="n">wellcome</span><span class="o">.</span><span class="n">cloud</span><span class="o">/</span><span class="n">api</span><span class="o">/</span><span class="n">search</span><span class="o">/</span><span class="n">policy</span><span class="o">-</span><span class="n">docs</span>
+<span class="n">GET</span> <span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">reach</span><span class="o">.</span><span class="n">wellcomedatalabs</span><span class="o">.</span><span class="n">org</span><span class="o">/</span><span class="n">api</span><span class="o">/</span><span class="n">search</span><span class="o">/</span><span class="n">policy</span><span class="o">-</span><span class="n">docs</span>
 
 </pre></div>
 </div>
@@ -247,12 +249,19 @@
 </pre></div>
 </div>
 </div>
+<div class="section" id="try-it">
+<h3>Try it:<a class="headerlink" href="#try-it" title="Permalink to this headline">¶</a></h3>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>
+https://reach.wellcomedatalabs.org/api/search/policy-docs?terms=malaria,africa&amp;fields=title,title&amp;sort=title.keyword&amp;order=asc&amp;page=1
+</pre></div>
+</div>
+</div>
 </div>
 <div class="section" id="searching-citations">
 <h2>Searching Citations<a class="headerlink" href="#searching-citations" title="Permalink to this headline">¶</a></h2>
 <p>To search Citations through the API:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>
-<span class="n">GET</span> <span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">reach</span><span class="o">.</span><span class="n">datalabs</span><span class="o">.</span><span class="n">wellcome</span><span class="o">.</span><span class="n">cloud</span><span class="o">/</span><span class="n">api</span><span class="o">/</span><span class="n">search</span><span class="o">/</span><span class="n">citations</span>
+<span class="n">GET</span> <span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">reach</span><span class="o">.</span><span class="n">wellcomedatalabs</span><span class="o">.</span><span class="n">org</span><span class="o">/</span><span class="n">api</span><span class="o">/</span><span class="n">search</span><span class="o">/</span><span class="n">citations</span>
 
 </pre></div>
 </div>
@@ -371,6 +380,13 @@
 		<span class="p">]</span>
 	<span class="p">}</span>
 <span class="p">}</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="id4">
+<h3>Try it:<a class="headerlink" href="#id4" title="Permalink to this headline">¶</a></h3>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>
+https://reach.wellcomedatalabs.org/api/search/citations?terms=malaria,africa&amp;fields=match_title,policies.title.keyword&amp;sort=matchtitle.keyword&amp;order=asc&amp;page=1
 </pre></div>
 </div>
 </div>
