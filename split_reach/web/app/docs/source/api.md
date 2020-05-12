@@ -2,7 +2,7 @@
 
 Reach web application offers an API for users. It can be accessed at:
 
-`https://reach-staging.datalabs.wellcome.cloud/api/search/[INDEX]`
+`https://reach.wellcomedatalabs.org/api/search/[INDEX]`
 
 Where INDEX is `policy-docs` or `citations`.
 
@@ -12,7 +12,7 @@ To search Policy Documents through the API:
 
 ```
 
-GET https://reach.datalabs.wellcome.cloud/api/search/policy-docs
+GET https://reach.wellcomedatalabs.org/api/search/policy-docs
 
 
 ```
@@ -89,6 +89,13 @@ A json of the following format:
 }
 ```
 
+### Try it:
+
+```
+
+https://reach.wellcomedatalabs.org/api/search/policy-docs?terms=malaria,africa&fields=title,title&sort=title.keyword&order=asc&page=1
+
+```
 
 ## Searching Citations
 
@@ -96,7 +103,7 @@ To search Citations through the API:
 
 ```
 
-GET https://reach.datalabs.wellcome.cloud/api/search/citations
+GET https://reach.wellcomedatalabs.org/api/search/citations
 
 
 ```
@@ -219,4 +226,12 @@ A json of the following format:
 		]
 	}
 }
+```
+
+### Try it:
+
+```
+
+https://reach.wellcomedatalabs.org/api/search/citations?terms=malaria,africa&fields=match_title,policies.title.keyword&sort=matchtitle.keyword&order=asc&page=1
+
 ```
