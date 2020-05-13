@@ -52,6 +52,12 @@ def decrypt_env():
     return base64.b64decode(d['Plaintext']).decode('utf8')
 
 
+def add_cred_to_secrets(cred, secret):
+    with open('./argo/secrets/minikube/argo/aws/{}'.format(cred.lower()),
+              'wb') as f:
+        f.write(base64.b64encode(secret.encode('utf8')))
+
+
 def aws_creds_to_env():
     env = 'export '
     conf = configparser.ConfigParser()
@@ -59,7 +65,7 @@ def aws_creds_to_env():
     for i in conf['default']:
         if i.startswith('aws'):
             env += '{}={} '.format(i.upper(), conf['default'][i])
-
+            add_cred_to_secrets(i, conf['default'][i])
     return env
 
 
@@ -70,6 +76,15 @@ if __name__ == '__main__':
         if not env.endswith(';'):
             env += ';'
         env += aws_creds_to_env()
+    else:
+        add_cred_to_secrets(
+            "AWS_ACCESS_KEY_ID".lower(),
+            os.environ.get("AWS_ACCESS_KEY_ID")
+        )
+        add_cred_to_secrets(
+            "AWS_SECRET_ACCESS_KEY".lower(),
+            os.environ.get("AWS_SECRET_ACCESS_KEY")
+        )
     if not args.raw:
         # $(./export_env.py) fails unless we strip out \'s
         env = env.replace('\\', '')

@@ -19,3 +19,6 @@ build/*
 **/node_modules
 local/*
 **/epmc-metadata.json.gz
+*env
+argo/secrets/minikube/argo/aws/*
+!argo/secrets/minikube/argo/aws/.gitkeep
