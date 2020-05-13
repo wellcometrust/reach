@@ -158,12 +158,12 @@ run-parser: parser-image
 
 
 .PHONY: run-extracter
-run-extracter: extracter-image
+run-extracter: es-extracter-image
 	docker run \
 	  -e AWS_ACCESS_KEY_ID="${AWS_ACCESS_KEY_ID}" \
 		-e AWS_SECRET_ACCESS_KEY="${AWS_SECRET_ACCESS_KEY}" \
 		-e SENTRY_DSN="${SENTRY_DSN}" \
-	    ${ECR_ARN}/reach-extracter \
+	    ${ECR_ARN}/reach-es-extractor \
 		${PARSER_DST} \
 		${EXTRACTER_PARSED_DST} \
 		${EXTRACTER_SPLIT_DST}
