@@ -9,6 +9,7 @@ build/*
 *.json
 !package.json
 *.pdf
+!base/tests/pdfs/*
 *.txt
 !keywords.txt
 !section_keywords.txt
