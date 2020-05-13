@@ -167,9 +167,9 @@ def yield_structured_references(scraper_file, logger):
         ))
 
         reference_predictions = splitter_parser.split_parse(
-            doc.section
+            doc.section[0:1000000]
             )
-
+        
         logger.info('[+] Extracted {} references from document {}'.format(
             len(reference_predictions),
             i

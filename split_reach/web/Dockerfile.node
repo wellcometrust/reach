@@ -1,0 +1,15 @@
+FROM node:12.7.0-alpine
+
+# Rationale: install modules into /src/node_modules, which
+# we keep inside the docker image. Then, volume in whatever
+# grunt needs to run.
+WORKDIR /opt/reach/build/web
+COPY package.json ./package.json
+COPY .babelrc ./.babelrc
+RUN \
+    npm install -g gulp && \
+    npm install
+
+VOLUME ["/opt/reach/build/web/src", "/opt/reach/build/web/gulpfile.js", "/opt/reach/build/web/static"]
+
+CMD ["gulp", "watch"]
