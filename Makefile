@@ -227,8 +227,6 @@ run-indexer-citations: indexer-image
 .PHONY: docker-run
 docker-run: docker-build run-scraper run-parser run-extracter run-indexer-epmc run-indexer-citations
 
-
-
 # Testing images
 .PHONY: scraper-tests-image
 scraper-tests-image: base-image
