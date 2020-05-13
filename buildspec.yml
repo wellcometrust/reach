@@ -5,8 +5,7 @@ phases:
     commands:
       - "echo resolved source version: $CODEBUILD_RESOLVED_SOURCE_VERSION"
       - "echo source version: $CODEBUILD_SOURCE_VERSION"
-      - make codebuild-docker-push
-      - (cd split_reach && make docker-push-all)
+      - make docker-push-all
 
 artifacts:
     files: []

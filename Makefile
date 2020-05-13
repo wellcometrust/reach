@@ -127,12 +127,10 @@ push-fuzzymatcher: fuzzymatcher-image
 		docker push $(ECR_ARN)/reach-fuzzy-matcher:$(LATEST_TAG) && \
 		docker push $(ECR_ARN)/reach-fuzzy-matcher:$(VERSION)
 
-.PHONY: docker-build
-docker-build: base-image scraper-image parser-image es-extracter-image indexer-image fuzzymatcher-image
 
-.PHONY: docker-push-all
-docker-push-all: base-image push-fuzzymatcher push-extracter push-indexer push-parser push-scraper
-
+##############
+# Local runs #
+##############
 
 .PHONY: run-scraper
 run-scraper: scraper-image
@@ -227,7 +225,12 @@ run-indexer-citations: indexer-image
 .PHONY: docker-run
 docker-run: docker-build run-scraper run-parser run-extracter run-indexer-epmc run-indexer-citations
 
-# Testing images
+
+
+##################
+# Testing images #
+##################
+
 .PHONY: scraper-tests-image
 scraper-tests-image: base-image
 	docker build \
@@ -270,16 +273,18 @@ test-extractor: extractor-tests-image
 		--rm $(ECR_ARN)/test-reach-extractor:latest \
 		sh -c "pip install pytest && pytest /opt/reach/"
 
+###################
+# General recipes #
+###################
+
 .PHONY: docker-test
 docker-test: test-scraper test-parser test-extractor
 
-# Web application
-.PHONY: web-image
-web-image:
-	docker build \
-	    -t ${ECR_ARN}/reach/web \
-		-f web/Dockerfile \
-		web
+.PHONY: docker-build
+docker-build: base-image scraper-image parser-image es-extracter-image indexer-image fuzzymatcher-image
+
+.PHONY: docker-push-all
+docker-push-all: docker-test push-fuzzymatcher push-extracter push-indexer push-parser push-scraper
 
 .PHONY: all
 all: docker-build
