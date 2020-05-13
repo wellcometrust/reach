@@ -40,7 +40,6 @@ class ExtractRefsOperator(object):
         with safe_import():
             from refparse.refparse import yield_structured_references
 
-        pool_map = map
         s3 = S3Hook()
 
         with tempfile.NamedTemporaryFile() as split_rawf, \
@@ -51,7 +50,6 @@ class ExtractRefsOperator(object):
 
                 refs = yield_structured_references(
                     self.src_s3_key,
-                    pool_map,
                     logger)
                 for split_references, parsed_references in refs:
                     split_f.write(json.dumps(split_references).encode('utf-8'))
