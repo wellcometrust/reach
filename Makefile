@@ -17,8 +17,8 @@ VERSION := latest
 # Wheel for deep_reference_parser
 #
 
-DEEP_REFERENCE_PARSER_WHEEL := deep_reference_parser-2019.12.1-py3-none-any.whl
-DEEP_REFERENCE_PARSER_URL := https://datalabs-public.s3.eu-west-2.amazonaws.com/deep_reference_parser/$(DEEP_REFERENCE_PARSER_WHEEL)
+DEEP_REFERENCE_PARSER_WHEEL := deep_reference_parser-2020.4.5-py3-none-any.whl
+DEEP_REFERENCE_PARSER_URL := https://github.com/wellcometrust/deep_reference_parser/releases/download/2020.4.29/$(DEEP_REFERENCE_PARSER_WHEEL)
 
 
 #

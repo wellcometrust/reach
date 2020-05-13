@@ -164,5 +164,6 @@ zope.deprecation==4.4.0
 zope.interface==4.7.1
 https://github.com/explosion/spacy-models/releases/download/en_core_web_sm-2.1.0/en_core_web_sm-2.1.0.tar.gz
 https://github.com/keras-team/keras-contrib/tarball/master
-https://datalabs-public.s3.eu-west-2.amazonaws.com/deep_reference_parser/deep_reference_parser-2019.12.1-py3-none-any.whl
 https://datalabs-public.s3.eu-west-2.amazonaws.com/reach_evaluator/reach_evaluator-2020.1.1-py3-none-any.whl
+
+https://github.com/wellcometrust/deep_reference_parser/releases/download/2020.4.29/deep_reference_parser-2020.4.5-py3-none-any.whl
