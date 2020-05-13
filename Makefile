@@ -133,12 +133,29 @@ push-fuzzymatcher: fuzzymatcher-image
 		docker push $(ECR_ARN)/reach-fuzzy-matcher:$(LATEST_TAG) && \
 		docker push $(ECR_ARN)/reach-fuzzy-matcher:$(VERSION)
 
-######################
+#############
 # Reach Web #
-######################
+#############
+
+.PHONY: reach-web-build
+reach-web-build:
+	docker build \
+		-t wellcome.ac.uk/reach-web-build:$(VERSION) \
+		-t wellcome.ac.uk/reach-web-build:$(LATEST_TAG) \
+		-f web/Dockerfile.node \
+		./web
+
+
+.PHONY: build-web-static
+build-web-static: reach-web-build
+	@chmod +x web/bin/docker_run.sh
+	@mkdir -p web/build/web/static
+	web/bin/docker_run.sh gulp default
+
+
 
 .PHONY: web-image
-web-image: base-image
+web-image: base-image build-web-static
 	docker build \
 		-t $(ECR_ARN)/${WEB_IMAGE}:$(VERSION) \
 		-t $(ECR_ARN)/${WEB_IMAGE}:$(LATEST_TAG) \
