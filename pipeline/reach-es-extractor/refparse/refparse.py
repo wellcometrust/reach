@@ -142,7 +142,6 @@ def yield_structured_references(scraper_file, logger):
     Split and parse references using a (potentially parallelized) map()
     implementation, yielding back a list of reference dicts for each
     document in scraper_file.
-
     Args:
         scraper_file: path / S3 url to scraper results file
         logger: logging configuration name
@@ -169,7 +168,7 @@ def yield_structured_references(scraper_file, logger):
         reference_predictions = splitter_parser.split_parse(
             doc.section[0:1000000]
             )
-        
+
         logger.info('[+] Extracted {} references from document {}'.format(
             len(reference_predictions),
             i
@@ -210,7 +209,6 @@ def parse_references(scraper_file, logger):
 
     """
     Entry point for reference parser.
-
     Args:
         scraper_file: path / S3 url to scraper results file
         logger: logging configuration name
@@ -228,7 +226,6 @@ def fuzzy_match_reference(fuzzy_matcher, reference):
     Args:
         fuzzy_matcher: instance of FuzzyMatcher, with index of publications in place.
         reference: reference
-
     Returns:
         matched reference (citations), including publication & doc id.
     """
@@ -239,7 +236,6 @@ def exact_match_publication(exact_matcher, publication):
     Args:
         exact_matcher_matcher: instance of HardTextMatcher, with index of documents in place.
         publication: publication
-
     Returns:
         matched reference (citations), including publication & doc id.
     """
@@ -312,7 +308,6 @@ def refparse_profile(scraper_file, references_file,
                         output_dir, logger):
     """
     Entry point for reference parser, single worker, with profiling.
-
     Args:
         scraper_file: path / S3 url to scraper results file
         references_file: path/S3 url to references CSV file
@@ -333,12 +328,6 @@ def create_argparser(description):
     parser.add_argument(
         '--references-file',
         help='Path or S3 URL to references CSV file to match against'
-    )
-
-    parser.add_argument(
-        '--model-file',
-        help='Path or S3 URL to model pickle file',
-        default=DEFAULT_MODEL_FILE
     )
 
     parser.add_argument(

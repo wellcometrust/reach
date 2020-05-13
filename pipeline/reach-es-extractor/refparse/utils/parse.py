@@ -19,7 +19,6 @@ def structure_reference(reference_components):
     # Useful for possible downstream errors
     structured_reference = {ref_class: '' for ref_class in settings.REF_CLASSES}
     for component in settings.DRP_REF_COMPONENTS:
-        # Leave component name unchanged if no map
         structured_reference[
             settings.COMPONENT_NAME_MAP.get(component, component)
             ] = ' '.join([r[0] for r in reference_components if r[1]==component])
