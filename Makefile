@@ -3,6 +3,12 @@
 # ORG input default to the shortest one to run
 ORG ?= msf
 
+ifdef IMAGE_REPO_NAME
+WEB_IMAGE := ${IMAGE_REPO_NAME}
+else
+WEB_IMAGE := uk.ac.wellcome/reach
+endif
+
 EPMC_METADATA_KEY = s3://datalabs-staging/airflow/output/open-research/epmc-metadata/epmc-metadata.json.gz
 
 SCRAPER_DST := s3://datalabs-dev/scraper/split-container/${ORG}/
@@ -126,6 +132,24 @@ push-fuzzymatcher: fuzzymatcher-image
 	$$(aws ecr get-login --no-include-email --region eu-west-1) && \
 		docker push $(ECR_ARN)/reach-fuzzy-matcher:$(LATEST_TAG) && \
 		docker push $(ECR_ARN)/reach-fuzzy-matcher:$(VERSION)
+
+######################
+# Reach Web #
+######################
+
+.PHONY: web-image
+web-image: base-image
+	docker build \
+		-t $(ECR_ARN)/${WEB_IMAGE}:$(VERSION) \
+		-t $(ECR_ARN)/${WEB_IMAGE}:$(LATEST_TAG) \
+		-f web/Dockerfile \
+		./web
+
+.PHONY: push-web
+push-web: web-image
+	$$(aws ecr get-login --no-include-email --region eu-west-1) && \
+		docker push $(ECR_ARN)/${WEB_IMAGE}:$(LATEST_TAG) && \
+		docker push $(ECR_ARN)/${WEB_IMAGE}:$(VERSION)
 
 
 ##############
