@@ -26,6 +26,7 @@ DEEP_REFERENCE_PARSER_URL := https://github.com/wellcometrust/deep_reference_par
 DOCKER_LOCALHOST := host.docker.internal
 
 ECR_ARN := 160358319781.dkr.ecr.eu-west-1.amazonaws.com/uk.ac.wellcome
+WEB_ECR_ARN := 160358319781.dkr.ecr.eu-west-1.amazonaws.com
 VERSION := build-$(shell date +%Y%m%dT%H%M%SZ)
 LATEST_TAG := latest
 
@@ -157,16 +158,16 @@ build-web-static: reach-web-build
 .PHONY: web-image
 web-image: base-image build-web-static
 	docker build \
-		-t $(ECR_ARN)/${WEB_IMAGE}:$(VERSION) \
-		-t $(ECR_ARN)/${WEB_IMAGE}:$(LATEST_TAG) \
+		-t $(WEB_ECR_ARN)/${WEB_IMAGE}:$(VERSION) \
+		-t $(WEB_ECR_ARN)/${WEB_IMAGE}:$(LATEST_TAG) \
 		-f web/Dockerfile \
 		./web
 
 .PHONY: push-web
 push-web: web-image
 	$$(aws ecr get-login --no-include-email --region eu-west-1) && \
-		docker push $(ECR_ARN)/${WEB_IMAGE}:$(LATEST_TAG) && \
-		docker push $(ECR_ARN)/${WEB_IMAGE}:$(VERSION)
+		docker push $(WEB_ECR_ARN)/${WEB_IMAGE}:$(LATEST_TAG) && \
+		docker push $(WEB_ECR_ARN)/${WEB_IMAGE}:$(VERSION)
 
 
 ##############
