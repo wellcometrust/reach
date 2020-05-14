@@ -52,12 +52,11 @@ def _get_fuzzy_matches(s3, src_s3_dir_key, organisations):
     """Get all the reach fuzzy matches from all organisations
     and combine into a json.gz.
     """
-    task = os.path.split(src_s3_dir_key)[-1]
 
     fuzzy_matches = []
 
     for org in organisations:
-        src_s3_key = f"{src_s3_dir_key}/{org}/{task}-{org}.json.gz"
+        src_s3_key = f"{src_s3_dir_key}/{org}/fuzzymatched-refs-{org}.json.gz"
         fuzzy_matches.extend(list(_read_json_gz_from_s3(s3, src_s3_key)))
 
         return fuzzy_matches
