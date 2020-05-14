@@ -140,8 +140,8 @@ push-fuzzymatcher: fuzzymatcher-image
 .PHONY: reach-web-build
 reach-web-build:
 	docker build \
-		-t wellcome.ac.uk/reach-web-build:$(VERSION) \
-		-t wellcome.ac.uk/reach-web-build:$(LATEST_TAG) \
+		-t reach-web-build:$(VERSION) \
+		-t reach-web-build:$(LATEST_TAG) \
 		-f web/Dockerfile.node \
 		./web
 
