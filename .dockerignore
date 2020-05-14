@@ -3,6 +3,7 @@
 .git
 .gitignore
 .idea
+.pytest_cache
 
 Dockerfile
 
@@ -10,13 +11,15 @@ __attic__
 
 argo
 
-build/*
-!build/web/static
+web/build/web/static/*
 
 reach/refparse/algo_evaluation/data_evaluate/*
-**/node_modules
 
 env
 docs
 pull_request_template.md
 CONTRIBUTING.md
+
+web/node_modules/*
+web/package.json
+web/package-lock.json
