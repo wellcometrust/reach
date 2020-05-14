@@ -22,6 +22,9 @@ FUZZYMATCHER_DST := ${FUZZYMATCHER_DIR}/${ORG}/fuzzymatched-refs-${ORG}.json.gz
 
 COMBINE_MATCHES_DST := s3://datalabs-dev/combinedmatches/combinedmatches.json.gz
 
+GOLD_EVAL_SRC := s3://datalabs-data/reach_evaluation/data/sync/2019.10.8_gold_matched_references_snake.jsonl
+EVALUATOR_DST := s3://datalabs-dev/evaluator/evaluator.json.gz
+
 DEEP_REFERENCE_PARSER_WHEEL := deep_reference_parser-2020.4.5-py3-none-any.whl
 DEEP_REFERENCE_PARSER_URL := https://github.com/wellcometrust/deep_reference_parser/releases/download/2020.4.29/$(DEEP_REFERENCE_PARSER_WHEEL)
 
@@ -154,6 +157,24 @@ push-combine-matches: combine-matches-image
 		docker push $(ECR_ARN)/reach-combine-matches:$(LATEST_TAG) && \
 		docker push $(ECR_ARN)/reach-combine-matches:$(VERSION)
 
+###################
+# Reach Evaluator #
+###################
+
+.PHONY: evaluator-image
+evaluator-image: base-image
+	docker build \
+		-t $(ECR_ARN)/reach-evaluator:$(VERSION) \
+		-t $(ECR_ARN)/reach-evaluator:$(LATEST_TAG) \
+		-f pipeline/reach-evaluator/Dockerfile \
+		./pipeline/reach-evaluator
+
+.PHONY: push-evaluator
+push-evaluator: evaluator-image
+	$$(aws ecr get-login --no-include-email --region eu-west-1) && \
+		docker push $(ECR_ARN)/reach-evaluator:$(LATEST_TAG) && \
+		docker push $(ECR_ARN)/reach-evaluator:$(VERSION)
+
 #############
 # Reach Web #
 #############
@@ -281,6 +302,18 @@ run-combine-matches: combine-matches-image
 		${FUZZYMATCHER_DIR} \
 		${COMBINE_MATCHES_DST} \
 
+.PHONY: run-evaluator
+run-evaluator: evaluator-image
+	docker run \
+	  -e AWS_ACCESS_KEY_ID="${AWS_ACCESS_KEY_ID}" \
+		-e AWS_SECRET_ACCESS_KEY="${AWS_SECRET_ACCESS_KEY}" \
+		-e SENTRY_DSN="${SENTRY_DSN}" \
+		-e ES_HOST=${DOCKER_LOCALHOST} \
+		--network=host \
+		${ECR_ARN}/reach-evaluator \
+		${GOLD_EVAL_SRC} \
+		${COMBINE_MATCHES_DST} \
+		${EVALUATOR_DST} \
 
 .PHONY: run-indexer-citations
 run-indexer-citations: indexer-image
@@ -355,10 +388,10 @@ test-extractor: extractor-tests-image
 docker-test: test-scraper test-parser test-extractor
 
 .PHONY: docker-build
-docker-build: base-image scraper-image parser-image es-extracter-image indexer-image fuzzymatcher-image combine-matches-image
+docker-build: base-image scraper-image parser-image es-extracter-image indexer-image fuzzymatcher-image combine-matches-image evaluator-image
 
 .PHONY: docker-push-all
-docker-push-all: docker-test push-fuzzymatcher push-combine-matches push-extracter push-indexer push-parser push-scraper
+docker-push-all: docker-test push-fuzzymatcher push-combine-matches push-evaluator push-extracter push-indexer push-parser push-scraper
 
 .PHONY: all
 all: docker-build
