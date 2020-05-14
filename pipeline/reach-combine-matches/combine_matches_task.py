@@ -9,12 +9,15 @@ are all duplicated in evaluator_task.py
 
 import os
 import tempfile
+import logging
 import json
 import gzip
 import argparse
 
 from hooks import s3hook
 from hooks.sentry import report_exception
+
+logger = logging.getLogger(__name__)
 
 def _yield_jsonl_from_gzip(fileobj):
     """ Yield a list of dicts read from gzipped json(l)
@@ -41,12 +44,15 @@ def _write_json_gz_to_s3(s3, data, key):
 def _read_json_gz_from_s3(s3, key):
     """Write a list of jsons to json.gz on s3
     """
-    with tempfile.TemporaryFile(mode='rb+') as tf:
-        key = s3.get_s3_object(key)
-        key.download_fileobj(tf)
-        tf.seek(0)
+    try:
+        with tempfile.TemporaryFile(mode='rb+') as tf:
+            key = s3.get_s3_object(key)
+            key.download_fileobj(tf)
+            tf.seek(0)
 
-        return list(_yield_jsonl_from_gzip(tf))
+            return list(_yield_jsonl_from_gzip(tf))
+    except:
+        return []
 
 def _get_fuzzy_matches(s3, src_s3_dir_key, organisations):
     """Get all the reach fuzzy matches from all organisations
@@ -59,9 +65,9 @@ def _get_fuzzy_matches(s3, src_s3_dir_key, organisations):
         src_s3_key = f"{src_s3_dir_key}/{org}/fuzzymatched-refs-{org}.json.gz"
         fuzzy_matches.extend(list(_read_json_gz_from_s3(s3, src_s3_key)))
 
-        return fuzzy_matches
+    return fuzzy_matches
 
-class CombineReachFuzzyMatchesOperator(BaseOperator):
+class CombineReachFuzzyMatchesOperator(object):
     """ Combine all Reach fuzzy matches into a single file
     """
 
@@ -71,7 +77,6 @@ class CombineReachFuzzyMatchesOperator(BaseOperator):
         'dst_s3_key',
     )
 
-    @apply_defaults
     def __init__(self, organisations, src_s3_dir_key, dst_s3_key,
                 *args, **kwargs):
 
@@ -82,13 +87,13 @@ class CombineReachFuzzyMatchesOperator(BaseOperator):
         self.dst_s3_key = dst_s3_key
 
     @report_exception
-    def execute(self, context):
+    def execute(self):
         s3 = s3hook.S3Hook()
 
         fuzzy_matches = _get_fuzzy_matches(s3,
             self.src_s3_dir_key, self.organisations)
 
-        self.log.info(
+        logger.info(
             'CombineReachFuzzyMatchesOperator: read %d lines from %s files',
             len(fuzzy_matches),
             len(self.organisations),
@@ -98,12 +103,12 @@ class CombineReachFuzzyMatchesOperator(BaseOperator):
 
         _write_json_gz_to_s3(s3, fuzzy_matches, key=self.dst_s3_key)
 
-        self.log.info(
+        logger.info(
             'CombineReachFuzzyMatchesOperator: wrote %d lines to %s.',
             len(fuzzy_matches),
             self.dst_s3_key
         )
-        self.log.info(
+        logger.info(
             'CombineReachFuzzyMatchesOperator: Done combining reach fuzzy matches.'
         )
 
@@ -121,6 +126,9 @@ if __name__ == '__main__':
         'dst_s3_key',
         help='The destination path to s3.'
     )
+
+    args = arg_parser.parse_args()
+
     combineReachFuzzyMatchRefs = CombineReachFuzzyMatchesOperator(
         organisations=s3hook.ORGS,
         src_s3_dir_key=args.src_s3_key,
