@@ -8,6 +8,7 @@ import logging
 import json
 import gzip
 import argparse
+from datetime import date
 
 from hooks import s3hook
 from hooks.sentry import report_exception
@@ -116,8 +117,18 @@ class EvaluateOperator(object):
         eval_results['reach_refs'] = self.reach_s3_key
         eval_results['reach_params'] = self.reach_params
 
-        # Write the results to S3
-        _write_json_gz_to_s3(s3, [eval_results], key=self.dst_s3_key)
+        # Write the results to S3 with today's datestamp
+        today = date.today()
+        # 'folder/folder2/evaluator.json.gz'
+        split_path = os.path.split(self.dst_s3_key)
+        file_name = split_path[1] # 'evaluator.json.gz''
+        index_of_dot = file_name.index('.') # first dot index
+        key_with_date = os.path.join(
+            split_path[0],
+            file_name[:index_of_dot]+'_'+str(today)+file_name[index_of_dot:]
+            )
+        # 'folder/folder2/evaluator_2020-05-18.json.gz'
+        _write_json_gz_to_s3(s3, [eval_results], key=key_with_date)
 
         logger.info(
             'EvaluateOperator: Finished Evaluating Reach matches'
