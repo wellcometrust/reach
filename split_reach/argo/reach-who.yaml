@@ -81,12 +81,12 @@ spec:
         valueFrom:
           secretKeyRef:
             name: aws
-            key: staging_aws_access_key_id
+            key: aws_access_key_id
       - name: AWS_SECRET_ACCESS_KEY
         valueFrom:
           secretKeyRef:
             name: aws
-            key: staging_aws_secret_key
+            key: aws_secret_access_key
 
 
   - name: op-parser
@@ -106,12 +106,12 @@ spec:
         valueFrom:
           secretKeyRef:
             name: aws
-            key: staging_aws_access_key_id
+            key: aws_access_key_id
       - name: AWS_SECRET_ACCESS_KEY
         valueFrom:
           secretKeyRef:
             name: aws
-            key: staging_aws_secret_key
+            key: aws_secret_access_key
 
   - name: op-extractor
     activeDeadlineSeconds: 216000
@@ -130,12 +130,12 @@ spec:
         valueFrom:
           secretKeyRef:
             name: aws
-            key: staging_aws_access_key_id
+            key: aws_access_key_id
       - name: AWS_SECRET_ACCESS_KEY
         valueFrom:
           secretKeyRef:
             name: aws
-            key: staging_aws_secret_key
+            key: aws_secret_access_key
 
   - name: op-es-indexer
     activeDeadlineSeconds: 216000
@@ -156,12 +156,12 @@ spec:
         valueFrom:
           secretKeyRef:
             name: aws
-            key: staging_aws_access_key_id
+            key: aws_access_key_id
       - name: AWS_SECRET_ACCESS_KEY
         valueFrom:
           secretKeyRef:
             name: aws
-            key: staging_aws_secret_key
+            key: aws_secret_access_key
 
   - name: op-fuzzymatcher
     activeDeadlineSeconds: 216000
@@ -182,12 +182,12 @@ spec:
         valueFrom:
           secretKeyRef:
             name: aws
-            key: staging_aws_access_key_id
+            key: aws_access_key_id
       - name: AWS_SECRET_ACCESS_KEY
         valueFrom:
           secretKeyRef:
             name: aws
-            key: staging_aws_secret_key
+            key: aws_secret_access_key
 
 
   - name: op-citation-indexer
@@ -209,12 +209,12 @@ spec:
         valueFrom:
           secretKeyRef:
             name: aws
-            key: staging_aws_access_key_id
+            key: aws_access_key_id
       - name: AWS_SECRET_ACCESS_KEY
         valueFrom:
           secretKeyRef:
             name: aws
-            key: staging_aws_secret_key
+            key: aws_secret_access_key
 
 
   - name: op-pg-citations-import
@@ -229,14 +229,13 @@ spec:
           key: reach/who_iris/fuzzymatched-refs-who_iris.json.gz
           accessKeySecret:
             name: aws
-            key: staging_aws_access_key_id
+            key: aws_access_key_id
           secretKeySecret:
             name: aws
-            key: staging_aws_secret_key
+            key: aws_secret_access_key
     container:
       imagePullPolicy: Never
       image: 160358319781.dkr.ecr.eu-west-1.amazonaws.com/uk.ac.wellcome/datalabs-infra-utils:latest
-      imagePullPolicy: Always
       workingDir: /opt/pipelines/reach
       command: [sh, -c]
       args: [
@@ -261,14 +260,13 @@ spec:
           key: test/who_iris/parsed_result.json.gz
           accessKeySecret:
             name: aws
-            key: staging_aws_access_key_id
+            key: aws_access_key_id
           secretKeySecret:
             name: aws
-            key: staging_aws_secret_key
+            key: aws_secret_access_key
     container:
       imagePullPolicy: Never
       image: 160358319781.dkr.ecr.eu-west-1.amazonaws.com/uk.ac.wellcome/datalabs-infra-utils:latest
-      imagePullPolicy: Always
       workingDir: /opt/pipelines/reach
       command: [sh, -c]
       args: [
