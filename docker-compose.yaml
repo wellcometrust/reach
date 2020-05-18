@@ -3,20 +3,6 @@ version: '3.4'
 # database and elasticsearch single-node cluster
 
 services:
-    postgres:
-        container_name: reach-db
-        build:
-            context: ./db/
-            dockerfile: Dockerfile
-        ports:
-          - 127.0.0.1:5432:5432
-        environment:
-          POSTGRES_PASSWORD: development
-        deploy:
-          resources:
-            limits:
-              memory: "64M"
-
     web:
       build:
           context: ./web
@@ -40,7 +26,6 @@ services:
       volumes:
         - ./web/app:/opt/reach/web/
         - ./web/build/web:/opt/reach/build/web
-      depends_on: ['elasticsearch']
       deploy:
         resources:
           limits:
