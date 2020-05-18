@@ -22,7 +22,7 @@ FUZZYMATCHER_DST := ${FUZZYMATCHER_DIR}/${ORG}/fuzzymatched-refs-${ORG}.json.gz
 
 COMBINE_MATCHES_DST := s3://datalabs-dev/combinedmatches/combinedmatches.json.gz
 
-GOLD_EVAL_SRC := s3://datalabs-data/reach_evaluation/data/sync/2019.10.8_gold_matched_references_snake.jsonl
+GOLD_EVAL_SRC := s3://datalabs-data/reach_evaluation/data/sync/2019.10.8-fuzzy-matched-gold-refs-manually-verified.jsonl
 EVALUATOR_DST := s3://datalabs-dev/evaluator/evaluator.json.gz
 
 DEEP_REFERENCE_PARSER_WHEEL := deep_reference_parser-2020.4.5-py3-none-any.whl
