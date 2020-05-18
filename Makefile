@@ -229,7 +229,7 @@ run-indexer-epmc: indexer-image
 		-e SENTRY_DSN="${SENTRY_DSN}" \
 		-e ES_HOST=${DOCKER_LOCALHOST} \
 		--network=host \
-		${ECR_ARN}/reach-indexer \
+		${ECR_ARN}/reach-es-indexer \
 		${EPMC_METADATA_KEY} \
 		${ORG} \
 		epmc \
@@ -243,11 +243,11 @@ run-fuzzymatcher: fuzzymatcher-image
 		-e SENTRY_DSN="${SENTRY_DSN}" \
 		-e ES_HOST=${DOCKER_LOCALHOST} \
 		--network=host \
-		${ECR_ARN}/reach-fuzzymatcher \
+		${ECR_ARN}/reach-fuzzy-matcher \
 		${EXTRACTER_PARSED_DST} \
 		${FUZZYMATCHER_DST} \
 		${ORG} \
-		fulltexts
+		epmc_metadata
 
 
 .PHONY: run-indexer-citations
