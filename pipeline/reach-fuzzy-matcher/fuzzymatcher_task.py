@@ -188,7 +188,7 @@ class FuzzyMatchRefsOperator(object):
                 ref_id = fuzzy_matched_reference['reference_id']
                 if ref_id in references.keys():
 
-                    references[ref_id]['policies'][
+                    references[ref_id][
                         'associated_policies_count'] += 1
 
                     references[ref_id]['policies'].append(
@@ -255,12 +255,12 @@ if __name__ == '__main__':
     )
     arg_parser.add_argument(
         '--score_threshold',
-        default=None,
+        default=50,
         help="The maximum number of items to index."
     )
     arg_parser.add_argument(
         '--should_match_threshold',
-        default=None,
+        default=80,
         help="The maximum number of items to index."
     )
 
