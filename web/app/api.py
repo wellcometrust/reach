@@ -106,11 +106,11 @@ def create_api(conf):
     api.add_static_route('/api/docs/_static', conf.docs_static_root)
     api.add_route(
         '/search/citations/{ftype}',
-        search_exports.CitationsExport(db)
+        search_exports.ResultsExport(db, 'citations')
     )
     api.add_route(
         '/search/policy-docs/{ftype}',
-        search_exports.PolicyDocsExport(db)
+        search_exports.ResultsExport(db, 'policy_doc')
     )
     api.add_static_route('/static', conf.static_root)
     return api
