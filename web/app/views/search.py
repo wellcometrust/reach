@@ -43,14 +43,14 @@ def _build_psql_query(params, source):
     query = query.format(
         fields=', '.join(fields),
         source='warehouse.reach_' + source,
-        where_query='=%s OR '.join(fields) + '=%s ',
+        where_query=' to_tsvector(%s) OR '.join(fields) + '=to_tsquery(%s) ',
         order=params.get('sort', DEFAULT_SORTING[source]),
         is_asc=params.get('order', 'ASC'),
         size=size,
         offset=(int(params.get('page', 1)) - 1) * int(size)
     )
 
-    terms = (terms[0],) * len(fields)
+    terms = (' & '.join(terms[0].split(' ')),) * len(fields)
 
     logger.info(query)
     logger.info(terms)
@@ -142,7 +142,7 @@ class FulltextPage(template.TemplateResource):
         self.search_fields = ','.join([
             'title',
             'text',
-            'organisation',
+            'source_org',
             'authors',
         ])
 
