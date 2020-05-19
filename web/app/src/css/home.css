@@ -10,19 +10,23 @@ body.home {
 
 @media screen and (min-width: 840px) {
    .img-container {
-		height: 26rem;
+		height: 60vh;
 	}
 }
 
 @media screen and (max-width: 840px) {
    .img-container {
-		height: 13rem;
+		height: 40vh;
 	}
 }
 
 /*
  * Page structures
  */
+
+section#hero {
+  height: 95vh;
+}
 
 section#hero, section#about-us {
 	display: flex;
