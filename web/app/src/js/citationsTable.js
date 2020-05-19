@@ -37,7 +37,7 @@ function getCitationsTableContent(data) {
                     <td colspan=6 class="accordion-subtable-container">
                     <table class="table accordion-subtable">
                         <colgroup>
-                            <col class="colgroup-xl-col">
+                            <col class="colgroup-subtable-col">
                             <col class="colgroup-medium-col">
                             <col>
                         </colgroup>
@@ -50,7 +50,7 @@ function getCitationsTableContent(data) {
         for (let policy of item._source.doc.policies) {
             let policy_title = policy.title ? policy.title.toTitleCase() : "Title unavailable";
             rows += `<tr>`;
-            rows += `<td title="${policy_title}"><a
+            rows += `<td title="${policy_title}"><span class="icn icn-new-page"></span>  <a
                href="${policy.source_url}"
                target="_blank"
                rel="noreferrer noopener"

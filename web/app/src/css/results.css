@@ -1,10 +1,12 @@
 @import "variables.css";
 
 .table-light {
-    table-layout: fixed;
+  table-layout: fixed;
 	border: 1px solid $greyLight;
-	tr {
+
+  tr {
 		background: white;
+    height: 4.5rem;
 	}
 
 	td, th {
@@ -12,42 +14,47 @@
 		border-bottom: 1px solid $greyLight;
 	}
 
-    tr:hover {
-        td {
-            background-color: $cyanFocused;
-        }
+  tr:hover {
+    td {
+      background-color: $cyanFocused;
     }
+  }
 
-    .accordion-arrow {
-    	color: $cyanPrimary;
-    	font-weight: bold;
-    	width: 3.5rem;
-    	text-align: center;
+  .accordion-arrow {
+  	color: $cyanPrimary;
+  	font-weight: bold;
+  	width: 3.5rem;
+  	text-align: center;
+  }
+
+  .new-page-icon-cell {
+    text-align: center;
+  }
+
+  .active-row td {
+  	background-color: $cyanFocused;
+  }
+
+  .active-row:hover {
+    td {
+      background-color: $cyanFocused;
     }
+  }
 
-    .active-row td {
-    	background-color: $cyanFocused;
-    }
+  .accordion-subtable {
+      table-layout: fixed;
 
-    .accordion-subtable {
-        table-layout: fixed;
+  	tr td {
+  		border: none;
+  		background-color: $backgroundTint1;
+      min-height: 3.5rem;
+  	}
 
-    	tr td {
-    		border: none;
-    		background-color: $backgroundTint1;
-            min-height: 3.5rem;
-    	}
-
-    	tr th{
-    		border: none;
-    		background-color: $backgroundTint1;
-    	}
-    }
-
-    tr.load{
-        height: 4.5rem;
-
-    }
+  	tr th{
+  		border: none;
+  		background-color: $backgroundTint1;
+  	}
+  }
 }
 
 #citations-result-table {
@@ -152,18 +159,21 @@ th {
 }
 
 .colgroup-small-col {
-    /* width: 6.875rem; */
-    width: 10%;
+  /* width: 6.875rem; */
+  width: 10%;
 }
 .colgroup-medium-col {
-    /* width: 14.375rem; */
-    width: 20%;
+  /* width: 14.375rem; */
+  width: 20%;
 }
 .colgroup-large-col {
-    width: 40%;
+  width: 40%;
 }
 .colgroup-xl-col {
-    width: 70%;
+  width: 70%;
+}
+.colgroup-subtable-col {
+  width: 60%;
 }
 
 .table-header {
