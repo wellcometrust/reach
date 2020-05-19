@@ -42,7 +42,7 @@ function getCitationsTableContent(data) {
                             <col>
                         </colgroup>
                         <tr>
-                            <th>Policy Document</th>
+                            <th>Cited in the following Policy Documents</th>
                             <th>Policy Organisation</th>
                             <th>Publication Year</th>
                         </tr>
