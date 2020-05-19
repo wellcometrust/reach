@@ -4,9 +4,20 @@
   table-layout: fixed;
 	border: 1px solid $greyLight;
 
-  tr {
+  thead tr {
+    background-color: white;
+  }
+
+  tbody tr {
 		background: white;
     height: 4.5rem;
+
+    td {
+      overflow: hidden;
+      white-space: nowrap;
+      padding: 0 15px;
+      text-overflow: ellipsis;
+    }
 	}
 
 	td, th {
@@ -31,13 +42,20 @@
     text-align: center;
   }
 
-  .active-row td {
-  	background-color: $cyanFocused;
+  .active-row {
+
+    td {
+    	background-color: $cyanFocused;
+      overflow: visible;
+      white-space: normal;
+      text-overflow: visible;
+    }
   }
 
-  .active-row:hover {
+
+  .accordion-body:hover {
     td {
-      background-color: $cyanFocused;
+      background-color: $backgroundTint1;
     }
   }
 
@@ -200,4 +218,17 @@ th {
     height: 2px;
     line-height: 2px;
     border-top-color: rgba(255, 255, 255, 0);
+}
+
+.fadein, .fadeout {
+    display: none;
+    opacity: 0;
+    -moz-transition: opacity 10s ease-in-out;
+    -o-transition: opacity 10s ease-in-out;
+    -webkit-transition: opacity 10s ease-in-out;
+    transition: opacity 10s ease-in-out;
+}
+.fadein {
+    display: table-row;
+    opacity: 1;
 }
