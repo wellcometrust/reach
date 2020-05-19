@@ -10,6 +10,11 @@ To run this pipeline locally, you'll need:
   - Python >= 3.6
   - The Argo cli (recommended but optionnal)
 
+If it is the first time you use minikube with your AWS account, please configure your ECR credentials:
+```
+minikube addons enable registry-creds
+minikube addons configure registry-creds
+```
 
 To build the required images, go to the root folder and run the following:
 ```

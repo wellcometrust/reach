@@ -1,7 +1,7 @@
 apiVersion: v1
 data:
   create.sql: |2
-
+  
     CREATE SCHEMA IF NOT EXISTS warehouse;
 
     CREATE EXTENSION IF NOT EXISTS "uuid-ossp";

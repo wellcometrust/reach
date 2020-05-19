@@ -1,10 +1,12 @@
 apiVersion: argoproj.io/v1alpha1
 kind: Workflow
 metadata:
-  name: wkflw-reach-who
-  generateName: wkflw-reach-who-
+  name: wkflw-reach-msf
+  generateName: wkflw-reach-msf-
   namespace: argo
 spec:
+  imagePullSecrets:
+    - name: awsecr-cred
   activeDeadlineSeconds: 216000
   entrypoint: scraper
   serviceAccountName: argo
@@ -18,7 +20,7 @@ spec:
     - name: es_host
       value: "elasticsearch.elastic.svc.cluster.local"
     - name: pg_host
-      value: "localhost"
+      value: "postgres"
     - name: pg_user
       value: postgres
 
@@ -72,7 +74,7 @@ spec:
       workingDir: /opt/reach
       imagePullPolicy: Always
       args: [
-        "./spider_task.py s3://datalabs-staging/test/who_iris who_iris"
+        "./spider_task.py s3://datalabs-staging/test/msf msf"
       ]
       env:
       - name: SENTRY_DSN
@@ -97,7 +99,7 @@ spec:
       command: [sh, -c]
       workingDir: /opt/reach
       args: [
-        "./parser_task.py s3://datalabs-staging/test/who_iris s3://datalabs-staging/test/who_iris/parsed_result.json.gz who_iris"
+        "./parser_task.py s3://datalabs-staging/test/msf s3://datalabs-staging/test/msf/parsed_result.json.gz msf"
       ]
       env:
       - name: SENTRY_DSN
@@ -121,7 +123,7 @@ spec:
       command: [sh, -c]
       workingDir: /opt/reach
       args: [
-        "./extract_refs_task.py s3://datalabs-staging/test/who_iris/parsed_result.json.gz s3://datalabs-staging/test/who_iris/extracted-refs-who_iris.json.gz s3://datalabs-staging/test/who_iris/split-refs-who_iris.json.gz"
+        "./extract_refs_task.py s3://datalabs-staging/test/msf/parsed_result.json.gz s3://datalabs-staging/test/msf/extracted-refs-msf.json.gz s3://datalabs-staging/test/msf/split-refs-msf.json.gz"
       ]
       env:
       - name: SENTRY_DSN
@@ -145,7 +147,7 @@ spec:
       command: [sh, -c]
       workingDir: /opt/reach
       args: [
-        "./index_task.py s3://datalabs-staging/test/who_iris/parsed_result.json.gz who_iris fulltexts"
+        "./index_task.py s3://datalabs-staging/test/msf/parsed_result.json.gz msf fulltexts"
       ]
       env:
       - name: ES_HOST
@@ -171,7 +173,7 @@ spec:
       command: [sh, -c]
       workingDir: /opt/reach
       args: [
-        "./fuzzymatcher_task.py s3://datalabs-staging/test/who_iris/extracted-refs-who_iris.json.gz s3://datalabs-staging/test/who_iris/fuzzymatched-refs-who_iris.json.gz who_iris epmc_metadata"
+        "./fuzzymatcher_task.py s3://datalabs-staging/test/msf/extracted-refs-msf.json.gz s3://datalabs-staging/test/msf/fuzzymatched-refs-msf.json.gz msf epmc_metadata"
       ]
       env:
       - name: ES_HOST
@@ -193,12 +195,12 @@ spec:
   - name: op-citation-indexer
     activeDeadlineSeconds: 216000
     container:
-      imagePullPolicy: Never
+      imagePullPolicy: Always
       image: 160358319781.dkr.ecr.eu-west-1.amazonaws.com/uk.ac.wellcome/reach-es-indexer:latest
       command: [sh, -c]
       workingDir: /opt/reach
       args: [
-        "./index_task.py s3://datalabs-staging/test/who_iris/fuzzymatched-refs-who_iris.json.gz who_iris citations"
+        "./index_task.py s3://datalabs-staging/test/msf/fuzzymatched-refs-msf.json.gz msf citations"
       ]
       env:
       - name: ES_HOST
@@ -222,11 +224,11 @@ spec:
     inputs:
       artifacts:
       - name: reach-citations
-        path: /mnt/vol/who_iris-matched-result.json.gz
+        path: /mnt/vol/msf-matched-result.json.gz
         s3:
           endpoint: s3.amazonaws.com
           bucket: datalabs-staging
-          key: reach/who_iris/fuzzymatched-refs-who_iris.json.gz
+          key: reach/msf/fuzzymatched-refs-msf.json.gz
           accessKeySecret:
             name: aws
             key: aws_access_key_id
@@ -234,11 +236,12 @@ spec:
             name: aws
             key: aws_secret_access_key
     container:
+      imagePullPolicy: Always
       image: 160358319781.dkr.ecr.eu-west-1.amazonaws.com/uk.ac.wellcome/datalabs-infra-utils:latest
       workingDir: /opt/pipelines/reach
       command: [sh, -c]
       args: [
-          "python load-citations-pg.py --pg-host {{workflow.parameters.pg_host}} --pg-user {{workflow.parameters.pg_user}} --import-file /mnt/vol/who_iris-matched-result.json --pg-port 5432 --pg-pass $PG_PASSWORD --org who_iris"
+          "python load-citations-pg.py --pg-host {{workflow.parameters.pg_host}} --pg-user {{workflow.parameters.pg_user}} --import-file /mnt/vol/msf-matched-result.json --pg-port 5432 --pg-pass $PG_PASSWORD --org msf"
       ]
       volumeMounts:
       - mountPath: /mnt/vol
@@ -262,11 +265,11 @@ spec:
     inputs:
       artifacts:
       - name: reach-fulltexts
-        path: /mnt/vol/who_iris-parsed-result.json.gz
+        path: /mnt/vol/msf-parsed-result.json.gz
         s3:
           endpoint: s3.amazonaws.com
           bucket: datalabs-staging
-          key: test/who_iris/parsed_result.json.gz
+          key: test/msf/parsed_result.json.gz
           accessKeySecret:
             name: aws
             key: aws_access_key_id
@@ -274,11 +277,12 @@ spec:
             name: aws
             key: aws_secret_access_key
     container:
+      imagePullPolicy: Always
       image: 160358319781.dkr.ecr.eu-west-1.amazonaws.com/uk.ac.wellcome/datalabs-infra-utils:latest
       workingDir: /opt/pipelines/reach
       command: [sh, -c]
       args: [
-          "python load-policies-pg.py --pg-host {{workflow.parameters.pg_host}} --pg-user {{workflow.parameters.pg_user}} --import-file /mnt/vol/who_iris-parsed-result.json.gz --pg-port 5432 --pg-pass $PG_PASSWORD --org who_iris"
+          "python load-policies-pg.py --pg-host {{workflow.parameters.pg_host}} --pg-user {{workflow.parameters.pg_user}} --import-file /mnt/vol/msf-parsed-result.json.gz --pg-port 5432 --pg-pass $PG_PASSWORD --org msf"
       ]
       volumeMounts:
       - mountPath: /mnt/vol
@@ -304,7 +308,7 @@ spec:
       image: alpine:3.11.5
       command: [sh, -c]
       args: [
-        "ls -lth /mnt/vol/ && rm -rf /mnt/vol/who_iris-matched-result.json.gz && rm -rf /mnt/vol/who_iris-parsed-result.json.gz && ls -lth /mnt/vol/"
+        "ls -lth /mnt/vol/ && rm -rf /mnt/vol/msf-matched-result.json.gz && rm -rf /mnt/vol/msf-parsed-result.json.gz && ls -lth /mnt/vol/"
       ]
       volumeMounts:
       - mountPath: /mnt/vol
@@ -315,7 +319,7 @@ spec:
       image: alpine:3.11.5
       command: [sh, -c]
       args: [
-          "ls -l /mnt/vol/who_iris-matched-result.json && head -n10 /mnt/vol/who_iris-matched-result.json"
+          "ls -l /mnt/vol/msf-matched-result.json && head -n10 /mnt/vol/msf-matched-result.json"
       ]
       volumeMounts:
       - mountPath: /mnt/vol

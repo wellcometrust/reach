@@ -53,6 +53,8 @@ spec:
         env:
           - name: POSTGRES_PASSWORD
             value: development
+          - name: POSTGRES_DB
+            value: warehouse
         volumeMounts:
         - name: argo-postgres-claim
           mountPath: /var/lib/postgresql/datalabs
