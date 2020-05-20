@@ -3,7 +3,7 @@ const home = () => {
 
   startButton.addEventListener("click", (e) => {
     e.preventDefault();
-    document.getElementById('search-reach').scrollIntoView({behavior: "smooth", block: "start"});
+    document.getElementById('discover-reach').scrollIntoView({behavior: "smooth", block: "start"});
   });
 }
 
