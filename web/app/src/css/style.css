@@ -35,6 +35,12 @@ $spectre_version: 0.5.8;
     height: 2rem;
     width: 2rem;
   }
+
+  /* Micro spaces */
+  .ms {
+    height: 1rem;
+    width: 1rem;
+  }
 }
 
 @media screen and (max-width: 1280px) {
@@ -50,6 +56,12 @@ $spectre_version: 0.5.8;
   .hs {
     height: 1rem;
     width: 1rem;
+  }
+
+  /* Micro spaces */
+  .ms {
+    height: 0.5rem;
+    width: 0.5rem;
   }
 }
 
@@ -101,7 +113,7 @@ body {
   background-position: bottom;
 }
 
-hr.fs, hr.hs {
+hr.fs, hr.hs, hr.ms {
   border: none;
   margin: 0;
   padding: 0;
