@@ -10,17 +10,17 @@ body.home {
 
 @media screen and (min-width: 840px) {
    .img-container {
-		height: 60vh;
+		min-height: 50vh;
 	}
   section#hero {
-    height: 95vh;
+    height: 90vh;
   }
 
 }
 
 @media screen and (max-width: 840px) {
    .img-container {
-		height: 40vh;
+		min-height: 40vh;
 	}
   section#hero {
     height: 80vh;
@@ -52,6 +52,20 @@ section#hero {
   background-color: $backgroundTint2;
   background-image: linear-gradient(-177deg, $backgroundTint2 70%, $backgroundTint1 calc(70% + 2px));
   color: white;
+
+  /* .container {
+    min-height: 50%;
+  } */
+}
+
+#hero-picture-container {
+  position: relative;
+  bottom: 0;
+  /* height: 90%;
+
+  .column, .column .hero-picture {
+    height: 90%;
+  } */
 }
 
 section#hero h1 {
@@ -59,8 +73,9 @@ section#hero h1 {
 }
 
 #hero-arrow {
-  position: absolute;
-  bottom:20px;
+  position: relative;
+  bottom: 0;
+  height: 10%;
 }
 
 
