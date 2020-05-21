@@ -56,7 +56,12 @@ exports.images = function () {
     .pipe(dest('/opt/reach/build/web/static/images'))
 };
 
-exports.default = parallel(exports.css, exports.js, exports.images);
+exports.favicons = function () {
+  return src('src/favicon/*')
+    .pipe(dest('/opt/reach/build/web/static/favicon'))
+};
+
+exports.default = parallel(exports.css, exports.js, exports.images, exports.favicons);
 
 exports.watch = function() {
   watch('src/**/*.css', {ignoreInitial: false}, exports.css);

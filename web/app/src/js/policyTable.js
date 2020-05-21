@@ -26,7 +26,7 @@ const getPolicyTableContent = (data) => {
         let authors = item._source.doc.authors?item._source.doc.authors:"Unknown";
         let title = (item._source.doc.title)? item._source.doc.title.toTitleCase():"Title unavailable";
         rows += `<tr>`;
-        rows += `<td><a
+        rows += `<td class="new-page-icon-cell"><a
             href="${item._source.doc.url}"
             target="_blank"
             rel="noreferrer noopener"

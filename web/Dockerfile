@@ -9,3 +9,4 @@ RUN pip install -U pip && \
 
 COPY ./app /opt/reach/web
 COPY ./build /opt/reach/build
+COPY ./app/src/favicon/favicon.ico /opt/reach/web/favicon.ico

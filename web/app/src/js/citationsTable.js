@@ -24,25 +24,25 @@ function getCitationsTableContent(data) {
         let match_title = item._source.doc.match_title ? item._source.doc.match_title.toTitleCase() : "Title unavailable";
         rows += `<tr class="accordion-row" id="accordion-row-${item._source.doc.reference_id}">`;
         rows += `<td class="accordion-arrow"><i class="icon icon-arrow-down mr-1"></i></td>`
-        rows += `<td title="${match_title}">${(match_title.length > TITLE_LENGTH) ? match_title.slice(0, TITLE_LENGTH) + "..." : match_title}</td>`;
+        rows += `<td title="${match_title}">${match_title}</td>`;
         rows += `<td>${item._source.doc.match_publication}</td>`;
         rows += `<td class="authors-cell" title="${authors}">
-            ${(authors.length > TITLE_LENGTH) ? (authors.slice(0, TITLE_LENGTH) + "...") : authors}
+            ${authors}
         </td>`;
         rows += `<td>${item._source.doc.match_pub_year}</td>`;
         rows += `<td>${item._source.doc.policies.length}</td>`;
         rows += `</tr>`;
 
-        rows += `<tr class="accordion-body hidden" id="accordion-body-${item._source.doc.reference_id}">
+        rows += `<tr class="accordion-body fadeout" id="accordion-body-${item._source.doc.reference_id}">
                     <td colspan=6 class="accordion-subtable-container">
                     <table class="table accordion-subtable">
                         <colgroup>
-                            <col class="colgroup-xl-col">
+                            <col class="colgroup-subtable-col">
                             <col class="colgroup-medium-col">
                             <col>
                         </colgroup>
                         <tr>
-                            <th>Policy Document</th>
+                            <th>Cited in the following Policy Documents</th>
                             <th>Policy Organisation</th>
                             <th>Publication Year</th>
                         </tr>
@@ -50,7 +50,7 @@ function getCitationsTableContent(data) {
         for (let policy of item._source.doc.policies) {
             let policy_title = policy.title ? policy.title.toTitleCase() : "Title unavailable";
             rows += `<tr>`;
-            rows += `<td title="${policy_title}"><a
+            rows += `<td title="${policy_title}"><span class="icn icn-new-page"></span>  <a
                href="${policy.source_url}"
                target="_blank"
                rel="noreferrer noopener"
@@ -127,11 +127,23 @@ function refreshCitations(data, currentState) {
 
     for (let item of accordions) {
         item.addEventListener('click', (e) => {
-            const accordionBodyId = e.currentTarget.getAttribute('id').replace('row', 'body');
+            // Disable other active rows
+            let activeRows = document.getElementsByClassName('active-row');
+            for (let row of activeRows) {
+              let accordionBodyId = row.getAttribute('id').replace('row', 'body');
+              let accordionBody = document.getElementById(accordionBodyId);
+              accordionBody.classList.toggle('fadein');
+              accordionBody.classList.toggle('fadeout');
+              row.classList.toggle('active-row');
+              row.firstChild.firstChild.classList.toggle('icon-arrow-down');
+              row.firstChild.firstChild.classList.toggle('icon-arrow-up');
+            }
 
+            // Enable Actual active row
+            let accordionBodyId = e.currentTarget.getAttribute('id').replace('row', 'body');
             let accordionBody = document.getElementById(accordionBodyId);
-
-            accordionBody.classList.toggle('hidden');
+            accordionBody.classList.toggle('fadein');
+            accordionBody.classList.toggle('fadeout');
             e.currentTarget.classList.toggle('active-row');
             e.currentTarget.firstChild.firstChild.classList.toggle('icon-arrow-down');
             e.currentTarget.firstChild.firstChild.classList.toggle('icon-arrow-up');
