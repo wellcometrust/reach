@@ -7,17 +7,14 @@
 **/.cache/*
 
 *.csv
-*.json
 *.pdf
 *.txt
-*.png
 
 !package.json
 !base/tests/pdfs/*
 !keywords.txt
 !section_keywords.txt
 !**/requirements.*
-!Image_Product-shot.png
 
 **/node_modules
 **/epmc-metadata.json.gz

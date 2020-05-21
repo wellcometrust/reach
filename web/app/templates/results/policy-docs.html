@@ -36,9 +36,14 @@
     <div class="container">
         <hr class="hs">
         <div class="columns">
-            <div class="column col-12">
-                <h1>Results for "{{ term }}" in policy documents</h1>
+            <div class="column col-6 col-md-12">
+                {% if status %}
+                  <h1>Results for "{{ term }}" in policy documents</h1>
+                {% else %}
+                  <h1>Your search for "{{ term }}" in policy&nbspdocuments did not return any results</h1>
+                {% endif %}
             </div>
+            <div class="column col-6 hide-md"></div>
             <div class="column col-6 col-md-12">
                 <p>Searching for “Malaria” in PDFs from the websites of UNICEF, Médecins Sans Frontières,
                     National Insititute for Clinical Excellence, the World Health Organisation, UK Government
@@ -75,10 +80,15 @@
         {% if not status %}
             <hr class="fs">
             <div class="columns">
-                <div class="column col-6 col-md-12">
-                    <h3>We couldn’t find any results for your search.</h3>
-                </div>
-                <div class="column col-6 hide-md"></div>
+              <div class="column col-6 col-md-12">
+                <h3>Search tips</h3>
+                <ul class="tips-list">
+                  <li>Check your spelling</li>
+                  <li>Broaden your search by using fewer words or more general terms</li>
+                  <li>Try searching by topic, area or work or insitute</li>
+                </ul>
+              </div>
+              <div class="column col-6 hide-md"></div>
             </div>
             <hr class="fs">
             <hr class="fs">
