@@ -25,7 +25,7 @@ const getPolicyTableContent = (data) => {
         let title = (item['title'])? item['title'].toTitleCase():"Title unavailable";
         rows += `<tr>`;
         rows += `<td class="new-page-icon-cell"><a
-            href="${item._source.doc.url}"
+            href="${item.source_doc_url}"
             target="_blank"
             rel="noreferrer noopener"
         ><span class="icn icn-new-page"></span></td>`;
@@ -85,12 +85,12 @@ const refreshPolicy = (data, currentState) => {
             currentState.fields = searchFields;
             let newPage = e.currentTarget;
 
-            if (newPage.innerHTML === 'Prev') {
+            if (newPage.id === 'page-previous') {
                 currentState.page -= 1;
                 newPage = pages[currentState.page];
             }
 
-            else if (newPage.innerHTML === 'Next') {
+            else if (newPage.id === 'page-next') {
                 currentState.page += 1;
                 newPage = pages[currentState.page];
             }
