@@ -1,7 +1,7 @@
 .DEFAULT_GOAL := all
 
 # ORG input default to the shortest one to run
-ORG ?= who_iris
+ORG ?= msf
 
 ifdef IMAGE_REPO_NAME
 WEB_IMAGE := ${IMAGE_REPO_NAME}
