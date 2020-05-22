@@ -33,23 +33,23 @@ spec:
 
       - name: clear-artifacts
         template: op-clear-artifacts
-      #
-      # - name: fulltext-pg
-      #   template: op-pg-fulltext-import
-      #   dependencies: [clear-artifacts]
+
+      - name: fulltext-pg
+        template: op-pg-fulltext-import
+        dependencies: [clear-artifacts]
 
       - name: citations-pg
         template: op-pg-citations-import
-      #   dependencies: [fulltext-pg, epmc-pg-load]
-      #
-      # - name: clean-epmc
-      #   template: clear-epmc-metadata
-      # - name: epmc-fetcher
-      #   template: fetch-epmc
-      #   dependencies: [clean-epmc]
-      # - name: epmc-pg-load
-      #   template: op-epmc-metadata-pg-load
-      #   dependencies: [epmc-fetcher]
+        dependencies: [fulltext-pg, epmc-pg-load]
+
+      - name: clean-epmc
+        template: clear-epmc-metadata
+      - name: epmc-fetcher
+        template: fetch-epmc
+        dependencies: [clean-epmc]
+      - name: epmc-pg-load
+        template: op-epmc-metadata-pg-load
+        dependencies: [epmc-fetcher]
 
 
   - name: op-pg-citations-import
@@ -100,8 +100,8 @@ spec:
         path: /mnt/vol/who_iris-parsed-result.json.gz
         s3:
           endpoint: s3.amazonaws.com
-          bucket: datalabs-staging
-          key: test/who_iris/parsed_result.json.gz
+          bucket: datalabs-dev
+          key: parser/split-container/who_iris/policy_docs_normalized.json.gz
           accessKeySecret:
             name: aws
             key: aws_access_key_id
