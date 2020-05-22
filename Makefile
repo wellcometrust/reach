@@ -1,7 +1,7 @@
 .DEFAULT_GOAL := all
 
 # ORG input default to the shortest one to run
-ORG ?= msf
+ORG ?= who_iris
 
 ifdef IMAGE_REPO_NAME
 WEB_IMAGE := ${IMAGE_REPO_NAME}
@@ -17,10 +17,7 @@ PARSER_DST := s3://datalabs-dev/parser/split-container/${ORG}/policy_docs_normal
 EXTRACTER_PARSED_DST := s3://datalabs-dev/extracter/split-container/${ORG}/extracted-refs-${ORG}.json.gz
 EXTRACTER_SPLIT_DST := s3://datalabs-dev/extracter-split/split-container/${ORG}/split-refs-${ORG}.json.gz
 
-FUZZYMATCHER_DIR := s3://datalabs-dev/fuzzymatcher/split-container
-FUZZYMATCHER_DST := ${FUZZYMATCHER_DIR}/${ORG}/fuzzymatched-refs-${ORG}.json.gz
-
-COMBINE_MATCHES_DST := s3://datalabs-dev/combinedmatches/combinedmatches.json.gz
+FUZZYMATCHER_DST := s3://datalabs-dev/fuzzymatcher/split-container/${ORG}/fuzzymatched-refs-${ORG}.json.gz
 
 GOLD_EVAL_SRC := s3://datalabs-data/reach_evaluation/data/sync/2019.10.8-fuzzy-matched-gold-refs-manually-verified.jsonl
 EVALUATOR_DST := s3://datalabs-dev/evaluator/evaluator.json.gz
@@ -138,24 +135,6 @@ push-fuzzymatcher: fuzzymatcher-image
 	$$(aws ecr get-login --no-include-email --region eu-west-1) && \
 		docker push $(ECR_ARN)/reach-fuzzy-matcher:$(LATEST_TAG) && \
 		docker push $(ECR_ARN)/reach-fuzzy-matcher:$(VERSION)
-
-#########################
-# Reach Combine Matches #
-#########################
-
-.PHONY: combine-matches-image
-combine-matches-image: base-image
-	docker build \
-		-t $(ECR_ARN)/reach-combine-matches:$(VERSION) \
-		-t $(ECR_ARN)/reach-combine-matches:$(LATEST_TAG) \
-		-f pipeline/reach-combine-matches/Dockerfile \
-		./pipeline/reach-combine-matches
-
-.PHONY: push-combine-matches
-push-combine-matches: combine-matches-image
-	$$(aws ecr get-login --no-include-email --region eu-west-1) && \
-		docker push $(ECR_ARN)/reach-combine-matches:$(LATEST_TAG) && \
-		docker push $(ECR_ARN)/reach-combine-matches:$(VERSION)
 
 ###################
 # Reach Evaluator #
@@ -290,18 +269,6 @@ run-fuzzymatcher: fuzzymatcher-image
 		${ORG} \
 		fulltexts
 
-.PHONY: run-combine-matches
-run-combine-matches: combine-matches-image
-	docker run \
-	  -e AWS_ACCESS_KEY_ID="${AWS_ACCESS_KEY_ID}" \
-		-e AWS_SECRET_ACCESS_KEY="${AWS_SECRET_ACCESS_KEY}" \
-		-e SENTRY_DSN="${SENTRY_DSN}" \
-		-e ES_HOST=${DOCKER_LOCALHOST} \
-		--network=host \
-		${ECR_ARN}/reach-combine-matches \
-		${FUZZYMATCHER_DIR} \
-		${COMBINE_MATCHES_DST} \
-
 .PHONY: run-evaluator
 run-evaluator: evaluator-image
 	docker run \
@@ -312,7 +279,7 @@ run-evaluator: evaluator-image
 		--network=host \
 		${ECR_ARN}/reach-evaluator \
 		${GOLD_EVAL_SRC} \
-		${COMBINE_MATCHES_DST} \
+		${FUZZYMATCHER_DST} \
 		${EVALUATOR_DST} \
 
 .PHONY: run-indexer-citations
@@ -388,10 +355,10 @@ test-extractor: extractor-tests-image
 docker-test: test-scraper test-parser test-extractor
 
 .PHONY: docker-build
-docker-build: base-image scraper-image parser-image es-extracter-image indexer-image fuzzymatcher-image combine-matches-image evaluator-image
+docker-build: base-image scraper-image parser-image es-extracter-image indexer-image fuzzymatcher-image evaluator-image
 
 .PHONY: docker-push-all
-docker-push-all: docker-test push-fuzzymatcher push-combine-matches push-evaluator push-extracter push-indexer push-parser push-scraper
+docker-push-all: docker-test push-fuzzymatcher push-evaluator push-extracter push-indexer push-parser push-scraper
 
 .PHONY: all
 all: docker-build
