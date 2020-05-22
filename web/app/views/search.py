@@ -12,6 +12,11 @@ DEFAULT_SORTING = {
     "policies": "title",
 }
 
+SELECT_FIELDS = {
+    "citations": [],
+    "policies": ['title', 'source_org', 'year', 'source_doc_url', 'authors']
+}
+
 
 def _build_psql_query(params, source):
     """Prepare the query and arguments to be sent to PostgreSQL.
@@ -28,6 +33,7 @@ def _build_psql_query(params, source):
     """
     size = params.get('size', 25)
     fields = params.get('fields', '').split(',')
+    vectors = ["to_tsvector(%s)" % f for f in fields]
     terms = params.get('terms', '').split(',')
 
     query = """
@@ -40,22 +46,36 @@ def _build_psql_query(params, source):
         OFFSET {offset};
     """
 
+    count_query = """
+        SELECT COUNT(DISTINCT(uuid))
+        FROM {source}
+        WHERE {where_query};
+    """
+
+    where_statement = ' @@ to_tsquery(%s) OR '.join(vectors) + ' @@ to_tsquery(%s) '
+
     query = query.format(
-        fields=', '.join(fields),
+        fields=', '.join(SELECT_FIELDS[source]),
         source='warehouse.reach_' + source,
-        where_query=' to_tsvector(%s) OR '.join(fields) + '=to_tsquery(%s) ',
+        where_query=where_statement,
         order=params.get('sort', DEFAULT_SORTING[source]),
         is_asc=params.get('order', 'ASC'),
         size=size,
         offset=(int(params.get('page', 1)) - 1) * int(size)
     )
 
+    count_query = count_query.format(
+        source='warehouse.reach_' + source,
+        where_query=where_statement,
+    )
+
     terms = (' & '.join(terms[0].split(' ')),) * len(fields)
 
     logger.info(query)
     logger.info(terms)
+    logger.info(where_statement)
 
-    return query, terms
+    return query, terms, count_query
 
 
 def _search_db(db, params, source):
@@ -72,9 +92,11 @@ def _search_db(db, params, source):
             es.search()|str: A dict containing the result of the search if it
                              succeeded or a string explaining why it failed
         """
-        search_query, args = _build_psql_query(params, source)
+        search_query, args, count_query = _build_psql_query(params, source)
+        data = db.get(search_query, args)
+        count = db.get(count_query, args)
 
-        return True, db.get(search_query, args)
+        return True, data, count[0]['count']
 
 
 class SearchApi:
@@ -107,14 +129,13 @@ class SearchApi:
                 })
                 resp.status = falcon.HTTP_400
 
-            status, response = _search_db(self.db, req.params, self.source)
+            status, response, count = _search_db(self.db, req.params, self.source)
             if status:
                 if 'citations' in self.source:
                     # Clean dataset a bit before using in JS
                     # response = format_citation(response)
                     pass
-                response['status'] = 'success'
-                resp.body = json.dumps(response)
+                resp.body = json.dumps({'status': 'success', 'data': response, 'hits': count})
             else:
                 resp.body = json.dumps({
                     'status': 'error',
@@ -141,9 +162,9 @@ class FulltextPage(template.TemplateResource):
         self.db = db
         self.search_fields = ','.join([
             'title',
-            'text',
             'source_org',
             'authors',
+            'year',
         ])
 
         super(FulltextPage, self).__init__(template_dir, context)
@@ -154,11 +175,11 @@ class FulltextPage(template.TemplateResource):
                 "terms": req.params.get('terms', ''),
                 "fields": self.search_fields,  # search_db is expects a str
                 "size": int(req.params.get('size', 1)),
-                "sort": "organisation",
+                "sort": "title",
             }
 
             # Still query on the backend to ensure some results are found
-            status, response = _search_db(self.db, params, 'policies')
+            status, response, count = _search_db(self.db, params, 'policies')
 
             self.context['es_response'] = response
             self.context['es_status'] = status
@@ -166,7 +187,7 @@ class FulltextPage(template.TemplateResource):
             # This line will go away after frontend update
             self.context['term'] = params['terms'].split(',')[0]
 
-            if (not status) or (response.get('message')):
+            if (not status) or (not response):
                 self.context.update(params)
                 super(FulltextPage, self).render_template(
                     resp,
@@ -215,7 +236,7 @@ class CitationPage(template.TemplateResource):
             }
 
             logger.info('initiating search...')
-            status, response = _search_db(self.db, params, 'citations')
+            status, response, count = _search_db(self.db, params, 'citations')
 
             self.context['es_response'] = response
             self.context['es_status'] = status
