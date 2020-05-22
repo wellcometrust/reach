@@ -19,6 +19,7 @@ ORGS = [
     'unicef',
     'parliament',
     'acme',
+    'evaluation',
 ]
 
 
