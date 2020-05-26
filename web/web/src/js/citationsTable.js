@@ -24,17 +24,17 @@ function getCitationsTableContent(data) {
         let match_title = item._source.doc.match_title ? item._source.doc.match_title.toTitleCase() : "Title unavailable";
         rows += `<tr class="accordion-row" id="accordion-row-${item._source.doc.reference_id}">`;
         rows += `<td class="accordion-arrow"><i class="icon icon-arrow-down mr-1"></i></td>`
-        rows += `<td title="${match_title}">${match_title}</td>`;
+        rows += `<td title="${match_title}"><div>${match_title}</div></td>`;
         rows += `<td>${item._source.doc.match_publication}</td>`;
-        rows += `<td class="authors-cell" title="${authors}">
-            ${authors}
+        rows += `<td class="authors-cell" title="${authors}"><div>
+            ${authors}</div>
         </td>`;
         rows += `<td>${item._source.doc.match_pub_year}</td>`;
         rows += `<td>${item._source.doc.policies.length}</td>`;
         rows += `</tr>`;
 
         rows += `<tr class="accordion-body fadeout" id="accordion-body-${item._source.doc.reference_id}">
-                    <td colspan=6 class="accordion-subtable-container">
+                    <td colspan=6 class="accordion-subtable-container"><div>
                     <table class="table accordion-subtable">
                         <colgroup>
                             <col class="colgroup-subtable-col">
@@ -58,7 +58,7 @@ function getCitationsTableContent(data) {
             rows += `<td>${toDisplayOrg(policy.organisation)}</td>`;
             rows += `<td>${item._source.doc.match_pub_year}</td>`;
         }
-        rows += `</table></td>`
+        rows += `</table></div></td>`
         rows += `</tr>`;
     });
     return rows;
@@ -134,6 +134,7 @@ function refreshCitations(data, currentState) {
               let accordionBody = document.getElementById(accordionBodyId);
               accordionBody.classList.toggle('fadein');
               accordionBody.classList.toggle('fadeout');
+
               row.classList.toggle('active-row');
               row.firstChild.firstChild.classList.toggle('icon-arrow-down');
               row.firstChild.firstChild.classList.toggle('icon-arrow-up');

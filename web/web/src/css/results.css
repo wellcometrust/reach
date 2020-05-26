@@ -60,6 +60,10 @@
       overflow: visible;
       white-space: normal;
       text-overflow: visible;
+
+      div {
+        max-height: 500em;
+      }
     }
   }
 
@@ -241,16 +245,26 @@ th {
 }
 
 .fadein, .fadeout {
-    display: none;
-    opacity: 0;
-    -moz-transition: opacity 10s ease-in-out;
-    -o-transition: opacity 10s ease-in-out;
-    -webkit-transition: opacity 10s ease-in-out;
-    transition: opacity 10s ease-in-out;
+    visibility: collapse;
+    -moz-transition: visibility 0s;
+    -o-transition: visibility 0s;
+    -webkit-transition: visibility 0s;
+    transition: visibility 0s;
+
+    div {
+      max-height: 0;
+      -moz-transition: max-height 1s ease-in-out;
+      -o-transition: max-height 1s ease-in-out;
+      -webkit-transition: max-height 1s ease-in-out;
+      transition: max-height 1s ease-in-out;
+    }
 }
 .fadein {
-    display: table-row;
-    opacity: 1;
+    visibility: visible;
+
+    div {
+      max-height: 500rem;
+    }
 }
 
 
