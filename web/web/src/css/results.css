@@ -246,17 +246,17 @@ th {
 
 .fadein, .fadeout {
     visibility: collapse;
-    -moz-transition: visibility 0s;
-    -o-transition: visibility 0s;
-    -webkit-transition: visibility 0s;
-    transition: visibility 0s;
+    -moz-transition: visibility 0.2s ease-in-out;
+    -o-transition: visibility 0.2s ease-in-out;
+    -webkit-transition: visibility 0.2s ease-in-out;
+    transition: visibility 0.2s ease-in-out;
 
     div {
       max-height: 0;
-      -moz-transition: max-height 1s ease-in-out;
-      -o-transition: max-height 1s ease-in-out;
-      -webkit-transition: max-height 1s ease-in-out;
-      transition: max-height 1s ease-in-out;
+      -moz-transition: max-height 0.5s ease-in-out;
+      -o-transition: max-height 0.5s ease-in-out;
+      -webkit-transition: max-height 0.5s ease-in-out;
+      transition: max-height 0.5s ease-in-out;
     }
 }
 .fadein {

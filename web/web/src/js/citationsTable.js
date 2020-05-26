@@ -136,8 +136,7 @@ function refreshCitations(data, currentState) {
               accordionBody.classList.toggle('fadeout');
 
               row.classList.toggle('active-row');
-              row.firstChild.firstChild.classList.toggle('icon-arrow-down');
-              row.firstChild.firstChild.classList.toggle('icon-arrow-up');
+              row.firstChild.firstChild.classList.toggle('icn-up');
             }
 
             // Enable Actual active row
@@ -146,8 +145,7 @@ function refreshCitations(data, currentState) {
             accordionBody.classList.toggle('fadein');
             accordionBody.classList.toggle('fadeout');
             e.currentTarget.classList.toggle('active-row');
-            e.currentTarget.firstChild.firstChild.classList.toggle('icon-arrow-down');
-            e.currentTarget.firstChild.firstChild.classList.toggle('icon-arrow-up');
+            e.currentTarget.firstChild.firstChild.classList.toggle('icn-up');
         });
     }
 }

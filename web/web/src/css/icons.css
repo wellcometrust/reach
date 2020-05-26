@@ -63,3 +63,12 @@
   transform: rotate(270deg);
   content: url(../images/Icon_Chevron_Down.svg);
 }
+
+.icn-down {
+  transform: rotate(0deg);
+  color: $greyDark;
+}
+.icn-up {
+  transform: rotate(180deg);
+  color: $cyanLight;
+}
