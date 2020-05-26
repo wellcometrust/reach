@@ -95,14 +95,17 @@
 }
 .pages .page-item#active-page {
 	color: $cyanPrimary;
-    text-decoration: underline;
+  border-bottom: 1px solid $cyanPrimary;
+  line-height: 1.5rem;
 }
 
 .pages {
 
-    font-size: $smallFontSize;
     margin: 0;
     padding: 0;
+
+    font-size: 14px;
+    letter-spacing: 0.5px;
 
 	li a {
 		padding: 0.3rem;
@@ -111,32 +114,38 @@
 
 	.page-item, .disabled-page-item {
 		cursor: pointer;
-		padding: 0 .3125rem;
+		padding: 0 2px;
 		color: $cyanPrimary;
 		display: inline-block;
-        margin: 0 10px;
+    margin: 0 8px;
+
 	}
 
-    #page-previous, #page-next {
-        border: 1px solid #ccc;
-        border-radius: 2px;
-        background-color: white;
-        color: $cyanPrimary;
-        font-size: $baseFontSize;
-        font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
-        height: 2.75rem;
-        padding: 0 .75rem;
-        text-align: center;
-        font-weight: normal;
-        font-stretch: normal;
-        font-style: normal;
-        line-height: 2.75rem;
-        letter-spacing: normal;
-    }
+  #page-previous, #page-next {
+      border: 1px solid #ccc;
+      border-radius: 2px;
+      background-color: white;
+      color: $cyanPrimary;
+      font-size: $baseFontSize;
+      font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+      height: 2.75rem;
+      padding: 0 .75rem;
+      text-align: center;
+      font-weight: normal;
+      font-stretch: normal;
+      font-style: normal;
+      line-height: 2.75rem;
+      letter-spacing: normal;
+  }
 
 
 	.disabled-page-item {
-		color: $greyLight !important;
+		color: #E6E6E6 !important;
+    border-color: #E6E6E6 !important;
+
+    .icn-chevron-righ, .icn-chevron-left {
+      filter: invert(97%) sepia(8%) saturate(80%) hue-rotate(19deg) brightness(116%) contrast(80%);
+    }
 	}
 }
 

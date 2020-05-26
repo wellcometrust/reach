@@ -19,10 +19,10 @@ export function getPagination(currentPage, data) {
 
     let pages = ``;
     if (currentPage > 0) {
-        pages += `<li class="page-item btn" id="page-previous">&lt Prev</li>`;
+        pages += `<li class="page-item btn" id="page-previous"><i class="icn icn-chevron-left"></i> Prev</li>`;
     }
     else {
-        pages += `<li class="btn disabled-page-item" id="page-previous">&lt Prev</li>`;
+        pages += `<li class="btn disabled-page-item" id="page-previous"><i class="icn icn-chevron-left"></i> Prev</li>`;
     }
 
     const maxPages = parseInt(Math.ceil(data['hits'] / SIZE));
@@ -56,10 +56,10 @@ export function getPagination(currentPage, data) {
     }
 
     if (currentPage < maxPages - 1) {
-        pages += `<li class="page-item btn" id="page-next">Next &gt</li>`;
+        pages += `<li class="page-item btn" id="page-next">Next  <i class="icn icn-chevron-right"></i></li>`;
     }
     else {
-        pages += `<li class="disabled-page-item btn" id="page-next">Next &gt</li>`;
+        pages += `<li class="disabled-page-item btn" id="page-next">Next <i class="icn icn-chevron-right"></i></li>`;
     }
     return `<ul class="pages">${pages}</ul>`;
 
