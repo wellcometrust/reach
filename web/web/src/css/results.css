@@ -233,9 +233,15 @@ th {
     opacity: 1;
 }
 
+
+.tips-title {
+  font-weight: bold;
+  font-size: 1rem;
+}
+
 .tips-list {
   li {
-    margin-top: 1.5rem !important;
+    margin-top: 1rem !important;
     font-size: 1rem;
     letter-spacing: 0.5px;
     line-height: 1.5rem;
