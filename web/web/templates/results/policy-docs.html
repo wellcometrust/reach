@@ -71,21 +71,19 @@
           </div>
         </form>
       </div>
-      {% if status %}
+    {% if status %}
       <div class="column col-6 col-md-12 text-right">
         <a class="btn btn-primary btn-xl btn-download" href="/search/policy-docs/csv?terms={{ term }}" >Download results as .csv <span class="icn icn-download"></span></a>
         <!-- To be uncommented with further UI updates
         <a class="btn btn-primary btn-xl btn-download" href="/search/policy-docs/json?terms={{ term }}" >Download results as .json <span class="icn icn-download"></span></a>
         -->
       </div>
-      <div class="column col-12">
-          <span class="icn icn-info"></span><a href="/how-it-works">Learn about these results</a>
-      </div>
-      {% else %}
+    {% else %}
       <div class="column col-6 hide-md"></div>
-      {% endif %}
+    {% endif %}
     </div>
 
+{#- No results page body #}
     {% if not status %}
     <hr class="fs">
     <div class="columns">
@@ -114,9 +112,15 @@
   <hr class="fs">
     {% else %}
   </div> {#- Alternative closing for .container #}
-  <hr class="fs">
   <div class="results">
     <div class="container">
+      <hr class="hs">
+      <div class="columns">
+        <div class="column col-12 learn-link">
+          <span class="icn icn-info"></span><a href="/how-it-works">Learn about these results</a>
+        </div>
+      </div>
+      <hr class="hs">
       <div class="results-pages">
         <div class="columns">
           <div class="column col-6 col-md-12">
