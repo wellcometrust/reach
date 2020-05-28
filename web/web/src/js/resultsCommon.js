@@ -104,11 +104,27 @@ export function getData(type, body, callback) {
     xhr.responseType = 'json';
     xhr.send();
 
+    const load = setTimeout(() => {
+      document.getElementById('policy-docs-result-table').classList.add("load");
+      document.getElementById('loading-row').classList.remove("d-none");
+    }, 2000);
+
     xhr.onload = () => {
-        if (xhr.status == 200) {
-            console.log(xhr.response);
-            callback(xhr.response, body);
-        }
+      const loadingRow = document.getElementById('loading-row');
+
+      let table = document.getElementById('citations-result-table');
+      if (!table) {
+        table = table = document.getElementById('policy-docs-result-table');
+      }
+      clearTimeout(load);
+      if (xhr.status == 200) {
+          table.classList.remove("load");
+          loadingRow.classList.add("d-none");
+          callback(xhr.response, body);
+      }
+    };
+
+    xhr.onprogress = () => {
     };
 
     xhr.onabort = () => {

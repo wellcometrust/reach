@@ -69,14 +69,11 @@ function refreshCitations(data, currentState) {
     // to query Elasticsearch
 
     const table = document.getElementById('citations-results-tbody');
-    const loadingRow = document.getElementById('loading-row');
+    // const loadingRow = document.getElementById('loading-row');
     const pages = document.getElementsByClassName('page-item');
     const accordions = document.getElementsByClassName('accordion-row');
 
     table.innerHTML = getCitationsTableContent(data);
-
-    table.parentElement.classList.toggle("load");
-    loadingRow.classList.toggle("d-none");
 
     for (let htmlElement of document.getElementsByClassName('pagination-box'))
     {
@@ -101,9 +98,6 @@ function refreshCitations(data, currentState) {
             let currentPage = document.getElementById('active-page');
             let pages = document.getElementsByClassName('page-item')
             currentState.fields = searchFields;
-
-            document.getElementById('citations-result-table').classList.toggle("load");
-            document.getElementById('loading-row').classList.toggle("d-none");
 
              let newPage = e.currentTarget;
 
@@ -163,9 +157,6 @@ const citationsTable = () => {
                 let newSort = e.currentTarget.getAttribute('data-sort');
                 let currentSort = document.getElementById('active-sort');
                 let currentState = getCurrentState();
-
-                document.getElementById('citations-result-table').classList.toggle("load");
-                document.getElementById('loading-row').classList.toggle("d-none");
 
                 currentState.fields = searchFields;
                 if (newSort === currentState.sort) {
