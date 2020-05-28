@@ -34,15 +34,17 @@ function getCitationsTableContent(data) {
         rows += `</tr>`;
 
         rows += `<tr class="accordion-body fadeout" id="accordion-body-${item._source.doc.reference_id}">
-                    <td colspan=6 class="accordion-subtable-container"><div>
+                    <td></td>
+                    <td colspan=4 class="accordion-subtable-container"><div>
                     <table class="table accordion-subtable">
                         <colgroup>
+                            <col class="colgroup-accordion-col">
                             <col class="colgroup-subtable-col">
                             <col class="colgroup-medium-col">
                             <col>
                         </colgroup>
                         <tr>
-                            <th>Cited in the following Policy Documents</th>
+                            <th colspan="2">Cited in the following Policy Documents</th>
                             <th>Policy Organisation</th>
                             <th>Publication Year</th>
                         </tr>
@@ -50,7 +52,8 @@ function getCitationsTableContent(data) {
         for (let policy of item._source.doc.policies) {
             let policy_title = policy.title ? policy.title.toTitleCase() : "Title unavailable";
             rows += `<tr>`;
-            rows += `<td title="${policy_title}"><span class="icn icn-new-page"></span>  <a
+            rows += `<td><span class="icn icn-new-page"></span></td>`
+            rows += `<td title="${policy_title}"><a
                href="${policy.source_url}"
                target="_blank"
                rel="noreferrer noopener"

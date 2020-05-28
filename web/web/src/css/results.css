@@ -26,7 +26,6 @@
     td {
       overflow: hidden;
       white-space: nowrap;
-      padding: 0 15px;
       text-overflow: ellipsis;
     }
 	}
@@ -104,11 +103,23 @@
     tbody tr:nth-of-type(4n-1) {
         background-color: #f8f8f8;
     }
+
+    td {
+      padding: 0 15px;
+    }
+}
+
+.accordion-body td {
+  background-color: $backgroundTint1;
 }
 
 #citations-result-table.load, #policy-docs-result-table {
     tbody tr:nth-of-type(2n + 1) {
         background-color: #f8f8f8;
+    }
+
+    td {
+      padding: 0;
     }
 }
 .pages .page-item#active-page {
@@ -255,25 +266,27 @@ th {
 }
 
 .fadein, .fadeout {
+    position: absolute;
     visibility: collapse;
-    -moz-transition: visibility 0s;
-    -o-transition: visibility 0s;
-    -webkit-transition: visibility 0s;
-    transition: visibility 0s;
+    -moz-transition: visibility 0s position 0s;
+    -o-transition: visibility 0s position 0s;
+    -webkit-transition: visibility 0s position 0s;
+    transition: visibility 0s position 0s;
 
     div {
       max-height: 0;
-      -moz-transition: max-height 3s ease-in-out;
-      -o-transition: max-height 3s ease-in-out;
-      -webkit-transition: max-height 3s ease-in-out;
-      transition: max-height 3s ease-in-out;
+      -moz-transition: max-height 1.5s ease-in-out;
+      -o-transition: max-height 1.5s ease-in-out;
+      -webkit-transition: max-height 1.5s ease-in-out;
+      transition: max-height 1.5s ease-in-out;
     }
 }
 .fadein {
+    position: inherit;
     visibility: visible;
 
     div {
-      max-height: 500rem;
+      max-height: 50rem;
     }
 }
 
