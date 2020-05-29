@@ -1,0 +1,19 @@
+debug = true
+static_root = "../build/web/static"
+docs_static_root = "docs/build/html"
+
+[database]
+db_port = 5432
+db_name = ""
+db_host = ""
+db_user = ""
+db_password = ""
+min_conns = 1
+max_conns = 30
+
+[sentry]
+dsn = ""
+
+[analytics]
+ga_code = ""
+hotjar_code = ""

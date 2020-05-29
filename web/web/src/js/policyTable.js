@@ -151,6 +151,7 @@ const policyTable = () => {
 
         let body = getCurrentState();
         body.fields = searchFields;
+        console.log("HERE");
         getData('policy-docs', body, refreshPolicy);
     }
 }

@@ -1,4 +1,7 @@
 import os
+
+import toml
+
 from . import api
 
 
@@ -37,6 +40,19 @@ class Configuration:
                 self.docs_static_root
             )
 
+def parse_config_file():
 
-config = Configuration()
+    config_path = os.environ.get("CONFIG_FILE", None)
+
+    if config_path is None:
+        return {}
+
+    if not config_path.startswith("/"):
+        config_path = os.path.join(os.path.basedir(__file__), config_path)
+
+    config_data = toml.load(config_path)
+
+    return config_data
+
+config = parse_config_file()
 application = api.create_api(config)

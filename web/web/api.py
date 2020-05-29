@@ -11,13 +11,16 @@ import os.path
 
 import falcon
 
-from hooks.sentry import report_exception
+#from hooks.sentry import report_exception
+from web import config as conf
 from web.views import template
 from web.views import apidocs
-from web.views import search
-from web.views import search_exports
 from web.views import robotstxt
-from web.db_storage import StorageEngine
+from web.views import SearchCitations, SearchPolicies, \
+        ExportCitationsSearch, ExportPoliciesSearch, \
+        ApiSearchCitations, ApiSearchPolicies
+
+
 
 TEMPLATE_ROOT = os.path.join(os.path.dirname(__file__), 'templates')
 API_DOCS_ROOT = os.path.join(os.path.dirname(__file__), 'docs/build/html')
@@ -45,8 +48,8 @@ def get_context(os_environ):
     }
 
 
-@report_exception
-def create_api(conf):
+#@report_exception
+def create_api(config):
     """
     Args:
         Configuration object, as defined in web.wsgi
@@ -54,12 +57,10 @@ def create_api(conf):
     Returns:
         WSGI application
     """
+    conf.init(config)
+    from web.config import CONFIG
 
-    logger.info('Connecting to {psql}'.format(
-        psql=conf.database_url
-    ))
-
-    db = StorageEngine(conf.database_url)
+    # db = StorageEngine(conf.database_url)
     # Routes (are LIFO)
     api = falcon.API()
     api.add_route(
@@ -78,39 +79,33 @@ def create_api(conf):
     )
     api.add_route(
         '/search/citations',
-        search.CitationPage(
-            TEMPLATE_ROOT,
-            db,
-            get_context(os.environ)
-        )
+        SearchCitations(TEMPLATE_ROOT, get_context(os.environ))
     )
     api.add_route(
         '/search/policy-docs',
-        search.FulltextPage(
-            TEMPLATE_ROOT,
-            db,
-            get_context(os.environ))
+        SearchPolicies(TEMPLATE_ROOT, get_context(os.environ))
     )
     api.add_route(
         '/api/search/policy-docs',
-        search.SearchApi(db, 'policies')
+        ApiSearchPolicies(),
     )
     api.add_route(
         '/api/search/citations',
-        search.SearchApi(db, 'citations')
+        ApiSearchCitations(),
     )
     api.add_route(
         '/api/docs/{name}',
         apidocs.APIDocRessource(API_DOCS_ROOT, get_context(os.environ))
     )
-    api.add_static_route('/api/docs/_static', conf.docs_static_root)
+    api.add_static_route('/api/docs/_static', CONFIG.docs_static_root)
     api.add_route(
         '/search/citations/{ftype}',
-        search_exports.ResultsExport(db, 'citations')
+        ExportCitationsSearch()
     )
     api.add_route(
         '/search/policy-docs/{ftype}',
-        search_exports.ResultsExport(db, 'policies')
+        ExportPoliciesSearch()
     )
-    api.add_static_route('/static', conf.static_root)
+    api.add_static_route('/static', CONFIG.static_root)
+
     return api

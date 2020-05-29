@@ -16,7 +16,11 @@ services:
         SENTRY_DSN: "${SENTRY_DSN}"
         STATIC_ROOT: /opt/reach/build/web/static
         DOCS_STATIC_ROOT: /opt/reach/web/docs/build/html/_static
-        DATABASE_URL: "postgresql://postgres:development@host.docker.internal:5432/warehouse"
+        DB_HOST: "host.docker.internal"
+        DB_PORT: 5432
+        DB_NAME: "warehouse"
+        DB_USER: "postgres"
+        DB_PASSWORD: "development"
 
       command:
         - gunicorn
