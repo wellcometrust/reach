@@ -24,6 +24,8 @@
 
 .form-label {
 	margin-bottom: 0.5rem;
+  font-size: .875rem;
+  color: #292929;
 }
 
 /* Help tooltip */
