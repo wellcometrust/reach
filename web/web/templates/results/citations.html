@@ -5,6 +5,8 @@
     {% set status = status and (es_response.hits.total.value > 0) %}
 {% endif %}
 
+{% block bodyclass %}results{% endblock %}
+
 {% block header %}
 
 <header class="navbar">
@@ -58,7 +60,7 @@
     <div class="columns">
       <hr class="hs">
       <div class="column col-12">
-        <p class="form-label">Search by scientific publication title, journal, author, policy organisation or policy document title</p>
+        <p class="form-label">Search by publication title, journal or year of publication</p>
       </div>
       <div class="column col-6 col-md-12">
         <form action="/search/citations">
@@ -217,7 +219,7 @@
       <div class="column col-6 col-md-12">
         <div class="feedback-box">
           <p class="bold">Can't find what you're looking for?</p>
-          <p>If something doesn’t look quite right, please get in touch with the team at <a href="mailto:reach@wellcome.ac.uk">reach@wellcome.ac.uk</a></p>
+          <p>We are working to continually improve Reach, if it is not working as you expect, there is an error or you have a suggestion, please <a href="mailto:engineering.datalabs@wellcome.ac.uk">send us your feedback</a></p>
         </div>
       </div>
     </div>

@@ -24,7 +24,7 @@ viewbox="0 0 100 100" preserveAspectRatio="none">
 
 {% block scripts %}{% endblock %}
 </head>
-<body class="{% if home %}home{% endif %}">
+<body class="{% block bodyclass %}{% endblock %}">
   <div class="content">
     {#- The homepage need to override this header #}
     {% block header %}
