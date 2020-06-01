@@ -57,6 +57,7 @@
   	font-weight: bold;
   	width: 3.5rem;
   	text-align: center;
+    padding-right: 0 !important;
   }
 
   .new-page-icon-cell {
@@ -108,10 +109,15 @@
     td {
       padding: 0 15px;
     }
+
+    .accordion-row {
+      cursor: pointer;
+    }
 }
 
 .accordion-body td {
   background-color: $backgroundTint1;
+  cursor: default;
 }
 
 #citations-result-table.load, #policy-docs-result-table {
