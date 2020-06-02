@@ -1,6 +1,5 @@
 PYTHON := ${PWD}/venv/bin/python
 GUNICORN := ${PWD}/venv/bin/gunicorn
-DATABASE_URL := "postgresql://jdu:omnideadrobot@localhost:5432/warehouse"
 STATIC_ROOT := ${PWD}/build/web/static
 DOCS_STATIC_ROOT := ${PWD}/docs/build/html/_static
 SENTRY_DSN := ""
@@ -25,5 +24,3 @@ watch:
 
 .PHONY: run
 run: run-server watch
-
-

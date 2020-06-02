@@ -71,10 +71,6 @@ def _build_psql_query(params, source):
 
     terms = (' & '.join(terms[0].split(' ')),) * len(fields)
 
-    logger.info(query)
-    logger.info(terms)
-    logger.info(where_statement)
-
     return query, terms, count_query
 
 
@@ -103,10 +99,8 @@ class SearchApi:
     """Let you search for terms in publications fulltexts. Returns a json.
 
     Args:
-        es: An elasticsearch connection
-        es_index: The index to search on
-        es_explain: A boolean to enable|disable elasticsearch's explain.
-
+        db: A database object
+        source: the table to query (citations|policies)
     """
 
     def __init__(self, db, source):
@@ -130,6 +124,8 @@ class SearchApi:
                 resp.status = falcon.HTTP_400
 
             status, response, count = _search_db(self.db, req.params, self.source)
+
+
             if status:
                 if 'citations' in self.source:
                     # Clean dataset a bit before using in JS
