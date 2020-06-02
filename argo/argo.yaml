@@ -234,6 +234,26 @@ subjects:
   name: argo-server
 ---
 apiVersion: v1
+data:
+  config: |
+    namespace: argo
+    artifactRepository:
+      s3:
+        endpoint: s3.amazonaws.com
+        bucket: datalabs-dev
+        region: eu-west-1
+        keyFormat: "argo-dev-artifacts\
+          /{{workflow.creationTimestamp.Y}}\
+          /{{workflow.creationTimestamp.m}}\
+          /{{workflow.creationTimestamp.d}}\
+          /{{workflow.name}}\
+          /{{pod.name}}"
+        accessKeySecret:
+          name: aws
+          key: aws_access_key_id
+        secretKeySecret:
+          name: aws
+          key: aws_secret_access_key
 kind: ConfigMap
 metadata:
   name: workflow-controller-configmap
@@ -308,3 +328,14 @@ spec:
         image: argoproj/workflow-controller:v2.6.3
         name: workflow-controller
       serviceAccountName: argo
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: argo-pvc
+  namespace: argo
+spec:
+  accessModes: [ "ReadWriteOnce" ]
+  resources:
+    requests:
+      storage: 25Gi

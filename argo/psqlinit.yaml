@@ -1,0 +1,24 @@
+apiVersion: v1
+data:
+  create.sql: |2
+  
+    CREATE SCHEMA IF NOT EXISTS warehouse;
+
+    CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
+
+kind: ConfigMap
+metadata:
+  creationTimestamp: "2020-05-15T15:42:31Z"
+  managedFields:
+  - apiVersion: v1
+    fieldsType: FieldsV1
+    fieldsV1:
+      f:data:
+        .: {}
+        f:create.sql: {}
+    manager: kubectl
+    operation: Update
+    time: "2020-05-15T15:42:31Z"
+  name: psqlinit
+  namespace: argo
+  selfLink: /api/v1/namespaces/argo/configmaps/psqlinit

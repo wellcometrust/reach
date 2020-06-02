@@ -64,20 +64,15 @@
                     </div>
                 </form>
             </div>
-            {% if status %}
             <div class="column col-6 col-md-12 text-right">
                 <a class="btn btn-primary btn-xl" href="/search/citations/csv?terms={{ term }}">Download results as .csv <span class="icn icn-download"></span></a>
-                <!-- To be uncommented with further UI updates
                 <a class="btn btn-primary btn-xl btn-download" href="/search/citations/json?terms={{ term }}" >Download results as .json <span class="icn icn-download"></span></a>
-                -->
             </div>
-            {% else %}
-            <div class="column col-6 hide-md"></div>
-            {% endif %}
             <div class="column col-12">
                 <span class="icn icn-info"></span><a href="/how-it-works">Learn about these results</a>
             </div>
         </div>
+        {# 
         {% if not status %}
             <hr class="fs">
             <div class="columns">
@@ -105,6 +100,7 @@
             <hr class="fs">
         </div>
         {% else %}
+        #}
             </div>
             <div class="fs"></div>
             <div class="results">
@@ -141,7 +137,7 @@
                                     <span class="icn icn-sorted"></span>
                                 </th>
                                 <th class="sort" data-sort="match_publication">
-                                    Jounal
+                                    Journal
                                     <span class="icn icn-sort"></span>
                                 </th>
                                 <th>Author(s)</th>
@@ -214,6 +210,8 @@
                 </div>
             </div>
             <hr class="fs">
+            {#
         {% endif %}
+        #}
 </section>
 {% endblock %}

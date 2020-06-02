@@ -3,17 +3,6 @@ version: '3.4'
 # database and elasticsearch single-node cluster
 
 services:
-    postgres:
-        image: postgres:11.2-alpine
-        ports:
-          - 127.0.0.1:5432:5432
-        environment:
-          POSTGRES_PASSWORD: development
-        deploy:
-          resources:
-            limits:
-              memory: "64M"
-
     web:
       build:
           context: ./web
@@ -27,10 +16,11 @@ services:
         SENTRY_DSN: "${SENTRY_DSN}"
         STATIC_ROOT: /opt/reach/build/web/static
         DOCS_STATIC_ROOT: /opt/reach/web/docs/build/html/_static
-        ELASTICSEARCH_HOST: "http://elasticsearch:9200"
-        ELASTICSEARCH_POLICYDOCS_INDEX: "reach-fulltexts"
-        ELASTICSEARCH_CITATIONS_INDEX: "reach-citations"
-        # DATABASE_URL: "postgres://postgres:postgres@articles-db:5432/wsf_scraping"
+        DB_HOST: "host.docker.internal"
+        DB_PORT: 5432
+        DB_NAME: "warehouse"
+        DB_USER: "postgres"
+        DB_PASSWORD: "development"
 
       command:
         - gunicorn
@@ -40,7 +30,6 @@ services:
       volumes:
         - ./web/app:/opt/reach/web/
         - ./web/build/web:/opt/reach/build/web
-      depends_on: ['elasticsearch']
       deploy:
         resources:
           limits:
@@ -66,23 +55,3 @@ services:
         resources:
           limits:
             memory: "96M"
-
-
-
-    elasticsearch:
-        image: docker.elastic.co/elasticsearch/elasticsearch:7.2.1
-        environment:
-          - discovery.type=single-node
-          - "ES_JAVA_OPTS=-Xms512m -Xmx2g"
-        ports:
-          - 127.0.0.1:9200:9200
-        volumes:
-          - esdata:/usr/share/elasticsearch/data
-        deploy:
-          resources:
-            limits:
-              memory: "2560M"
-
-volumes:
-  esdata:
-    driver: local

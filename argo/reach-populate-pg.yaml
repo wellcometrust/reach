@@ -1,0 +1,211 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Workflow
+metadata:
+  name: wkflw-reach-populate-pg
+  generateName: wkflw-reach-populate-pg-
+  namespace: argo
+spec:
+  imagePullSecrets:
+  - name: awsecr-cred
+  activeDeadlineSeconds: 216000
+  entrypoint: scraper
+  serviceAccountName: argo
+  volumes:
+  - name: workdir
+    persistentVolumeClaim:
+      claimName: argo-pvc
+
+  arguments:
+    parameters:
+    - name: es_host
+      value: "elasticsearch.elastic.svc.cluster.local"
+    - name: pg_host
+      value: "postgres"
+    - name: pg_user
+      value: postgres
+    - name: epmc_pg_table
+      value: "warehouse.epmc_metadata"
+
+  templates:
+  - name: scraper
+    dag:
+      tasks:
+
+      - name: clear-artifacts
+        template: op-clear-artifacts
+
+      - name: fulltext-pg
+        template: op-pg-fulltext-import
+        dependencies: [clear-artifacts]
+
+      - name: citations-pg
+        template: op-pg-citations-import
+        dependencies: [fulltext-pg, epmc-pg-load]
+
+      - name: clean-epmc
+        template: clear-epmc-metadata
+      - name: epmc-fetcher
+        template: fetch-epmc
+        dependencies: [clean-epmc]
+      - name: epmc-pg-load
+        template: op-epmc-metadata-pg-load
+        dependencies: [epmc-fetcher]
+
+
+  - name: op-pg-citations-import
+    activeDeadlineSeconds: 216000
+    inputs:
+      artifacts:
+      - name: reach-citations
+        path: /mnt/vol/who_iris-matched-result.json.gz
+        s3:
+          endpoint: s3.amazonaws.com
+          bucket: datalabs-staging
+          key: reach/who_iris/fuzzymatched-refs-who_iris.json.gz
+          accessKeySecret:
+            name: aws
+            key: aws_access_key_id
+          secretKeySecret:
+            name: aws
+            key: aws_secret_access_key
+    container:
+      image: 160358319781.dkr.ecr.eu-west-1.amazonaws.com/uk.ac.wellcome/datalabs-infra-utils:latest
+      workingDir: /opt/pipelines/reach
+      command: [sh, -c]
+      args: [
+          "python load-citations-pg.py --pg-host {{workflow.parameters.pg_host}} --pg-user {{workflow.parameters.pg_user}} --import-file /mnt/vol/who_iris-matched-result.json.gz --pg-port 5432 --pg-pass $PG_PASSWORD --org who_iris"
+      ]
+      volumeMounts:
+      - mountPath: /mnt/vol
+        name: workdir
+      env:
+      - name: PG_PASSWORD
+        value: development
+      - name: AWS_ACCESS_KEY_ID
+        valueFrom:
+          secretKeyRef:
+            name: aws
+            key: aws_access_key_id
+      - name: AWS_SECRET_ACCESS_KEY
+        valueFrom:
+          secretKeyRef:
+            name: aws
+            key: aws_secret_access_key
+
+  - name: op-pg-fulltext-import
+    activeDeadlineSeconds: 216000
+    inputs:
+      artifacts:
+      - name: reach-fulltexts
+        path: /mnt/vol/who_iris-parsed-result.json.gz
+        s3:
+          endpoint: s3.amazonaws.com
+          bucket: datalabs-dev
+          key: parser/split-container/who_iris/policy_docs_normalized.json.gz
+          accessKeySecret:
+            name: aws
+            key: aws_access_key_id
+          secretKeySecret:
+            name: aws
+            key: aws_secret_access_key
+    container:
+      image: 160358319781.dkr.ecr.eu-west-1.amazonaws.com/uk.ac.wellcome/datalabs-infra-utils:latest
+      workingDir: /opt/pipelines/reach
+      command: [sh, -c]
+      args: [
+          "python load-policies-pg.py --pg-host {{workflow.parameters.pg_host}} --pg-user {{workflow.parameters.pg_user}} --import-file /mnt/vol/who_iris-parsed-result.json.gz --pg-port 5432 --pg-pass $PG_PASSWORD --org who_iris"
+      ]
+      volumeMounts:
+      - mountPath: /mnt/vol
+        name: workdir
+      env:
+      - name: PG_PASSWORD
+        value: development
+      - name: AWS_ACCESS_KEY_ID
+        valueFrom:
+          secretKeyRef:
+            name: aws
+            key: aws_access_key_id
+      - name: AWS_SECRET_ACCESS_KEY
+        valueFrom:
+          secretKeyRef:
+            name: aws
+            key: aws_secret_access_key
+
+  # Loads EPMC metadata into Postgres
+  - name: op-epmc-metadata-pg-load
+    activeDeadlineSeconds: 216000
+    container:
+      image: 160358319781.dkr.ecr.eu-west-1.amazonaws.com/uk.ac.wellcome/datalabs-infra-utils:latest-20200408T165907Z
+      imagePullPolicy: Always
+      command: [sh, -c]
+      workingDir: /opt/pipelines/epmc
+      args: [
+       "python load-epmc-metadata-pg.py --pg-host {{workflow.parameters.pg_host}} --pg-user {{workflow.parameters.pg_user}} --pg-table {{workflow.parameters.epmc_pg_table}} --import-file /mnt/vol/epmc-metadata.json --pg-pass $PG_PASSWORD"
+      ]
+      env:
+      - name: PG_PASSWORD
+        value: development
+      volumeMounts:
+      - mountPath: /mnt/vol
+        name: workdir
+
+  - name: clear-epmc-metadata
+    container:
+      image: alpine:3.11.5
+      command: [sh, -c]
+      args: [
+          "rm -rf /mnt/vol/PMCLiteMetadata.tgz"
+      ]
+      volumeMounts:
+      - mountPath: /mnt/vol
+        name: workdir
+
+  # Fetches and converts the EPMC XML to a single JSON file
+  - name: fetch-epmc
+    inputs:
+      artifacts:
+      - name: epmc-source
+        path: /mnt/vol/PMCLiteMetadata.tgz
+        mode: 0755
+        http:
+          url: http://europepmc.org/ftp/pmclitemetadata/PMCLiteMetadata.tgz
+    outputs:
+      artifacts:
+      - name: epmc-json
+        path: /mnt/vol/epmc-metadata.json
+    container:
+      image: 160358319781.dkr.ecr.eu-west-1.amazonaws.com/uk.ac.wellcome/datalabs-infra-utils:latest-20200408T165907Z
+      imagePullPolicy: Always
+      command: [sh, -c]
+      workingDir: /opt/pipelines/epmc
+      args: [
+        "python fetch-epmc-metadata.py --limit 10000"
+      ]
+      volumeMounts:
+      - mountPath: /mnt/vol
+        name: workdir
+
+
+  # Clear previously loaded artifacts from persistant volume
+  - name: op-clear-artifacts
+    container:
+      image: alpine:3.11.5
+      command: [sh, -c]
+      args: [
+        "ls -lth /mnt/vol/ && rm -rf /mnt/vol/who_iris-matched-result.json.gz && rm -rf /mnt/vol/who_iris-parsed-result.json.gz && ls -lth /mnt/vol/"
+      ]
+      volumeMounts:
+      - mountPath: /mnt/vol
+        name: workdir
+
+  - name: op-ls-artifacts
+    container:
+      image: alpine:3.11.5
+      command: [sh, -c]
+      args: [
+          "ls -l /mnt/vol/who_iris-matched-result.json && head -n10 /mnt/vol/who_iris-matched-result.json"
+      ]
+      volumeMounts:
+      - mountPath: /mnt/vol
+        name: workdir

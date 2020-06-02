@@ -19,7 +19,7 @@ const searchFields = [
 
 function getCitationsTableContent(data) {
     let rows = ``;
-    data.hits.hits.forEach((item) => {
+    data.data.forEach((item) => {
         let authors = item._source.doc.match_authors ? item._source.doc.match_authors : "Authors unavailable";
         let match_title = item._source.doc.match_title ? item._source.doc.match_title.toTitleCase() : "Title unavailable";
         rows += `<tr class="accordion-row" id="accordion-row-${item._source.doc.reference_id}">`;

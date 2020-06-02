@@ -8,8 +8,7 @@ import {
 
 const searchFields = [
     'title',
-    'text',
-    'organisation',
+    'source_org',
     'authors',
 ].join(',');
 
@@ -19,25 +18,24 @@ const getPolicyTableContent = (data) => {
     // Create the table rows to use in the policy-docs result table
 
     let rows = ``;
-    for(let item of data.hits.hits) {
-        if (!item._source.doc.url) {
+    for(let item of data) {
+        if (!item['source_doc_url']) {
             continue;
         }
-        let authors = item._source.doc.authors?item._source.doc.authors:"Unknown";
-        let title = (item._source.doc.title)? item._source.doc.title.toTitleCase():"Title unavailable";
+        let title = (item['title'])? item['title'].toTitleCase():"Title unavailable";
         rows += `<tr>`;
         rows += `<td class="new-page-icon-cell"><a
-            href="${item._source.doc.url}"
+            href="${item.source_doc_url}"
             target="_blank"
             rel="noreferrer noopener"
         ><span class="icn icn-new-page"></span></td>`;
         rows += `<td title="${title}"><a
-            href="${item._source.doc.url}"
+            href="${item['source_doc_url']}"
             target="_blank"
             rel="noreferrer noopener"
         >${(title.length > TITLE_LENGTH) ? (title.slice(0, TITLE_LENGTH) + "...") : title}</a></td>`;
-        rows += `<td>${toDisplayOrg(item._source.doc.organisation)}</td>`;
-        rows += `<td>${item._source.doc.year?item._source.doc.year:"Unknown"}</td>`;
+        rows += `<td>${toDisplayOrg(item['source_org'])}</td>`;
+        rows += `<td>${item['year']?item['year']:"Unknown"}</td>`;
         rows += `</tr>`;
 
     }
@@ -53,7 +51,7 @@ const refreshPolicy = (data, currentState) => {
     const loadingRow = document.getElementById('loading-row');
     const pages = document.getElementsByClassName('page-item');
 
-    table.innerHTML = getPolicyTableContent(data);
+    table.innerHTML = getPolicyTableContent(data['data']);
 
 
     table.parentElement.classList.toggle("load");
@@ -87,12 +85,12 @@ const refreshPolicy = (data, currentState) => {
             currentState.fields = searchFields;
             let newPage = e.currentTarget;
 
-            if (newPage.innerHTML === 'Prev') {
+            if (newPage.id === 'page-previous') {
                 currentState.page -= 1;
                 newPage = pages[currentState.page];
             }
 
-            else if (newPage.innerHTML === 'Next') {
+            else if (newPage.id === 'page-next') {
                 currentState.page += 1;
                 newPage = pages[currentState.page];
             }
@@ -153,6 +151,7 @@ const policyTable = () => {
 
         let body = getCurrentState();
         body.fields = searchFields;
+        console.log("HERE");
         getData('policy-docs', body, refreshPolicy);
     }
 }
