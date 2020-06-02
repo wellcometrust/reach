@@ -25,6 +25,7 @@ argo/secrets/minikube/argo/aws/*
 
 web/build/web/static/*
 !web/build/web/static/.gitkeep
+!web/docs/*
 venv
 .env
 package.lock
