@@ -18,7 +18,7 @@ $spectre_version: 0.5.8;
 @import "header.css";
 @import "footer.css";
 
-/*  Offsets the grid */
+/*  Offsets the grid and other media offseting */
 @media screen and (min-width: 1280px) {
    .container {
      padding: 0 92px;
@@ -41,8 +41,21 @@ $spectre_version: 0.5.8;
     height: 1rem;
     width: 1rem;
   }
-}
 
+  /* Centering space (for vertical centering in search pages) */
+  .cs {
+    height: 10vh;
+    width: 100%;
+  }
+}
+@media screen and (min-width: 2000px) {
+  /* 2k and 4k */
+  /* Centering space (for vertical centering in search pages) */
+  .cs {
+    height: 30vh;
+    width: 100%;
+  }
+}
 @media screen and (max-width: 1280px) {
    .container {
      padding: 0 22px;
@@ -62,6 +75,12 @@ $spectre_version: 0.5.8;
   .ms {
     height: 0.5rem;
     width: 0.5rem;
+  }
+
+  /* Centering space (for vertical centering in search pages) */
+  .cs {
+    height: 10vh;
+    width: 100%;
   }
 }
 
@@ -107,13 +126,15 @@ body {
   overflow-y: scroll;
   display: flex;
   flex-direction: column;
+}
 
+body:not(.results) {
   background-image: linear-gradient(-25deg, $backgroundTint2 20%, $backgroundTint1 calc(20% + 2px));
   background-repeat: no-repeat;
   background-position: bottom;
 }
 
-hr.fs, hr.hs, hr.ms {
+hr.fs, hr.hs, hr.ms, hr.cs {
   border: none;
   margin: 0;
   padding: 0;
@@ -218,13 +239,13 @@ a, a:visited {
 .btn.btn-xl {
   font-size: $baseFontSize;
   font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
-  height: 3rem;
+  height: 2.75rem;
   padding: 0 2rem;
   text-align: center;
   font-weight: normal;
   font-stretch: normal;
   font-style: normal;
-  line-height: 3rem;
+  line-height: 2.75rem;
   letter-spacing: normal;
 }
 
@@ -235,11 +256,30 @@ a, a:visited {
 .input-btn-xl {
   border-radius: none !important;
   font-size: $baseFontSize;
-  height: 2.5rem;
-  padding: .6rem .6rem;
+  height: 2.75rem;
+  padding: .625rem .625rem;
 }
 
 .btn.btn-primary {
+  border: none;
+  background: $cyanPrimary;
+  color: white;
+  transition: none;
+}
+
+.btn.btn-primary:active {
+  border: none;
+  background: $cyanPrimary;
+  color: white;
+}
+
+.btn.btn-primary:visited {
+  border: none;
+  background: $cyanPrimary;
+  color: white;
+}
+
+.btn.btn-primary:default {
   border: none;
   background: $cyanPrimary;
   color: white;
@@ -270,8 +310,8 @@ a, a:visited {
 .form-input.input-xl {
   font-size: $baseFontSize;
   border-color: $greyLight;
-  height: 2.5rem;
-  padding: .6rem .6rem;
+  height: 2.75rem;
+  padding: .625rem;
 }
 
 .form-input:focus {

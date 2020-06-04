@@ -24,25 +24,27 @@ function getCitationsTableContent(data) {
         let match_title = item._source.doc.match_title ? item._source.doc.match_title.toTitleCase() : "Title unavailable";
         rows += `<tr class="accordion-row" id="accordion-row-${item._source.doc.reference_id}">`;
         rows += `<td class="accordion-arrow"><i class="icon icon-arrow-down mr-1"></i></td>`
-        rows += `<td title="${match_title}">${match_title}</td>`;
+        rows += `<td title="${match_title}"><div>${match_title}</div></td>`;
         rows += `<td>${item._source.doc.match_publication}</td>`;
-        rows += `<td class="authors-cell" title="${authors}">
-            ${authors}
+        rows += `<td class="authors-cell" title="${authors}"><div>
+            ${authors}</div>
         </td>`;
         rows += `<td>${item._source.doc.match_pub_year}</td>`;
         rows += `<td>${item._source.doc.policies.length}</td>`;
         rows += `</tr>`;
 
         rows += `<tr class="accordion-body fadeout" id="accordion-body-${item._source.doc.reference_id}">
-                    <td colspan=6 class="accordion-subtable-container">
+                    <td></td>
+                    <td colspan=4 class="accordion-subtable-container"><div>
                     <table class="table accordion-subtable">
                         <colgroup>
+                            <col class="colgroup-accordion-col">
                             <col class="colgroup-subtable-col">
                             <col class="colgroup-medium-col">
                             <col>
                         </colgroup>
                         <tr>
-                            <th>Cited in the following Policy Documents</th>
+                            <th colspan="2">Cited in the following Policy Documents</th>
                             <th>Policy Organisation</th>
                             <th>Publication Year</th>
                         </tr>
@@ -50,7 +52,8 @@ function getCitationsTableContent(data) {
         for (let policy of item._source.doc.policies) {
             let policy_title = policy.title ? policy.title.toTitleCase() : "Title unavailable";
             rows += `<tr>`;
-            rows += `<td title="${policy_title}"><span class="icn icn-new-page"></span>  <a
+            rows += `<td><span class="icn icn-new-page"></span></td>`
+            rows += `<td title="${policy_title}"><a
                href="${policy.source_url}"
                target="_blank"
                rel="noreferrer noopener"
@@ -58,7 +61,7 @@ function getCitationsTableContent(data) {
             rows += `<td>${toDisplayOrg(policy.organisation)}</td>`;
             rows += `<td>${item._source.doc.match_pub_year}</td>`;
         }
-        rows += `</table></td>`
+        rows += `</table></div></td>`
         rows += `</tr>`;
     });
     return rows;
@@ -69,14 +72,11 @@ function refreshCitations(data, currentState) {
     // to query Elasticsearch
 
     const table = document.getElementById('citations-results-tbody');
-    const loadingRow = document.getElementById('loading-row');
+    // const loadingRow = document.getElementById('loading-row');
     const pages = document.getElementsByClassName('page-item');
     const accordions = document.getElementsByClassName('accordion-row');
 
     table.innerHTML = getCitationsTableContent(data);
-
-    table.parentElement.classList.toggle("load");
-    loadingRow.classList.toggle("d-none");
 
     for (let htmlElement of document.getElementsByClassName('pagination-box'))
     {
@@ -101,9 +101,6 @@ function refreshCitations(data, currentState) {
             let currentPage = document.getElementById('active-page');
             let pages = document.getElementsByClassName('page-item')
             currentState.fields = searchFields;
-
-            document.getElementById('citations-result-table').classList.toggle("load");
-            document.getElementById('loading-row').classList.toggle("d-none");
 
              let newPage = e.currentTarget;
 
@@ -134,9 +131,9 @@ function refreshCitations(data, currentState) {
               let accordionBody = document.getElementById(accordionBodyId);
               accordionBody.classList.toggle('fadein');
               accordionBody.classList.toggle('fadeout');
+
               row.classList.toggle('active-row');
-              row.firstChild.firstChild.classList.toggle('icon-arrow-down');
-              row.firstChild.firstChild.classList.toggle('icon-arrow-up');
+              row.firstChild.firstChild.classList.toggle('icn-up');
             }
 
             // Enable Actual active row
@@ -145,8 +142,7 @@ function refreshCitations(data, currentState) {
             accordionBody.classList.toggle('fadein');
             accordionBody.classList.toggle('fadeout');
             e.currentTarget.classList.toggle('active-row');
-            e.currentTarget.firstChild.firstChild.classList.toggle('icon-arrow-down');
-            e.currentTarget.firstChild.firstChild.classList.toggle('icon-arrow-up');
+            e.currentTarget.firstChild.firstChild.classList.toggle('icn-up');
         });
     }
 }
@@ -164,9 +160,6 @@ const citationsTable = () => {
                 let newSort = e.currentTarget.getAttribute('data-sort');
                 let currentSort = document.getElementById('active-sort');
                 let currentState = getCurrentState();
-
-                document.getElementById('citations-result-table').classList.toggle("load");
-                document.getElementById('loading-row').classList.toggle("d-none");
 
                 currentState.fields = searchFields;
                 if (newSort === currentState.sort) {

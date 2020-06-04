@@ -1,18 +1,24 @@
 {% extends 'base.html' %}
 {% set home = True %}
 
+{% block bodyclass %}home{%endblock%}
+
 {% block header %}
-<header class="navbar home">
-  <section class="navbar-section">
-        <a href="/" class="navbar-brand"><h2>Reach</h2></a>
-  </section>
-  <section class="navbar-section hide-md" id="navbar-links">
-    <a href="/about" class="a-light">About Reach</a>
-    <a href="/how-it-works" class="a-light">How Reach works</a>
-    <a href="/search/citations" class="btn cta-link">Discover citations</a>
-    <a href="/search/policy-docs" class="btn cta-link">Browse policy documents</a>
-  </section>
-</header>
+<div class="home-hero-view">
+
+<section id="home-header">
+  <header class="navbar home">
+    <section class="navbar-section mr-2">
+      <a href="/" class="navbar-brand"><img src="/static/images/reach_alpha_branding.svg" alt=""></a>
+    </section>
+    <section class="navbar-section hide-md" id="navbar-links">
+      <a href="/about" class="a-light">About Reach</a>
+      <a href="/how-it-works" class="a-light">How Reach works</a>
+      <a href="/search/citations" class="btn cta-link">Discover citations</a>
+      <a href="/search/policy-docs" class="btn cta-link">Browse policy documents</a>
+    </section>
+  </header>
+</section>
 {% endblock %}
 
 {% block main %}
@@ -40,16 +46,22 @@
           </div>
       </div>
       <div class="column col-2 hide-md"></div>
+    </div>
+  </div>
+</section>
+<section id="scroll-arrow">
+  <div class="container">
+    <div class="columns">
       <hr class="fs">
       <div class="column col-12 text-center" id="hero-arrow"><img src="/static/images/Icon_Scroll-arow.svg" alt=""></div>
     </div>
   </div>
 </section>
-
+</div>
+<hr class="fs">
+<hr class="fs">
 <section id="search-reach">
     <div class="container">
-      <hr class="fs">
-      <hr class="fs">
       <div class="columns">
         <div class="column col-2 hide-lg"></div>
         <div class="column col-4 col-lg-12">

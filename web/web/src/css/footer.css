@@ -1,7 +1,9 @@
 @import "variables.css";
 
 footer {
-	padding: 5rem 0;
+	/* height: 6.25rem; */
+  /* line-height: 6.25rem; */
+  padding: 2.625rem 0;
 	font-size: $smallFontSize;
 	width: 100%;
 }

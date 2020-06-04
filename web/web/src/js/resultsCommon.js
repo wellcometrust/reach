@@ -19,10 +19,10 @@ export function getPagination(currentPage, data) {
 
     let pages = ``;
     if (currentPage > 0) {
-        pages += `<li class="page-item btn" id="page-previous">&lt Prev</li>`;
+        pages += `<li class="page-item btn" id="page-previous"><i class="icn icn-chevron-left"></i> Prev</li>`;
     }
     else {
-        pages += `<li class="btn disabled-page-item" id="page-previous">&lt Prev</li>`;
+        pages += `<li class="btn disabled-page-item" id="page-previous"><i class="icn icn-chevron-left"></i> Prev</li>`;
     }
 
     const maxPages = parseInt(Math.ceil(data['hits'] / SIZE));
@@ -56,10 +56,10 @@ export function getPagination(currentPage, data) {
     }
 
     if (currentPage < maxPages - 1) {
-        pages += `<li class="page-item btn" id="page-next">Next &gt</li>`;
+        pages += `<li class="page-item btn" id="page-next">Next  <i class="icn icn-chevron-right"></i></li>`;
     }
     else {
-        pages += `<li class="disabled-page-item btn" id="page-next">Next &gt</li>`;
+        pages += `<li class="disabled-page-item btn" id="page-next">Next <i class="icn icn-chevron-right"></i></li>`;
     }
     return `<ul class="pages">${pages}</ul>`;
 
@@ -104,11 +104,27 @@ export function getData(type, body, callback) {
     xhr.responseType = 'json';
     xhr.send();
 
+    const load = setTimeout(() => {
+      document.getElementById('policy-docs-result-table').classList.add("load");
+      document.getElementById('loading-row').classList.remove("d-none");
+    }, 2000);
+
     xhr.onload = () => {
-        if (xhr.status == 200) {
-            console.log(xhr.response);
-            callback(xhr.response, body);
-        }
+      const loadingRow = document.getElementById('loading-row');
+
+      let table = document.getElementById('citations-result-table');
+      if (!table) {
+        table = table = document.getElementById('policy-docs-result-table');
+      }
+      clearTimeout(load);
+      if (xhr.status == 200) {
+          table.classList.remove("load");
+          loadingRow.classList.add("d-none");
+          callback(xhr.response, body);
+      }
+    };
+
+    xhr.onprogress = () => {
     };
 
     xhr.onabort = () => {

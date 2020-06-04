@@ -6,17 +6,17 @@
     <defs>
         <polygon id="path-1" points="9.41666667 0 10.6666667 1.25 5.33333333 6.58333333 0 1.25 1.25 0 5.33333333 4.08333333"/>
     </defs>
-    <g id="Page-1" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+    <g id="Page-1" stroke="none" stroke-width="1" fill="black" fill-rule="evenodd">
         <g id="Citations-Results_No-filters" transform="translate(-114.000000, -791.000000)">
             <g id="Group" transform="translate(92.000000, 459.000000)">
                 <g id="Row" transform="translate(12.000000, 311.000000)">
                     <g id="Icon/Chevron/Down" transform="translate(0.000000, 8.000000)">
                         <g id="Group" transform="translate(10.666667, 13.333333)">
-                            <mask id="mask-2" fill="white">
+                            <mask id="mask-2" fill="black">
                                 <use xlink:href="#path-1"/>
                             </mask>
-                            <use id="Mask" fill="#333333" xlink:href="#path-1"/>
-                            <g id="↳🎨icon-color" mask="url(#mask-2)" fill="#B3B3B3">
+                            <use id="Mask" fill="black" xlink:href="#path-1"/>
+                            <g id="↳🎨icon-color" mask="url(#mask-2)" fill="black">
                                 <g transform="translate(-42.666667, -45.333333)" id="Icon-Shade">
                                     <rect x="0" y="0" width="96" height="96"/>
                                 </g>

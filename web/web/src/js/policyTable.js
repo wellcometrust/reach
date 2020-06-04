@@ -48,14 +48,10 @@ const refreshPolicy = (data, currentState) => {
     // to query Elasticsearch
 
     const table = document.getElementById('policy-docs-results-tbody');
-    const loadingRow = document.getElementById('loading-row');
+    // const loadingRow = document.getElementById('loading-row');
     const pages = document.getElementsByClassName('page-item');
 
     table.innerHTML = getPolicyTableContent(data['data']);
-
-
-    table.parentElement.classList.toggle("load");
-    loadingRow.classList.toggle("d-none");
 
     for (let htmlElement of document.getElementsByClassName('pagination-box'))
     {
@@ -79,18 +75,15 @@ const refreshPolicy = (data, currentState) => {
             let currentPage = document.getElementById('active-page');
             let pages = document.getElementsByClassName('page-item');
 
-            document.getElementById('policy-docs-result-table').classList.toggle("load");
-            document.getElementById('loading-row').classList.toggle("d-none");
-
             currentState.fields = searchFields;
             let newPage = e.currentTarget;
 
-            if (newPage.id === 'page-previous') {
+            if (newPage.getAttribute('id') == 'page-previous') {
                 currentState.page -= 1;
                 newPage = pages[currentState.page];
             }
 
-            else if (newPage.id === 'page-next') {
+            else if (newPage.getAttribute('id') == 'page-next') {
                 currentState.page += 1;
                 newPage = pages[currentState.page];
             }
@@ -115,9 +108,6 @@ const policyTable = () => {
                 let newSort = e.currentTarget.getAttribute('data-sort');
                 let currentSort = document.getElementById('active-sort');
                 let currentState = getCurrentState();
-
-                document.getElementById('policy-docs-result-table').classList.toggle("load");
-                document.getElementById('loading-row').classList.toggle("d-none");
 
                 currentState.fields = searchFields;
                 if (newSort == currentSort.getAttribute('data-sort')) {

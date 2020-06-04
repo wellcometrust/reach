@@ -21,10 +21,11 @@ header.navbar {
   background-color: $cyanDark;
   height: 3.75rem;
 
-  h2 {
+  img {
     color: white;
     font-weight: normal;
     margin: 0;
+    height: 3.5rem;
   }
 
   a {
@@ -55,6 +56,10 @@ header.navbar.home {
 
   #navbar-links a {
     line-height: 4.75rem;
+  }
+
+  img {
+    height: 4.75rem;
   }
 
 }

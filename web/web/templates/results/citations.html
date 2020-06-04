@@ -5,11 +5,13 @@
     {% set status = status and (es_response.hits.total.value > 0) %}
 {% endif %}
 
+{% block bodyclass %}results{% endblock %}
+
 {% block header %}
 
 <header class="navbar">
   <section class="navbar-section">
-        <a href="/" class="navbar-brand"><h2>Reach</h2></a>
+    <a href="/" class="navbar-brand"><img src="/static/images/reach_alpha_branding.svg" alt=""></a>
   </section>
   <section class="navbar-section hide-md" id="navbar-links">
     <a href="/about" class="a-light">About Reach</a>
@@ -24,194 +26,205 @@
 {% block main %}
 
 <section id="breadcrumbs">
-    <div class="breadcrumb-box">
-        <ul class="breadcrumb">
-            <li class="breadcrumb-item"><a href="/">Home</a></li>
-            <li class="breadcrumb-item"><a href="/search/citations">Discover citations</a></li>
-            <li class="breadcrumb-item">Results</li>
-        </ul>
-    </div>
+  <div class="breadcrumb-box">
+    <ul class="breadcrumb">
+      <li class="breadcrumb-item"><a href="/">Home</a></li>
+      <li class="breadcrumb-item"><a href="/search/citations">Discover citations</a></li>
+      <li class="breadcrumb-item">Results</li>
+    </ul>
+  </div>
 </section>
 
 <section id="citations-results" class="results-box">
+  <div class="container">
+    <hr class="hs">
+    <div class="columns">
+      <div class="column col-8 col-md-12">
+      {% if status %}
+        <h1>Results for "{{ term }}" in citations</h1>
+      {% else %}
+        <h1>Your search for "{{ term }}" in citations did not return any results</h1>
+      {% endif %}
+      </div>
+    </div>
+    <div class="columns">
+      <div class="column col-6 col-md-12">
+      {% if status %}
+        <p>Searching for "<span class="text-bold">{{ term }}</span>" in over 1.1 million research publications that have been cited in policy documents.</p>
+      {% else %}
+        {#- Placeholder for the search suggestion feature #}
+      {% endif %}
+      </div>
+      <div class="column col-6 hide-md"></div>
+    </div>
+    <div class="columns">
+      <hr class="hs">
+      <div class="column col-12">
+        <p class="form-label">Search by publication title, journal or year of publication</p>
+      </div>
+      <div class="column col-6 col-md-12">
+        <form action="/search/citations">
+          <div class="input-group">
+            <input type="text" class="form-input input-xl" placeholder="Search" name="terms" id="search-term" value="{{ terms }}">
+            <button type="submit" class="btn btn-primary input-group-btn input-btn-xl">Discover citations <span class="icn icn-search"></span></button>
+          </div>
+        </form>
+      </div>
+    {% if status %}
+      <div class="column col-6 col-md-12 text-right">
+        <a class="btn btn-primary btn-xl" href="/search/citations/csv?terms={{ term }}">Download results as .csv <span class="icn icn-download"></span></a>
+        <!-- To be uncommented with further UI updates
+        <a class="btn btn-primary btn-xl btn-download" href="/search/citations/json?terms={{ term }}" >Download results as .json <span class="icn icn-download"></span></a>
+        -->
+      </div>
+    {% else %}
+      <div class="column col-6 hide-md"></div>
+    {% endif %}
+    </div>
+
+{#- No results page body #}
+    {% if not status %}
+    <hr class="fs">
+    <div class="columns">
+      <div class="column col-6 col-md-12">
+        <h3 class="tips-title">Search tips</h3>
+        <ul class="tips-list">
+          <li>Check your spelling</li>
+          <li>Broaden your search by using fewer words or more general terms</li>
+          <li>Try searching by topic, area or work or insitute</li>
+        </ul>
+      </div>
+      <div class="column col-6 hide-md"></div>
+    </div>
+    <hr class="fs">
+    <hr class="fs">
+    <div class="columns">
+      <div class="column col-6 col-md-12">
+        <div class="feedback-box">
+          <p class="bold">Can't find what you're looking for?</p>
+          <p>If something doesn’t look quite right, please get in touch with the team at <a href="mailto:reach@wellcome.ac.uk">reach@wellcome.ac.uk.</a></p>
+        </div>
+      </div>
+      <div class="column col-6 hide-md"></div>
+    </div>
+  </div> {#- Closing .container #}
+  <hr class="fs">
+    {% else %}
+  </div> {#- Alternative closing for .container #}
+  <div class="results">
     <div class="container">
-        <hr class="hs">
-        <div class="columns">
-            <div class="column col-6 col-md-12">
-                {% if status %}
-                  <h1>Results for "{{ term }}" in citations</h1>
-                {% else %}
-                  <h1>Your search for "{{ term }}" in citations did not return any results</h1>
-                {% endif %}
-            </div>
+      <hr class="hs">
+      <div class="columns">
+        <div class="column col-12 learn-link">
+          <span class="icn icn-info"></span><a href="/how-it-works">Learn about these results</a>
         </div>
+      </div>
+      <hr class="hs">
+      <div class="results-pages">
         <div class="columns">
-            <div class="column col-6 col-md-12">
-                <p>Searching for "<span class="text-bold">{{ term }}</span>" in over 1.1 million research publications that have been cited in policy documents.</p>
+          <div class="column col-6 col-md-12">
+            <div class="page-counter">
+              {#- Updated dynamically in JS #}
             </div>
-            <div class="column col-6 hide-md"></div>
+          </div>
+          <div class="column col-6 col-md-12">
+            <div class="pagination-box float-right" id="pagination-box">
+              {#- Updated dynamically in JS #}
+            </div>
+          </div>
         </div>
-        <div class="columns">
-            <hr class="hs">
-            <div class="column col-12 col-md-12">
-                <p>Search by scientific publication title, journal, author, policy organisation or policy document title</p>
-            </div>
-            <div class="column col-6 col-md-12">
-                <form action="/search/citations">
-                    <div class="input-group">
-                      <input type="text" class="form-input input-xl" placeholder="Search" name="terms" id="search-term" value="{{ terms }}">
-                      <button type="submit" class="btn btn-primary input-group-btn input-btn-xl">Discover citations <span class="icn icn-search"></span></button>
-                    </div>
-                </form>
-            </div>
-            <div class="column col-6 col-md-12 text-right">
-                <a class="btn btn-primary btn-xl" href="/search/citations/csv?terms={{ term }}">Download results as .csv <span class="icn icn-download"></span></a>
-                <a class="btn btn-primary btn-xl btn-download" href="/search/citations/json?terms={{ term }}" >Download results as .json <span class="icn icn-download"></span></a>
-            </div>
-            <div class="column col-12">
-                <span class="icn icn-info"></span><a href="/how-it-works">Learn about these results</a>
-            </div>
-        </div>
-        {# 
-        {% if not status %}
-            <hr class="fs">
-            <div class="columns">
-                <div class="column col-6 col-md-12">
-                  <h3>Search tips</h3>
-                  <ul class="tips-list">
-                    <li>Check your spelling</li>
-                    <li>Broaden your search by using fewer words or more general terms</li>
-                    <li>Try searching by topic, area or work or insitute</li>
-                  </ul>
+      </div>
+      <table class="table table-light table-hover load"  id="citations-result-table" nowrap>
+        <colgroup>
+          <col class="colgroup-accordion-col">
+          <col class="colgroup-large-col">
+          <col class="colgroup-medium-col">
+          <col class="colgroup-medium-col">
+          <col class="colgroup-small-col">
+          <col class="colgroup-small-col">
+        </colgroup>
+        <thead>
+          <tr>
+            <th></th>
+              <th class="sort" data-sort="match_title.keyword" data-order="asc" id="active-sort">
+                Research publication
+                <span class="icn icn-sorted"></span>
+              </th>
+              <th class="sort" data-sort="match_publication">
+                Jounal
+                <span class="icn icn-sort"></span>
+              </th>
+              <th>Author(s)</th>
+              <th class="sort" data-sort="match_pub_year">
+                <div class="table-header">
+                  <div class="table-header-text">
+                    Publication of Year
+                  </div>
+                  <div class="table-header-icon">
+                    <span class="icn icn-sort"></span>
+                  </div>
                 </div>
-                <div class="column col-6 hide-md"></div>
-            </div>
-            <hr class="fs">
-            <hr class="fs">
-            <div class="columns">
-                <div class="column col-6 col-md-12">
-                    <div class="feedback-box">
-                        <p class="bold">Can't find what you're looking for?</p>
-                        <p>If something doesn’t look quite right, please get in touch with the team at <a href="mailto:reach@wellcome.ac.uk">reach@wellcome.ac.uk.</a></p>
-                    </div>
+              </th>
+              <th class="sort" data-sort="associated_policies_count">
+                <div class="table-header">
+                  <div class="table-header-text">
+                    Citations in policy docs
+                  </div>
+                  <div class="table-header-icon">
+                    <span class="icn icn-sort"></span>
+                  </div>
                 </div>
-                <div class="column col-6 hide-md"></div>
+              </th>
+            </tr>
+            <tr class="progress-row d-none" id="loading-row">
+              <th colspan=7>
+                <progress class="progress" max="100"></progress>
+              </th>
+            </tr>
+          </thead>
+          <tbody id="citations-results-tbody">
+          {% for i in range(0, 10) %}
+            <tr class="load">
+              <td colspan=7></td>
+            </tr>
+          {% endfor %}
+          </tbody>
+        </table>
+        <div class="results-pages">
+          <div class="columns">
+            <div class="column col-6 col-md-12">
+              <div class="page-counter">
+                {#- Updated dynamically in JS #}
+              </div>
             </div>
-            <hr class="fs">
+            <div class="column col-6 col-md-12">
+              <div class="pagination-box float-right" id="pagination-box">
+                {#- Updated dynamically in JS #}
+            </div>
+          </div>
         </div>
-        {% else %}
-        #}
-            </div>
-            <div class="fs"></div>
-            <div class="results">
-                <div class="container">
-                    <div class="results-pages">
-                        <div class="columns">
-                            <div class="column col-6 col-md-12">
-                                <div class="page-counter">
-                                    {#- Updated dynamically in JS #}
-                                </div>
-                            </div>
-                            <div class="column col-6 col-md-12">
-                                <div class="pagination-box float-right" id="pagination-box">
-                                    {#- Updated dynamically in JS #}
-                                </div>
-                            </div>
-                        </div>
-                    </div>
+      </div>
+    </div>
+  </div>
 
-                    <table class="table table-light table-hover load"  id="citations-result-table" nowrap>
-                        <colgroup>
-                            <col class="colgroup-accordion-col">
-                            <col class="colgroup-large-col">
-                            <col class="colgroup-medium-col">
-                            <col class="colgroup-medium-col">
-                            <col class="colgroup-small-col">
-                            <col class="colgroup-small-col">
-                        </colgroup>
-                        <thead>
-                            <tr>
-                                <th></th>
-                                <th class="sort" data-sort="match_title.keyword" data-order="asc" id="active-sort">
-                                    Research publication
-                                    <span class="icn icn-sorted"></span>
-                                </th>
-                                <th class="sort" data-sort="match_publication">
-                                    Journal
-                                    <span class="icn icn-sort"></span>
-                                </th>
-                                <th>Author(s)</th>
-                                <th class="sort" data-sort="match_pub_year">
-                                    <div class="table-header">
-                                        <div class="table-header-text">
-                                            Publication of Year
-                                        </div>
-                                        <div class="table-header-icon">
-                                            <span class="icn icn-sort"></span>
-                                        </div>
-                                    </div>
-                                </th>
-                                <th class="sort" data-sort="associated_policies_count">
-                                    <div class="table-header">
-                                        <div class="table-header-text">
-                                            Citations in policy docs
-                                        </div>
-                                        <div class="table-header-icon">
-                                            <span class="icn icn-sort"></span>
-                                        </div>
-                                    </div>
-                                </th>
-                            </tr>
-                            <tr class="progress-row" id="loading-row">
-                                <th colspan=7>
-                                    <progress class="progress" max="100"></progress>
-                                </th>
-                            </tr>
-                        </thead>
-                        <tbody id="citations-results-tbody">
-                            {#- Updated dynamically in JS #}
-                            {% for i in range(0, 10) %}
-                                <tr class="load">
-                                    <td colspan=7></td>
-                                </tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
-                     <div class="results-pages">
-                        <div class="columns">
-                            <div class="column col-6 col-md-12">
-                                <div class="page-counter">
-                                    {#- Updated dynamically in JS #}
-                                </div>
-                            </div>
-                            <div class="column col-6 col-md-12">
-                                <div class="pagination-box float-right" id="pagination-box">
-                                    {#- Updated dynamically in JS #}
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <hr class="fs">
-            <div class="columns">
-                <div class="column col-6 col-md-12">
-                    <div class="feedback-box">
-                        <p class="bold">About these results</p>
-                        <p>To learn more about how reach works and how it has generated these results, go to the <a href="/how-it-works">How Reach works</a> page</p>
-                    </div>
-                </div>
-                <div class="column col-6 col-md-12">
-                    <div class="feedback-box">
-                        <p class="bold">Can't find what you're looking for?</p>
-                        <p>If something doesn’t look quite right, please get in touch with the team at <a href="mailto:reach@wellcome.ac.uk">reach@wellcome.ac.uk</a></p>
-                    </div>
-                </div>
-            </div>
-            <hr class="fs">
-            {#
-        {% endif %}
-        #}
+  <div class="container">
+    <hr class="fs">
+    <div class="columns">
+      <div class="column col-6 col-md-12">
+        <div class="feedback-box">
+          <p class="bold">About these results</p>
+          <p>To learn more about how reach works and how it has generated these results, go to the <a href="/how-it-works">How Reach works</a> page</p>
+        </div>
+      </div>
+      <div class="column col-6 col-md-12">
+        <div class="feedback-box">
+          <p class="bold">Can't find what you're looking for?</p>
+          <p>We are working to continually improve Reach, if it is not working as you expect, there is an error or you have a suggestion, please <a href="mailto:engineering.datalabs@wellcome.ac.uk">send us your feedback</a></p>
+        </div>
+      </div>
+    </div>
+  </div>
+  <hr class="fs">
+    {% endif %}
 </section>
 {% endblock %}
