@@ -30,6 +30,9 @@ class ApiSearchPolicies:
         pass
 
     def on_get(self, req, resp):
+
+        # TODO: need to rate limit this for external hosts
+
         if req.params:
             terms = req.params.get("terms", None)
             limit = req.params.get("size", 25)

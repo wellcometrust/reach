@@ -13,9 +13,7 @@ import falcon
 
 #from hooks.sentry import report_exception
 from web import config as conf
-from web.views import template
-from web.views import apidocs
-from web.views import robotstxt
+from web.views import robotstxt, apidocs, template, ContactView
 from web.views import SearchCitations, SearchPolicies, \
         ExportCitationsSearch, ExportPoliciesSearch, \
         ApiSearchCitations, ApiSearchPolicies
@@ -74,6 +72,10 @@ def create_api(config):
         template.TemplateResource(TEMPLATE_ROOT, get_context(os.environ))
     )
     api.add_route(
+        '/contact',
+        ContactView(TEMPLATE_ROOT, get_context(os.environ))
+    )
+    api.add_route(
         '/how-it-works',
         template.TemplateResource(TEMPLATE_ROOT, get_context(os.environ))
     )
@@ -107,5 +109,14 @@ def create_api(config):
         ExportPoliciesSearch()
     )
     api.add_static_route('/static', CONFIG.static_root)
+
+    # Force falcon to parse form POST body
+    api.req_options.auto_parse_form_urlencoded = True
+    if CONFIG.debug:
+        # This to allow cookies to be set on a non-https
+        # endpoint (i.e. http://localhost:8000
+        api.resp_options.secure_cookies_by_default = False
+
+
 
     return api

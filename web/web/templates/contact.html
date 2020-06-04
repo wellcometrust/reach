@@ -1,0 +1,95 @@
+{% extends 'base.html' %}
+
+{% block header %}
+
+<header class="navbar">
+  <section class="navbar-section">
+        <a href="/" class="navbar-brand"><h2>Reach</h2></a>
+  </section>
+  <section class="navbar-section hide-md" id="navbar-links">
+    <a href="/about" class="a-light active">About Reach</a>
+    <a href="/how-it-works" class="a-light">How Reach works</a>
+    <a href="/search/citations" class="a-light">Discover citations</a>
+    <a href="/search/policy-docs" class="a-light">Browse policy documents</a>
+  </section>
+</header>
+
+{% endblock %}
+
+{% block main %}
+
+<section id="breadcrumbs">
+	<div class="breadcrumb-box">
+    <ul class="breadcrumb">
+        <li class="breadcrumb-item"><a href="/">Home</a></li>
+        <li class="breadcrumb-item">Contact Us</li>
+    </ul>
+	</div>
+</section>
+
+<section id="about-page">
+    <div class="container">
+      <hr class="fs">
+      <div class="columns">
+        <div class="column col-3 hide-md"></div>
+        <div class="column col-6 col-md-12 text-center">
+          <h1>Contact Us</h1>
+          <hr class="hs">
+          <h3>For more information, any questions or general enquiries about Reach and our data. Get in touch with the team.</h3>
+          <hr class="hs">
+        </div>
+        <div class="column col-3 hide-md"></div>
+      </div>
+      <hr class="fs">
+      <div class="columns">
+          <div class="column col-md-4 hide-sm"></div>
+        <div class="column col-6 col-md-12">
+            <div id="ctc-result-success">
+                <p>Thank you for sending your comments, if you have any questions/concerns a team member will respond to your request as soon as possible.</p>
+            </div>
+
+            <div id="ctc-result-failure">
+                <p id="ctc-fail-message"></p>
+            </div>
+
+            <form id="ctc-form" action="" method="POST" class="contact-form">
+                <div class="ctc-form-field">
+                    <label>Name*</label>
+                    <div class="ctc-form-input">
+                        <input type="text" id="ctc-name" name="name" required/>
+                    </div>
+                </div>
+
+                <div class="ctc-form-field">
+                    <label>Email Address*</label>
+                    <div class="ctc-form-input">
+                        <input type="email" id="ctc-email" required name="email"/>
+                    </div>
+                </div>
+
+                <div class="ctc-form-field">
+                    <label>Comments*</label>
+                    <div class="ctc-form-input">
+                        <textarea id="ctc-comment" name="body" required></textarea>
+                    </div>
+                </div>
+
+                <div class="ctc-controls">
+                    <div class="ctc-note">
+                        <p>Fields marked with an * are required</p>
+                    </div>
+                    <input id="ctc-submit" class="ctct-submit" value="Submit" type="Submit"/>
+                </div>
+
+                <input type="hidden" id="anchor" value="" name="e6f77da2-a5a6">
+                <input type="hidden" id="ck_erp_val" value="{{ ck_val }}" name="ck_erp_val"/>
+
+            </form>
+
+        </div>
+          <div class="column col-md-4 hide-sm"></div>
+      </div> <!-- END columns -->
+    </div>
+</section>
+
+{% endblock %}

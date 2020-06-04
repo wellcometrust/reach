@@ -28,3 +28,4 @@ web/build/web/static/*
 venv
 .env
 package.lock
+web/config/dev.config.toml

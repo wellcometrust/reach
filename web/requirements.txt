@@ -5,3 +5,4 @@ sentry-sdk
 psycopg2-binary
 toml
 uuid
+requests

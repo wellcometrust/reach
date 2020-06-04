@@ -90,6 +90,19 @@ class Config(object):
             os.environ.get("SENTRY_DSN")
         )
 
+        github = source.get("github", {})
+        self.github_token = _or(
+            github.get("github_token"),
+            os.environ.get("github_token"),
+            default=None
+        )
+
+        self.github_user = _or(
+            github.get("github_user"),
+            os.environ.get("github_user"),
+            default=None
+        )
+
         analytics = source.get("analytics", {})
         self.ga_code = analytics.get("ga_code", None)
         self.hotjar_code = analytics.get("hotjar_code", None)
