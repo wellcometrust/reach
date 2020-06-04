@@ -1,0 +1,114 @@
+.contact-form {
+    margin-bottom: 0;
+    margin-left: auto;
+    margin-right: auto;
+
+    .ctc-form-field {
+        display: flex;
+        flex-direction: column;
+        margin-bottom: 18px;
+    }
+
+
+    label {
+        flex: 1;
+        max-width: 30%;
+        min-width: 30%;
+        display: block;
+        font-size: 1rem;
+        letter-spacing: 0.5px;
+        line-height: 1.5rem;
+        color: #292929;
+        font-family: Helvetica Neue, Helvetica, Arial, sans-serif;
+        margin-bottom: 0.5rem;
+    }
+
+    .ctc-form-input {
+        flex: 2;
+        display: block;
+
+        input[type="text"], input[type="email"] {
+            width: 100%;
+            height: 2.75rem;
+            border: 1px solid #CCCCCC;
+            color: #333;
+            text-indent: 3px;
+        }
+
+        textarea {
+            width: 100%;
+            resize: none;
+            height: 200px;
+            overflow-y: auto;
+            border: 1px solid #CCCCCC;
+            color: #333333;
+            padding: 4px;
+        }
+    }
+
+
+    .ctc-controls {
+        display: flex;
+        flex-direction: row;
+        justify-content: flex-end;
+        align-items: flex-end;
+
+        .ctc-note {
+            flex: 1;
+            display: flex;
+            justify-content: flex-start;
+            align-items: flex-start;
+            flex-direction: column;
+
+
+            p {
+                margin: 0;
+                padding: 0;
+                font-size: 12px;
+                color: #CCC;
+            }
+        }
+
+        .ctct-submit {
+            flex: 0;
+            white-space: nowrap;
+            display: inline-block;
+            width: 9.875rem;
+            height: 2.75rem;
+            border-radius: 2px;
+            background-color: #006272;
+            color: white;
+            padding-left: 21px;
+            padding-right: 21px;
+            border: none;
+            cursor: pointer;
+            transition: all 0.3s ease-in-out;
+
+            &:disabled {
+                background: #CCC;
+
+                &:hover {
+                    background: #CCC !important;
+                }
+            }
+
+            &:hover {
+                background-color: #005361;
+            }
+        }
+
+    }
+
+}
+
+
+
+#ctc-result-success {
+    display: none;
+    text-align: center;
+}
+
+#ctc-result-failure {
+    display: none;
+    text-align: center;
+}

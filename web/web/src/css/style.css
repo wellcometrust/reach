@@ -17,6 +17,7 @@ $spectre_version: 0.5.8;
 @import "results.css";
 @import "header.css";
 @import "footer.css";
+@import "contact.css";
 
 /*  Offsets the grid and other media offseting */
 @media screen and (min-width: 1280px) {

@@ -5,3 +5,5 @@ from .search import ExportPoliciesSearch
 
 from .api import ApiSearchCitations
 from .api import ApiSearchPolicies
+
+from .contact import ContactView

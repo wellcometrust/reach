@@ -17,3 +17,7 @@ dsn = ""
 [analytics]
 ga_code = ""
 hotjar_code = ""
+
+[github]
+github_token = ""
+github_user = ""

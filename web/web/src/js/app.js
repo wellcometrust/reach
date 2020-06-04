@@ -1,6 +1,7 @@
 import clearSearch from './clearSearch.js';
 import policyTable from './policyTable.js';
 import citationsTable from './citationsTable.js';
+import contact from "./v.contact";
 import home from './home.js';
 
 document.addEventListener('DOMContentLoaded', function(event) {
@@ -13,4 +14,5 @@ document.addEventListener('DOMContentLoaded', function(event) {
     policyTable();
     citationsTable();
     home();
+    contact();
 });

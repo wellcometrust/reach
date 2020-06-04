@@ -21,7 +21,7 @@ exports.css = function() {
   ];
 
 
-    return src('reach/src/**/*.css')
+    return src('web/src/**/*.css')
     .pipe(sourcemaps.init())
     .pipe(postcss(plugins))
     // sourcemaps are rooted in dest(), so '.' is what we want
@@ -37,7 +37,7 @@ exports.js = function() {
   const webpack = require('webpack-stream');
   const named = require('vinyl-named');
 
-    return src('reach/src/js/app.js')
+    return src('web/src/js/app.js')
     .pipe(named())
     .pipe(babel())
     .pipe(webpack({
@@ -52,19 +52,19 @@ exports.js = function() {
 };
 
 exports.images = function () {
-    return src('reach/src/images/*')
+    return src('web/src/images/*')
     .pipe(dest('build/web/static/images'))
 };
 
 exports.favicons = function () {
-    return src('reach/src/favicon/*')
+    return src('web/src/favicon/*')
     .pipe(dest('build/web/static/favicon'))
 };
 
 exports.default = parallel(exports.css, exports.js, exports.images, exports.favicons);
 
 exports.watch = function() {
-    watch('reach/src/**/*.css', {ignoreInitial: false}, exports.css);
-    watch('reach/src/**/*.js', {ignoreInitial: false}, exports.js);
-    watch('reach/src/**/*.svg', {ignoreInitial: false}, exports.images);
+    watch('web/src/**/*.css', {ignoreInitial: false}, exports.css);
+    watch('web/src/**/*.js', {ignoreInitial: false}, exports.js);
+    watch('web/src/**/*.svg', {ignoreInitial: false}, exports.images);
 };
