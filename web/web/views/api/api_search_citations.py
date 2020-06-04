@@ -80,7 +80,8 @@ class ApiSearchCitations:
             resp.body = json.dumps({
                 'status': 'success',
                 'data': results,
-                'count': counter
+                'count': counter,
+                'terms': terms
             }, cls=JSONEncoder)
 
 
@@ -89,5 +90,3 @@ class ApiSearchCitations:
                 'status': 'error',
                 'message': 'The request doesn\'t contain any parameters'
             })
-
-
