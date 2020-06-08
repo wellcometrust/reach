@@ -62,7 +62,7 @@ const getNoResultsTemplate = (term, source) => {
         <div class="column col-6 col-md-12">
           <div class="feedback-box">
             <p class="bold">Can't find what you're looking for?</p>
-            <p>If something doesn’t look quite right, please get in touch with the team at <a href="mailto:reach@wellcome.ac.uk">reach@wellcome.ac.uk.</a></p>
+            <p>If something doesn’t look quite right, please <a href="/contact">get in touch with the team</a>.</p>
           </div>
         </div>
       <div class="column col-6 hide-md"></div>
