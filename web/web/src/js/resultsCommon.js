@@ -14,7 +14,7 @@ export function toDisplayOrg(org) {
     return ORGS[org];
 }
 
-export function getPagination(currentPage, data) {
+export function getPagination(currentPage, itemCount) {
     // Create the pagination list relative to the current state
 
     let pages = ``;
@@ -25,7 +25,7 @@ export function getPagination(currentPage, data) {
         pages += `<li class="btn disabled-page-item" id="page-previous"><i class="icn icn-chevron-left"></i> Prev</li>`;
     }
 
-    const maxPages = parseInt(Math.ceil(data['hits'] / SIZE));
+    const maxPages = parseInt(Math.ceil(itemCount / SIZE)) - 1;
 
     if (currentPage > 2) {
         pages += `<li class="page-item" data-page="0">1</li>`;
@@ -65,14 +65,14 @@ export function getPagination(currentPage, data) {
 
 }
 
-export function getCounter(currentPage, data) {
+export function getCounter(currentPage, itemCount) {
     // Create the results counter (displyed `Docs XX to YY of ZZ`)
 
     currentPage = parseInt(currentPage);
     let currentMin = SIZE * currentPage + 1;
-    let currentMax = Math.min(currentMin + SIZE, data['hits']);
+    let currentMax = Math.min(currentMin + SIZE, itemCount);
 
-    return `<span>Showing ${currentMin} - ${currentMax} of ${data['hits']} results</span>`;
+    return `<span>Showing ${currentMin} - ${currentMax} of ${itemCount} results</span>`;
 }
 
 export function getData(type, body, callback) {
@@ -105,7 +105,11 @@ export function getData(type, body, callback) {
     xhr.send();
 
     const load = setTimeout(() => {
-      document.getElementById('policy-docs-result-table').classList.add("load");
+      let table = document.getElementById('citations-result-table');
+      if (!table) {
+        table = table = document.getElementById('policy-docs-result-table');
+      }
+      table.classList.add("load");
       document.getElementById('loading-row').classList.remove("d-none");
     }, 2000);
 
@@ -136,21 +140,21 @@ export function getData(type, body, callback) {
     };
 }
 
-export function getCurrentState() {
+export function getCurrentState(term=null) {
     /* Get the current values for the search term, order, sorting and page and
     return them as a dictionary, used for both refreshing the table and
     query new data through the API. */
 
     const currentPage = document.getElementById('active-page');
     const currentSort = document.getElementById('active-sort');
-    const searchTerm = document.getElementById('search-term');
+    const searchTerm = term ? term : document.getElementById('search-term').value;
 
     let body = {
-        term: searchTerm.value,
+        term: searchTerm,
         size: SIZE,
         page: (currentPage) ? parseInt(currentPage.getAttribute('data-page')) : 0,
-        sort: currentSort.getAttribute('data-sort'),
-        order: currentSort.getAttribute('data-order'),
+        sort: currentSort ? currentSort.getAttribute('data-sort') : null,
+        order: currentSort ? currentSort.getAttribute('data-order') : 'desc',
     };
     return body;
 }

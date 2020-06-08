@@ -35,7 +35,143 @@
   </div>
 </section>
 
-<section id="policy-docs-results" class="results-box">
+<section id="policy-docs-results" class="results-box" data-search="{{ term }}">
+
+  {#- This will is only used as load indication, and is overwritten in JS #}
+  <div class="container">
+    <hr class="hs">
+    <div class="columns">
+      <div class="column col-8 col-md-12">
+        <h1>Results for "{{ term }}" in policy documents</h1>
+      </div>
+    </div>
+    <div class="columns">
+      <div class="column col-6 col-md-12">
+        <p>Searching for “{{ term }}” in PDFs from the websites of UNICEF, Médecins Sans Frontières, National Insititute for Clinical Excellence, the World Health Organisation, UK Government and UK Parliament.</p>
+      </div>
+      <div class="column col-6 hide-md"></div>
+    </div>
+    <div class="columns">
+      <hr class="hs">
+      <div class="column col-12">
+        <p class="form-label">Search by policy document title, policy organisation or topic</p>
+      </div>
+      <div class="column col-6 col-md-12">
+        <form action="/search/policy-docs">
+          <div class="input-group">
+            <input type="text" class="form-input input-xl" placeholder="Search" name="terms" id="search-term" value="{{ term }}">
+            <button type="submit" class="btn btn-primary input-group-btn input-btn-xl">Browse policy documents <span class="icn icn-search"></span></button>
+          </div>
+        </form>
+      </div>
+      <div class="column col-6 col-md-12 text-right">
+        <a class="btn btn-primary btn-xl btn-download" href="/search/policy-docs/csv?terms={{ term }}" >Download results as .csv <span class="icn icn-download"></span></a>
+        <!-- To be uncommented with further UI updates
+        <a class="btn btn-primary btn-xl btn-download" href="/search/policy-docs/json?terms={{ term }}" >Download results as .json <span class="icn icn-download"></span></a>
+        -->
+      </div>
+    </div>
+  </div> {#- Alternative closing for .container #}
+  <div class="results">
+    <div class="container">
+      <hr class="hs">
+      <div class="columns">
+        <div class="column col-12 learn-link">
+          <span class="icn icn-info"></span><a href="/how-it-works">Learn about these results</a>
+        </div>
+      </div>
+      <hr class="hs">
+      <div class="results-pages">
+        <div class="columns">
+          <div class="column col-6 col-md-12">
+            <div class="page-counter">
+              {#- Updated dynamically in JS #}
+            </div>
+          </div>
+          <div class="column col-6 col-md-12">
+            <div class="pagination-box float-right" id="pagination-box">
+              {#- Updated dynamically in JS #}
+            </div>
+          </div>
+        </div>
+      </div>
+      <table class="table table-light table-hover load"  id="policy-docs-result-table"nowrap>
+        <colgroup>
+          <col class="colgroup-accordion-col">
+          <col class="colgroup-xl-col">
+          <col class="colgroup-medium-col">
+          <col class="colgroup-small-col">
+        </colgroup>
+        <thead>
+          <tr>
+            <th></th>
+            <th class="sort" data-sort="title.keyword">Policy Document <span class="icn icn-sort"></th>
+            <th class="sort" data-sort="organisation" data-order="asc" id="active-sort">Organisation <span class="icn icn-sort"></th>
+            <th class="sort" data-sort="year">
+              <div class="table-header">
+                <div class="table-header-text">
+                  Publication of Year
+                </div>
+                <div class="table-header-icon">
+                  <span class="icn icn-sort"></span>
+                </div>
+              </div>
+            </th>
+          </tr>
+          <tr class="progress-row d-none" id="loading-row">
+            <th colspan=7>
+              <progress class="progress" max="100"></progress>
+            </th>
+          </tr>
+        </thead>
+        <tbody id="policy-docs-results-tbody">
+        {% for i in range(0, 10) %}
+          <tr class="load">
+            <td colspan=7></td>
+          </tr>
+        {% endfor %}
+        </tbody>
+      </table>
+      <div class="results-pages">
+        <div class="columns">
+          <div class="column col-6 col-md-12">
+            <div class="page-counter">
+              {#- Updated dynamically in JS #}
+            </div>
+          </div>
+          <div class="column col-6 col-md-12">
+            <div class="pagination-box float-right" id="pagination-box">
+              {#- Updated dynamically in JS #}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <hr class="fs">
+  <div class="container">
+    <div class="columns">
+      <div class="column col-6 col-md-12">
+        <div class="feedback-box">
+          <p class="bold">About these results</p>
+          <p>To learn more about how reach works and how it has generated these results, go to the <a href="/how-it-works">How Reach works</a> page</p>
+        </div>
+      </div>
+      <div class="column col-6 col-md-12">
+        <div class="feedback-box">
+          <p class="bold">Can't find what you're looking for?</p>
+          <p>We are working to continually improve Reach, if it is not working as you expect, there is an error or you have a suggestion, please <a href="mailto:engineering.datalabs@wellcome.ac.uk">send us your feedback</a></p>
+        </div>
+      </div>
+    </div>
+  </div>
+  <hr class="fs">
+</section>
+{% endblock %}
+
+{% block hide %}
+<div class="hide">
   <div class="container">
     <hr class="hs">
     <div class="columns">
@@ -160,7 +296,7 @@
               </div>
             </th>
           </tr>
-          <tr class="progress-row d-none" id="loading-row">
+          <tr class="progress-row" id="loading-row">
             <th colspan=7>
               <progress class="progress" max="100"></progress>
             </th>
@@ -210,5 +346,5 @@
   </div>
   <hr class="fs">
     {% endif %}
-</section>
+</div>
 {% endblock %}

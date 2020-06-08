@@ -6,6 +6,8 @@ import {
     toDisplayOrg,
 } from './resultsCommon.js';
 
+import getNoResultsTemplate from './templates/no_results.js';
+
 const TITLE_LENGTH = 140;
 
 const searchFields = [
@@ -19,21 +21,32 @@ const searchFields = [
 
 function getCitationsTableContent(data) {
     let rows = ``;
-    data.data.forEach((item) => {
-        let authors = item._source.doc.match_authors ? item._source.doc.match_authors : "Authors unavailable";
-        let match_title = item._source.doc.match_title ? item._source.doc.match_title.toTitleCase() : "Title unavailable";
-        rows += `<tr class="accordion-row" id="accordion-row-${item._source.doc.reference_id}">`;
+    for (let item of data) {
+      let authors = '';
+      for (let author of  item.authors) {
+        authors += Object.values(author).join('. ');
+      }
+      let match_title = item.title ? item.title.toTitleCase() : "Title unavailable";
+
+      if (item.policies) {
+        rows += `<tr class="accordion-row" id="accordion-row-${item.uuid}">`;
         rows += `<td class="accordion-arrow"><i class="icon icon-arrow-down mr-1"></i></td>`
-        rows += `<td title="${match_title}"><div>${match_title}</div></td>`;
-        rows += `<td>${item._source.doc.match_publication}</td>`;
-        rows += `<td class="authors-cell" title="${authors}"><div>
-            ${authors}</div>
-        </td>`;
-        rows += `<td>${item._source.doc.match_pub_year}</td>`;
-        rows += `<td>${item._source.doc.policies.length}</td>`;
+      } else {
+        rows += `<tr class="empty-accordion-row" id="accordion-row-${item.uuid}">`;
+        rows += `<td class="accordion-arrow"</td>`
+      }
+      rows += `<td title="${match_title}"><div>${match_title}</div></td>`;
+      rows += `<td>${item.journal_title}</td>`;
+      rows += `<td class="authors-cell" title="${authors}"><div>
+          ${authors}</div>
+      </td>`;
+      rows += `<td>${item.pub_year}</td>`;
+
+      if (item.policies) {
+        rows += `<td>${item.policies.length}</td>`;
         rows += `</tr>`;
 
-        rows += `<tr class="accordion-body fadeout" id="accordion-body-${item._source.doc.reference_id}">
+        rows += `<tr class="accordion-body fadeout" id="accordion-body-${item.uuid}">
                     <td></td>
                     <td colspan=4 class="accordion-subtable-container"><div>
                     <table class="table accordion-subtable">
@@ -49,7 +62,7 @@ function getCitationsTableContent(data) {
                             <th>Publication Year</th>
                         </tr>
         `;
-        for (let policy of item._source.doc.policies) {
+        for (let policy of item.policies) {
             let policy_title = policy.title ? policy.title.toTitleCase() : "Title unavailable";
             rows += `<tr>`;
             rows += `<td><span class="icn icn-new-page"></span></td>`
@@ -58,12 +71,21 @@ function getCitationsTableContent(data) {
                target="_blank"
                rel="noreferrer noopener"
             >${(policy_title.length > TITLE_LENGTH) ? (policy_title.slice(0, TITLE_LENGTH) + "...") : policy_title}</a></td>`;
-            rows += `<td>${toDisplayOrg(policy.organisation)}</td>`;
-            rows += `<td>${item._source.doc.match_pub_year}</td>`;
+            rows += `<td>${toDisplayOrg(policy.source_org)}</td>`;
+            rows += `<td>${policy.year}</td>`;
         }
         rows += `</table></div></td>`
         rows += `</tr>`;
-    });
+
+      }
+      else {
+        rows += `<td>0</td>`;
+        rows += `<tr class="accordion-body fadeout" id="accordion-body-${item.uuid}">
+                    <td></td>
+                    <td colspan=4 class="accordion-subtable-container"><div></div></td>
+                 </tr>`;
+      }
+    }
     return rows;
 }
 
@@ -71,18 +93,24 @@ function refreshCitations(data, currentState) {
     // Get the parameters from the policy docs search page and use them
     // to query Elasticsearch
 
+    const resultBox = document.getElementById('policy-docs-results');
     const table = document.getElementById('citations-results-tbody');
     // const loadingRow = document.getElementById('loading-row');
     const pages = document.getElementsByClassName('page-item');
     const accordions = document.getElementsByClassName('accordion-row');
 
-    table.innerHTML = getCitationsTableContent(data);
+    if (parseInt(data.count) <= 0) {
+      resultBox.innerHTML = getNoResultsTemplate(data.terms, 'citations');
+      return null;
+    }
+
+    table.innerHTML = getCitationsTableContent(data.data);
 
     for (let htmlElement of document.getElementsByClassName('pagination-box'))
     {
             htmlElement.innerHTML = getPagination(
             currentState.page,
-            data,
+            parseInt(data.count),
         );
     }
 
@@ -90,7 +118,7 @@ function refreshCitations(data, currentState) {
     {
             htmlElement.innerHTML = getCounter(
             currentState.page,
-            data,
+            parseInt(data.count),
         );
     }
 
@@ -118,6 +146,45 @@ function refreshCitations(data, currentState) {
                 // newPage is an integer
                 currentState.page = parseInt(newPage.getAttribute('data-page'));
             }
+            getData('citations', currentState, refreshCitations);
+        });
+    };
+
+    const headers = document.getElementsByClassName('sort');
+
+    for (let item of headers) {
+        item.addEventListener('click', (e) => {
+            let newSort = e.currentTarget.getAttribute('data-sort');
+            let currentSort = document.getElementById('active-sort');
+            let currentState = getCurrentState();
+
+            currentState.fields = searchFields;
+            if (newSort === currentState.sort) {
+                if (currentSort.getAttribute('data-order') === 'asc') {
+                    currentState.order = 'desc';
+                    currentSort.setAttribute('data-order', 'desc');
+
+                    currentSort.querySelector('.icn').setAttribute('class', 'icn icn-sorted icn-sorted-asc');
+                }
+                else {
+                    currentState.order = 'asc';
+                    currentSort.setAttribute('data-order', 'asc');
+
+                    currentSort.querySelector('.icn').setAttribute('class', 'icn icn-sorted');
+                }
+            }
+
+            else {
+                e.currentTarget.setAttribute('data-order', 'asc');
+
+                currentSort.setAttribute('id', null);
+                e.currentTarget.setAttribute('id', 'active-sort');
+
+                currentSort.querySelector('.icn').setAttribute('class', 'icn icn-sort');
+                e.currentTarget.querySelector('.icn').setAttribute('class', 'icn icn-sorted');
+
+            }
+            currentState.sort = newSort;
             getData('citations', currentState, refreshCitations);
         });
     };
@@ -150,51 +217,12 @@ function refreshCitations(data, currentState) {
 
 
 const citationsTable = () => {
-    const citation_table = document.getElementById('citations-result-table');
+    const resultBox = document.getElementById('citations-results');
 
-    if (citation_table) {
-        const headers = document.getElementsByClassName('sort');
-
-        for (let item of headers) {
-            item.addEventListener('click', (e) => {
-                let newSort = e.currentTarget.getAttribute('data-sort');
-                let currentSort = document.getElementById('active-sort');
-                let currentState = getCurrentState();
-
-                currentState.fields = searchFields;
-                if (newSort === currentState.sort) {
-                    if (currentSort.getAttribute('data-order') === 'asc') {
-                        currentState.order = 'desc';
-                        currentSort.setAttribute('data-order', 'desc');
-
-                        currentSort.querySelector('.icn').setAttribute('class', 'icn icn-sorted icn-sorted-asc');
-                    }
-                    else {
-                        currentState.order = 'asc';
-                        currentSort.setAttribute('data-order', 'asc');
-
-                        currentSort.querySelector('.icn').setAttribute('class', 'icn icn-sorted');
-                    }
-                }
-
-                else {
-                    e.currentTarget.setAttribute('data-order', 'asc');
-
-                    currentSort.setAttribute('id', null);
-                    e.currentTarget.setAttribute('id', 'active-sort');
-
-                    currentSort.querySelector('.icn').setAttribute('class', 'icn icn-sort');
-                    e.currentTarget.querySelector('.icn').setAttribute('class', 'icn icn-sorted');
-
-                }
-                currentState.sort = newSort;
-                getData('citations', currentState, refreshCitations);
-            });
-        };
-
-        let body = getCurrentState();
-        body.fields = searchFields;
-        getData('citations', body, refreshCitations);
+    if (resultBox) {
+      let body = getCurrentState(resultBox.getAttribute('data-search'));
+      body.fields = searchFields;
+      getData('citations', body, refreshCitations);
     }
 }
 
