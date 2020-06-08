@@ -27,8 +27,14 @@ function getCitationsTableContent(data) {
         authors += Object.values(author).join('. ');
       }
       let match_title = item.title ? item.title.toTitleCase() : "Title unavailable";
-      rows += `<tr class="accordion-row" id="accordion-row-${item.uuid}">`;
-      rows += `<td class="accordion-arrow"><i class="icon icon-arrow-down mr-1"></i></td>`
+
+      if (item.policies) {
+        rows += `<tr class="accordion-row" id="accordion-row-${item.uuid}">`;
+        rows += `<td class="accordion-arrow"><i class="icon icon-arrow-down mr-1"></i></td>`
+      } else {
+        rows += `<tr class="empty-accordion-row" id="accordion-row-${item.uuid}">`;
+        rows += `<td class="accordion-arrow"</td>`
+      }
       rows += `<td title="${match_title}"><div>${match_title}</div></td>`;
       rows += `<td>${item.journal_title}</td>`;
       rows += `<td class="authors-cell" title="${authors}"><div>
@@ -37,39 +43,39 @@ function getCitationsTableContent(data) {
       rows += `<td>${item.pub_year}</td>`;
 
       if (item.policies) {
-      rows += `<td>${item.policies.length}</td>`;
-      rows += `</tr>`;
+        rows += `<td>${item.policies.length}</td>`;
+        rows += `</tr>`;
 
-      rows += `<tr class="accordion-body fadeout" id="accordion-body-${item.uuid}">
-                  <td></td>
-                  <td colspan=4 class="accordion-subtable-container"><div>
-                  <table class="table accordion-subtable">
-                      <colgroup>
-                          <col class="colgroup-accordion-col">
-                          <col class="colgroup-subtable-col">
-                          <col class="colgroup-medium-col">
-                          <col>
-                      </colgroup>
-                      <tr>
-                          <th colspan="2">Cited in the following Policy Documents</th>
-                          <th>Policy Organisation</th>
-                          <th>Publication Year</th>
-                      </tr>
-      `;
-      for (let policy of item.policies) {
-          let policy_title = policy.title ? policy.title.toTitleCase() : "Title unavailable";
-          rows += `<tr>`;
-          rows += `<td><span class="icn icn-new-page"></span></td>`
-          rows += `<td title="${policy_title}"><a
-             href="${policy.source_url}"
-             target="_blank"
-             rel="noreferrer noopener"
-          >${(policy_title.length > TITLE_LENGTH) ? (policy_title.slice(0, TITLE_LENGTH) + "...") : policy_title}</a></td>`;
-          rows += `<td>${toDisplayOrg(policy.source_org)}</td>`;
-          rows += `<td>${policy.year}</td>`;
-      }
-      rows += `</table></div></td>`
-      rows += `</tr>`;
+        rows += `<tr class="accordion-body fadeout" id="accordion-body-${item.uuid}">
+                    <td></td>
+                    <td colspan=4 class="accordion-subtable-container"><div>
+                    <table class="table accordion-subtable">
+                        <colgroup>
+                            <col class="colgroup-accordion-col">
+                            <col class="colgroup-subtable-col">
+                            <col class="colgroup-medium-col">
+                            <col>
+                        </colgroup>
+                        <tr>
+                            <th colspan="2">Cited in the following Policy Documents</th>
+                            <th>Policy Organisation</th>
+                            <th>Publication Year</th>
+                        </tr>
+        `;
+        for (let policy of item.policies) {
+            let policy_title = policy.title ? policy.title.toTitleCase() : "Title unavailable";
+            rows += `<tr>`;
+            rows += `<td><span class="icn icn-new-page"></span></td>`
+            rows += `<td title="${policy_title}"><a
+               href="${policy.source_url}"
+               target="_blank"
+               rel="noreferrer noopener"
+            >${(policy_title.length > TITLE_LENGTH) ? (policy_title.slice(0, TITLE_LENGTH) + "...") : policy_title}</a></td>`;
+            rows += `<td>${toDisplayOrg(policy.source_org)}</td>`;
+            rows += `<td>${policy.year}</td>`;
+        }
+        rows += `</table></div></td>`
+        rows += `</tr>`;
 
       }
       else {
