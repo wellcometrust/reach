@@ -10,10 +10,15 @@ class TemplateResource(object):
     """
 
     def __init__(self, template_dir, context=None):
+        from web.config import CONFIG
         self.env = jinja2.Environment(
             loader=jinja2.FileSystemLoader(template_dir),
             autoescape=jinja2.select_autoescape(['html']),
         )
+
+        self.env.globals.update(ga_code=CONFIG.ga_code)
+        self.env.globals.update(hotjar_code=CONFIG.hotjar_code)
+
         if context is not None:
             self.context = context
         else:

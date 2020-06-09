@@ -104,8 +104,16 @@ class Config(object):
         )
 
         analytics = source.get("analytics", {})
-        self.ga_code = analytics.get("ga_code", None)
-        self.hotjar_code = analytics.get("hotjar_code", None)
+        self.ga_code = _or(
+            analytics.get("ga_code"),
+            os.environ.get("GA_CODE"),
+            default=None
+        )
+        self.hotjar_code = _or(
+            analytics.get("hotjar_code"),
+            os.environ.get("HOTJAR_CODE"),
+            default=None
+        )
 
 
 def init(config):
