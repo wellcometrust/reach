@@ -25,7 +25,7 @@ Message:
 Received: {}
 """
 
-GITHUB_ENDPOINT = "https://api.github.com/repos/wellcometrust/reach/issues"
+GITHUB_ENDPOINT = "https://api.github.com/repos/wellcometrust/datalabs-support/issues"
 
 FORM_SCHEMA = {
         'name': {'type': 'string', "required": True},
