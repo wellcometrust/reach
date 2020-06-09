@@ -93,7 +93,7 @@ function refreshCitations(data, currentState) {
     // Get the parameters from the policy docs search page and use them
     // to query Elasticsearch
 
-    const resultBox = document.getElementById('policy-docs-results');
+    const resultBox = document.getElementById('citations-results');
     const table = document.getElementById('citations-results-tbody');
     // const loadingRow = document.getElementById('loading-row');
     const pages = document.getElementsByClassName('page-item');
