@@ -1,29 +1,36 @@
-**Describe the bug**
-A clear and concise description of what the bug is.
+---
+name: Bug Report
+about: Create a report to help us improve
+title: ''
+labels: 'bug'
+assignees: ''
+---
+Checklist:
 
-**To Reproduce**
-Steps to reproduce the behavior:
-1. Go to '...'
-2. Click on '....'
-3. Scroll down to '....'
-4. See error
+* [ ] I've included the version
+* [ ] I've included reproduction steps
+* [ ] I've included any config
+* [ ] I've included the logs
 
-**Expected behavior**
-A clear and concise description of what you expected to happen.
 
-**Screenshots**
-If applicable, add screenshots to help explain your problem.
+## What Happened
 
-**Desktop (please complete the following information):**
- - OS: [e.g. iOS]
- - Browser [e.g. chrome, safari]
- - Version [e.g. 22]
+## What you expected to happen
 
-**Smartphone (please complete the following information):**
- - Device: [e.g. iPhone6]
- - OS: [e.g. iOS8.1]
- - Browser [e.g. stock browser, safari]
- - Version [e.g. 22]
+## How to reproduce it (as minimally and preciselt as possible)
 
-**Additional context**
-Add any other context about the problem here.
+## Anything else we should know
+
+## Environment
+
+* [ ] Production
+* [ ] Staging
+* [ ] Local
+
+## Error Message / Logs
+
+---
+<!-- Issue Author: Don't delete this message to encourage other users to support your issue! -->
+## Message from Maintainers
+
+If you are impacted by this bug please add a :thumbsup: reaction this is issue!
