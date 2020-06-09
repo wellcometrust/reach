@@ -117,6 +117,4 @@ def create_api(config):
         # endpoint (i.e. http://localhost:8000
         api.resp_options.secure_cookies_by_default = False
 
-
-
     return api
