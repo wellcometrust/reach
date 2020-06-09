@@ -1,12 +1,3 @@
----
-name: Feature request
-about: Suggest an idea for this project
-title: ''
-labels: ''
-assignees: ''
-
----
-
 # Description of feature/ functionality
 
 (Be sure to include the reasoning if this is not part of a bigger project. Link to spec, notion page, Zeplin etc)
