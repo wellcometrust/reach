@@ -72,9 +72,9 @@ section#scroll-arrow {
 }
 
 
-  section#hero {
-    min-height: 85vh;
-  }
+section#hero {
+  min-height: 85vh;
+}
 
 section#home-header {
   height: 5vh;
@@ -101,4 +101,8 @@ section#about-us {
 
 .home-hero-view {
   height: 100vh;
+}
+
+#about-us h3, #about-reach h3 {
+  font-weight: bold;
 }
