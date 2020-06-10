@@ -22,9 +22,9 @@ const searchFields = [
 function getCitationsTableContent(data) {
     let rows = ``;
     for (let item of data) {
-      let authors = '';
+      let authors = [];
       for (let author of  item.authors) {
-        authors += Object.values(author).join('. ');
+        authors.push(Object.values(author).join('. '));
       }
       let match_title = item.title ? item.title.toTitleCase() : "Title unavailable";
 
@@ -37,8 +37,8 @@ function getCitationsTableContent(data) {
       }
       rows += `<td title="${match_title}"><div>${match_title}</div></td>`;
       rows += `<td>${item.journal_title}</td>`;
-      rows += `<td class="authors-cell" title="${authors}"><div>
-          ${authors}</div>
+      rows += `<td class="authors-cell" title="${authors.join(' ')}"><div>
+          ${authors.join(' ')}</div>
       </td>`;
       rows += `<td>${item.pub_year}</td>`;
 
