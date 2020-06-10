@@ -89,6 +89,40 @@ function getCitationsTableContent(data) {
     return rows;
 }
 
+function refreshSortIcons(data, currentState) {
+  let newSort = currentState.newSortTarget.getAttribute('data-sort');
+  let currentSort = document.getElementById('active-sort');
+
+  currentState.fields = searchFields;
+  if (currentState.sort === currentState.lastSort) {
+      if (currentSort.getAttribute('data-order') === 'asc') {
+          currentState.order = 'desc';
+          currentSort.setAttribute('data-order', 'desc');
+
+          currentSort.querySelector('.icn').setAttribute('class', 'icn icn-sorted icn-sorted-asc');
+      }
+      else {
+          currentState.order = 'asc';
+          currentSort.setAttribute('data-order', 'asc');
+
+          currentSort.querySelector('.icn').setAttribute('class', 'icn icn-sorted');
+      }
+  }
+
+  else {
+      currentState.newSortTarget.setAttribute('data-order', 'asc');
+
+      currentSort.setAttribute('id', null);
+      currentState.newSortTarget.setAttribute('id', 'active-sort');
+
+      currentSort.querySelector('.icn').setAttribute('class', 'icn icn-sort');
+      currentState.newSortTarget.querySelector('.icn').setAttribute('class', 'icn icn-sorted');
+
+  }
+
+  refreshCitations(data, currentState);
+}
+
 function refreshCitations(data, currentState) {
     // Get the parameters from the policy docs search page and use them
     // to query Elasticsearch
@@ -154,6 +188,10 @@ function refreshCitations(data, currentState) {
 
     for (let item of headers) {
         item.addEventListener('click', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            e.stopImmediatePropagation();
+
             let newSort = e.currentTarget.getAttribute('data-sort');
             let currentSort = document.getElementById('active-sort');
             let currentState = getCurrentState();
@@ -162,35 +200,24 @@ function refreshCitations(data, currentState) {
             if (newSort === currentState.sort) {
                 if (currentSort.getAttribute('data-order') === 'asc') {
                     currentState.order = 'desc';
-                    currentSort.setAttribute('data-order', 'desc');
-
-                    currentSort.querySelector('.icn').setAttribute('class', 'icn icn-sorted icn-sorted-asc');
                 }
                 else {
                     currentState.order = 'asc';
-                    currentSort.setAttribute('data-order', 'asc');
-
-                    currentSort.querySelector('.icn').setAttribute('class', 'icn icn-sorted');
                 }
             }
 
-            else {
-                e.currentTarget.setAttribute('data-order', 'asc');
-
-                currentSort.setAttribute('id', null);
-                e.currentTarget.setAttribute('id', 'active-sort');
-
-                currentSort.querySelector('.icn').setAttribute('class', 'icn icn-sort');
-                e.currentTarget.querySelector('.icn').setAttribute('class', 'icn icn-sorted');
-
-            }
+            currentState.lastSort = currentState.sort;
+            currentState.newSortTarget = e.currentTarget;
             currentState.sort = newSort;
-            getData('citations', currentState, refreshCitations);
+            getData('citations', currentState, refreshSortIcons);
         });
     };
 
     for (let item of accordions) {
         item.addEventListener('click', (e) => {
+
+            e.preventDefault();
+            e.stopPropagation();
             // Disable other active rows
             let activeRows = document.getElementsByClassName('active-row');
             for (let row of activeRows) {

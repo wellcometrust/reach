@@ -129,7 +129,7 @@
       padding: 0;
     }
 }
-.pages .page-item#active-page {
+.pages .page-item#active-page, .page-item:hover {
 	color: $cyanPrimary;
   border-bottom: 1px solid $cyanPrimary;
   line-height: 1.5rem;
