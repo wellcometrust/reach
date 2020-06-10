@@ -1,7 +1,7 @@
 const SIZE = 25;
 
 const ORGS = {
-    'who_iris': 'WHO IRIS',
+    'who_iris': 'WHO',
     'nice': 'NICE',
     'parliament': 'Parliament',
     'unicef': 'UNICEF',
