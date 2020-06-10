@@ -94,10 +94,15 @@
       min-height: 3.5rem;
   	}
 
-  	tr th{
-  		border: none;
-  		background-color: $backgroundTint1;
-  	}
+  	tr th {
+      font-size: .6875rem;
+      letter-spacing: 0.7px;
+      font-weight: 500;
+      font-style: normal;
+      color: #292929;
+      background-color: $backgroundTint1;
+      border: none;
+    }
   }
 }
 
