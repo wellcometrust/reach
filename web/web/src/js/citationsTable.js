@@ -131,7 +131,6 @@ function refreshCitations(data, currentState) {
     const table = document.getElementById('citations-results-tbody');
     // const loadingRow = document.getElementById('loading-row');
     const pages = document.getElementsByClassName('page-item');
-    const accordions = document.getElementsByClassName('accordion-row');
 
     if (parseInt(data.count) <= 0) {
       resultBox.innerHTML = getNoResultsTemplate(data.terms, 'citations');
@@ -189,7 +188,6 @@ function refreshCitations(data, currentState) {
     for (let item of headers) {
         item.addEventListener('click', (e) => {
             e.preventDefault();
-            e.stopPropagation();
             e.stopImmediatePropagation();
 
             let newSort = e.currentTarget.getAttribute('data-sort');
@@ -213,31 +211,42 @@ function refreshCitations(data, currentState) {
         });
     };
 
+    const accordions = document.getElementsByClassName('accordion-row');
+
     for (let item of accordions) {
-        item.addEventListener('click', (e) => {
+      item.addEventListener('click', (e) => {
+        e.preventDefault();
+        e.stopImmediatePropagation();
 
-            e.preventDefault();
-            e.stopPropagation();
-            // Disable other active rows
-            let activeRows = document.getElementsByClassName('active-row');
-            for (let row of activeRows) {
-              let accordionBodyId = row.getAttribute('id').replace('row', 'body');
-              let accordionBody = document.getElementById(accordionBodyId);
-              accordionBody.classList.toggle('fadein');
-              accordionBody.classList.toggle('fadeout');
+        const foldOnly = e.currentTarget.classList.contains('active-row');
 
-              row.classList.toggle('active-row');
-              row.firstChild.firstChild.classList.toggle('icn-up');
-            }
+        // Disable other active rows
+        let activeRows = document.getElementsByClassName('active-row');
+        for (let row of activeRows) {
+          let accordionBodyId = row.getAttribute('id').replace('row', 'body');
+          let accordionBody = document.getElementById(accordionBodyId);
+          accordionBody.classList.toggle('fadein');
+          accordionBody.classList.toggle('fadeout');
 
-            // Enable Actual active row
-            let accordionBodyId = e.currentTarget.getAttribute('id').replace('row', 'body');
-            let accordionBody = document.getElementById(accordionBodyId);
-            accordionBody.classList.toggle('fadein');
-            accordionBody.classList.toggle('fadeout');
-            e.currentTarget.classList.toggle('active-row');
-            e.currentTarget.firstChild.firstChild.classList.toggle('icn-up');
-        });
+          row.classList.toggle('active-row');
+          row.firstChild.firstChild.classList.toggle('icn-up');
+
+          console.log('Disable active status');
+        }
+
+        if (!foldOnly) {
+          // Enable Actual active row
+          let accordionBodyId = e.currentTarget.getAttribute('id').replace('row', 'body');
+          let accordionBody = document.getElementById(accordionBodyId);
+
+          console.log('setting active status');
+
+          accordionBody.classList.toggle('fadein');
+          accordionBody.classList.toggle('fadeout');
+          e.currentTarget.classList.toggle('active-row');
+          e.currentTarget.firstChild.firstChild.classList.toggle('icn-up');
+        }
+      });
     }
 }
 
