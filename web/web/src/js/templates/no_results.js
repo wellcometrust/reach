@@ -12,7 +12,7 @@ const getNoResultsTemplate = (term, source) => {
     formSubmit = `Browse policy documents`;
   } else {
     noResultsTitle = `Your search for "${term}" in citations did not return any results`;
-    formLabel = `Search by publication title, journal or year of publication`;
+    formLabel = `Search by scientific publication title, topic or journal`;
     formAction = `/search/citations`;
     formSubmit = `Discover citations`;
   }
