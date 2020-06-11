@@ -30,11 +30,10 @@ function getCitationsTableContent(data) {
 
       if (item.policies) {
         rows += `<tr class="accordion-row" id="accordion-row-${item.uuid}">`;
-        rows += `<td class="accordion-arrow"><i class="icon icon-arrow-down mr-1"></i></td>`
       } else {
         rows += `<tr class="empty-accordion-row" id="accordion-row-${item.uuid}">`;
-        rows += `<td class="accordion-arrow"</td>`
       }
+      rows += `<td class="accordion-arrow"><i class="icon icon-arrow-down mr-1"></i></td>`
       rows += `<td title="${match_title}"><div>${match_title}</div></td>`;
       rows += `<td>${item.journal_title}</td>`;
       rows += `<td class="authors-cell" title="${authors.join(' ')}"><div>
@@ -223,13 +222,15 @@ function refreshCitations(data, currentState) {
         // Disable other active rows
         let activeRows = document.getElementsByClassName('active-row');
         for (let row of activeRows) {
+          row.classList.toggle('active-row');
+          row.firstChild.firstChild.classList.toggle('icn-up');
+          if (row.classList.contains('empty-accordion-row')) {
+            continue;
+          }
           let accordionBodyId = row.getAttribute('id').replace('row', 'body');
           let accordionBody = document.getElementById(accordionBodyId);
           accordionBody.classList.toggle('fadein');
           accordionBody.classList.toggle('fadeout');
-
-          row.classList.toggle('active-row');
-          row.firstChild.firstChild.classList.toggle('icn-up');
 
           console.log('Disable active status');
         }
@@ -243,6 +244,36 @@ function refreshCitations(data, currentState) {
 
           accordionBody.classList.toggle('fadein');
           accordionBody.classList.toggle('fadeout');
+          e.currentTarget.classList.toggle('active-row');
+          e.currentTarget.firstChild.firstChild.classList.toggle('icn-up');
+        }
+      });
+    }
+
+    const emptyAccordions = document.getElementsByClassName('empty-accordion-row');
+
+    for (let item of emptyAccordions) {
+      item.addEventListener('click', (e) => {
+        e.preventDefault();
+        e.stopImmediatePropagation();
+
+        const foldOnly = e.currentTarget.classList.contains('active-row');
+
+        // Disable other active rows
+        let activeRows = document.getElementsByClassName('active-row');
+        for (let row of activeRows) {
+          row.classList.toggle('active-row');
+          row.firstChild.firstChild.classList.toggle('icn-up');
+          if (row.classList.contains('accordion-row')) {
+            let accordionBodyId = row.getAttribute('id').replace('row', 'body');
+            let accordionBody = document.getElementById(accordionBodyId);
+            accordionBody.classList.toggle('fadein');
+            accordionBody.classList.toggle('fadeout');
+          }
+        }
+
+        if (!foldOnly) {
+          // Enable Actual active row
           e.currentTarget.classList.toggle('active-row');
           e.currentTarget.firstChild.firstChild.classList.toggle('icn-up');
         }
