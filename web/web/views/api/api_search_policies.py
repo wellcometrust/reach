@@ -1,7 +1,10 @@
 import json
 
+from psycopg2.extensions import AsIs
+
 from web.db import get_db_cur
 from .utils import JSONEncoder
+
 
 SQL = """
 SELECT title, sub_title, year, source_doc_url, source_org, scrape_source_page,
@@ -9,8 +12,8 @@ SELECT title, sub_title, year, source_doc_url, source_org, scrape_source_page,
 FROM warehouse.reach_policies AS p,
     websearch_to_tsquery(%s) AS query
 WHERE query @@ p.tsv_omni
-ORDER BY rank DESC
-LIMIT 25
+ORDER BY %s %s
+LIMIT %s
 OFFSET %s
 """
 
@@ -24,6 +27,13 @@ WITH results AS (
 ) SELECT COUNT(uuid) AS counter FROM results;
 """
 
+DEFAULT_ORDER = ("rank", "DESC")
+ALLOWABLE_ORDERS = (
+    "title.keyword",
+    "organisation",
+    "year"
+)
+
 class ApiSearchPolicies:
 
     def __init__(self):
@@ -34,19 +44,56 @@ class ApiSearchPolicies:
         # TODO: need to rate limit this for external hosts
 
         if req.params:
+            sort = req.params.get("sort", None)
+            order = req.params.get("order", "DESC")
             terms = req.params.get("terms", None)
             limit = req.params.get("size", 25)
             page = int(req.params.get("page", 1))
 
+            if order.upper() not in (None, "DESC", "ASC",):
+                resp.content_type = "application/json"
+                resp.body = json.dumps({
+                    'status': 'error',
+                    'message': "Invalid ordering operation"
+                })
+                return
+
+            if sort not in ALLOWABLE_ORDERS:
+                resp.content_type = "application/json"
+                resp.body = json.dumps({
+                    'status': 'error',
+                    'message': "Invalid ordering operation"
+                })
+                return
+
+
+            # TODO: These terms need to be changed on the frontend
+            if sort is None:
+                orders = DEFAULT_ORDER
+            else:
+                if sort == "title.keyword":
+                    orders = ("title", order)
+                elif sort == "organisation":
+                    orders = ("source_org", order)
+                elif sort == "year":
+                    orders = ("year", order)
+                else:
+                    orders = DEFAULT_ORDER
+
+
             offset = 0
             if page > 1:
-                offset = page * 25
+                offset = page * int(limit)
 
             counter = 0
             results = []
+            orders = DEFAULT_ORDER
             with get_db_cur() as cur:
                 cur.execute(SQL, (
                     terms,
+                    AsIs(orders[0]),
+                    AsIs(orders[1]),
+                    limit,
                     offset,
                 ))
                 results = cur.fetchall()
