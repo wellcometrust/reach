@@ -59,19 +59,23 @@ function refreshPolicySortIcons(data, currentState) {
       }
       else {
           currentState.order = 'asc';
-          currentSort.setAttribute('data-order', 'asc');
 
+          if (currentSort) {
+          currentSort.setAttribute('data-order', 'asc');
           currentSort.querySelector('.icn').setAttribute('class', 'icn icn-sorted');
+          }
       }
   }
 
   else {
       currentState.newSortTarget.setAttribute('data-order', 'asc');
 
-      currentSort.setAttribute('id', null);
-      currentState.newSortTarget.setAttribute('id', 'active-sort');
+      if (currentSort){
+        currentSort.setAttribute('id', null);
+        currentSort.querySelector('.icn').setAttribute('class', 'icn icn-sort');
+      }
 
-      currentSort.querySelector('.icn').setAttribute('class', 'icn icn-sort');
+      currentState.newSortTarget.setAttribute('id', 'active-sort');
       currentState.newSortTarget.querySelector('.icn').setAttribute('class', 'icn icn-sorted');
 
   }
@@ -161,6 +165,8 @@ const policyTable = () => {
                   else {
                       currentState.order = 'asc';
                   }
+              } else {
+                currentState.order = 'asc';
               }
 
               currentState.lastSort = currentState.sort;

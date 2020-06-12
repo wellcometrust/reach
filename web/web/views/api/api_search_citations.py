@@ -77,7 +77,7 @@ class ApiSearchCitations:
             limit = req.params.get("size", 25)
             page = int(req.params.get("page", 1))
 
-            if order.upper() not in (None, "DESC", "ASC",):
+            if (order is not None) and (order.upper() not in (None, "DESC", "ASC",)):
                 resp.content_type = "application/json"
                 resp.body = json.dumps({
                     'status': 'error',
@@ -85,7 +85,7 @@ class ApiSearchCitations:
                 })
                 return
 
-            if sort not in ALLOWABLE_ORDERS:
+            if (sort is not None) and (sort not in ALLOWABLE_ORDERS):
                 resp.content_type = "application/json"
                 resp.body = json.dumps({
                     'status': 'error',

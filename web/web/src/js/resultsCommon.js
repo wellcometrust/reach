@@ -95,10 +95,10 @@ export function getData(type, body, callback) {
     let url = `/api/search/${type}`
               + `?terms=${body.term}`
               + `&fields=${body.fields}`
-              + `&size=${body.size}`
-              + `&sort=${body.sort}`
-              + `&order=${body.order}`
-              + `&page=${body.page + 1}`;
+              + `${body.size?'&size=' + body.size : ''}`
+              + `${body.sort?'&sort=' + body.sort : ''}`
+              + `${body.order?'&order=' + body.order : ''}`
+              + `${body.page?'&page=' + body.page : ''}`
 
     xhr.open('GET', url);
     xhr.responseType = 'json';
@@ -153,14 +153,17 @@ export function getCurrentState(term=null) {
     const currentSort = document.getElementById('active-sort');
     const searchTerm = term ? term : document.getElementById('search-term').value;
     const startup = term ? true : false;
-
+    let order = null;
+    if (currentSort) {
+      let order = currentSort.getAttribute('data-order') ? currentSort.getAttribute('data-order') : 'asc';
+    }
     let body = {
         term: searchTerm,
         size: SIZE,
         startup: startup,
         page: (currentPage) ? parseInt(currentPage.getAttribute('data-page')) : 0,
         sort: currentSort ? currentSort.getAttribute('data-sort') : null,
-        order: currentSort ? currentSort.getAttribute('data-order') : 'desc',
+        order: order,
     };
     return body;
 }
