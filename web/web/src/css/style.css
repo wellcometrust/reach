@@ -258,7 +258,7 @@ a, a:visited {
   border-radius: none !important;
   font-size: $baseFontSize;
   height: 2.75rem;
-  padding: .625rem .625rem;
+  padding: .625rem 1rem;
 }
 
 .btn.btn-primary {

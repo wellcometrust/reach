@@ -1,7 +1,7 @@
 const SIZE = 25;
 
 const ORGS = {
-    'who_iris': 'WHO IRIS',
+    'who_iris': 'WHO',
     'nice': 'NICE',
     'parliament': 'Parliament',
     'unicef': 'UNICEF',
@@ -104,14 +104,18 @@ export function getData(type, body, callback) {
     xhr.responseType = 'json';
     xhr.send();
 
+    const timeout = (body.startup)? 2000 : 0;
+
+    // If it's a first load, wait 2s before loadbar. Else display it immediatly
     const load = setTimeout(() => {
       let table = document.getElementById('citations-result-table');
       if (!table) {
-        table = table = document.getElementById('policy-docs-result-table');
+        table = document.getElementById('policy-docs-result-table');
       }
       table.classList.add("load");
+      table.tBodies[0].innerHTML = `<tr class="load"><td colspan=7></td></tr>`.repeat(25);
       document.getElementById('loading-row').classList.remove("d-none");
-    }, 2000);
+    }, timeout);
 
     xhr.onload = () => {
       const loadingRow = document.getElementById('loading-row');
@@ -148,10 +152,12 @@ export function getCurrentState(term=null) {
     const currentPage = document.getElementById('active-page');
     const currentSort = document.getElementById('active-sort');
     const searchTerm = term ? term : document.getElementById('search-term').value;
+    const startup = term ? true : false;
 
     let body = {
         term: searchTerm,
         size: SIZE,
+        startup: startup,
         page: (currentPage) ? parseInt(currentPage.getAttribute('data-page')) : 0,
         sort: currentSort ? currentSort.getAttribute('data-sort') : null,
         order: currentSort ? currentSort.getAttribute('data-order') : 'desc',

@@ -59,7 +59,8 @@ header.navbar.home {
   }
 
   img {
-    height: 4.75rem;
+    margin-top: 8px;
+    height: 3.5rem;
   }
 
 }

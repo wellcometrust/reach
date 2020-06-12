@@ -7,12 +7,12 @@ const getNoResultsTemplate = (term, source) => {
 
   if (source == 'policies') {
     noResultsTitle = `Your search for "${term}" in policy&nbspdocuments did not return any results`;
-    formLabel = `Search by policy document title, policy organisation or topic`;
+    formLabel = `Search by topic, research area or policy document title`;
     formAction = `/search/policy-docs`;
     formSubmit = `Browse policy documents`;
   } else {
     noResultsTitle = `Your search for "${term}" in citations did not return any results`;
-    formLabel = `Search by publication title, journal or year of publication`;
+    formLabel = `Search by scientific publication title, topic or journal`;
     formAction = `/search/citations`;
     formSubmit = `Discover citations`;
   }
