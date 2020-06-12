@@ -67,7 +67,7 @@ class ApiSearchPolicies:
                 })
                 return
 
-            if (sort is None):
+            if sort is None:
                 orders = DEFAULT_ORDER
             else:
                 orders = (sort, order)

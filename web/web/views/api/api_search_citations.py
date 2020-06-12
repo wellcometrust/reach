@@ -100,7 +100,6 @@ class ApiSearchCitations:
             counter = 0
             results = []
 
-            # TODO: These terms need to be changed on the frontend
             if sort is None:
                 orders = DEFAULT_ORDER
             else:
