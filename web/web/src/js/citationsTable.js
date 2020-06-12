@@ -88,7 +88,7 @@ function getCitationsTableContent(data) {
     return rows;
 }
 
-function refreshSortIcons(data, currentState) {
+function refreshCitationsSortIcons(data, currentState) {
   let newSort = currentState.newSortTarget.getAttribute('data-sort');
   let currentSort = document.getElementById('active-sort');
 
@@ -182,34 +182,6 @@ function refreshCitations(data, currentState) {
         });
     };
 
-    const headers = document.getElementsByClassName('sort');
-
-    for (let item of headers) {
-        item.addEventListener('click', (e) => {
-            e.preventDefault();
-            e.stopImmediatePropagation();
-
-            let newSort = e.currentTarget.getAttribute('data-sort');
-            let currentSort = document.getElementById('active-sort');
-            let currentState = getCurrentState();
-
-            currentState.fields = searchFields;
-            if (newSort === currentState.sort) {
-                if (currentSort.getAttribute('data-order') === 'asc') {
-                    currentState.order = 'desc';
-                }
-                else {
-                    currentState.order = 'asc';
-                }
-            }
-
-            currentState.lastSort = currentState.sort;
-            currentState.newSortTarget = e.currentTarget;
-            currentState.sort = newSort;
-            getData('citations', currentState, refreshSortIcons);
-        });
-    };
-
     const accordions = document.getElementsByClassName('accordion-row');
 
     for (let item of accordions) {
@@ -287,6 +259,33 @@ const citationsTable = () => {
     const resultBox = document.getElementById('citations-results');
 
     if (resultBox) {
+      const headers = document.getElementsByClassName('sort');
+
+      for (let item of headers) {
+          item.addEventListener('click', (e) => {
+              e.preventDefault();
+              e.stopImmediatePropagation();
+
+              let newSort = e.currentTarget.getAttribute('data-sort');
+              let currentSort = document.getElementById('active-sort');
+              let currentState = getCurrentState();
+
+              currentState.fields = searchFields;
+              if (newSort === currentState.sort) {
+                  if (currentSort.getAttribute('data-order') === 'asc') {
+                      currentState.order = 'desc';
+                  }
+                  else {
+                      currentState.order = 'asc';
+                  }
+              }
+
+              currentState.lastSort = currentState.sort;
+              currentState.newSortTarget = e.currentTarget;
+              currentState.sort = newSort;
+              getData('citations', currentState, refreshCitationsSortIcons);
+          });
+      };
       let body = getCurrentState(resultBox.getAttribute('data-search'));
       body.fields = searchFields;
       getData('citations', body, refreshCitations);
