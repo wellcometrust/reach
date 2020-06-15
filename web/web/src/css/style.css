@@ -250,6 +250,12 @@ a, a:visited {
   letter-spacing: normal;
 }
 
+.wpcc-btn {
+  text-decoration: none;
+  font-size: $baseFontSize;
+  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+}
+
 .btn.btn-round {
   border-radius: 1.75rem;
 }
@@ -261,32 +267,32 @@ a, a:visited {
   padding: .625rem 1rem;
 }
 
-.btn.btn-primary {
+.btn.btn-primary, .wpcc-btn {
   border: none;
   background: $cyanPrimary;
   color: white;
   transition: none;
 }
 
-.btn.btn-primary:active {
+.btn.btn-primary:active, .wpcc-btn:active {
   border: none;
   background: $cyanPrimary;
   color: white;
 }
 
-.btn.btn-primary:visited {
+.btn.btn-primary:visited, .wpcc-btn:visited {
   border: none;
   background: $cyanPrimary;
   color: white;
 }
 
-.btn.btn-primary:default {
+.btn.btn-primary:default, .wpcc-btn:default {
   border: none;
   background: $cyanPrimary;
   color: white;
 }
 
-.btn.btn-primary:hover {
+.btn.btn-primary:hover, .wpcc-btn:hiver {
   border: none;
   background: $cyanLight;
   color: white;
