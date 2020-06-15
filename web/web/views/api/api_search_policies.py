@@ -29,10 +29,11 @@ WITH results AS (
 
 DEFAULT_ORDER = ("rank", "DESC")
 ALLOWABLE_ORDERS = (
-    "title.keyword",
-    "organisation",
+    "title",
+    "source_org",
     "year"
 )
+
 
 class ApiSearchPolicies:
 
@@ -50,7 +51,7 @@ class ApiSearchPolicies:
             limit = req.params.get("size", 25)
             page = int(req.params.get("page", 1))
 
-            if order.upper() not in (None, "DESC", "ASC",):
+            if (order is not None) and (order.upper() not in (None, "DESC", "ASC",)):
                 resp.content_type = "application/json"
                 resp.body = json.dumps({
                     'status': 'error',
@@ -58,7 +59,7 @@ class ApiSearchPolicies:
                 })
                 return
 
-            if sort not in ALLOWABLE_ORDERS:
+            if (sort is not None) and (sort not in ALLOWABLE_ORDERS):
                 resp.content_type = "application/json"
                 resp.body = json.dumps({
                     'status': 'error',
@@ -66,28 +67,17 @@ class ApiSearchPolicies:
                 })
                 return
 
-
-            # TODO: These terms need to be changed on the frontend
             if sort is None:
                 orders = DEFAULT_ORDER
             else:
-                if sort == "title.keyword":
-                    orders = ("title", order)
-                elif sort == "organisation":
-                    orders = ("source_org", order)
-                elif sort == "year":
-                    orders = ("year", order)
-                else:
-                    orders = DEFAULT_ORDER
-
+                orders = (sort, order)
 
             offset = 0
             if page > 1:
-                offset = page * int(limit)
+                offset = (page - 1) * int(limit)
 
             counter = 0
             results = []
-            orders = DEFAULT_ORDER
             with get_db_cur() as cur:
                 cur.execute(SQL, (
                     terms,

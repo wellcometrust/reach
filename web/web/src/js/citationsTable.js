@@ -88,7 +88,7 @@ function getCitationsTableContent(data) {
     return rows;
 }
 
-function refreshSortIcons(data, currentState) {
+function refreshCitationsSortIcons(data, currentState) {
   let newSort = currentState.newSortTarget.getAttribute('data-sort');
   let currentSort = document.getElementById('active-sort');
 
@@ -102,19 +102,21 @@ function refreshSortIcons(data, currentState) {
       }
       else {
           currentState.order = 'asc';
-          currentSort.setAttribute('data-order', 'asc');
-
-          currentSort.querySelector('.icn').setAttribute('class', 'icn icn-sorted');
+          if (currentSort) {
+            currentSort.setAttribute('data-order', 'asc');
+            currentSort.querySelector('.icn').setAttribute('class', 'icn icn-sorted');
+          }
       }
   }
 
   else {
       currentState.newSortTarget.setAttribute('data-order', 'asc');
 
-      currentSort.setAttribute('id', null);
+      if (currentSort) {
+        currentSort.setAttribute('id', null);
+        currentSort.querySelector('.icn').setAttribute('class', 'icn icn-sort');
+      }
       currentState.newSortTarget.setAttribute('id', 'active-sort');
-
-      currentSort.querySelector('.icn').setAttribute('class', 'icn icn-sort');
       currentState.newSortTarget.querySelector('.icn').setAttribute('class', 'icn icn-sorted');
 
   }
@@ -179,34 +181,6 @@ function refreshCitations(data, currentState) {
                 currentState.page = parseInt(newPage.getAttribute('data-page'));
             }
             getData('citations', currentState, refreshCitations);
-        });
-    };
-
-    const headers = document.getElementsByClassName('sort');
-
-    for (let item of headers) {
-        item.addEventListener('click', (e) => {
-            e.preventDefault();
-            e.stopImmediatePropagation();
-
-            let newSort = e.currentTarget.getAttribute('data-sort');
-            let currentSort = document.getElementById('active-sort');
-            let currentState = getCurrentState();
-
-            currentState.fields = searchFields;
-            if (newSort === currentState.sort) {
-                if (currentSort.getAttribute('data-order') === 'asc') {
-                    currentState.order = 'desc';
-                }
-                else {
-                    currentState.order = 'asc';
-                }
-            }
-
-            currentState.lastSort = currentState.sort;
-            currentState.newSortTarget = e.currentTarget;
-            currentState.sort = newSort;
-            getData('citations', currentState, refreshSortIcons);
         });
     };
 
@@ -287,6 +261,35 @@ const citationsTable = () => {
     const resultBox = document.getElementById('citations-results');
 
     if (resultBox) {
+      const headers = document.getElementsByClassName('sort');
+
+      for (let item of headers) {
+          item.addEventListener('click', (e) => {
+              e.preventDefault();
+              e.stopImmediatePropagation();
+
+              let newSort = e.currentTarget.getAttribute('data-sort');
+              let currentSort = document.getElementById('active-sort');
+              let currentState = getCurrentState();
+
+              currentState.fields = searchFields;
+              if (newSort === currentState.sort) {
+                  if (currentSort.getAttribute('data-order') === 'asc') {
+                      currentState.order = 'desc';
+                  }
+                  else {
+                      currentState.order = 'asc';
+                  }
+              } else {
+                currentState.order = 'asc';
+              }
+
+              currentState.lastSort = currentState.sort;
+              currentState.newSortTarget = e.currentTarget;
+              currentState.sort = newSort;
+              getData('citations', currentState, refreshCitationsSortIcons);
+          });
+      };
       let body = getCurrentState(resultBox.getAttribute('data-search'));
       body.fields = searchFields;
       getData('citations', body, refreshCitations);

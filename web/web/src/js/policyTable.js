@@ -45,6 +45,44 @@ const getPolicyTableContent = (data) => {
 }
 
 
+function refreshPolicySortIcons(data, currentState) {
+  let newSort = currentState.newSortTarget.getAttribute('data-sort');
+  let currentSort = document.getElementById('active-sort');
+
+  currentState.fields = searchFields;
+  if (currentState.sort === currentState.lastSort) {
+      if (currentSort.getAttribute('data-order') === 'asc') {
+          currentState.order = 'desc';
+          currentSort.setAttribute('data-order', 'desc');
+
+          currentSort.querySelector('.icn').setAttribute('class', 'icn icn-sorted icn-sorted-asc');
+      }
+      else {
+          currentState.order = 'asc';
+
+          if (currentSort) {
+          currentSort.setAttribute('data-order', 'asc');
+          currentSort.querySelector('.icn').setAttribute('class', 'icn icn-sorted');
+          }
+      }
+  }
+
+  else {
+      currentState.newSortTarget.setAttribute('data-order', 'asc');
+
+      if (currentSort){
+        currentSort.setAttribute('id', null);
+        currentSort.querySelector('.icn').setAttribute('class', 'icn icn-sort');
+      }
+
+      currentState.newSortTarget.setAttribute('id', 'active-sort');
+      currentState.newSortTarget.querySelector('.icn').setAttribute('class', 'icn icn-sorted');
+
+  }
+
+  refreshPolicy(data, currentState);
+}
+
 const refreshPolicy = (data, currentState) => {
     // Get the parameters from the policy docs search page and use them
     // to query Elasticsearch
@@ -102,53 +140,44 @@ const refreshPolicy = (data, currentState) => {
             getData('policy-docs', currentState, refreshPolicy);
         });
     };
-
-    const headers = document.getElementsByClassName('sort');
-
-    for (let item of headers) {
-        item.addEventListener('click', (e) => {
-            let newSort = e.currentTarget.getAttribute('data-sort');
-            let currentSort = document.getElementById('active-sort');
-            let currentState = getCurrentState();
-
-            currentState.fields = searchFields;
-            if (newSort == currentSort.getAttribute('data-sort')) {
-                if (currentSort.getAttribute('data-order') === 'asc') {
-                    currentState.order = 'desc';
-                    currentSort.setAttribute('data-order', 'desc');
-
-                    currentSort.querySelector('.icn').setAttribute('class', 'icn icn-sorted  icn-sorted-asc');
-                }
-                else {
-                    currentState.order = 'asc';
-                    currentSort.setAttribute('data-order', 'asc');
-
-                    currentSort.querySelector('.icn').setAttribute('class', 'icn icn-sorted');
-                }
-            }
-
-            else {
-                e.currentTarget.setAttribute('data-order', 'asc');
-
-                currentSort.querySelector('.icn').setAttribute('class', 'icn icn-sort');
-                e.currentTarget.querySelector('.icn').setAttribute('class', 'icn icn-sorted');
-            }
-
-            currentSort.setAttribute('id', null);
-            e.currentTarget.setAttribute('id', 'active-sort');
-            currentState.sort = newSort;
-            getData('policy-docs', currentState, refreshPolicy);
-        });
-    };
 }
 
 const policyTable = () => {
     const resultBox = document.getElementById('policy-docs-results');
 
     if (resultBox) {
-        let body = getCurrentState(resultBox.getAttribute('data-search'));
-        body.fields = searchFields;
-        getData('policy-docs', body, refreshPolicy);
+      const headers = document.getElementsByClassName('sort');
+
+      for (let item of headers) {
+          item.addEventListener('click', (e) => {
+              e.preventDefault();
+              e.stopImmediatePropagation();
+
+              let newSort = e.currentTarget.getAttribute('data-sort');
+              let currentSort = document.getElementById('active-sort');
+              let currentState = getCurrentState();
+
+              currentState.fields = searchFields;
+              if (newSort === currentState.sort) {
+                  if (currentSort.getAttribute('data-order') === 'asc') {
+                      currentState.order = 'desc';
+                  }
+                  else {
+                      currentState.order = 'asc';
+                  }
+              } else {
+                currentState.order = 'asc';
+              }
+
+              currentState.lastSort = currentState.sort;
+              currentState.newSortTarget = e.currentTarget;
+              currentState.sort = newSort;
+              getData('policy-docs', currentState, refreshPolicySortIcons);
+          });
+      };
+      let body = getCurrentState(resultBox.getAttribute('data-search'));
+      body.fields = searchFields;
+      getData('policy-docs', body, refreshPolicy);
     }
 }
 

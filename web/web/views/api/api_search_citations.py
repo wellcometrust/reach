@@ -26,7 +26,8 @@ WITH results AS (
 ) SELECT r.*,
          (SELECT json_agg(items)
              FROM (
-                  SELECT title, sub_title, year, source_doc_url, source_org, scrape_source_page FROM warehouse.reach_policies AS cp
+                  SELECT title, sub_title, year, source_doc_url, source_org,
+                         scrape_source_page FROM warehouse.reach_policies AS cp
                  WHERE r.source_policies @> ARRAY[cp.uuid]::UUID[]
                       ) AS items
              ) AS policies
@@ -47,12 +48,11 @@ WITH results AS (
 
 DEFAULT_ORDER = ("rank", "DESC",)
 ALLOWABLE_ORDERS = (
-    "match_publication",
-    "match_title.keyword",
-    "match_pub_year",
+    "epmc.title",
+    "epmc.journal_title",
+    "epmc.pub_year",
     "associated_policies_count",
 )
-
 
 
 class ApiSearchCitations:
@@ -77,7 +77,7 @@ class ApiSearchCitations:
             limit = req.params.get("size", 25)
             page = int(req.params.get("page", 1))
 
-            if order.upper() not in (None, "DESC", "ASC",):
+            if (order is not None) and (order.upper() not in (None, "DESC", "ASC",)):
                 resp.content_type = "application/json"
                 resp.body = json.dumps({
                     'status': 'error',
@@ -85,7 +85,7 @@ class ApiSearchCitations:
                 })
                 return
 
-            if sort not in ALLOWABLE_ORDERS:
+            if (sort is not None) and (sort not in ALLOWABLE_ORDERS):
                 resp.content_type = "application/json"
                 resp.body = json.dumps({
                     'status': 'error',
@@ -95,25 +95,18 @@ class ApiSearchCitations:
 
             offset = 0
             if page > 1:
-                offset = page * int(limit)
+                offset = (page - 1) * int(limit)
 
             counter = 0
             results = []
 
-            # TODO: These terms need to be changed on the frontend
             if sort is None:
                 orders = DEFAULT_ORDER
             else:
-                if sort == "match_publication":
-                    orders = ("epmc.journal_title", order)
-                elif sort == "match_title.keyword":
-                    orders = ("epmc.title", order)
-                elif sort == "match_pub_year":
-                    orders = ("epmc.pub_year", order)
-                elif sort == "associated_policies_count":
+                if sort == "associated_policies_count":
                     orders = ("array_length(rc.policies, 1)", order)
                 else:
-                    orders = DEFAULT_ORDER
+                    orders = (sort, order)
 
             with get_db_cur() as cur:
                 cur.execute(SQL, (
@@ -136,7 +129,6 @@ class ApiSearchCitations:
                 'count': counter,
                 'terms': terms
             }, cls=JSONEncoder)
-
 
         else:
             resp.body = json.dumps({
