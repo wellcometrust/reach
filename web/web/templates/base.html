@@ -45,7 +45,13 @@ viewbox="0 0 100 100" preserveAspectRatio="none">
 
     gtag('config', '{{ ga_code }}');
   </script>
+
   {% endif %}
+
+  {#- Cookies policy #}
+  <link rel="stylesheet" type="text/css" href="//wpcc.io/lib/1.0.2/cookieconsent.min.css"/>
+  <script src="//wpcc.io/lib/1.0.2/cookieconsent.min.js"></script>
+  <script>window.addEventListener("load", function(){window.wpcc.init({"corners":"small","colors":{"popup":{"background":"#dcf4f9","text":"#000000","border":"#555555"},"button":{"background":"#006272","text":"#ffffff"}},"position":"bottom","content":{"href":"/privacy"}})});</script>
 
 
   <script type="text/javascript" src="/static/js/main.js"></script>
@@ -78,7 +84,7 @@ viewbox="0 0 100 100" preserveAspectRatio="none">
   <footer>
     <div class="container">
       <div class="columns">
-        <div class="column col-10 col-lg-12">
+        <div class="column col-8 col-lg-12">
           {#- from static/w-avatar-pitch-1.svg, minified by https://jakearchibald.github.io/svgomg/
               Originally from the EPS in the Team Drive, from Chloe, SVG by Inkscape
            #}
@@ -87,11 +93,12 @@ viewbox="0 0 100 100" preserveAspectRatio="none">
            </div>
           <p>Created by <a href="#">Data Labs</a> at <a href="https://www.wellcome.ac.uk">Wellcome</a></p>
         </div>
-        <div class="column col-1 col-lg-6"><a href="/api/docs/"
+        <div class="column col-1 col-lg-4"><a href="/api/docs/"
           target="_blank"
           rel="noreferrer noopener"
         >Our API</a></div>
-        <div class="column col-1 col-lg-6"><a href="https://github.com/wellcometrust/reach" target="_blank">Github&nbspRepo</a></div>
+        <div class="column col-1 col-lg-4"><a href="https://github.com/wellcometrust/reach" target="_blank">Github&nbspRepo</a></div>
+        <div class="column col-2 col-lg-4"><a href="/privacy">Privacy and Terms of use</a></div>
       </div>
     </div>
   </footer>

@@ -5,7 +5,7 @@
     {% set status = status and (es_response.hits.total.value > 0) %}
 {% endif %}
 
-{% block bodyclass %}results{% endblock %}
+{% block bodyclass %}no-shape{% endblock %}
 
 {% block header %}
 
@@ -65,7 +65,7 @@
         </form>
       </div>
       <div class="column col-6 col-md-12 text-right">
-        <a class="btn btn-primary btn-xl" href="/search/citations/csv?terms={{ term }}">Download results as .csv <span class="icn icn-download"></span></a>
+        <a class="btn btn-primary btn-xl" href="/search/citations/csv?terms={{ term }}" id="csv-download-button">Download results as .csv <span class="icn icn-download"></span></a>
         <!-- To be uncommented with further UI updates
         <a class="btn btn-primary btn-xl btn-download" href="/search/citations/json?terms={{ term }}" >Download results as .json <span class="icn icn-download"></span></a>
         -->
