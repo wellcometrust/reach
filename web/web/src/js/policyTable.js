@@ -93,6 +93,19 @@ const refreshPolicy = (data, currentState) => {
 
     if (parseInt(data.count) <= 0) {
       resultBox.innerHTML = getNoResultsTemplate(data.terms, 'policies');
+
+
+      const noResultContactLink = document.getElementById('no-results-contact');
+      if (noResultContactLink) {
+        noResultContactLink.addEventListener('click', (e) => {
+          let source = (e.target.getAttribute('data-from') == "citations")? "Discover citations":"Browse pol docs";
+          gtag('event', 'Click', {
+            event_category: source,
+            event_label: 'Email no results'
+          });
+        });
+      }
+
       return null;
     }
 
@@ -126,16 +139,28 @@ const refreshPolicy = (data, currentState) => {
             if (newPage.getAttribute('id') == 'page-previous') {
                 currentState.page -= 1;
                 newPage = pages[currentState.page];
+                gtag('event', 'Pagination click', {
+                  event_category: 'Browse pol docs',
+                  event_label: 'Prev'
+                });
             }
 
             else if (newPage.getAttribute('id') == 'page-next') {
                 currentState.page += 1;
                 newPage = pages[currentState.page];
+                gtag('event', 'Pagination click', {
+                  event_category: 'Browse pol docs',
+                  event_label: 'Next'
+                });
             }
 
             else {
                 // newPage is an integer
                 currentState.page = parseInt(newPage.getAttribute('data-page'));
+                gtag('event', 'Pagination click', {
+                  event_category: 'Browse pol docs',
+                  event_label: newPage.getAttribute('data-page')
+                });
             }
             getData('policy-docs', currentState, refreshPolicy);
         });
@@ -172,11 +197,31 @@ const policyTable = () => {
               currentState.lastSort = currentState.sort;
               currentState.newSortTarget = e.currentTarget;
               currentState.sort = newSort;
+              gtag('event', 'Sort', {
+                event_category: 'Browse pol docs',
+                event_label: newSort
+              });
               getData('policy-docs', currentState, refreshPolicySortIcons);
           });
       };
-      let body = getCurrentState(resultBox.getAttribute('data-search'));
+
+      let csvButton = document.getElementById('csv-download-button');
+      let searchTerm = resultBox.getAttribute('data-search')
+
+      csvButton.addEventListener('click', (e) => {
+        gtag('event', 'Download', {
+          event_category: 'Browse pol docs',
+          event_label: 'CSV_' + searchTerm
+        });
+      });
+
+      let body = getCurrentState(searchTerm);
       body.fields = searchFields;
+
+      gtag('event', 'Search', {
+        event_category: 'Browse pol docs',
+        event_label: searchTerm
+      });
       getData('policy-docs', body, refreshPolicy);
     }
 }

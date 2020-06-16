@@ -15,4 +15,40 @@ document.addEventListener('DOMContentLoaded', function(event) {
     citationsTable();
     home();
     contact();
+
+    // Tracking
+    const headerLinks = document.getElementsByClassName('navbar');
+    for (let item of headerLinks) {
+      item.addEventListener('click', (e) => {
+        if (e.target.tagName == "A") {
+          gtag('event', 'Internal click', {
+            event_category: 'Header',
+            event_label: e.target.innerHTML
+          });
+        }
+      });
+    }
+
+    const footerLinks = document.getElementsByTagName('footer');
+    for (let item of footerLinks) {
+      item.addEventListener('click', (e) => {
+        if (e.target.tagName == "A") {
+          gtag('event', 'Internal click', {
+            event_category: 'Footer',
+            event_label: e.target.innerHTML
+          });
+        }
+      });
+    }
+
+    const resultsContactLink = document.getElementById('search-results-contact');
+    if (resultsContactLink) {
+      resultsContactLink.addEventListener('click', (e) => {
+        let source = (e.target.getAttribute('data-from') == "citations")? "Discover citations":"Browse pol docs";
+        gtag('event', 'Click', {
+          event_category: source,
+          event_label: 'Email search results'
+        });
+      });
+    }
 });

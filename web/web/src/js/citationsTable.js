@@ -69,6 +69,7 @@ function getCitationsTableContent(data) {
                href="${policy.source_url}"
                target="_blank"
                rel="noreferrer noopener"
+               class="associated-policy-a"
             >${(policy_title.length > TITLE_LENGTH) ? (policy_title.slice(0, TITLE_LENGTH) + "...") : policy_title}</a></td>`;
             rows += `<td>${toDisplayOrg(policy.source_org)}</td>`;
             rows += `<td>${policy.year}</td>`;
@@ -135,6 +136,18 @@ function refreshCitations(data, currentState) {
 
     if (parseInt(data.count) <= 0) {
       resultBox.innerHTML = getNoResultsTemplate(data.terms, 'citations');
+
+      const noResultContactLink = document.getElementById('no-results-contact');
+      if (noResultContactLink) {
+        noResultContactLink.addEventListener('click', (e) => {
+          let source = (e.target.getAttribute('data-from') == "citations")? "Discover citations":"Browse pol docs";
+          gtag('event', 'Click', {
+            event_category: source,
+            event_label: 'Email no results'
+          });
+        });
+      }
+
       return null;
     }
 
@@ -169,16 +182,28 @@ function refreshCitations(data, currentState) {
             if (newPage.getAttribute('id') == 'page-previous') {
                 currentState.page -= 1;
                 newPage = pages[currentState.page];
+                gtag('event', 'Pagination click', {
+                  event_category: 'Discover citations',
+                  event_label: 'Prev'
+                });
             }
 
             else if (newPage.getAttribute('id') == 'page-next') {
                 currentState.page += 1;
                 newPage = pages[currentState.page];
+                gtag('event', 'Pagination click', {
+                  event_category: 'Discover citations',
+                  event_label: 'Next'
+                });
             }
 
             else {
                 // newPage is an integer
                 currentState.page = parseInt(newPage.getAttribute('data-page'));
+                gtag('event', 'Pagination click', {
+                  event_category: 'Discover citations',
+                  event_label: newPage.getAttribute('data-page')
+                });
             }
             getData('citations', currentState, refreshCitations);
         });
@@ -191,6 +216,11 @@ function refreshCitations(data, currentState) {
         e.preventDefault();
         e.stopImmediatePropagation();
 
+        gtag('event', 'Click', {
+          event_category: 'Discover citations',
+          event_label: 'Accordion'
+        });
+
         const foldOnly = e.currentTarget.classList.contains('active-row');
 
         // Disable other active rows
@@ -198,23 +228,16 @@ function refreshCitations(data, currentState) {
         for (let row of activeRows) {
           row.classList.toggle('active-row');
           row.firstChild.firstChild.classList.toggle('icn-up');
-          if (row.classList.contains('empty-accordion-row')) {
-            continue;
-          }
           let accordionBodyId = row.getAttribute('id').replace('row', 'body');
           let accordionBody = document.getElementById(accordionBodyId);
           accordionBody.classList.toggle('fadein');
           accordionBody.classList.toggle('fadeout');
-
-          console.log('Disable active status');
         }
 
         if (!foldOnly) {
           // Enable Actual active row
           let accordionBodyId = e.currentTarget.getAttribute('id').replace('row', 'body');
           let accordionBody = document.getElementById(accordionBodyId);
-
-          console.log('setting active status');
 
           accordionBody.classList.toggle('fadein');
           accordionBody.classList.toggle('fadeout');
@@ -224,33 +247,14 @@ function refreshCitations(data, currentState) {
       });
     }
 
-    const emptyAccordions = document.getElementsByClassName('empty-accordion-row');
+    const policyLinks = document.getElementsByClassName('associated-policy-a');
 
-    for (let item of emptyAccordions) {
-      item.addEventListener('click', (e) => {
-        e.preventDefault();
-        e.stopImmediatePropagation();
-
-        const foldOnly = e.currentTarget.classList.contains('active-row');
-
-        // Disable other active rows
-        let activeRows = document.getElementsByClassName('active-row');
-        for (let row of activeRows) {
-          row.classList.toggle('active-row');
-          row.firstChild.firstChild.classList.toggle('icn-up');
-          if (row.classList.contains('accordion-row')) {
-            let accordionBodyId = row.getAttribute('id').replace('row', 'body');
-            let accordionBody = document.getElementById(accordionBodyId);
-            accordionBody.classList.toggle('fadein');
-            accordionBody.classList.toggle('fadeout');
-          }
-        }
-
-        if (!foldOnly) {
-          // Enable Actual active row
-          e.currentTarget.classList.toggle('active-row');
-          e.currentTarget.firstChild.firstChild.classList.toggle('icn-up');
-        }
+    for (let item of policyLinks) {
+      item.addEventListener('click', () => {
+        gtag('event', 'Click', {
+          event_category: 'Discover citations',
+          event_label: 'Pol doc link'
+        });
       });
     }
 }
@@ -287,11 +291,30 @@ const citationsTable = () => {
               currentState.lastSort = currentState.sort;
               currentState.newSortTarget = e.currentTarget;
               currentState.sort = newSort;
+              gtag('event', 'Sort', {
+                event_category: 'Discover citations',
+                event_label: newSort
+              });
               getData('citations', currentState, refreshCitationsSortIcons);
           });
       };
-      let body = getCurrentState(resultBox.getAttribute('data-search'));
+
+      let csvButton = document.getElementById('csv-download-button');
+      let searchTerm = resultBox.getAttribute('data-search');
+
+      csvButton.addEventListener('click', (e) => {
+        gtag('event', 'Download', {
+          event_category: 'Discover citations',
+          event_label: 'CSV_' + searchTerm
+        });
+      });
+
+      let body = getCurrentState(searchTerm);
       body.fields = searchFields;
+      gtag('event', 'Search', {
+        event_category: 'Discover citations',
+        event_label: searchTerm
+      });
       getData('citations', body, refreshCitations);
     }
 }
