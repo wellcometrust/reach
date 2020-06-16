@@ -80,6 +80,10 @@ def create_api(config):
         template.TemplateResource(TEMPLATE_ROOT, get_context(os.environ))
     )
     api.add_route(
+        '/privacy',
+        template.TemplateResource(TEMPLATE_ROOT, get_context(os.environ))
+    )
+    api.add_route(
         '/search/citations',
         SearchCitations(TEMPLATE_ROOT, get_context(os.environ))
     )
