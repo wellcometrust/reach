@@ -206,6 +206,10 @@ class FuzzyMatchRefsOperator(object):
 
         with tempfile.NamedTemporaryFile(mode='wb') as output_raw_f:
             with gzip.GzipFile(mode='wb', fileobj=output_raw_f) as output_f:
+                # This probably looks really odd, but we're basically ensuring that if there are no citations,
+                # that we still at least write a blank string to the start of the file so that
+                # the pipeline doesn't freak out on openining an empty GZip file
+                output_f.write(b' ')
                 for reference in references.values():
                     output_f.write(json.dumps(reference).encode('utf-8'))
                     output_f.write(b'\n')
