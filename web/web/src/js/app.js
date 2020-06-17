@@ -47,7 +47,7 @@ document.addEventListener('DOMContentLoaded', function(event) {
         let source = (e.target.getAttribute('data-from') == "citations")? "Discover citations":"Browse pol docs";
         gtag('event', 'Click', {
           event_category: source,
-          event_label: 'Email search results'
+          event_label: 'Email: search results'
         });
       });
     }

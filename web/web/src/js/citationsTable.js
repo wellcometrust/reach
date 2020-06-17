@@ -143,7 +143,7 @@ function refreshCitations(data, currentState) {
           let source = (e.target.getAttribute('data-from') == "citations")? "Discover citations":"Browse pol docs";
           gtag('event', 'Click', {
             event_category: source,
-            event_label: 'Email no results'
+            event_label: 'Email: no results'
           });
         });
       }
@@ -253,7 +253,7 @@ function refreshCitations(data, currentState) {
       item.addEventListener('click', () => {
         gtag('event', 'Click', {
           event_category: 'Discover citations',
-          event_label: 'Pol doc link'
+          event_label: 'Policy doc link'
         });
       });
     }
