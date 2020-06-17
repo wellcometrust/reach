@@ -46,6 +46,16 @@ viewbox="0 0 100 100" preserveAspectRatio="none">
     gtag('config', '{{ ga_code }}');
   </script>
 
+  {% else %}
+  {#- If we're in local dev, just log the events #}
+  <script type="text/javascript">
+    function gtag(type, event, args) {
+      console.log(type);
+      console.log(event);
+      console.log(args);
+    }    
+</script>
+
   {% endif %}
 
   {#- Cookies policy #}

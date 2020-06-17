@@ -65,7 +65,7 @@
         </form>
       </div>
       <div class="column col-6 col-md-12 text-right">
-        <a class="btn btn-primary btn-xl btn-download" href="/search/policy-docs/csv?terms={{ term }}" >Download results as .csv <span class="icn icn-download"></span></a>
+        <a class="btn btn-primary btn-xl btn-download" href="/search/policy-docs/csv?terms={{ term }}" id="csv-download-button">Download results as .csv <span class="icn icn-download"></span></a>
         <!-- To be uncommented with further UI updates
         <a class="btn btn-primary btn-xl btn-download" href="/search/policy-docs/json?terms={{ term }}" >Download results as .json <span class="icn icn-download"></span></a>
         -->
@@ -161,7 +161,7 @@
       <div class="column col-6 col-md-12">
         <div class="feedback-box">
           <p class="bold">Can't find what you're looking for?</p>
-          <p>We are working to continually improve Reach, if it is not working as you expect, there is an error or you have a suggestion, please <a href="/contact">send us your feedback</a></p>
+          <p>We are working to continually improve Reach, if it is not working as you expect, there is an error or you have a suggestion, please <a href="/contact" id="search-results-contact" data-from="policy-docs">send us your feedback</a></p>
         </div>
       </div>
     </div>
