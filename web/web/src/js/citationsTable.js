@@ -66,7 +66,7 @@ function getCitationsTableContent(data) {
             rows += `<tr>`;
             rows += `<td><span class="icn icn-new-page"></span></td>`
             rows += `<td title="${policy_title}"><a
-               href="${policy.source_url}"
+               href="${policy.source_doc_url}"
                target="_blank"
                rel="noreferrer noopener"
                class="associated-policy-a"
