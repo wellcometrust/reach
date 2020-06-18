@@ -42,7 +42,7 @@ class NiceSpider(BaseSpider):
 
         # Grab the link to the detailed article, its evidences and history
         articles = response.css(
-            '.media-body .media-heading a::attr(href)'
+            'h3.card__heading a::attr(href)'
         ).extract()
         doc_links = []
         evidence_links = []
