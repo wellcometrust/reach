@@ -8,22 +8,25 @@
   },
   "dependencies": {
     "@babel/core": "^7.7.2",
+    "@babel/polyfill": "^7.10.1",
     "@babel/preset-env": "^7.7.1",
     "autoprefixer": "^9.7.1",
+    "babelify": "^10.0.0",
     "cssnano": "^4.1.10",
     "gulp": "^4.0.2",
     "gulp-babel": "^8.0.0",
+    "gulp-browserify": "^0.5.1",
     "gulp-concat": "^2.6.1",
     "gulp-postcss": "^8.0.0",
     "gulp-sourcemaps": "^2.6.5",
     "gulp-uglify": "^3.0.2",
-    "list.js": "^1.5.0",
     "postcss": "^7.0.21",
     "postcss-import": "^12.0.1",
     "postcss-url": "^8.0.0",
     "precss": "^4.0.0",
+    "vinyl-buffer": "^1.0.1",
     "vinyl-named": "^1.1.0",
-    "webpack-stream": "^5.2.1"
+    "vinyl-source-stream": "^2.0.0"
   },
   "devDependencies": {},
   "scripts": {
