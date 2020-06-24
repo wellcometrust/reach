@@ -30,7 +30,6 @@ const paths = {
   js: {
     watchFiles: "web/src/**/*.js",
     source: [
-      "./node_modules/@babel/polyfill/dist/polyfill.min.js",
       "./web/src/js/app.js"
     ],
     destMapFolder: "./"
