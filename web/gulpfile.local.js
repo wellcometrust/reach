@@ -38,7 +38,7 @@ const paths = {
   build: {
     destBuildFolder: "build/web/static",
     destMinCSSFileName: "styles.css",
-    destMinJSFileName: "main.js"
+    destMinJSFileName: "js/main.js"
   }
 }
 
@@ -88,67 +88,3 @@ function watchFiles() {
 
 gulp.task("watch", gulp.series(watchFiles), (done) => done());
 gulp.task("default", gulp.series("css", "js", "images", "favicons"), (done) => done());
-
-
-// const {
-//   dest,
-//   parallel,
-//   src,
-//   pipe,
-//   watch
-// } = require('gulp');
-//
-// const sourcemaps = require('gulp-sourcemaps');
-//
-// exports.css = function() {
-//   const postcss = require('gulp-postcss');
-//   const url = require('postcss-url');
-//
-//   const plugins = [
-//         require('precss'),
-//         require('autoprefixer'),
-//         require('postcss-import'),
-//         url({url: "inline"}), // Inline font URLs in our CSS
-//         require('cssnano')
-//   ];
-//
-//
-//     return src('web/src/**/*.css')
-//     .pipe(sourcemaps.init())
-//     .pipe(postcss(plugins))
-//     // sourcemaps are rooted in dest(), so '.' is what we want
-//     .pipe(sourcemaps.write('.'))
-//     .pipe( dest('build/web/static') );
-// };
-//
-// exports gulp.task("js", (done) => {
-//   const bundler = browserify({ entries: paths.js.source }, { debug: true }).transform(babel);
-//   bundler.bundle()
-//     .on("error", function (err) { console.error(err); this.emit("end"); })
-//     .pipe(source(paths.build.destMinJSFileName))
-//     .pipe(buffer())
-//     .pipe(sourcemaps.init({ loadMaps: true }))
-//     .pipe(uglify())
-//     .pipe(sourcemaps.write(paths.js.destMapFolder))
-//     .pipe(gulp.dest(paths.build.destBuildFolder));
-//
-//   done();
-// });
-//
-// exports.images = function () {
-//     return src('web/src/images/*')
-//     .pipe(dest('build/web/static/images'))
-// };
-//
-// exports.favicons = function () {
-//     return src('web/src/favicon/*')
-//     .pipe(dest('build/web/static/favicon'))
-// };
-//
-// exports.default = parallel(exports.css, exports.js, exports.images, exports.favicons);
-//
-// exports.watch = function() {
-//     watch('web/src/**/*.css', {ignoreInitial: false}, exports.css);
-//     watch('web/src/**/*.js', {ignoreInitial: false}, exports.js);
-//     watch('web/src/**/*.svg', {ignoreInitial: false}, exports.images);
-// };

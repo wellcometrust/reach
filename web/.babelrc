@@ -2,9 +2,12 @@
   "presets": [
     ["@babel/preset-env", {
      "targets": {
-       "ie": "11"
+       "ie": "11",
+       "esmodules": false
      },
-     "loose": true
-    }]
+     "loose": true,
+     "modules": "commonjs"
+    }
+    ]
   ]
 }
