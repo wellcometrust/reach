@@ -4,7 +4,6 @@
      "useBuiltIns": "entry",
      "targets": {
        "ie": "11",
-       "esmodules": false
      },
      "loose": true,
      "corejs": "3.6"

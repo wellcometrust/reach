@@ -8,7 +8,6 @@
   },
   "dependencies": {
     "@babel/core": "^7.7.2",
-    "@babel/polyfill": "^7.10.1",
     "@babel/preset-env": "^7.7.1",
     "autoprefixer": "^9.7.1",
     "babelify": "^10.0.0",
@@ -26,7 +25,6 @@
     "postcss-url": "^8.0.0",
     "precss": "^4.0.0",
     "vinyl-buffer": "^1.0.1",
-    "vinyl-named": "^1.1.0",
     "vinyl-source-stream": "^2.0.0"
   },
   "devDependencies": {},
