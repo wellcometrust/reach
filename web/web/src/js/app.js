@@ -1,7 +1,4 @@
 import "core-js/stable";
-import "core-js/es/symbol/iterator";
-import "regenerator-runtime/runtime";
-
 
 import clearSearch from './clearSearch.js';
 import policyTable from './policyTable.js';

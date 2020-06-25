@@ -19,7 +19,6 @@ from web.views import SearchCitations, SearchPolicies, \
         ApiSearchCitations, ApiSearchPolicies
 
 
-
 TEMPLATE_ROOT = os.path.join(os.path.dirname(__file__), 'templates')
 API_DOCS_ROOT = os.path.join(os.path.dirname(__file__), 'docs/build/html')
 

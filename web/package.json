@@ -1,7 +1,7 @@
 {
   "name": "web",
   "version": "1.0.0",
-  "description": "",
+  "description": "Reach web application's frontend",
   "main": "src/js/app.js",
   "directories": {
     "test": "tests"
@@ -14,7 +14,6 @@
     "core-js": "^3.6.5",
     "cssnano": "^4.1.10",
     "gulp": "^4.0.2",
-    "gulp-babel": "^8.0.0",
     "gulp-browserify": "^0.5.1",
     "gulp-concat": "^2.6.1",
     "gulp-postcss": "^8.0.0",
