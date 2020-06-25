@@ -22,22 +22,22 @@ const plugins = [
 const paths = {
   css: {
     source: [
-      "./src/**/*.css",
+      "/opt/reach/build/web/src/**/*.css",
     ],
   },
   js: {
     source: [
-      "./src/js/app.js"
+      "/opt/reach/build/web/src/js/app.js"
     ],
   },
   images: {
     source: [
-      "web/src/images/*"
+      "/opt/reach/build/web/src/images/*"
     ]
   },
   favicons: {
     source: [
-      "web/src/favicon/*"
+      "/opt/reach/build/web/src/favicon/*"
     ]
   },
   build: {

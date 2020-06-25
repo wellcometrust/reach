@@ -7,7 +7,7 @@ services:
       build:
           context: ./web
           dockerfile: Dockerfile
-      image: uk.ac.wellcome/reach/web:latest
+      image: uk.ac.wellcome/reach:latest
       ports:
         - 127.0.0.1:8081:8081
       environment:
@@ -26,9 +26,9 @@ services:
         - gunicorn
         - --bind=0.0.0.0:8081
         - --reload
-        - web.wsgi:application
+        - web:application
       volumes:
-        - ./web/app:/opt/reach/web/
+        - ./web/web:/opt/reach/web/
         - ./web/build/web:/opt/reach/build/web
       deploy:
         resources:
@@ -44,13 +44,10 @@ services:
       image: reach-web-build:latest
       command:
         - gulp
-        - watch
       volumes:
         - ./web/build/web/static:/opt/reach/build/web/static
         - ./web/gulpfile.js:/opt/reach/build/web/gulpfile.js
-        - ./web/app/src:/opt/reach/build/web/src
-      # Signal handling in gulp? Not so much...
-      stop_signal: SIGKILL
+        - ./web/web/src:/opt/reach/build/web/src
       deploy:
         resources:
           limits:
