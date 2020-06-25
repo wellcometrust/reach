@@ -27,20 +27,19 @@ const paths = {
   },
   js: {
     source: [
-      "./node_modules/@babel/polyfill/dist/polyfill.min.js",
-      "./src/**/*.js"
+      "./src/js/app.js"
     ],
   },
   images: {
     source: [
       "web/src/images/*"
     ]
-  }
+  },
   favicons: {
     source: [
       "web/src/favicon/*"
     ]
-  }
+  },
   build: {
     destBuildFolder: "/opt/reach/build/web/static",
     destMinCSSFileName: "styles.css",
@@ -60,7 +59,7 @@ gulp.task("css", (done) => {
 });
 
 gulp.task("js", (done) => {
-  const bundler = browserify({ entries: paths.js.source }, { debug: true }).transform(babel);
+  const bundler = browserify({ entries: paths.js.source }, { debug: false }).transform(babel);
   bundler.bundle()
     .on("error", function (err) { console.error(err); this.emit("end"); })
     .pipe(source(paths.build.destMinJSFileName))
