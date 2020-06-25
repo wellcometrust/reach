@@ -1,3 +1,5 @@
+import "core-js/stable";
+
 import clearSearch from './clearSearch.js';
 import policyTable from './policyTable.js';
 import citationsTable from './citationsTable.js';

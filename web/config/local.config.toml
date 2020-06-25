@@ -1,6 +1,6 @@
 debug = true
 static_root = "../build/web/static"
-docs_static_root = "docs/build/html"
+docs_static_root = "docs/build/html/_static"
 
 [database]
 db_port = 5432
