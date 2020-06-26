@@ -53,7 +53,27 @@ gulp.task("css", (done) => {
 });
 
 gulp.task("js", (done) => {
-  const bundler = browserify({ entries: paths.js.source }, { debug: true }).transform(babel);
+    const bundler = browserify({ entries: paths.js.source }, { debug: true })
+        .transform(babel.configure({
+            presets: [[
+                "@babel/preset-env",
+                {
+                    forceAllTransforms: true,
+                    debug: true,
+                    useBuiltIns: "entry",
+                    modules: "commonjs",
+                    targets: "> 0.25%, ie 11, not dead",
+                    corejs: { version: 3, proposals: true}
+                }
+            ]],
+            plugins: [
+                "@babel/plugin-transform-arrow-functions",
+                "@babel/plugin-transform-for-of",
+                "@babel/plugin-transform-typeof-symbol"
+            ]
+
+        }));
+
   bundler.bundle()
     .on("error", function (err) { console.error(err); this.emit("end"); })
     .pipe(source(paths.build.destMinJSFileName))

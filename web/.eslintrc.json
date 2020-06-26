@@ -1,5 +1,6 @@
 {
     "env": {
+        "sourceType": "module",
 	"commonjs": true,
         "browser": true,
         "es6": true
