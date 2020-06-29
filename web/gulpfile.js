@@ -65,7 +65,7 @@ gulp.task("js", (done) => {
                 "@babel/preset-env",
                 {
                     forceAllTransforms: true,
-                    debug: true,
+                    debug: false,
                     useBuiltIns: "entry",
                     modules: "commonjs",
                     targets: "> 0.25%, ie 11, not dead",

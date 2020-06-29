@@ -15,8 +15,9 @@ web/build/web/static/*
 
 reach/refparse/algo_evaluation/data_evaluate/*
 
-env
-docs
+**/env
+**/venv
+**/docs
 pull_request_template.md
 CONTRIBUTING.md
 
