@@ -30,6 +30,11 @@ WEB_ECR_ARN := 160358319781.dkr.ecr.eu-west-1.amazonaws.com
 VERSION := build-$(shell date +%Y%m%dT%H%M%SZ)
 LATEST_TAG := latest
 
+
+.PHONY: aws-docker-login
+aws-docker-login:
+	aws ecr get-login-password --region eu-west-1 | docker login --username AWS --password-stdin 160358319781.dkr.ecr.eu-west-1.amazonaws.com
+
 # _____________
 # TODO:
 # When we're done with testing the splitter, we should run docker tasks demonized.
@@ -56,8 +61,7 @@ scraper-image: base-image
 		./pipeline/reach-scraper
 
 .PHONY: push-scraper
-push-scraper: scraper-image
-	$$(aws ecr get-login --no-include-email --region eu-west-1) && \
+push-scraper: aws-docker-login scraper-image
 		docker push $(ECR_ARN)/reach-scraper:$(LATEST_TAG) && \
 		docker push $(ECR_ARN)/reach-scraper:$(VERSION)
 
@@ -74,8 +78,7 @@ parser-image: base-image
 		./pipeline/reach-parser
 
 .PHONY: push-parser
-push-parser: parser-image
-	$$(aws ecr get-login --no-include-email --region eu-west-1) && \
+push-parser: aws-docker-login parser-image
 		docker push $(ECR_ARN)/reach-parser:$(LATEST_TAG) && \
 		docker push $(ECR_ARN)/reach-parser:$(VERSION)
 
@@ -92,8 +95,7 @@ es-extracter-image: base-image
 		./pipeline/reach-es-extractor
 
 .PHONY: push-extracter
-push-extracter: es-extracter-image
-	$$(aws ecr get-login --no-include-email --region eu-west-1) && \
+push-extracter: aws-docker-login es-extracter-image
 		docker push $(ECR_ARN)/reach-es-extractor:$(LATEST_TAG) && \
 		docker push $(ECR_ARN)/reach-es-extractor:$(VERSION)
 
@@ -110,8 +112,7 @@ indexer-image: base-image
 		./pipeline/reach-es-indexer
 
 .PHONY: push-indexer
-push-indexer: indexer-image
-	$$(aws ecr get-login --no-include-email --region eu-west-1) && \
+push-indexer: aws-docker-login indexer-image
 		docker push $(ECR_ARN)/reach-es-indexer:$(LATEST_TAG) && \
 		docker push $(ECR_ARN)/reach-es-indexer:$(VERSION)
 
@@ -129,8 +130,7 @@ fuzzymatcher-image: base-image
 		./pipeline/reach-fuzzy-matcher
 
 .PHONY: push-fuzzymatcher
-push-fuzzymatcher: fuzzymatcher-image
-	$$(aws ecr get-login --no-include-email --region eu-west-1) && \
+push-fuzzymatcher: aws-docker-login fuzzymatcher-image
 		docker push $(ECR_ARN)/reach-fuzzy-matcher:$(LATEST_TAG) && \
 		docker push $(ECR_ARN)/reach-fuzzy-matcher:$(VERSION)
 
@@ -164,8 +164,7 @@ web-image: base-image build-web-static
 		./web
 
 .PHONY: push-web
-push-web: web-image
-	$$(aws ecr get-login --no-include-email --region eu-west-1) && \
+push-web: aws-docker-login web-image
 		docker push $(WEB_ECR_ARN)/${WEB_IMAGE}:$(LATEST_TAG) && \
 		docker push $(WEB_ECR_ARN)/${WEB_IMAGE}:$(VERSION)
 
