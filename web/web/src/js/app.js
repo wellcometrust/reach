@@ -1,5 +1,5 @@
-import "core-js";
-import "core-js/es/array";
+import "core-js/stable";
+import "core-js/stable/array";
 
 import clearSearch from './clearSearch.js';
 import policyTable from './policyTable.js';
