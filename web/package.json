@@ -1,35 +1,22 @@
 {
-  "name": "web",
+  "name": "reach-web",
   "version": "1.0.0",
-  "description": "Reach web application's frontend",
-  "main": "src/js/app.js",
-  "directories": {
-    "test": "tests"
-  },
-  "dependencies": {
-    "@babel/core": "^7.7.2",
-    "@babel/preset-env": "^7.7.1",
-    "autoprefixer": "^9.7.1",
-    "babelify": "^10.0.0",
-    "core-js": "^3.6.5",
-    "cssnano": "^4.1.10",
-    "gulp": "^4.0.2",
-    "gulp-browserify": "^0.5.1",
-    "gulp-concat": "^2.6.1",
-    "gulp-postcss": "^8.0.0",
-    "gulp-sourcemaps": "^2.6.5",
-    "gulp-uglify": "^3.0.2",
-    "postcss": "^7.0.21",
-    "postcss-import": "^12.0.1",
-    "postcss-url": "^8.0.0",
-    "precss": "^4.0.0",
-    "vinyl-buffer": "^1.0.1",
-    "vinyl-source-stream": "^2.0.0"
-  },
-  "devDependencies": {},
+  "description": "",
+  "main": "main.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "author": "Wellcome Data Labs",
-  "license": "MIT"
+  "author": "",
+  "license": "MIT",
+  "devDependencies": {
+    "@babel/core": "^7.10.5",
+    "@babel/plugin-transform-arrow-functions": "^7.10.4",
+    "@babel/plugin-transform-for-of": "^7.10.4",
+    "@babel/plugin-transform-typeof-symbol": "^7.10.4",
+    "@babel/preset-env": "^7.10.4"
+  },
+  "dependencies": {
+    "core-js": "^3.6.5",
+    "less": "^3.12.2"
+  }
 }

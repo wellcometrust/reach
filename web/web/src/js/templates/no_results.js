@@ -6,7 +6,7 @@ const getNoResultsTemplate = (term, source) => {
   let formSubmit = ``;
 
   if (source == 'policies') {
-    noResultsTitle = `Your search for "${term}" in policy&nbspdocuments did not return any results`;
+    noResultsTitle = `Your search for "${term}" in policy&nbsp;documents did not return any results`;
     formLabel = `Search by topic, research area or policy document title`;
     formAction = `/search/policy-docs`;
     formSubmit = `Browse policy documents`;

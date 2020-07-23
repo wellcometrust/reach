@@ -1,25 +1,25 @@
-@import "variables.css";
+@import "variables";
 
 .search-box {
-    background: $backgroundTint1;
+    background: @backgroundTint1;
 }
 
 .search-tips {
-    margin: $mediumPadding 0;
+    margin: @mediumPadding 0;
 }
 
 .search-tips .btn.help {
-  background-color: $cyanPrimary;
+  background-color: @cyanPrimary;
   margin-top: 0;
 }
 
 .insights {
-    padding: $mediumPadding 0;
+    padding: @mediumPadding 0;
 }
 
 .feedback-box {
-	background-color: $backgroundTint2;
-	padding: $smallPadding;
+	background-color: @backgroundTint2;
+	padding: @smallPadding;
 }
 
 .form-label {
@@ -33,14 +33,14 @@
   width: 22px;
   height: 22px;
   padding: 0;
-  margin-left: $smallFontSize;
+  margin-left: @smallFontSize;
   color: white;
   font-size: 14px;
   font-weight: bold;
   border-radius: 50%;
   line-height: 22px;
   text-align: center;
-  background-color: $cyanPrimary;
+  background-color: @cyanPrimary;
 }
 
 .popover-container {
@@ -56,5 +56,5 @@
 }
 
 .popover-container .card {
-  color: $greyDark;
+  color: @greyDark;
 }

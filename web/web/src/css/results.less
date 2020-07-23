@@ -1,4 +1,4 @@
-@import "variables.css";
+@import "variables";
 
 .learn-link a {
   letter-spacing: 0.5px !important;
@@ -6,7 +6,7 @@
 
 .table-light {
   table-layout: fixed;
-	border: 1px solid $greyTable;
+	border: 1px solid @greyTable;
 
   thead tr {
     background-color: white;
@@ -32,8 +32,8 @@
 	}
 
 	td, th {
-		border-top: 1px solid $greyTable;
-		border-bottom: 1px solid $greyTable;
+		border-top: 1px solid @greyTable;
+		border-bottom: 1px solid @greyTable;
 
     font-size: 0.875rem;
     line-height: 1.5rem;
@@ -48,12 +48,12 @@
 
   tr:hover {
     td {
-      background-color: $cyanFocused;
+      background-color: @cyanFocused;
     }
   }
 
   .accordion-arrow {
-  	color: $cyanPrimary;
+  	color: @cyanPrimary;
   	font-weight: bold;
   	width: 3.5rem;
   	text-align: center;
@@ -67,7 +67,7 @@
   .active-row {
 
     td {
-    	background-color: $cyanFocused;
+    	background-color: @cyanFocused;
       overflow: visible;
       white-space: normal;
       text-overflow: visible;
@@ -81,7 +81,7 @@
 
   .accordion-body:hover {
     td {
-      background-color: $backgroundTint1;
+      background-color: @backgroundTint1;
     }
   }
 
@@ -90,7 +90,7 @@
 
   	tr td {
   		border: none;
-  		background-color: $backgroundTint1;
+  		background-color: @backgroundTint1;
       min-height: 3.5rem;
   	}
 
@@ -100,7 +100,7 @@
       font-weight: 500;
       font-style: normal;
       color: #292929;
-      background-color: $backgroundTint1;
+      background-color: @backgroundTint1;
       border: none;
     }
   }
@@ -121,7 +121,7 @@
 }
 
 .accordion-body td {
-  background-color: $backgroundTint1;
+  background-color: @backgroundTint1;
   cursor: default;
 }
 
@@ -135,8 +135,8 @@
     }
 }
 .pages .page-item#active-page, .page-item:hover {
-	color: $cyanPrimary;
-  border-bottom: 1px solid $cyanPrimary;
+	color: @cyanPrimary;
+  border-bottom: 1px solid @cyanPrimary;
   line-height: 1.5rem;
 }
 
@@ -156,7 +156,7 @@
 	.page-item, .disabled-page-item {
 		cursor: pointer;
 		padding: 0 2px;
-		color: $cyanPrimary;
+		color: @cyanPrimary;
 		display: inline-block;
     margin: 0 8px;
 
@@ -166,8 +166,8 @@
       border: 1px solid #ccc;
       border-radius: 2px;
       background-color: white;
-      color: $cyanPrimary;
-      font-size: $baseFontSize;
+      color: @cyanPrimary;
+      font-size: @baseFontSize;
       font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
       height: 2.75rem;
       padding: 0 .75rem;
@@ -181,8 +181,8 @@
 
 
 	.disabled-page-item {
-		color: $greyTable !important;
-    border-color: $greyTable !important;
+		color: @greyTable !important;
+    border-color: @greyTable !important;
 
     .icn-chevron-right, .icn-chevron-left {
       filter: invert(97%) sepia(8%) saturate(80%) hue-rotate(19deg) brightness(116%) contrast(80%);
@@ -205,12 +205,12 @@ th {
   text-transform: uppercase;
   line-height: 1.5rem;
   letter-spacing: 0.5px;
-  color: $greyLink;
+  color: @greyLink;
 
 }
 
 .table tr .accordion-subtable-container {
-	background-color: $backgroundTint1;
+	background-color: @backgroundTint1;
 	padding: 0;
 	padding-left: 3.5rem;
 }
@@ -221,7 +221,7 @@ th {
 
 .results-filters, .results-pages {
     background-color: white;
-    border: 1px solid $greyTable;
+    border: 1px solid @greyTable;
 }
 
 .results-pages {

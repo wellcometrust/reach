@@ -29,26 +29,7 @@ services:
         - web:application
       volumes:
         - ./web/web:/opt/reach/web/
-        - ./web/build/web:/opt/reach/build/web
       deploy:
         resources:
           limits:
             memory: "64M"
-
-    # Build static assets whenever they change, and save them into
-    # the STATIC_ROOT used by the web service above.
-    gulp-watch:
-      build:
-          context: ./web
-          dockerfile: Dockerfile.node
-      image: reach-web-build:latest
-      command:
-        - gulp
-      volumes:
-        - ./web/build/web/static:/opt/reach/build/web/static
-        - ./web/gulpfile.js:/opt/reach/build/web/gulpfile.js
-        - ./web/web/src:/opt/reach/build/web/src
-      deploy:
-        resources:
-          limits:
-            memory: "96M"

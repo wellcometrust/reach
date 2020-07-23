@@ -1,4 +1,5 @@
 import "core-js/stable";
+import "core-js/stable/array";
 
 import clearSearch from './clearSearch.js';
 import policyTable from './policyTable.js';
@@ -20,7 +21,7 @@ document.addEventListener('DOMContentLoaded', function(event) {
 
     // Tracking
     const headerLinks = document.getElementsByClassName('navbar');
-    for (let item of headerLinks) {
+    headerLinks.forEach(item => {
       item.addEventListener('click', (e) => {
         if (e.target.tagName == "A") {
           gtag('event', 'Internal click', {
@@ -29,10 +30,10 @@ document.addEventListener('DOMContentLoaded', function(event) {
           });
         }
       });
-    }
+    });
 
     const footerLinks = document.getElementsByTagName('footer');
-    for (let item of footerLinks) {
+    footerLinks.forEach(item => {
       item.addEventListener('click', (e) => {
         if (e.target.tagName == "A") {
           gtag('event', 'Internal click', {
@@ -41,7 +42,7 @@ document.addEventListener('DOMContentLoaded', function(event) {
           });
         }
       });
-    }
+    });
 
     const resultsContactLink = document.getElementById('search-results-contact');
     if (resultsContactLink) {
