@@ -1,23 +1,24 @@
-$spectre_version: 0.5.8;
-@import "../vendor/spectre-$(spectre_version)/spectre.css";
-@import "../vendor/spectre-$(spectre_version)/spectre-exp.css";
-@import "../vendor/spectre-$(spectre_version)/spectre-icons.css";
-@import "variables.css";
-@import "icons.css";
+@spectre_version: "0.5.8";
 
-/* @import "vendor/spectre-$(spectre_version)/spectre-exp.css"; */
+@import "../vendor/spectre-@{spectre_version}/spectre";
+@import "../vendor/spectre-@{spectre_version}/spectre-exp";
+@import "../vendor/spectre-@{spectre_version}/spectre-icons";
+@import "variables";
+@import "icons";
+
+/* @import "vendor/spectre-@(spectre_version)/spectre-exp.css"; */
 
 /*
  * Page specific file imports
  */
 
-@import "home.css";
-@import "about.css";
-@import "search.css";
-@import "results.css";
-@import "header.css";
-@import "footer.css";
-@import "contact.css";
+@import "home";
+@import "about";
+@import "search";
+@import "results";
+@import "header";
+@import "footer";
+@import "contact";
 
 /*  Offsets the grid and other media offseting */
 @media screen and (min-width: 1280px) {
@@ -114,8 +115,8 @@ body {
    *  BlinkMacSystemFont,
    *  Helvetica Neue
    */
-  color: $greyDark;
-  font-size: $baseFontSize;
+  color: @greyDark;
+  font-size: @baseFontSize;
   font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
   line-height: normal;
   font-weight: normal;
@@ -123,14 +124,14 @@ body {
   font-style: normal;
   line-height: normal;
   letter-spacing: normal;
-  background-color: $backgroundTint1;
+  background-color: @backgroundTint1;
   overflow-y: scroll;
   display: flex;
   flex-direction: column;
 }
 
 body:not(.no-shape) {
-  background-image: linear-gradient(-25deg, $backgroundTint2 20%, $backgroundTint1 calc(20% + 2px));
+  background-image: linear-gradient(-25deg, @backgroundTint2 20%, @backgroundTint1 calc(20% + 2px));
   background-repeat: no-repeat;
   background-position: bottom;
 }
@@ -157,65 +158,65 @@ section#about-page, section#how-it-works-page{
 
 h1 {
   font-family: Wellcome, Helvetica, Arial, sans-serif;;
-  font-size: $h1FontSize;
+  font-size: @h1FontSize;
   font-weight: normal;
   font-stretch: normal;
   font-style: normal;
   line-height: 1.5;
   letter-spacing: -0.45px;
-  color: $greyDark;
+  color: @greyDark;
 }
 
 h2 {
   font-family: Wellcome, Helvetica, Arial, sans-serif;;
-  font-size: $h2FontSize;
+  font-size: @h2FontSize;
   font-weight: normal;
   font-stretch: normal;
   font-style: normal;
   line-height: 1.5;
   letter-spacing: normal;
-  color: $greyDark;
+  color: @greyDark;
 }
 
 h3 {
   font-family: Helvetica, Arial, sans-serif;;
-  font-size: $h3FontSize;
+  font-size: @h3FontSize;
   font-weight: normal;
   font-stretch: normal;
   font-style: normal;
   line-height: 1.53;
   letter-spacing:  0.56px;
-  color: $greyDark;
+  color: @greyDark;
 }
 
 h4 {
   font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
-  font-size: $h4FontSize;
+  font-size: @h4FontSize;
   font-weight: bold;
   font-stretch: normal;
   font-style: normal;
   text-transform: uppercase;
   line-height: 1.5;
   letter-spacing: 0.5px;
-  color: $greyLink;
+  color: @greyLink;
 }
 
 p {
   font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
-  font-size: $baseFontSize;
+  font-size: @baseFontSize;
   font-weight: normal;
   font-stretch: normal;
   font-style: normal;
   line-height: 1.5;
   letter-spacing: 0.5px;
-  color: $greyDark;
+  color: @greyDark;
 }
 
 a, a:visited {
   text-decoration: underline;
-  color: $cyanPrimary;
+  color: @cyanPrimary;
   font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
-  font-size: $baseFontSize;
+  font-size: @baseFontSize;
   font-weight: normal;
   font-stretch: normal;
   font-style: normal;
@@ -225,7 +226,7 @@ a, a:visited {
 }
 
  a:hover {
-     color: $cyanLight;
+     color: @cyanLight;
  }
 
  a.a-light {
@@ -238,7 +239,7 @@ a, a:visited {
 
 /* btn-lg is still a bit too small for us, make btn-xl from spectre class */
 .btn.btn-xl {
-  font-size: $baseFontSize;
+  font-size: @baseFontSize;
   font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
   height: 2.75rem;
   padding: 0 2rem;
@@ -252,7 +253,7 @@ a, a:visited {
 
 .wpcc-btn {
   text-decoration: none;
-  font-size: $baseFontSize;
+  font-size: @baseFontSize;
   font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
 }
 
@@ -262,51 +263,51 @@ a, a:visited {
 
 .input-btn-xl {
   border-radius: none !important;
-  font-size: $baseFontSize;
+  font-size: @baseFontSize;
   height: 2.75rem;
   padding: .625rem 1rem;
 }
 
 .btn.btn-primary, .wpcc-btn {
   border: none;
-  background: $cyanPrimary;
+  background: @cyanPrimary;
   color: white;
   transition: none;
 }
 
 .btn.btn-primary:active, .wpcc-btn:active {
   border: none;
-  background: $cyanPrimary;
+  background: @cyanPrimary;
   color: white;
 }
 
 .btn.btn-primary:visited, .wpcc-btn:visited {
   border: none;
-  background: $cyanPrimary;
+  background: @cyanPrimary;
   color: white;
 }
 
 .btn.btn-primary:default, .wpcc-btn:default {
   border: none;
-  background: $cyanPrimary;
+  background: @cyanPrimary;
   color: white;
 }
 
 .btn.btn-primary:hover, .wpcc-btn:hiver {
   border: none;
-  background: $cyanLight;
+  background: @cyanLight;
   color: white;
 }
 
 .btn.btn-light {
-  border: 1px solid $cyanDark;
-  color: $cyanDark;
-  background: $backgroundTint2;
+  border: 1px solid @cyanDark;
+  color: @cyanDark;
+  background: @backgroundTint2;
 }
 
 .btn.btn-white {
-  border: 1px solid $cyanDark;
-  color: $cyanDark;
+  border: 1px solid @cyanDark;
+  color: @cyanDark;
   background: white;
 }
 
@@ -315,8 +316,8 @@ a, a:visited {
 }
 
 .form-input.input-xl {
-  font-size: $baseFontSize;
-  border-color: $greyLight;
+  font-size: @baseFontSize;
+  border-color: @greyLight;
   height: 2.75rem;
   padding: .625rem;
 }
@@ -328,32 +329,32 @@ a, a:visited {
 
 /* Override Spectre default */
 .breadcrumb .breadcrumb-item:not(:last-child) a {
-    color: $cyanPrimary;
+    color: @cyanPrimary;
 }
 
 .table.table-hover tbody tr:hover {
-  background: $backgroundTint1;
+  background: @backgroundTint1;
 }
 
 .breadcrumb .breadcrumb-item:not(:first-child)::before {
-  color: $greyDark;
+  color: @greyDark;
   content: ">";
   padding-right: .4rem;
 }
 
 .breadcrumb .breadcrumb-item {
-  color: $greyDark;
+  color: @greyDark;
 }
 
 #breadcrumbs {
   background: white;
-  border-bottom: 1px solid $greyLight;
+  border-bottom: 1px solid @greyLight;
 }
 
 
 @media screen and (min-width: 1280px) {
    #breadcrumbs {
-     padding: 0 $guidePadding;
+     padding: 0 @guidePadding;
    }
 }
 
@@ -371,8 +372,8 @@ section#hero .btn.help:hover {
 .hero-button {
     height: 3.5rem;
     line-height: 3.5rem;
-    font-size: $baseFontSize;
-    padding: 0 $smallPadding;
+    font-size: @baseFontSize;
+    padding: 0 @smallPadding;
 }
 
 ul li {

@@ -138,25 +138,8 @@ push-fuzzymatcher: aws-docker-login fuzzymatcher-image
 # Reach Web #
 #############
 
-.PHONY: reach-web-build
-reach-web-build:
-	docker build \
-		-t reach-web-build:$(VERSION) \
-		-t reach-web-build:$(LATEST_TAG) \
-		-f web/Dockerfile.node \
-		./web
-
-
-.PHONY: build-web-static
-build-web-static: reach-web-build
-	@chmod +x web/bin/docker_run.sh
-	@mkdir -p web/build/web/static
-	web/bin/docker_run.sh gulp default
-
-
-
 .PHONY: web-image
-web-image: base-image build-web-static
+web-image: base-image
 	docker build \
 		-t $(WEB_ECR_ARN)/${WEB_IMAGE}:$(VERSION) \
 		-t $(WEB_ECR_ARN)/${WEB_IMAGE}:$(LATEST_TAG) \
