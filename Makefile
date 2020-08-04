@@ -19,6 +19,9 @@ EXTRACTER_SPLIT_DST := s3://datalabs-dev/extracter-split/split-container/${ORG}/
 
 FUZZYMATCHER_DST := s3://datalabs-dev/fuzzymatcher/split-container/${ORG}/fuzzymatched-refs-${ORG}.json.gz
 
+GOLD_EVAL_SRC := s3://datalabs-data/reach_evaluation/data/sync/2019.10.8-fuzzy-matched-gold-refs-manually-verified.jsonl
+EVALUATOR_DST := s3://datalabs-dev/evaluator/evaluator.json.gz
+
 DEEP_REFERENCE_PARSER_WHEEL := deep_reference_parser-2020.4.5-py3-none-any.whl
 DEEP_REFERENCE_PARSER_URL := https://github.com/wellcometrust/deep_reference_parser/releases/download/2020.4.29/$(DEEP_REFERENCE_PARSER_WHEEL)
 
@@ -26,14 +29,8 @@ DEEP_REFERENCE_PARSER_URL := https://github.com/wellcometrust/deep_reference_par
 DOCKER_LOCALHOST := host.docker.internal
 
 ECR_ARN := 160358319781.dkr.ecr.eu-west-1.amazonaws.com/uk.ac.wellcome
-WEB_ECR_ARN := 160358319781.dkr.ecr.eu-west-1.amazonaws.com
 VERSION := build-$(shell date +%Y%m%dT%H%M%SZ)
 LATEST_TAG := latest
-
-
-.PHONY: aws-docker-login
-aws-docker-login:
-	aws ecr get-login-password --region eu-west-1 | docker login --username AWS --password-stdin 160358319781.dkr.ecr.eu-west-1.amazonaws.com
 
 # _____________
 # TODO:
@@ -61,7 +58,8 @@ scraper-image: base-image
 		./pipeline/reach-scraper
 
 .PHONY: push-scraper
-push-scraper: aws-docker-login scraper-image
+push-scraper: scraper-image
+	$$(aws ecr get-login --no-include-email --region eu-west-1) && \
 		docker push $(ECR_ARN)/reach-scraper:$(LATEST_TAG) && \
 		docker push $(ECR_ARN)/reach-scraper:$(VERSION)
 
@@ -78,7 +76,8 @@ parser-image: base-image
 		./pipeline/reach-parser
 
 .PHONY: push-parser
-push-parser: aws-docker-login parser-image
+push-parser: parser-image
+	$$(aws ecr get-login --no-include-email --region eu-west-1) && \
 		docker push $(ECR_ARN)/reach-parser:$(LATEST_TAG) && \
 		docker push $(ECR_ARN)/reach-parser:$(VERSION)
 
@@ -95,7 +94,8 @@ es-extracter-image: base-image
 		./pipeline/reach-es-extractor
 
 .PHONY: push-extracter
-push-extracter: aws-docker-login es-extracter-image
+push-extracter: es-extracter-image
+	$$(aws ecr get-login --no-include-email --region eu-west-1) && \
 		docker push $(ECR_ARN)/reach-es-extractor:$(LATEST_TAG) && \
 		docker push $(ECR_ARN)/reach-es-extractor:$(VERSION)
 
@@ -112,7 +112,8 @@ indexer-image: base-image
 		./pipeline/reach-es-indexer
 
 .PHONY: push-indexer
-push-indexer: aws-docker-login indexer-image
+push-indexer: indexer-image
+	$$(aws ecr get-login --no-include-email --region eu-west-1) && \
 		docker push $(ECR_ARN)/reach-es-indexer:$(LATEST_TAG) && \
 		docker push $(ECR_ARN)/reach-es-indexer:$(VERSION)
 
@@ -130,26 +131,63 @@ fuzzymatcher-image: base-image
 		./pipeline/reach-fuzzy-matcher
 
 .PHONY: push-fuzzymatcher
-push-fuzzymatcher: aws-docker-login fuzzymatcher-image
+push-fuzzymatcher: fuzzymatcher-image
+	$$(aws ecr get-login --no-include-email --region eu-west-1) && \
 		docker push $(ECR_ARN)/reach-fuzzy-matcher:$(LATEST_TAG) && \
 		docker push $(ECR_ARN)/reach-fuzzy-matcher:$(VERSION)
+
+###################
+# Reach Evaluator #
+###################
+
+.PHONY: evaluator-image
+evaluator-image: base-image
+	docker build \
+		-t $(ECR_ARN)/reach-evaluator:$(VERSION) \
+		-t $(ECR_ARN)/reach-evaluator:$(LATEST_TAG) \
+		-f pipeline/reach-evaluator/Dockerfile \
+		./pipeline/reach-evaluator
+
+.PHONY: push-evaluator
+push-evaluator: evaluator-image
+	$$(aws ecr get-login --no-include-email --region eu-west-1) && \
+		docker push $(ECR_ARN)/reach-evaluator:$(LATEST_TAG) && \
+		docker push $(ECR_ARN)/reach-evaluator:$(VERSION)
 
 #############
 # Reach Web #
 #############
 
-.PHONY: web-image
-web-image: base-image
+.PHONY: reach-web-build
+reach-web-build:
 	docker build \
-		-t $(WEB_ECR_ARN)/${WEB_IMAGE}:$(VERSION) \
-		-t $(WEB_ECR_ARN)/${WEB_IMAGE}:$(LATEST_TAG) \
+		-t reach-web-build:$(VERSION) \
+		-t reach-web-build:$(LATEST_TAG) \
+		-f web/Dockerfile.node \
+		./web
+
+
+.PHONY: build-web-static
+build-web-static: reach-web-build
+	@chmod +x web/bin/docker_run.sh
+	@mkdir -p web/build/web/static
+	web/bin/docker_run.sh gulp default
+
+
+
+.PHONY: web-image
+web-image: base-image build-web-static
+	docker build \
+		-t $(ECR_ARN)/${WEB_IMAGE}:$(VERSION) \
+		-t $(ECR_ARN)/${WEB_IMAGE}:$(LATEST_TAG) \
 		-f web/Dockerfile \
 		./web
 
 .PHONY: push-web
-push-web: aws-docker-login web-image
-		docker push $(WEB_ECR_ARN)/${WEB_IMAGE}:$(LATEST_TAG) && \
-		docker push $(WEB_ECR_ARN)/${WEB_IMAGE}:$(VERSION)
+push-web: web-image
+	$$(aws ecr get-login --no-include-email --region eu-west-1) && \
+		docker push $(ECR_ARN)/${WEB_IMAGE}:$(LATEST_TAG) && \
+		docker push $(ECR_ARN)/${WEB_IMAGE}:$(VERSION)
 
 
 ##############
@@ -211,7 +249,7 @@ run-indexer-epmc: indexer-image
 		-e SENTRY_DSN="${SENTRY_DSN}" \
 		-e ES_HOST=${DOCKER_LOCALHOST} \
 		--network=host \
-		${ECR_ARN}/reach-es-indexer \
+		${ECR_ARN}/reach-indexer \
 		${EPMC_METADATA_KEY} \
 		${ORG} \
 		epmc \
@@ -225,12 +263,24 @@ run-fuzzymatcher: fuzzymatcher-image
 		-e SENTRY_DSN="${SENTRY_DSN}" \
 		-e ES_HOST=${DOCKER_LOCALHOST} \
 		--network=host \
-		${ECR_ARN}/reach-fuzzy-matcher \
+		${ECR_ARN}/reach-fuzzymatcher \
 		${EXTRACTER_PARSED_DST} \
 		${FUZZYMATCHER_DST} \
 		${ORG} \
-		epmc_metadata
+		fulltexts
 
+.PHONY: run-evaluator
+run-evaluator: evaluator-image
+	docker run \
+	  -e AWS_ACCESS_KEY_ID="${AWS_ACCESS_KEY_ID}" \
+		-e AWS_SECRET_ACCESS_KEY="${AWS_SECRET_ACCESS_KEY}" \
+		-e SENTRY_DSN="${SENTRY_DSN}" \
+		-e ES_HOST=${DOCKER_LOCALHOST} \
+		--network=host \
+		${ECR_ARN}/reach-evaluator \
+		${GOLD_EVAL_SRC} \
+		${FUZZYMATCHER_DST} \
+		${EVALUATOR_DST} \
 
 .PHONY: run-indexer-citations
 run-indexer-citations: indexer-image
@@ -305,10 +355,10 @@ test-extractor: extractor-tests-image
 docker-test: test-scraper test-parser test-extractor
 
 .PHONY: docker-build
-docker-build: base-image scraper-image parser-image es-extracter-image indexer-image fuzzymatcher-image
+docker-build: base-image scraper-image parser-image es-extracter-image indexer-image fuzzymatcher-image evaluator-image
 
 .PHONY: docker-push-all
-docker-push-all: docker-test push-fuzzymatcher push-extracter push-indexer push-parser push-scraper
+docker-push-all: docker-test push-fuzzymatcher push-evaluator push-extracter push-indexer push-parser push-scraper
 
 .PHONY: all
 all: docker-build
