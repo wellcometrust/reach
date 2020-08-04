@@ -33,10 +33,10 @@ WEB_ECR_ARN := 160358319781.dkr.ecr.eu-west-1.amazonaws.com
 VERSION := build-$(shell date +%Y%m%dT%H%M%SZ)
 LATEST_TAG := latest
 
+
 .PHONY: aws-docker-login
 aws-docker-login:
 	aws ecr get-login-password --region eu-west-1 | docker login --username AWS --password-stdin 160358319781.dkr.ecr.eu-west-1.amazonaws.com
-
 
 # _____________
 # TODO:
