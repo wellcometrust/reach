@@ -3,4 +3,4 @@ numpy
 pandas
 scikit-learn
 sentry-sdk
-https://github.com/wellcometrust/deep_reference_parser/releases/download/2020.4.29/deep_reference_parser-2020.4.5-py3-none-any.whl
+https://github.com/wellcometrust/deep_reference_parser/releases/download/2020.4.29/deep_reference_parser-2020.8.5-py3-none-any.whl
