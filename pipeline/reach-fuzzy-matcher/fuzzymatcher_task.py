@@ -13,9 +13,9 @@ import elastic.common
 from hooks import s3hook
 from hooks.sentry import report_exception
 
-
+logging.basicConfig()
 logger = logging.getLogger(__name__)
-
+logger.setLevel(logging.INFO)
 
 def yield_structured_references(s3, structured_references_path):
     with tempfile.TemporaryFile(mode='rb+') as tf:
@@ -109,6 +109,7 @@ class ElasticsearchFuzzyMatcher:
                 'similarity': best_score,
 
                 # Matched reference information
+                'match_id': best_match.get('_id'),
                 'match_title': matched_reference.get('doc', {}).get('title', 'Unknown'),
                 'match_algo': 'Fuzzy match',
                 'match_pub_year': matched_reference.get('doc', {}).get('pubYear', None),
@@ -185,7 +186,7 @@ class FuzzyMatchRefsOperator(object):
                 structured_reference
             )
             if fuzzy_matched_reference:
-                ref_id = fuzzy_matched_reference['reference_id']
+                ref_id = fuzzy_matched_reference['match_id']
                 if ref_id in references.keys():
 
                     references[ref_id][
@@ -218,10 +219,6 @@ class FuzzyMatchRefsOperator(object):
             s3.load_file(
                 output_raw_f.name,
                 self.dst_s3_key,
-            )
-            logger.info(
-                'FuzzyMatchRefsOperator: references=%d matches=%d',
-                count, match_count
             )
 
             logger.info(
