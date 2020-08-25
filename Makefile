@@ -228,7 +228,7 @@ run-fuzzymatcher: fuzzymatcher-image
 		-e ES_HOST=${DOCKER_LOCALHOST} \
 		--network=host \
 		${ECR_ARN}/reach-fuzzy-matcher \
-		${EXTRACTER_PARSED_DST} \
+		${EXTRACTER_SPLIT_DST} \
 		${FUZZYMATCHER_DST} \
 		${ORG} \
 		epmc_metadata
