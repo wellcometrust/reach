@@ -1,9 +1,11 @@
 """ Serve GET /robots.txt. """
 
-# Disable all indexing until beta.
+# Allow all indexing following launch in July 2020
+# (cf.
+# https://medium.com/wellcome-data-labs/introducing-reach-find-and-track-research-being-put-into-action-dec2a2fca93b)
 ROBOTS_TXT = \
 """User-agent: *
-Disallow: /
+Allow: /
 """
 
 class RobotsTxtResource(object):
