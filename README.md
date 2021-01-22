@@ -130,29 +130,15 @@ For production, a typical deployment uses:
 - a distributed storage service such as S3
 - an ElasticSearch cluster for searching documents
 
-## Evaluating each component of the algorithm
+## Evaluation
 
-We have devised some evaluation data in order to evaluate 5 steps of the model. The results can be calculated by first installing poppler
-```
-brew install poppler
-```
-and then downloading the evaluation data from [here](https://s3-eu-west-1.amazonaws.com/datalabs-data/policy_tool_tests) and storing it in `algo_evaluation/data_evaluate/`, which can be done in the command line by running
-```
-aws s3 cp --recursive s3://datalabs-data/policy_tool_tests ./reach/refparse/algo_evaluation/data_evaluate/
-```
-and then running
-```
-python evaluate_algo.py
-```
-(or set the verbose argument to False (`python evaluate_algo.py --verbose False`) if you want less information about the evaluation to be printed).
-
-You can read more about how we got the evaluation data and what the evaluation results mean [here](docs/evaluation_data.md).
+The evaluation results are stored as an output [here](https://s3.console.aws.amazon.com/s3/buckets/datalabs-staging?region=eu-west-1&prefix=reach/evaluation/evaluations/). Broadly the evaluation works by comparing a gold set of results - a manually annotated dataset of all the publications that should be found in a sample of policy documents, against the publications Reach identified in the same sample of policy documents. The evaluation script is held in another private repo.
 
 ## Further reading
 
-- [docs/README.md](docs/README.md)
-- [reach/scraper/README.md](reach/scraper/README.md)
-- [reach/refparse/README.md](reach/refparse/README.md)
+- [Deep reference parser](https://github.com/wellcometrust/deep_reference_parser)
+- [Argo](reach⁩/argo⁩/README.md)
+- [Scraping](reach⁩/pipeline⁩/reach-scraper⁩/README.md)
 
 ## Contributing
 
